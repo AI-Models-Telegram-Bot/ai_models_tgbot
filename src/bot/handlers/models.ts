@@ -1,0 +1,185 @@
+import { WalletCategory } from '@prisma/client';
+import { BotContext } from '../types';
+import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
+import { modelService, requestService, walletService } from '../../services';
+import { logger } from '../../utils/logger';
+import { sendTrackedMessage } from '../utils';
+import { Language, t, getLocale } from '../../locales';
+import { enqueueGeneration } from '../../queues/producer';
+
+function getLang(ctx: BotContext): Language {
+  return (ctx.user?.language as Language) || 'en';
+}
+
+function formatCredits(amount: number): string {
+  return `${amount} credits`;
+}
+
+/** Map ModelCategory to WalletCategory */
+function toWalletCategory(category: string): WalletCategory {
+  const map: Record<string, WalletCategory> = {
+    TEXT: 'TEXT',
+    IMAGE: 'IMAGE',
+    VIDEO: 'VIDEO',
+    AUDIO: 'AUDIO',
+  };
+  return map[category] || 'TEXT';
+}
+
+export async function handleModelSelection(ctx: BotContext, modelSlug: string): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+
+  const lang = getLang(ctx);
+  const l = getLocale(lang);
+
+  const model = await modelService.getBySlug(modelSlug);
+  if (!model) {
+    await ctx.reply(l.messages.errorModelNotFound);
+    return;
+  }
+
+  const walletCat = toWalletCategory(model.category);
+  const creditsCost = model.tokenCost;
+
+  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
+  if (!hasBalance) {
+    const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
+    const message = t(lang, 'messages.errorInsufficientBalance', {
+      required: formatCredits(creditsCost),
+      current: formatCredits(currentBalance),
+    });
+    await ctx.reply(message);
+    return;
+  }
+
+  ctx.session.selectedModel = modelSlug;
+  ctx.session.awaitingInput = true;
+
+  const example = l.promptExamples[model.category as keyof typeof l.promptExamples] || '';
+
+  const message = t(lang, 'messages.modelSelected', {
+    modelName: model.name,
+    tokenCost: formatCredits(creditsCost),
+    example,
+  });
+
+  await sendTrackedMessage(ctx, message, { parse_mode: 'HTML', ...getCancelKeyboard(lang) });
+}
+
+export async function handleUserInput(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+  if (!('text' in ctx.message!) || !ctx.message.text) return;
+
+  const lang = getLang(ctx);
+  const l = getLocale(lang);
+  const input = ctx.message.text;
+
+  // Check for cancel commands in both languages
+  const cancelButtons = [
+    '❌ Cancel', '❌ Отмена',
+    '⬅️ Back', '⬅️ Назад',
+    '🏠 Main menu', '🏠 Главное меню',
+  ];
+
+  if (cancelButtons.some(btn => input === btn)) {
+    ctx.session.awaitingInput = false;
+    ctx.session.selectedModel = undefined;
+    await ctx.reply(l.messages.cancelled, getMainKeyboard(lang));
+    return;
+  }
+
+  const model = await modelService.getBySlug(ctx.session.selectedModel);
+  if (!model) {
+    await ctx.reply(l.messages.errorModelNotFound, getMainKeyboard(lang));
+    ctx.session.awaitingInput = false;
+    return;
+  }
+
+  const walletCat = toWalletCategory(model.category);
+  const priceItemCode = modelService.getPriceItemCode(model.slug);
+  const creditsCost = model.tokenCost;
+
+  // Check wallet balance
+  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
+  if (!hasBalance) {
+    const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
+    const message = t(lang, 'messages.errorInsufficientBalance', {
+      required: formatCredits(creditsCost),
+      current: formatCredits(currentBalance),
+    });
+    await ctx.reply(message, getMainKeyboard(lang));
+    ctx.session.awaitingInput = false;
+    return;
+  }
+
+  // Create request record
+  let request;
+  try {
+    request = await requestService.create({
+      userId: ctx.user.id,
+      modelId: model.id,
+      inputText: input,
+      tokensCost: creditsCost,
+    });
+  } catch (error) {
+    logger.error('Failed to create request:', error);
+    await ctx.reply(l.messages.errorGeneric, getMainKeyboard(lang));
+    return;
+  }
+
+  // Deduct credits from wallet
+  try {
+    await walletService.deductCredits(ctx.user.id, walletCat, creditsCost, {
+      requestId: request.id,
+      priceItemCode,
+      description: `${model.name} generation`,
+    });
+  } catch (error) {
+    logger.error('Failed to deduct credits:', error);
+    await ctx.reply(l.messages.errorGeneric, getMainKeyboard(lang));
+    return;
+  }
+
+  // Send processing message
+  const processingMessage = t(lang, 'messages.processing', { modelName: model.name });
+  const processingMsg = await ctx.reply(processingMessage);
+
+  // Enqueue the job - worker will handle execution and result delivery
+  try {
+    await enqueueGeneration({
+      requestId: request.id,
+      userId: ctx.user.id,
+      chatId: ctx.chat!.id,
+      modelSlug: model.slug,
+      modelCategory: model.category,
+      provider: model.provider,
+      input,
+      processingMsgId: processingMsg.message_id,
+      language: lang,
+      creditsCost,
+      priceItemCode,
+      walletCategory: walletCat,
+    });
+
+    logger.info('Job enqueued', { requestId: request.id, model: model.slug });
+  } catch (error) {
+    logger.error('Failed to enqueue job:', error);
+
+    // Refund credits if enqueue fails
+    try {
+      await walletService.refundCredits(ctx.user.id, walletCat, creditsCost, {
+        requestId: request.id,
+        priceItemCode,
+        description: `Refund: queue error`,
+      });
+    } catch (refundError) {
+      logger.error('Failed to refund credits:', refundError);
+    }
+
+    await ctx.reply(l.messages.errorGeneric, getMainKeyboard(lang));
+  }
+
+  ctx.session.awaitingInput = false;
+  ctx.session.selectedModel = undefined;
+}

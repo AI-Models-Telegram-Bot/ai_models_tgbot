@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  telegramId      BigInt    @unique @map("telegram_id")
+  username        String?
+  firstName       String?   @map("first_name")
+  lastName        String?   @map("last_name")
+  languageCode    String?   @map("language_code")
+  language        String    @default("en") @map("language")
+  tokenBalance    Int       @default(0) @map("token_balance") // Deprecated: kept for migration
+  totalSpent      Float     @default(0) @map("total_spent")
+  referralCode    String    @unique @map("referral_code")
+  referredBy      String?   @map("referred_by")
+  isBlocked       Boolean   @default(false) @map("is_blocked")
+  isAdmin         Boolean   @default(false) @map("is_admin")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  requests            Request[]
+  transactions        Transaction[]
+  wallet              UserWallet?
+  walletTransactions  WalletTransaction[]
+  referrals           User[]    @relation("Referrals")
+  referrer            User?     @relation("Referrals", fields: [referredBy], references: [referralCode])
+
+  @@map("users")
+}
+
+// ── Multi-Wallet System ──────────────────────────────────
+
+model UserWallet {
+  id            String    @id @default(cuid())
+  userId        String    @unique @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  textBalance   Float     @default(0) @map("text_balance")
+  imageBalance  Float     @default(0) @map("image_balance")
+  videoBalance  Float     @default(0) @map("video_balance")
+  audioBalance  Float     @default(0) @map("audio_balance")
+
+  moneyBalance  Float     @default(0) @map("money_balance")
+  currency      String    @default("USD")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("user_wallets")
+}
+
+model PriceItem {
+  id             String          @id @default(cuid())
+  itemCode       String          @unique @map("item_code")
+  category       WalletCategory
+  name           String
+  description    String?
+  creditsPerUnit Float           @map("credits_per_unit")
+  unitType       String          @map("unit_type")
+  minCredits     Float?          @map("min_credits")
+  maxCredits     Float?          @map("max_credits")
+  isActive       Boolean         @default(true) @map("is_active")
+  metadata       Json?
+
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@index([category, isActive])
+  @@map("price_items")
+}
+
+model WalletTransaction {
+  id              String            @id @default(cuid())
+  userId          String            @map("user_id")
+  user            User              @relation(fields: [userId], references: [id])
+
+  category        WalletCategory
+  transactionType WalletTransactionType @map("transaction_type")
+
+  amount          Float
+  balanceBefore   Float             @map("balance_before")
+  balanceAfter    Float             @map("balance_after")
+
+  requestId       String?           @map("request_id")
+  paymentId       String?           @map("payment_id")
+  priceItemCode   String?           @map("price_item_code")
+
+  description     String?
+  metadata        Json?
+
+  isReservation   Boolean           @default(false) @map("is_reservation")
+  reservationId   String?           @map("reservation_id")
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([category])
+  @@index([reservationId])
+  @@index([requestId])
+  @@map("wallet_transactions")
+}
+
+enum WalletCategory {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  MONEY
+}
+
+enum WalletTransactionType {
+  PURCHASE
+  BONUS
+  DEDUCTION
+  REFUND
+  RESERVATION
+  ADJUSTMENT
+  ADMIN_ADD
+  ADMIN_REMOVE
+  TRANSFER
+}
+
+// ── Existing Models (kept for compatibility) ─────────────
+
+model AIModel {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  provider        String
+  category        ModelCategory
+  description     String?
+  tokenCost       Int       @map("token_cost")
+  priceItemCode   String?   @map("price_item_code")
+  isActive        Boolean   @default(true) @map("is_active")
+  config          Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  requests        Request[]
+
+  @@map("ai_models")
+}
+
+model Request {
+  id              String        @id @default(cuid())
+  userId          String        @map("user_id")
+  modelId         String        @map("model_id")
+  inputText       String?       @map("input_text")
+  inputFileId     String?       @map("input_file_id")
+  outputText      String?       @map("output_text")
+  outputFileUrl   String?       @map("output_file_url")
+  tokensCost      Int           @map("tokens_cost")
+  status          RequestStatus @default(PENDING)
+  errorMessage    String?       @map("error_message")
+  processingTime  Int?          @map("processing_time")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  completedAt     DateTime?     @map("completed_at")
+
+  walletCategory    WalletCategory? @map("wallet_category")
+  creditsCharged    Float?          @map("credits_charged")
+  creditsReserved   Float?          @map("credits_reserved")
+  creditsAdjusted   Float?          @map("credits_adjusted")
+  reservationId     String?         @map("reservation_id")
+  actualProvider    String?         @map("actual_provider")
+
+  user            User      @relation(fields: [userId], references: [id])
+  model           AIModel   @relation(fields: [modelId], references: [id])
+
+  @@map("requests")
+}
+
+model Transaction {
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  type            TransactionType
+  amount          Int
+  tokensAmount    Int?      @map("tokens_amount")
+  description     String?
+  paymentId       String?   @map("payment_id")
+  status          TransactionStatus @default(PENDING)
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@map("transactions")
+}
+
+model TokenPackage {
+  id              String    @id @default(cuid())
+  name            String
+  tokens          Int
+  price           Float
+  currency        String    @default("USD")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("token_packages")
+}
+
+model PromoCode {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  tokensBonus     Int       @map("tokens_bonus")
+  usageLimit      Int?      @map("usage_limit")
+  usageCount      Int       @default(0) @map("usage_count")
+  expiresAt       DateTime? @map("expires_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("promo_codes")
+}
+
+enum ModelCategory {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum RequestStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum TransactionType {
+  PURCHASE
+  USAGE
+  REFERRAL_BONUS
+  PROMO_CODE
+  ADMIN_GRANT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
