@@ -1,7 +1,51 @@
+# Dependencies
 node_modules/
+.npm
+.pnp
+.pnp.js
+
+# Environment variables
 .env
 .env.*
-dist/
+!.env.example
+
+# Logs
 logs/
 *.log
+npm-debug.log*
+
+# Build
+dist/
+build/
+.next/
+
+# Database
+*.db
+*.sqlite
+prisma/migrations/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+.nyc_output
+
+# Temporary
+temp/
+tmp/
+*.tmp
+
+# Docker
+docker-compose.override.yml
+
+# Backups
+backups/
+*.backup

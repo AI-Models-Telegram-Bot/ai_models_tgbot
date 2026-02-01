@@ -1,123 +1,122 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  bot1:
+    image: ghcr.io/andreydemchenko/ai_models_tgbot:latest
+    container_name: aibot_prod_1
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+      - INSTANCE_ID=1
+      - PORT=3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aibot_network
+
+  bot2:
+    image: ghcr.io/andreydemchenko/ai_models_tgbot:latest
+    container_name: aibot_prod_2
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+      - INSTANCE_ID=2
+      - PORT=3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aibot_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: aibot_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - bot1
+      - bot2
+    networks:
+      - aibot_network
+
   postgres:
     image: postgres:15-alpine
-    container_name: ai_bot_postgres_prod
+    container_name: aibot_postgres_prod
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ai_bot_db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: aibot_production
+      POSTGRES_USER: aibot
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_prod_data:/var/lib/postgresql/data
     command:
       - "postgres"
       - "-c"
       - "max_connections=200"
       - "-c"
       - "shared_buffers=512MB"
-    ports:
-      - "5432:5432"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "work_mem=16MB"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aibot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aibot_network
 
-  # Redis (Sessions, Rate Limiting, Queues)
   redis:
     image: redis:7-alpine
-    container_name: ai_bot_redis_prod
+    container_name: aibot_redis_prod
     restart: unless-stopped
     command: >
       redis-server
       --appendonly yes
-      --maxmemory 2gb
+      --maxmemory 4gb
       --maxmemory-policy allkeys-lru
       --save 60 1000
     volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-
-  # Bot Instance 1 (handles Telegram updates + workers)
-  bot1:
-    build: .
-    container_name: ai_bot_1
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - INSTANCE_ID=bot1
-      - HEALTH_PORT=3001
-      - BOT_MODE=${BOT_MODE:-polling}
-      - WEBHOOK_DOMAIN=${WEBHOOK_DOMAIN:-}
-      - TEXT_WORKERS=5
-      - IMAGE_WORKERS=3
-      - VIDEO_WORKERS=2
-      - AUDIO_WORKERS=3
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - redis
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Bot Instance 2 (webhook mode only - uncomment for multi-instance)
-  # bot2:
-  #   build: .
-  #   container_name: ai_bot_2
-  #   restart: unless-stopped
-  #   environment:
-  #     - NODE_ENV=production
-  #     - INSTANCE_ID=bot2
-  #     - HEALTH_PORT=3002
-  #     - BOT_MODE=webhook
-  #     - WEBHOOK_DOMAIN=${WEBHOOK_DOMAIN}
-  #     - TEXT_WORKERS=5
-  #     - IMAGE_WORKERS=3
-  #     - VIDEO_WORKERS=2
-  #     - AUDIO_WORKERS=3
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - postgres
-  #     - redis
-
-  # Dedicated Worker (no bot, just queue processing)
-  worker:
-    build: .
-    container_name: ai_bot_worker
-    restart: unless-stopped
-    command: ["node", "dist/worker.js"]
-    environment:
-      - NODE_ENV=production
-      - INSTANCE_ID=worker1
-      - TEXT_WORKERS=5
-      - IMAGE_WORKERS=10
-      - VIDEO_WORKERS=2
-      - AUDIO_WORKERS=8
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - redis
-
-  # NGINX (uncomment for webhook mode with multiple instances)
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: ai_bot_nginx
-  #   restart: unless-stopped
-  #   ports:
-  #     - "443:443"
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - ./certs:/etc/nginx/certs:ro
-  #   depends_on:
-  #     - bot1
+      - redis_prod_data:/data
+    networks:
+      - aibot_network
 
 volumes:
-  postgres_data:
-  redis_data:
+  postgres_prod_data:
+  redis_prod_data:
+
+networks:
+  aibot_network:
+    driver: bridge
