@@ -1,6 +1,8 @@
 # Multi-stage build for optimization
 FROM node:20-alpine AS builder
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Copy package files
