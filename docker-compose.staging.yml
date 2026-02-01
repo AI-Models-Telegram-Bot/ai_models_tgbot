@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  bot:
+    image: ghcr.io/ai-models-telegram-bot/ai_models_tgbot:staging
+    container_name: aibot_staging
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=staging
+      - INSTANCE_ID=staging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aibot_network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: aibot_postgres_staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aibot_staging
+      POSTGRES_USER: aibot
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "shared_buffers=256MB"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aibot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aibot_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: aibot_redis_staging
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - aibot_network
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:
+
+networks:
+  aibot_network:
+    driver: bridge
