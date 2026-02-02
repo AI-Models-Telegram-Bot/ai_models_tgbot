@@ -48,10 +48,12 @@ export function createHealthServer(port: number = 3000): express.Application {
   });
 
   // --- CORS & JSON parsing for WebApp API ---
+  const allowedOrigins = ['https://webapp.vseonix.com', 'https://webapp-dev.vseonix.com'];
+  if (process.env.WEBAPP_URL) {
+    allowedOrigins.push(process.env.WEBAPP_URL.replace(/\/$/, ''));
+  }
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? ['https://webapp.vseonix.com', 'https://webapp-dev.vseonix.com']
-      : true,
+    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   }));
   app.use(express.json());

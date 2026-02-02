@@ -33,6 +33,23 @@ router.get('/user/:telegramId', async (req, res) => {
       where: { userId: user.id },
     });
 
+    // Subscription data — gracefully handle if tables not migrated yet
+    let currentPlan = null;
+    try {
+      const subscription = await subscriptionService.getUserSubscription(user.id);
+      const planConfig = subscriptionService.getPlanConfig(subscription.tier);
+      currentPlan = {
+        tier: subscription.tier,
+        name: planConfig?.name || subscription.tier,
+        status: subscription.status,
+        expiresAt: subscription.currentPeriodEnd?.toISOString() || null,
+        credits: planConfig?.credits ?? { text: 0, image: 0, video: 0, audio: 0 },
+        referralBonus: planConfig?.referralBonus ?? 0,
+      };
+    } catch (subError) {
+      logger.warn('Failed to load subscription data, returning null', { error: subError });
+    }
+
     return res.json({
       user: {
         id: user.id,
@@ -50,14 +67,7 @@ router.get('/user/:telegramId', async (req, res) => {
         moneyBalance: wallet.moneyBalance,
         currency: wallet.currency,
       },
-      currentPlan: {
-        tier: subscription.tier,
-        name: planConfig?.name || subscription.tier,
-        status: subscription.status,
-        expiresAt: subscription.currentPeriodEnd?.toISOString() || null,
-        credits: planConfig?.credits ?? { text: 0, image: 0, video: 0, audio: 0 },
-        referralBonus: planConfig?.referralBonus ?? 0,
-      },
+      currentPlan,
       stats: {
         totalSpent: user.totalSpent,
         totalRequests: requestCount,
