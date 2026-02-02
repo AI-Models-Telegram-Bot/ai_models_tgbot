@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -16,12 +16,36 @@ const ProfilePage: React.FC = () => {
   const { user, wallet, currentPlan, stats, isLoading, error, fetchUserProfile } =
     useProfileStore();
 
+  // Memoize telegramId to avoid infinite re-render (getTelegramUser returns new object each call)
+  const telegramId = useMemo(() => getTelegramUser()?.id?.toString() ?? null, []);
+
   useEffect(() => {
-    const tgUser = getTelegramUser();
-    if (tgUser) {
-      fetchUserProfile(tgUser.id.toString());
+    if (telegramId) {
+      fetchUserProfile(telegramId);
     }
-  }, [fetchUserProfile]);
+  }, [fetchUserProfile, telegramId]);
+
+  // No Telegram context — show prompt to open from bot
+  if (!telegramId) {
+    return (
+      <div className="relative min-h-screen">
+        <ParticleBackground />
+        <div className="relative z-10 p-4 flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 className="text-white text-lg font-bold font-display mb-2">
+            {t('common:openInTelegram', 'Open in Telegram')}
+          </h2>
+          <p className="text-content-secondary text-sm max-w-xs">
+            {t('common:openInTelegramDesc', 'This app is designed to be opened from the Telegram bot. Please open it via the bot menu or profile button.')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -43,14 +67,22 @@ const ProfilePage: React.FC = () => {
         </div>
         <p className="text-content-secondary text-sm">{error}</p>
         <button
-          onClick={() => {
-            const tgUser = getTelegramUser();
-            if (tgUser) fetchUserProfile(tgUser.id.toString());
-          }}
+          onClick={() => fetchUserProfile(telegramId)}
           className="mt-4 text-brand-primary text-sm font-medium"
         >
           {t('common:retry')}
         </button>
+      </div>
+    );
+  }
+
+  // Data loaded but user/wallet still null — shouldn't normally happen, show loading
+  if (!user || !wallet) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-32 rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-28 rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
       </div>
     );
   }
@@ -61,18 +93,14 @@ const ProfilePage: React.FC = () => {
 
       <div className="relative z-10 p-4 space-y-5">
         {/* User profile + balance */}
-        {user && wallet && (
-          <>
-            <UserCard user={user} wallet={wallet} />
-            <CurrentPlanCard
-              plan={currentPlan}
-              onViewPlans={() => navigate('/subscriptions')}
-            />
-          </>
-        )}
+        <UserCard user={user} wallet={wallet} />
+        <CurrentPlanCard
+          plan={currentPlan}
+          onViewPlans={() => navigate('/subscriptions')}
+        />
 
         {/* Credit Usage */}
-        {currentPlan && wallet && (
+        {currentPlan && (
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
