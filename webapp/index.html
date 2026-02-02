@@ -7,6 +7,31 @@
     <meta name="theme-color" content="#0a0a0a" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>AI Models Bot</title>
+    <script>
+      // Global error handler — catches module-level crashes that try-catch in main.tsx cannot
+      window.onerror = function(msg, src, line, col, err) {
+        var el = document.getElementById('loading-fallback');
+        if (el) {
+          el.style.whiteSpace = 'pre-wrap';
+          el.style.padding = '20px';
+          el.style.fontSize = '12px';
+          el.style.color = '#ff6b6b';
+          el.style.textAlign = 'left';
+          el.textContent = 'Error: ' + msg + '\n\nSource: ' + src + ':' + line + ':' + col;
+        }
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        var el = document.getElementById('loading-fallback');
+        if (el) {
+          el.style.whiteSpace = 'pre-wrap';
+          el.style.padding = '20px';
+          el.style.fontSize = '12px';
+          el.style.color = '#ff6b6b';
+          el.style.textAlign = 'left';
+          el.textContent = 'Promise error: ' + (e.reason ? (e.reason.message || e.reason) : 'unknown');
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root">
