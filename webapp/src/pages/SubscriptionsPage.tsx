@@ -95,7 +95,7 @@ const SubscriptionsPage: React.FC = () => {
             <h2 className="text-lg font-semibold text-white font-display mb-4">
               {t('compareTitle', 'Compare Plans')}
             </h2>
-            <div className="rounded-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/15 p-3">
+            <div className="rounded-2xl backdrop-blur-xl bg-surface-card/90 border border-white/15 p-3">
               <SubscriptionComparisonTable
                 plans={plans}
                 currentTier={currentTier}

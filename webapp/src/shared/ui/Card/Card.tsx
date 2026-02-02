@@ -18,7 +18,7 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 transition-all duration-300',
+        'rounded-2xl bg-surface-card/90 backdrop-blur-xl transition-all duration-300',
         {
           'border border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-2px]': variant === 'default',
           'border border-white/20 shadow-card-hover': variant === 'elevated',

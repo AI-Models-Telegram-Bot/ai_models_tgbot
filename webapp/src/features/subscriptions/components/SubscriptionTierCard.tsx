@@ -38,7 +38,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
       className={cn(
-        'relative flex-shrink-0 w-[280px] rounded-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border transition-all duration-300',
+        'relative flex-shrink-0 w-[280px] rounded-2xl backdrop-blur-xl bg-surface-card/90 border transition-all duration-300',
         isCurrent
           ? 'border-brand-primary/50 shadow-neon'
           : 'border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-4px]',
