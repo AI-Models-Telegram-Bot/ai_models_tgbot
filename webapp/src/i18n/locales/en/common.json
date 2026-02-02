@@ -1,0 +1,11 @@
+{
+  "close": "Close",
+  "buy": "Buy",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "retry": "Retry",
+  "copied": "Copied!"
+}

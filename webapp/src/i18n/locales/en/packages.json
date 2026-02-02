@@ -1,0 +1,9 @@
+{
+  "title": "Subscriptions",
+  "credits": "Credits: {{count}}",
+  "whatsIncluded": "What's Included",
+  "features": {
+    "allModels": "Access to all neural networks",
+    "referralBonus": "{{percentage}}% referral program payout"
+  }
+}

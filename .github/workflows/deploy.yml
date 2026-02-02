@@ -70,6 +70,17 @@ jobs:
             git checkout master
             git pull origin master
 
+            # Build webapp frontend
+            echo "Building webapp..."
+            cd webapp
+            npm ci
+            npm run build:prod
+            cd ..
+            # Copy built files for nginx mount
+            rm -rf webapp-dist
+            cp -r webapp/dist webapp-dist
+            echo "Webapp built successfully"
+
             # Build images on server
             docker compose -f docker-compose.prod.yml build
 
