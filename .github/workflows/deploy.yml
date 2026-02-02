@@ -60,6 +60,8 @@ jobs:
           command_timeout: 10m
           script: |
             set -e
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             cd ~/ai_models_tgbot
 
             # Save current commit for rollback
@@ -70,13 +72,12 @@ jobs:
             git checkout master
             git pull origin master
 
-            # Build webapp frontend using Docker (no Node.js needed on server)
+            # Build webapp frontend
             echo "Building webapp..."
-            docker run --rm \
-              -v "$(pwd)/webapp:/app" \
-              -w /app \
-              node:20-alpine \
-              sh -c "npm ci && npm run build:prod"
+            cd webapp
+            npm ci
+            npm run build:prod
+            cd ..
             # Copy built files for nginx mount
             rm -rf webapp-dist
             cp -r webapp/dist webapp-dist
