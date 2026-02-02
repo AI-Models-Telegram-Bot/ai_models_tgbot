@@ -60,6 +60,8 @@ jobs:
           command_timeout: 10m
           script: |
             set -e
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             cd ~/ai_models_tgbot
 
             # Save current commit for rollback
