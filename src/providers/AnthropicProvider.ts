@@ -14,7 +14,7 @@ export class AnthropicProvider extends BaseProvider {
   }
 
   async generateText(prompt: string, options?: { model?: string }): Promise<TextGenerationResult> {
-    const model = options?.model || 'claude-sonnet-4-20250514';
+    const model = options?.model || 'claude-3-haiku-20240307';
 
     const response = await this.client.messages.create({
       model,

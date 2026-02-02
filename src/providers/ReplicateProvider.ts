@@ -61,6 +61,9 @@ export class ReplicateProvider extends BaseProvider {
       case 'playground-v2-5':
         modelId = 'playgroundai/playground-v2.5-1024px-aesthetic';
         break;
+      case 'flux-dev':
+        modelId = 'black-forest-labs/flux-dev';
+        break;
       case 'flux-schnell':
       default:
         modelId = 'black-forest-labs/flux-schnell';
@@ -98,6 +101,10 @@ export class ReplicateProvider extends BaseProvider {
         modelId = 'anotherjesse/zeroscope-v2-xl';
         input = { prompt };
         break;
+      case 'wan':
+        modelId = 'wan-video/wan2.1-t2v-720p';
+        input = { prompt };
+        break;
       case 'kling':
       default:
         modelId = 'kwaivgi/kling-v2.0';
@@ -122,17 +129,7 @@ export class ReplicateProvider extends BaseProvider {
     let input: Record<string, unknown>;
 
     switch (modelSlug) {
-      case 'suno':
-        // Community model requires version hash
-        modelId = 'suno-ai/bark:b76242b40d67c76ab6742e987628a2a9ac019e11d56ab96c4e91ce03b79b2787';
-        input = {
-          prompt: text,
-          text_temp: 0.7,
-          waveform_temp: 0.7,
-        };
-        break;
       case 'bark':
-        // Bark model
         modelId = 'suno-ai/bark';
         input = {
           text,
@@ -141,17 +138,22 @@ export class ReplicateProvider extends BaseProvider {
         };
         break;
       case 'xtts-v2':
-        // XTTS v2 voice cloning model
         modelId = 'coqui/xtts-v2';
         input = { text };
         break;
       case 'fish-speech':
-        // Fish Speech voice cloning model
         modelId = 'fishaudio/fish-speech-1';
         input = { text };
         break;
       default:
-        throw new Error('Use ElevenLabs for TTS');
+        // Default to bark for Replicate audio
+        modelId = 'suno-ai/bark';
+        input = {
+          text,
+          text_temp: 0.7,
+          waveform_temp: 0.7,
+        };
+        break;
     }
 
     logger.info(`Replicate audio: running ${modelId}`);

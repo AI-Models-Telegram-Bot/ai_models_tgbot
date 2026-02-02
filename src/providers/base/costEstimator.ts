@@ -5,37 +5,70 @@ import { GenerationResult } from '../BaseProvider';
  * Uses approximate costs based on provider pricing
  */
 
-// Token-based pricing (per 1000 tokens)
+// Token-based pricing (per 1000 tokens — averaged input+output)
 const TOKEN_PRICING: Record<string, Record<string, number>> = {
   openai: {
-    'gpt-4o': 0.0025, // $2.50 per 1M tokens input, $10 per 1M output (avg $0.0025/1k)
-    'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens input, $0.60 per 1M output (avg $0.00015/1k)
+    'gpt-4o': 0.00625, // $2.50/1M in + $10/1M out → avg ~$6.25/1M
+    'gpt-4o-mini': 0.000375, // $0.15/1M in + $0.60/1M out → avg ~$0.375/1M
   },
   anthropic: {
-    'claude-sonnet-4-20250514': 0.003, // $3 per 1M tokens input, $15 per 1M output (avg $0.003/1k)
+    'claude-3-haiku-20240307': 0.00075, // $0.25/1M in + $1.25/1M out → avg ~$0.75/1M
+    'claude-haiku-4-5-20251001': 0.003, // $1/1M in + $5/1M out → avg ~$3/1M
+    'claude-sonnet-4-20250514': 0.009, // $3/1M in + $15/1M out → avg ~$9/1M
   },
   xai: {
-    'grok-beta': 0.005, // $5 per 1M tokens (estimated)
+    'grok-3-mini': 0.0004, // $0.30/1M in + $0.50/1M out → avg ~$0.40/1M
+    'grok-3': 0.009, // $3/1M in + $15/1M out
   },
 };
 
-// Image pricing (per image)
+// Image pricing (per image) — keyed by user-facing slug
 const IMAGE_PRICING: Record<string, number> = {
-  'dall-e-3': 0.04, // $0.04 per image (1024x1024)
-  'flux-pro': 0.04, // Replicate Flux Pro ~$0.04
-  'flux-schnell': 0.003, // Replicate Flux Schnell ~$0.003
+  'flux-schnell': 0.0015, // PiAPI cheapest at $0.0015
+  'sdxl-lightning': 0.003, // Replicate ~$0.003
+  'flux-kontext': 0.01, // KieAI ~$0.01
+  'sdxl': 0.01, // Replicate ~$0.01
+  'playground-v2-5': 0.01, // Replicate ~$0.01
+  'dall-e-2': 0.02, // OpenAI $0.02
+  'flux-dev': 0.025, // AIMLAPI ~$0.025
+  'flux-pro': 0.04, // AIMLAPI/Replicate $0.04
+  'dall-e-3': 0.04, // OpenAI $0.04
+  'ideogram': 0.08, // AIMLAPI ~$0.08
+  // Provider-specific model IDs (for backward compatibility)
+  'Qubico/flux1-schnell': 0.0015,
+  'flux/schnell': 0.003,
+  'flux-kontext-pro': 0.01,
+  'flux/dev': 0.025,
+  'flux-pro/v1.1': 0.04,
+  'ideogram/v2': 0.08,
 };
 
-// Video pricing (per second)
+// Video pricing (per second) — keyed by user-facing slug
 const VIDEO_PRICING: Record<string, number> = {
-  kling: 0.1, // Replicate Kling ~$0.10/sec (5 sec = $0.50)
-  luma: 0.08, // Replicate Luma ~$0.08/sec (5 sec = $0.40)
+  animatediff: 0.012, // Replicate ~$0.06/5s
+  'zeroscope-v2': 0.012, // Replicate ~$0.06/5s
+  wan: 0.02, // AIMLAPI ~$0.10/5s
+  kling: 0.026, // PiAPI $0.13/5s
+  'kling-pro': 0.026, // PiAPI $0.26/10s
+  luma: 0.08, // Replicate ~$0.40/5s
+  // Provider-specific model IDs
+  'klingai/v2-master-text-to-video': 0.074,
+  'kling-2.6/text-to-video': 0.056,
+  'wan-ai/wan2.1-t2v-14b': 0.02,
 };
 
-// Audio pricing
+// Audio pricing — keyed by user-facing slug
 const AUDIO_PRICING: Record<string, { perChar?: number; perRequest?: number }> = {
-  elevenlabs: { perChar: 0.00002 }, // $0.30 per 1M characters
-  bark: { perRequest: 0.015 }, // Replicate Bark ~$0.015 per request
+  'deepgram-tts': { perChar: 0.000005 }, // AIMLAPI ~$0.001/200 chars
+  'fish-speech': { perRequest: 0.03 }, // Replicate ~$0.03/run
+  'xtts-v2': { perRequest: 0.05 }, // Replicate ~$0.05/run
+  bark: { perRequest: 0.07 }, // Replicate ~$0.07/run
+  'openai-tts': { perChar: 0.000015 }, // $0.015/1K chars
+  'elevenlabs-tts': { perChar: 0.0003 }, // ~$0.06/200 chars
+  suno: { perRequest: 0.10 }, // Replicate ~$0.10/run
+  // Provider-level keys (for backward compatibility)
+  elevenlabs: { perChar: 0.0003 },
+  aimlapi: { perChar: 0.000005 },
 };
 
 /**

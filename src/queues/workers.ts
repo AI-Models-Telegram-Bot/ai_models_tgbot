@@ -65,16 +65,16 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
     switch (model.category) {
       case 'TEXT':
-        generationResponse = await manager.generate('TEXT', 'generateText', input);
+        generationResponse = await manager.generateWithModel('TEXT', 'generateText', modelSlug, input);
         break;
       case 'IMAGE':
-        generationResponse = await manager.generate('IMAGE', 'generateImage', input);
+        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input);
         break;
       case 'VIDEO':
-        generationResponse = await manager.generate('VIDEO', 'generateVideo', input);
+        generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input);
         break;
       case 'AUDIO':
-        generationResponse = await manager.generate('AUDIO', 'generateAudio', input);
+        generationResponse = await manager.generateWithModel('AUDIO', 'generateAudio', modelSlug, input);
         break;
       default:
         throw new Error(`Unsupported model category: ${model.category}`);
