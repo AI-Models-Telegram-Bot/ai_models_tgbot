@@ -1,0 +1,24 @@
+{
+  "title": "Plans",
+  "choosePlan": "Choose Your Plan",
+  "subtitle": "Unlock more AI models and credits",
+  "compareTitle": "Compare Plans",
+  "currentPlan": "Current Plan",
+  "upgrade": "Upgrade",
+  "downgrade": "Downgrade",
+  "cancel": "Cancel Plan",
+  "features": "Features",
+  "credits": "Credits",
+  "unlimited": "Unlimited",
+  "perMonth": "/mo",
+  "contactUs": "Contact Us",
+  "popular": "Popular",
+  "tiers": {
+    "free": "Free",
+    "basic": "Basic",
+    "pro": "Pro",
+    "vip": "VIP",
+    "elite": "Elite",
+    "enterprise": "Enterprise"
+  }
+}

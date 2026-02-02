@@ -1,12 +1,18 @@
 import { Markup } from 'telegraf';
 import { Language, getLocale } from '../../locales';
+import { config } from '../../config';
 
 export function getMainKeyboard(lang: Language) {
   const l = getLocale(lang);
+
+  const profileButton = config.webapp.url
+    ? Markup.button.webApp(l.buttons.profile, config.webapp.url)
+    : l.buttons.profile;
+
   return Markup.keyboard([
     [l.buttons.textAi, l.buttons.imageAi],
     [l.buttons.videoAi, l.buttons.audioAi],
-    [l.buttons.profile, l.buttons.help],
+    [profileButton, l.buttons.help],
   ]).resize();
 }
 

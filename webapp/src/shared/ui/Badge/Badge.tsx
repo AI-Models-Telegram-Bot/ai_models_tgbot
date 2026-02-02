@@ -3,16 +3,18 @@ import { cn } from '@/shared/utils/cn';
 
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'purple' | 'gray' | 'success' | 'warning' | 'error';
+  variant?: 'cyan' | 'gray' | 'success' | 'warning' | 'error' | 'gold' | 'pink';
   className?: string;
 }
 
 const variantStyles = {
-  purple: 'bg-purple-primary text-white',
-  gray: 'bg-dark-border text-gray-text',
+  cyan: 'bg-brand-primary/20 text-brand-primary',
+  gray: 'bg-surface-elevated text-content-tertiary',
   success: 'bg-emerald-500/20 text-emerald-400',
   warning: 'bg-yellow-500/20 text-yellow-400',
   error: 'bg-red-500/20 text-red-400',
+  gold: 'bg-brand-accent/20 text-brand-accent',
+  pink: 'bg-brand-secondary/20 text-brand-secondary',
 };
 
 export const Badge: React.FC<BadgeProps> = ({

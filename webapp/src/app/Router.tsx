@@ -4,6 +4,7 @@ import { MainLayout } from '@/shared/layouts/MainLayout';
 import { Skeleton } from '@/shared/ui';
 
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const SubscriptionsPage = lazy(() => import('@/pages/SubscriptionsPage'));
 const ReferralPage = lazy(() => import('@/pages/ReferralPage'));
 
 function LoadingFallback() {
@@ -22,6 +23,7 @@ export function Router() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<ProfilePage />} />
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
           <Route path="/referral" element={<ReferralPage />} />
         </Route>
       </Routes>

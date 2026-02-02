@@ -37,6 +37,9 @@ export const config = {
     nodeEnv: process.env.NODE_ENV || 'development',
     logLevel: process.env.LOG_LEVEL || 'info',
   },
+  webapp: {
+    url: process.env.WEBAPP_URL || '',
+  },
   tokens: {
     freeOnRegistration: parseInt(process.env.FREE_TOKENS_ON_REGISTRATION || '5', 10),
     referralBonus: parseInt(process.env.REFERRAL_BONUS_TOKENS || '3', 10),

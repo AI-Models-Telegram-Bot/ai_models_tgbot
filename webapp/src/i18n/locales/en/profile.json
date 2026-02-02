@@ -2,8 +2,11 @@
   "title": "Your Profile",
   "creditBalance": "Credit Balance",
   "currentPlan": "Current Plan",
-  "buyCredits": "Buy Additional Credits",
+  "viewPlans": "View Plans",
+  "managePlan": "Manage Plan",
+  "creditUsage": "Credit Usage",
   "totalSpent": "Total Spent",
+  "totalRequests": "Requests",
   "balances": {
     "text": "Text",
     "image": "Image",

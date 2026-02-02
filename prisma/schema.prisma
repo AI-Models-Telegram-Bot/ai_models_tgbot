@@ -28,6 +28,7 @@ model User {
   transactions        Transaction[]
   wallet              UserWallet?
   walletTransactions  WalletTransaction[]
+  subscription        UserSubscription?
   referrals           User[]    @relation("Referrals")
   referrer            User?     @relation("Referrals", fields: [referredBy], references: [referralCode])
 
@@ -244,4 +245,69 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+// ── Subscription System ─────────────────────────────────
+
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PRO
+  VIP
+  ELITE
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PAST_DUE
+  TRIALING
+}
+
+model UserSubscription {
+  id                    String              @id @default(cuid())
+  userId                String              @unique @map("user_id")
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tier                  SubscriptionTier    @default(FREE)
+  status                SubscriptionStatus  @default(ACTIVE)
+  currentPeriodStart    DateTime            @default(now()) @map("current_period_start")
+  currentPeriodEnd      DateTime?           @map("current_period_end")
+  cancelAtPeriodEnd     Boolean             @default(false) @map("cancel_at_period_end")
+
+  stripeSubscriptionId    String?           @map("stripe_subscription_id")
+  yookassaSubscriptionId  String?           @map("yookassa_subscription_id")
+
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  @@map("user_subscriptions")
+}
+
+model SubscriptionPlan {
+  id              String            @id @default(cuid())
+  tier            SubscriptionTier  @unique
+  name            String
+  priceUSD        Float?            @map("price_usd")
+  priceRUB        Float?            @map("price_rub")
+
+  textCredits     Int?              @map("text_credits")
+  imageCredits    Int?              @map("image_credits")
+  videoCredits    Int?              @map("video_credits")
+  audioCredits    Int?              @map("audio_credits")
+
+  modelAccess     Json              @map("model_access")
+  features        Json
+  referralBonus   Int               @map("referral_bonus")
+  prioritySupport Boolean           @default(false) @map("priority_support")
+  apiAccess       Boolean           @default(false) @map("api_access")
+
+  isActive        Boolean           @default(true) @map("is_active")
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@map("subscription_plans")
 }

@@ -1,64 +1,34 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProfileStore } from '@/features/profile/store/profileStore';
-import { usePackagesStore } from '@/features/packages/store/packagesStore';
 import { UserCard } from '@/features/profile/components/UserCard';
 import { CurrentPlanCard } from '@/features/profile/components/CurrentPlanCard';
-import { PackageCard } from '@/features/packages/components/PackageCard';
-import { PackageDetailsModal } from '@/features/packages/components/PackageDetailsModal';
-import { PaymentMethodSelector } from '@/features/payment/components/PaymentMethodSelector';
-import { Skeleton } from '@/shared/ui';
+import { CreditAllocationBar } from '@/features/subscriptions/components/CreditAllocationBar';
+import { ParticleBackground, Skeleton, Card } from '@/shared/ui';
 import { getTelegramUser } from '@/services/telegram/telegram';
-import type { PaymentMethod } from '@/types/payment.types';
-import type { Package } from '@/types/package.types';
+import { formatCredits } from '@/shared/utils/formatters';
 
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
-  const { user, wallet, currentPlan, isLoading, error, fetchUserProfile } =
+  const navigate = useNavigate();
+  const { user, wallet, currentPlan, stats, isLoading, error, fetchUserProfile } =
     useProfileStore();
-  const { packages, fetchPackages } = usePackagesStore();
-
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
 
   useEffect(() => {
     const tgUser = getTelegramUser();
     if (tgUser) {
       fetchUserProfile(tgUser.id.toString());
     }
-    fetchPackages();
-  }, [fetchUserProfile, fetchPackages]);
-
-  const handleDetailsClick = useCallback((packageId: string) => {
-    setSelectedPackageId(packageId);
-    setDetailsModalOpen(true);
-  }, []);
-
-  const handlePurchaseClick = useCallback((pkg: Package) => {
-    setSelectedPackage(pkg);
-    setPaymentModalOpen(true);
-  }, []);
-
-  const handlePaymentMethodSelect = useCallback((_method: PaymentMethod) => {
-    // TODO: initiate payment flow with selected method
-    setPaymentModalOpen(false);
-  }, []);
-
-  const scrollToPackages = useCallback(() => {
-    document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  }, [fetchUserProfile]);
 
   if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-32 rounded-2xl" variant="rectangular" />
         <Skeleton className="h-28 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-6 w-32 rounded" variant="rectangular" />
-        <Skeleton className="h-72 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-72 rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
       </div>
     );
   }
@@ -71,13 +41,13 @@ const ProfilePage: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         </div>
-        <p className="text-gray-text text-sm">{error}</p>
+        <p className="text-content-secondary text-sm">{error}</p>
         <button
           onClick={() => {
             const tgUser = getTelegramUser();
             if (tgUser) fetchUserProfile(tgUser.id.toString());
           }}
-          className="mt-4 text-purple-primary text-sm font-medium"
+          className="mt-4 text-brand-primary text-sm font-medium"
         >
           {t('common:retry')}
         </button>
@@ -86,62 +56,94 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-5">
-      {/* User profile + balance */}
-      {user && wallet && (
-        <>
-          <UserCard user={user} wallet={wallet} />
-          <CurrentPlanCard plan={currentPlan} onBuyCredits={scrollToPackages} />
-        </>
-      )}
+    <div className="relative min-h-screen">
+      <ParticleBackground />
 
-      {/* Packages */}
-      <section id="packages-section">
-        <motion.h2
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-white text-xl font-bold mb-4"
-        >
-          {t('packages:title')}
-        </motion.h2>
-
-        <div className="space-y-4">
-          {packages.map((pkg, index) => (
-            <PackageCard
-              key={pkg.id}
-              pkg={pkg}
-              index={index}
-              onDetailsClick={() => handleDetailsClick(pkg.id)}
-              onPurchaseClick={() => handlePurchaseClick(pkg)}
+      <div className="relative z-10 p-4 space-y-5">
+        {/* User profile + balance */}
+        {user && wallet && (
+          <>
+            <UserCard user={user} wallet={wallet} />
+            <CurrentPlanCard
+              plan={currentPlan}
+              onViewPlans={() => navigate('/subscriptions')}
             />
-          ))}
-        </div>
+          </>
+        )}
 
-        {packages.length === 0 && !isLoading && (
+        {/* Credit Usage */}
+        {currentPlan && wallet && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
           >
-            <p className="text-gray-text">No packages available yet.</p>
+            <Card>
+              <h3 className="text-sm font-medium text-content-tertiary uppercase tracking-wider mb-3">
+                {t('profile:creditUsage', 'Credit Usage')}
+              </h3>
+              <div className="space-y-3">
+                <CreditAllocationBar
+                  label="Text"
+                  icon="🤖"
+                  used={wallet.textBalance}
+                  total={currentPlan.credits.text}
+                  color="bg-cyan-500"
+                />
+                <CreditAllocationBar
+                  label="Image"
+                  icon="🖼"
+                  used={wallet.imageBalance}
+                  total={currentPlan.credits.image}
+                  color="bg-pink-500"
+                />
+                <CreditAllocationBar
+                  label="Video"
+                  icon="🎬"
+                  used={wallet.videoBalance}
+                  total={currentPlan.credits.video}
+                  color="bg-purple-500"
+                />
+                <CreditAllocationBar
+                  label="Audio"
+                  icon="🎵"
+                  used={wallet.audioBalance}
+                  total={currentPlan.credits.audio}
+                  color="bg-emerald-500"
+                />
+              </div>
+            </Card>
           </motion.div>
         )}
-      </section>
 
-      {/* Modals */}
-      <PackageDetailsModal
-        isOpen={detailsModalOpen}
-        onClose={() => setDetailsModalOpen(false)}
-        packageId={selectedPackageId}
-      />
-
-      <PaymentMethodSelector
-        isOpen={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        pkg={selectedPackage}
-        onSelect={handlePaymentMethodSelect}
-      />
+        {/* Quick Stats */}
+        {stats && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <Card padding="sm">
+                <p className="text-content-tertiary text-xs uppercase tracking-wider">
+                  {t('profile:totalRequests', 'Requests')}
+                </p>
+                <p className="text-white text-xl font-bold font-mono mt-1">
+                  {formatCredits(stats.totalRequests)}
+                </p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-content-tertiary text-xs uppercase tracking-wider">
+                  {t('profile:totalSpent', 'Total Spent')}
+                </p>
+                <p className="text-white text-xl font-bold font-mono mt-1">
+                  ${stats.totalSpent.toFixed(2)}
+                </p>
+              </Card>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };

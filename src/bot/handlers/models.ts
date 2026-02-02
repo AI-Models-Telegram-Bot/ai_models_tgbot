@@ -1,7 +1,7 @@
 import { WalletCategory } from '@prisma/client';
 import { BotContext } from '../types';
 import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
-import { modelService, requestService, walletService } from '../../services';
+import { modelService, requestService, walletService, modelAccessService } from '../../services';
 import { logger } from '../../utils/logger';
 import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
@@ -41,15 +41,28 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
   const walletCat = toWalletCategory(model.category);
   const creditsCost = model.tokenCost;
 
-  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
-  if (!hasBalance) {
-    const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
-    const message = t(lang, 'messages.errorInsufficientBalance', {
-      required: formatCredits(creditsCost),
-      current: formatCredits(currentBalance),
-    });
-    await ctx.reply(message);
+  // Check subscription-based model access
+  const access = await modelAccessService.canUseModel(ctx.user.id, model.slug, walletCat);
+  if (!access.allowed) {
+    await ctx.reply(
+      `🔒 ${access.reason}\n\nUpgrade your subscription to access this model.`,
+      { parse_mode: 'HTML' }
+    );
     return;
+  }
+
+  // Skip balance check if user has unlimited access to this model
+  if (!access.unlimited) {
+    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
+    if (!hasBalance) {
+      const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
+      const message = t(lang, 'messages.errorInsufficientBalance', {
+        required: formatCredits(creditsCost),
+        current: formatCredits(currentBalance),
+      });
+      await ctx.reply(message);
+      return;
+    }
   }
 
   ctx.session.selectedModel = modelSlug;

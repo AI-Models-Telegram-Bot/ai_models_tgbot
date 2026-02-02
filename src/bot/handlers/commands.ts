@@ -1,3 +1,4 @@
+import { Markup } from 'telegraf';
 import { BotContext } from '../types';
 import { getMainKeyboard, getHelpKeyboard, getProfileKeyboard, getLanguageKeyboard } from '../keyboards/mainKeyboard';
 import { formatTokens } from '../../utils/helpers';
@@ -99,7 +100,16 @@ export async function handleProfile(ctx: BotContext): Promise<void> {
     botUsername: botInfo.username || '',
   });
 
-  await ctx.reply(message, { parse_mode: 'HTML', ...getProfileKeyboard(lang) });
+  if (config.webapp.url) {
+    await ctx.reply(message, {
+      parse_mode: 'HTML',
+      ...Markup.inlineKeyboard([
+        Markup.button.webApp('Open Full Profile', config.webapp.url),
+      ]),
+    });
+  } else {
+    await ctx.reply(message, { parse_mode: 'HTML', ...getProfileKeyboard(lang) });
+  }
 }
 
 export async function handleMainMenu(ctx: BotContext): Promise<void> {

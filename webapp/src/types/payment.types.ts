@@ -1,7 +1,7 @@
 export type PaymentMethod = 'telegram_stars' | 'stripe' | 'yookassa';
 
 export interface CreatePaymentRequest {
-  packageId: string;
+  planTier: string;
   paymentMethod: PaymentMethod;
   currency?: 'USD' | 'RUB';
 }

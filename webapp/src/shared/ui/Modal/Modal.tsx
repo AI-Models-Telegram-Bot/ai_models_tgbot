@@ -55,7 +55,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              'fixed z-[1050] bg-[#f5f5f5] rounded-t-3xl shadow-xl overflow-hidden',
+              'fixed z-[1050] bg-surface-card/95 backdrop-blur-xl border-t border-white/20 rounded-t-3xl shadow-xl overflow-hidden',
               {
                 'inset-x-4 bottom-0 max-h-[80vh]': size === 'sm',
                 'inset-x-0 bottom-0 max-h-[90vh]': size === 'md',
@@ -65,11 +65,11 @@ export const Modal: React.FC<ModalProps> = ({
             )}
           >
             {title && (
-              <div className="sticky top-0 z-10 bg-[#f5f5f5] border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+              <div className="sticky top-0 z-10 bg-surface-elevated/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-content-primary">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-content-tertiary hover:text-content-primary transition-colors"
                   aria-label="Close modal"
                 >
                   <svg

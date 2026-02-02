@@ -21,7 +21,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
       <Card>
         <div className="flex items-center gap-3">
           {/* Avatar */}
-          <div className="w-[72px] h-[72px] rounded-full border-2 border-purple-primary/30 bg-dark-border flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-[72px] h-[72px] rounded-full border-2 border-brand-primary/30 bg-surface-elevated flex items-center justify-center overflow-hidden shrink-0">
             {user.profilePhoto ? (
               <img
                 src={user.profilePhoto}
@@ -29,7 +29,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-2xl font-bold text-purple-primary/70">
+              <span className="text-2xl font-bold text-brand-primary/70">
                 {displayName.charAt(0).toUpperCase()}
               </span>
             )}
@@ -43,7 +43,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
                   {displayName}
                 </p>
                 {user.username && (
-                  <p className="text-gray-text text-sm truncate">
+                  <p className="text-content-secondary text-sm truncate">
                     @{user.username}
                   </p>
                 )}

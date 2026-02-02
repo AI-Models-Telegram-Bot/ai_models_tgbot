@@ -6,12 +6,12 @@ import type { CurrentPlan } from '@/types/user.types';
 
 interface CurrentPlanCardProps {
   plan: CurrentPlan | null;
-  onBuyCredits: () => void;
+  onViewPlans: () => void;
 }
 
 export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   plan,
-  onBuyCredits,
+  onViewPlans,
 }) => {
   const { t } = useTranslation('profile');
   const planName = plan?.name || 'Free';
@@ -26,21 +26,21 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
       <Card variant="bordered">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-gray-text text-xs uppercase tracking-wider font-medium">
+            <p className="text-content-tertiary text-xs uppercase tracking-wider font-medium">
               {t('currentPlan')}
             </p>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-white text-lg font-semibold">{planName}</p>
-              {!isFree && <Badge variant="purple">Active</Badge>}
+              {!isFree && <Badge variant="cyan">Active</Badge>}
             </div>
             {plan?.expiresAt && (
-              <p className="text-gray-text text-xs mt-1">
+              <p className="text-content-tertiary text-xs mt-1">
                 Expires: {new Date(plan.expiresAt).toLocaleDateString()}
               </p>
             )}
           </div>
-          <div className="w-10 h-10 rounded-full bg-dark-border flex items-center justify-center">
-            <svg className="w-5 h-5 text-gray-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-surface-elevated flex items-center justify-center">
+            <svg className="w-5 h-5 text-content-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           </div>
@@ -50,9 +50,9 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
           variant="secondary"
           fullWidth
           className="mt-4"
-          onClick={onBuyCredits}
+          onClick={onViewPlans}
         >
-          {t('buyCredits')}
+          {isFree ? t('viewPlans', 'View Plans') : t('managePlan', 'Manage Plan')}
         </Button>
       </Card>
     </motion.div>
