@@ -1,0 +1,12 @@
+{
+  "title": "Referral Program",
+  "description": "Send your unique links to friends and earn together with {{botName}}.",
+  "createLink": "Create Link",
+  "benefits": "Benefits",
+  "myLinks": "My Referral Links",
+  "invited": "Invited: {{count}}",
+  "creditsPurchased": "Credits Purchased: {{count}}",
+  "copyLink": "Copy Link",
+  "swipeHint": "Swipe left or right to view other links.",
+  "linkLabel": "LINK #{{number}}"
+}

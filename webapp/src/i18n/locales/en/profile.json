@@ -1,0 +1,14 @@
+{
+  "title": "Your Profile",
+  "creditBalance": "Credit Balance",
+  "currentPlan": "Current Plan",
+  "buyCredits": "Buy Additional Credits",
+  "totalSpent": "Total Spent",
+  "balances": {
+    "text": "Text",
+    "image": "Image",
+    "video": "Video",
+    "audio": "Audio",
+    "money": "Money"
+  }
+}

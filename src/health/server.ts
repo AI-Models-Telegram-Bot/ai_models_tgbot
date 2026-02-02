@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { createBullBoard } from '@bull-board/api';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { ExpressAdapter } from '@bull-board/express';
@@ -6,6 +7,8 @@ import { textQueue, imageQueue, videoQueue, audioQueue } from '../queues';
 import { checkDatabase, checkRedis, getMetrics } from './checks';
 import { logger } from '../utils/logger';
 import providerRoutes from '../routes/providers.routes';
+import webappRoutes from '../webapp/routes';
+import { validateTelegramAuth } from '../webapp/middleware/auth.middleware';
 
 export function createHealthServer(port: number = 3000): express.Application {
   const app = express();
@@ -44,9 +47,22 @@ export function createHealthServer(port: number = 3000): express.Application {
     }
   });
 
+  // --- CORS & JSON parsing for WebApp API ---
+  app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://webapp.vseonix.com', 'https://webapp-dev.vseonix.com']
+      : true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  }));
+  app.use(express.json());
+
   // --- Provider monitoring endpoints ---
   app.use('/api', providerRoutes);
   logger.info('Provider monitoring routes mounted at /api/providers/*');
+
+  // --- WebApp API endpoints ---
+  app.use('/api/webapp', validateTelegramAuth, webappRoutes);
+  logger.info('WebApp API routes mounted at /api/webapp/*');
 
   // --- Bull Board Admin UI ---
   try {

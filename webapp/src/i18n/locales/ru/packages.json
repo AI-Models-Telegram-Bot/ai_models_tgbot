@@ -1,0 +1,9 @@
+{
+  "title": "Подписки",
+  "credits": "Кредитов: {{count}}",
+  "whatsIncluded": "Что входит в тариф",
+  "features": {
+    "allModels": "Доступ ко всем нейросетям",
+    "referralBonus": "{{percentage}}% к выплате в реферальной программе"
+  }
+}
