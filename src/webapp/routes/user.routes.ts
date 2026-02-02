@@ -26,6 +26,8 @@ router.get('/user/:telegramId', async (req, res) => {
     }
 
     const wallet = await walletService.getOrCreateWallet(user.id);
+    const subscription = await subscriptionService.getUserSubscription(user.id);
+    const planConfig = subscriptionService.getPlanConfig(subscription.tier);
 
     const requestCount = await prisma.request.count({
       where: { userId: user.id },
