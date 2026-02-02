@@ -14,7 +14,7 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   async generateText(prompt: string, options?: { model?: string }): Promise<TextGenerationResult> {
-    const model = options?.model || 'gpt-4o';
+    const model = options?.model || 'gpt-4o-mini';
 
     const response = await this.client.chat.completions.create({
       model,

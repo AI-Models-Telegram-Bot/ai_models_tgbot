@@ -9,23 +9,38 @@ import {
 } from './BaseProvider';
 import { logger } from '../utils/logger';
 
+const POLL_INTERVAL_MS = 5000;
+const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes max for video
+
 /**
  * AI/ML API Provider
- * Supports: Text generation (OpenAI-compatible), Audio generation
+ * Supports: Text (OpenAI-compatible), Image (Flux), Video (Kling async), Audio (TTS)
+ * Docs: https://docs.aimlapi.com
  */
 export class AIMLAPIProvider extends EnhancedProvider {
   readonly name = 'aimlapi';
   private client: AxiosInstance;
+  private v2Client: AxiosInstance;
 
   constructor(config: ProviderConfig) {
     super(config);
+    // v1 client for text, image, audio
     this.client = axios.create({
       baseURL: config.baseURL || 'https://api.aimlapi.com/v1',
       headers: {
         Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
       },
-      timeout: config.timeout || 120000, // 2 minutes default
+      timeout: config.timeout || 120000,
+    });
+    // v2 client for video (async generation)
+    this.v2Client = axios.create({
+      baseURL: 'https://api.aimlapi.com/v2',
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: config.timeout || 120000,
     });
   }
 
@@ -47,7 +62,7 @@ export class AIMLAPIProvider extends EnhancedProvider {
       const text = response.data.choices[0].message.content;
       const tokens = response.data.usage?.total_tokens || 0;
       const time = Date.now() - start;
-      const cost = (tokens / 1000) * 0.0015; // $0.0015 per 1k tokens
+      const cost = (tokens / 1000) * 0.0015;
       this.updateStats(true, cost, time);
 
       logger.info(`AIMLAPI text: success (${time}ms, ${tokens} tokens, $${cost})`);
@@ -55,23 +70,128 @@ export class AIMLAPIProvider extends EnhancedProvider {
     } catch (error: any) {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
-      logger.error('AIMLAPI text: failed', error.message);
+      logger.error('AIMLAPI text: failed', error.response?.data || error.message);
       throw error;
     }
   }
 
+  /**
+   * Image generation via AIMLAPI Flux models
+   * POST /v1/images/generations/
+   * Response: { data: [{ url: "..." }] }
+   */
   async generateImage(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<ImageGenerationResult> {
-    throw new Error('AIMLAPI does not support image generation');
+    const start = Date.now();
+    try {
+      const model = (options?.model as string) || 'flux/schnell';
+      logger.info(`AIMLAPI image: starting generation with ${model}`);
+
+      const response = await this.client.post('/images/generations/', {
+        model,
+        prompt,
+        image_size: (options?.size as string) || 'landscape_4_3',
+      });
+
+      const imageUrl = response.data.data?.[0]?.url;
+      if (!imageUrl) {
+        throw new Error('AIMLAPI image: no URL in response');
+      }
+
+      const time = Date.now() - start;
+      const cost = model.includes('schnell') ? 0.003 : 0.04;
+      this.updateStats(true, cost, time);
+
+      logger.info(`AIMLAPI image: success (${time}ms, $${cost})`);
+      return { imageUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('AIMLAPI image: failed', error.response?.data || error.message);
+      throw error;
+    }
   }
 
+  /**
+   * Video generation via AIMLAPI Kling models (async with polling)
+   * Step 1: POST /v2/generate/video/kling/generation -> get generation_id
+   * Step 2: Poll GET /v2/generate/video/kling/generation?generation_id=... until completed
+   */
   async generateVideo(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<VideoGenerationResult> {
-    throw new Error('AIMLAPI does not support video generation');
+    const start = Date.now();
+    try {
+      const model = (options?.model as string) || 'klingai/v2-master-text-to-video';
+      logger.info(`AIMLAPI video: starting generation with ${model}`);
+
+      // Step 1: Submit generation task
+      const submitResponse = await this.v2Client.post('/generate/video/kling/generation', {
+        model,
+        prompt,
+        duration: (options?.duration as string) || '5',
+        aspect_ratio: (options?.aspectRatio as string) || '16:9',
+      });
+
+      const generationId = submitResponse.data?.generation_id || submitResponse.data?.id;
+      if (!generationId) {
+        throw new Error('AIMLAPI video: no generation_id in response');
+      }
+
+      logger.info(`AIMLAPI video: task submitted, generation_id=${generationId}`);
+
+      // Step 2: Poll for completion
+      const videoUrl = await this.pollVideoResult(generationId);
+
+      const time = Date.now() - start;
+      const cost = 0.1;
+      this.updateStats(true, cost, time);
+
+      logger.info(`AIMLAPI video: success (${time}ms, $${cost})`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('AIMLAPI video: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  private async pollVideoResult(generationId: string): Promise<string> {
+    const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      await this.sleep(POLL_INTERVAL_MS);
+
+      const response = await this.v2Client.get('/generate/video/kling/generation', {
+        params: { generation_id: generationId },
+      });
+
+      const status = response.data?.status;
+      logger.debug(`AIMLAPI video poll: status=${status}, generation_id=${generationId}`);
+
+      if (status === 'completed') {
+        // Try multiple response format paths
+        const videoUrl =
+          response.data?.video?.url ||
+          response.data?.output?.video_url ||
+          response.data?.result?.video_url;
+        if (!videoUrl) {
+          throw new Error('AIMLAPI video: completed but no video URL in response');
+        }
+        return videoUrl;
+      }
+
+      if (status === 'failed' || status === 'error') {
+        const errorMsg = response.data?.error?.message || response.data?.error || 'Unknown error';
+        throw new Error(`AIMLAPI video generation failed: ${errorMsg}`);
+      }
+    }
+
+    throw new Error('AIMLAPI video: polling timed out after 10 minutes');
   }
 
   async generateAudio(
@@ -82,23 +202,38 @@ export class AIMLAPIProvider extends EnhancedProvider {
     try {
       logger.info('AIMLAPI audio: starting generation');
 
-      const response = await this.client.post('/audio/speech', {
-        model: 'tts-1',
-        input: text,
-        voice: (options?.voice as string) || 'alloy',
-      });
+      // AIMLAPI TTS uses /tts endpoint (not under /v1), with 'text' field
+      const response = await axios.post(
+        'https://api.aimlapi.com/tts',
+        {
+          model: (options?.model as string) || '#g1_aura-asteria-en',
+          text,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${this.config.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          responseType: 'arraybuffer',
+          timeout: this.config.timeout || 30000,
+        }
+      );
 
       const time = Date.now() - start;
-      const cost = text.length * 0.000015; // $0.000015 per character
+      const cost = text.length * 0.000015;
       this.updateStats(true, cost, time);
 
       logger.info(`AIMLAPI audio: success (${time}ms, $${cost})`);
-      return { audioUrl: response.data.url };
+      return { audioBuffer: Buffer.from(response.data) };
     } catch (error: any) {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
-      logger.error('AIMLAPI audio: failed', error.message);
+      logger.error('AIMLAPI audio: failed', error.response?.data || error.message);
       throw error;
     }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

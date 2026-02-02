@@ -30,7 +30,7 @@ export class OpenAIAdapter extends EnhancedProvider {
     try {
       const result = await this.provider.generateText(prompt, options);
       const time = Date.now() - start;
-      const model = (options?.model as string) || 'gpt-4o';
+      const model = (options?.model as string) || 'gpt-4o-mini';
       const cost = estimateTextCost('openai', model, result);
       this.updateStats(true, cost, time);
       return result;

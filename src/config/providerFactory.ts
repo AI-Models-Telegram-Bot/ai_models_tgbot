@@ -9,11 +9,9 @@ import { ReplicateAdapter } from '../providers/adapters/ReplicateAdapter';
 import { ElevenLabsAdapter } from '../providers/adapters/ElevenLabsAdapter';
 
 // Import new providers
-import { RunwareProvider } from '../providers/RunwareProvider';
 import { AIMLAPIProvider } from '../providers/AIMLAPIProvider';
 import { KieAIProvider } from '../providers/KieAIProvider';
 import { PiAPIProvider } from '../providers/PiAPIProvider';
-import { OpenRouterProvider } from '../providers/OpenRouterProvider';
 
 import { logger } from '../utils/logger';
 
@@ -30,15 +28,9 @@ export function initProviders(): ProviderManager {
   manager = new ProviderManager();
 
   // ============ TEXT PROVIDERS ============
-  // AIMLAPI (1) → PiAPI (2) → OpenRouter (3) → OpenAI (4) → Anthropic (5) → XAI (6)
+  // AIMLAPI (1) → OpenAI (2) → Anthropic (3) → XAI (4)
   if (PROVIDER_CONFIGS.text_aimlapi.apiKey) {
     manager.register('TEXT', new AIMLAPIProvider(PROVIDER_CONFIGS.text_aimlapi));
-  }
-  if (PROVIDER_CONFIGS.text_piapi.apiKey) {
-    manager.register('TEXT', new PiAPIProvider(PROVIDER_CONFIGS.text_piapi));
-  }
-  if (PROVIDER_CONFIGS.text_openrouter.apiKey) {
-    manager.register('TEXT', new OpenRouterProvider(PROVIDER_CONFIGS.text_openrouter));
   }
   if (PROVIDER_CONFIGS.text_openai.apiKey) {
     manager.register('TEXT', new OpenAIAdapter(PROVIDER_CONFIGS.text_openai));
@@ -51,39 +43,42 @@ export function initProviders(): ProviderManager {
   }
 
   // ============ IMAGE PROVIDERS ============
-  // Runware (1) → Kie.ai (2) → Replicate (3) → OpenAI (4)
-  if (PROVIDER_CONFIGS.image_runware.apiKey) {
-    manager.register('IMAGE', new RunwareProvider(PROVIDER_CONFIGS.image_runware));
+  // AIMLAPI/Flux (1) → KieAI/Flux Kontext (2) → PiAPI/Flux (3) → OpenAI/DALL-E (4) → Replicate (5)
+  if (PROVIDER_CONFIGS.image_aimlapi.apiKey) {
+    manager.register('IMAGE', new AIMLAPIProvider(PROVIDER_CONFIGS.image_aimlapi));
   }
   if (PROVIDER_CONFIGS.image_kieai.apiKey) {
     manager.register('IMAGE', new KieAIProvider(PROVIDER_CONFIGS.image_kieai));
   }
-  if (PROVIDER_CONFIGS.image_replicate.apiKey) {
-    manager.register('IMAGE', new ReplicateAdapter(PROVIDER_CONFIGS.image_replicate));
+  if (PROVIDER_CONFIGS.image_piapi.apiKey) {
+    manager.register('IMAGE', new PiAPIProvider(PROVIDER_CONFIGS.image_piapi));
   }
   if (PROVIDER_CONFIGS.image_openai.apiKey) {
     manager.register('IMAGE', new OpenAIAdapter(PROVIDER_CONFIGS.image_openai));
   }
+  if (PROVIDER_CONFIGS.image_replicate.apiKey) {
+    manager.register('IMAGE', new ReplicateAdapter(PROVIDER_CONFIGS.image_replicate));
+  }
 
   // ============ VIDEO PROVIDERS ============
-  // Kie.ai (1) → Runware (2) → Replicate (3)
+  // AIMLAPI/Kling (1) → KieAI/Kling (2) → PiAPI/Kling (3) → Replicate (4)
+  if (PROVIDER_CONFIGS.video_aimlapi.apiKey) {
+    manager.register('VIDEO', new AIMLAPIProvider(PROVIDER_CONFIGS.video_aimlapi));
+  }
   if (PROVIDER_CONFIGS.video_kieai.apiKey) {
     manager.register('VIDEO', new KieAIProvider(PROVIDER_CONFIGS.video_kieai));
   }
-  if (PROVIDER_CONFIGS.video_runware.apiKey) {
-    manager.register('VIDEO', new RunwareProvider(PROVIDER_CONFIGS.video_runware));
+  if (PROVIDER_CONFIGS.video_piapi.apiKey) {
+    manager.register('VIDEO', new PiAPIProvider(PROVIDER_CONFIGS.video_piapi));
   }
   if (PROVIDER_CONFIGS.video_replicate.apiKey) {
     manager.register('VIDEO', new ReplicateAdapter(PROVIDER_CONFIGS.video_replicate));
   }
 
   // ============ AUDIO PROVIDERS ============
-  // AIMLAPI (1) → Runware (2) → ElevenLabs (3) → Replicate (4)
+  // AIMLAPI (1) → ElevenLabs (2) → Replicate (3)
   if (PROVIDER_CONFIGS.audio_aimlapi.apiKey) {
     manager.register('AUDIO', new AIMLAPIProvider(PROVIDER_CONFIGS.audio_aimlapi));
-  }
-  if (PROVIDER_CONFIGS.audio_runware.apiKey) {
-    manager.register('AUDIO', new RunwareProvider(PROVIDER_CONFIGS.audio_runware));
   }
   if (PROVIDER_CONFIGS.audio_elevenlabs.apiKey) {
     manager.register('AUDIO', new ElevenLabsAdapter(PROVIDER_CONFIGS.audio_elevenlabs));

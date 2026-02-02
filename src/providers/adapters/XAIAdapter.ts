@@ -29,7 +29,7 @@ export class XAIAdapter extends EnhancedProvider {
     try {
       const result = await this.provider.generateText(prompt, options);
       const time = Date.now() - start;
-      const cost = estimateTextCost('xai', 'grok-beta', result);
+      const cost = estimateTextCost('xai', 'grok-3-mini', result);
       this.updateStats(true, cost, time);
       return result;
     } catch (error) {

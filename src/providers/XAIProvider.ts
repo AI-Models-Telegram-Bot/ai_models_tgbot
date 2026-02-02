@@ -15,7 +15,7 @@ export class XAIProvider extends BaseProvider {
   }
 
   async generateText(prompt: string, options?: { model?: string }): Promise<TextGenerationResult> {
-    const model = options?.model || 'grok-beta';
+    const model = options?.model || 'grok-3-mini';
 
     const response = await this.client.chat.completions.create({
       model,

@@ -29,7 +29,7 @@ export class AnthropicAdapter extends EnhancedProvider {
     try {
       const result = await this.provider.generateText(prompt, options);
       const time = Date.now() - start;
-      const cost = estimateTextCost('anthropic', 'claude-sonnet-4-20250514', result);
+      const cost = estimateTextCost('anthropic', 'claude-3-haiku-20240307', result);
       this.updateStats(true, cost, time);
       return result;
     } catch (error) {

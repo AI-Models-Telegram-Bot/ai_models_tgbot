@@ -1,6 +1,7 @@
 import { ModelCategory } from '@prisma/client';
 import { EnhancedProvider } from '../providers/base/EnhancedProvider';
 import { ProviderStats } from '../providers/base/ProviderConfig';
+import { MODEL_ROUTES } from '../config/modelRouting';
 import { logger } from '../utils/logger';
 
 /**
@@ -82,6 +83,64 @@ export class ProviderManager {
 
     // All providers failed
     throw new Error(`All providers failed for ${category}: ${errors.join('; ')}`);
+  }
+
+  /**
+   * Generate content using a specific model slug with smart provider routing.
+   * Looks up MODEL_ROUTES to find which providers support the model,
+   * then tries them in order with the correct provider-specific model ID.
+   * Falls back to generic generate() if slug has no routing entry.
+   */
+  async generateWithModel(
+    category: ModelCategory,
+    method: 'generateText' | 'generateImage' | 'generateVideo' | 'generateAudio',
+    modelSlug: string,
+    input: string,
+  ): Promise<{ result: any; provider: string }> {
+    const route = MODEL_ROUTES[modelSlug];
+
+    if (!route) {
+      logger.warn(`No routing for model slug "${modelSlug}", falling back to default providers`);
+      return this.generate(category, method, input);
+    }
+
+    const allProviders = this.providers.get(category) || [];
+    const enabled = allProviders.filter((p) => p.getConfig().enabled);
+
+    // Build ordered list from route, filtered to registered+enabled providers
+    const candidates: { provider: EnhancedProvider; modelId: string; extraOptions?: Record<string, unknown> }[] = [];
+    for (const r of route.providers) {
+      const match = enabled.find((p) => p.getConfig().name === r.name);
+      if (match) {
+        candidates.push({ provider: match, modelId: r.modelId, extraOptions: r.extraOptions });
+      }
+    }
+
+    if (candidates.length === 0) {
+      throw new Error(`No enabled providers support model "${modelSlug}" in ${category}`);
+    }
+
+    const errors: string[] = [];
+
+    for (const { provider, modelId, extraOptions } of candidates) {
+      const name = provider.getConfig().name;
+
+      try {
+        logger.info(`Trying ${name} for ${category}/${modelSlug} (modelId: ${modelId})`);
+
+        const options = { model: modelId, ...extraOptions };
+        const result = await (provider as any)[method](input, options);
+
+        logger.info(`✓ ${name} succeeded for ${category}/${modelSlug}`);
+        return { result, provider: name };
+      } catch (error: any) {
+        const errorMsg = error.message || String(error);
+        errors.push(`${name}: ${errorMsg}`);
+        logger.warn(`✗ ${name} failed for ${category}/${modelSlug}: ${errorMsg}`);
+      }
+    }
+
+    throw new Error(`All providers failed for ${category}/${modelSlug}: ${errors.join('; ')}`);
   }
 
   /**
