@@ -30,14 +30,14 @@ export const PackageCard: React.FC<PackageCardProps> = ({
       <Card
         className={
           isPopular
-            ? 'ring-2 ring-purple-primary/60 relative overflow-visible'
+            ? 'ring-2 ring-brand-primary/60 relative overflow-visible'
             : ''
         }
       >
         {/* Popular badge */}
         {isPopular && (
           <div className="absolute -top-3 left-4">
-            <Badge variant="purple" className="text-xs px-3 py-1 shadow-purple-glow">
+            <Badge variant="cyan" className="text-xs px-3 py-1 shadow-neon">
               Popular
             </Badge>
           </div>
@@ -47,12 +47,12 @@ export const PackageCard: React.FC<PackageCardProps> = ({
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-white text-[22px] font-bold">{pkg.name}</h3>
-            <p className="text-gray-text text-sm mt-0.5">
+            <p className="text-content-secondary text-sm mt-0.5">
               {t('credits', { count: pkg.credits })}
             </p>
           </div>
           {pkg.isUnlimited && pkg.unlimitedModels?.length ? (
-            <Badge variant="purple" className="mt-1">
+            <Badge variant="cyan" className="mt-1">
               {pkg.unlimitedModels.join(', ')}
             </Badge>
           ) : null}
@@ -61,8 +61,8 @@ export const PackageCard: React.FC<PackageCardProps> = ({
         {/* Pricing */}
         <div className="flex items-baseline gap-1.5 mt-3">
           <span className="text-white text-xl font-bold">${pkg.priceUSD}</span>
-          <span className="text-gray-tertiary">/</span>
-          <span className="text-gray-text text-base">{pkg.priceRUB} &#8381;</span>
+          <span className="text-content-tertiary">/</span>
+          <span className="text-content-secondary text-base">{pkg.priceRUB} &#8381;</span>
         </div>
 
         {/* Features */}
@@ -70,7 +70,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({
           {pkg.features.map((feature, i) => (
             <li key={i} className="flex items-start gap-2.5">
               <svg
-                className="w-4 h-4 text-purple-primary mt-0.5 shrink-0"
+                className="w-4 h-4 text-brand-primary mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >

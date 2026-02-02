@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/shared/utils/cn';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'premium';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,12 +13,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-gradient-to-br from-purple-primary to-purple-secondary text-white shadow-md hover:shadow-purple-glow active:scale-95',
+    'relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-neon hover:shadow-neon-strong hover:from-cyan-400 hover:to-blue-500 hover:scale-105 active:scale-95 border border-cyan-400/30 transition-all duration-300',
   secondary:
-    'bg-dark-card text-white hover:bg-dark-border active:scale-95',
+    'bg-surface-card text-white border border-white/10 hover:border-brand-primary/30 hover:shadow-neon/20 active:scale-95 transition-all duration-300',
   outline:
-    'border-2 border-purple-primary text-purple-primary hover:bg-purple-primary/10',
-  ghost: 'text-gray-text hover:bg-dark-card',
+    'border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/10 transition-all duration-300',
+  ghost:
+    'text-content-tertiary hover:bg-surface-card transition-all duration-300',
+  premium:
+    'relative overflow-hidden bg-gradient-to-r from-yellow-500 to-pink-500 text-white shadow-gold hover:from-yellow-400 hover:to-pink-400 hover:scale-105 active:scale-95 transition-all duration-300',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

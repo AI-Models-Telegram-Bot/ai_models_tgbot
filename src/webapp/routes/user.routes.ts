@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { prisma } from '../../config/database';
 import { walletService } from '../../services';
+import { subscriptionService } from '../../services/SubscriptionService';
 import { logger } from '../../utils/logger';
 
 const router = Router();
 
 /**
  * GET /api/webapp/user/:telegramId
- * Returns user profile with wallet balances.
+ * Returns user profile with wallet balances and subscription.
  */
 router.get('/user/:telegramId', async (req, res) => {
   const { telegramId } = req.params;
@@ -25,6 +26,8 @@ router.get('/user/:telegramId', async (req, res) => {
     }
 
     const wallet = await walletService.getOrCreateWallet(user.id);
+    const subscription = await subscriptionService.getUserSubscription(user.id);
+    const planConfig = subscriptionService.getPlanConfig(subscription.tier);
 
     const requestCount = await prisma.request.count({
       where: { userId: user.id },
@@ -47,7 +50,14 @@ router.get('/user/:telegramId', async (req, res) => {
         moneyBalance: wallet.moneyBalance,
         currency: wallet.currency,
       },
-      currentPlan: null, // TODO: subscription tracking
+      currentPlan: {
+        tier: subscription.tier,
+        name: planConfig?.name || subscription.tier,
+        status: subscription.status,
+        expiresAt: subscription.currentPeriodEnd?.toISOString() || null,
+        credits: planConfig?.credits ?? { text: 0, image: 0, video: 0, audio: 0 },
+        referralBonus: planConfig?.referralBonus ?? 0,
+      },
       stats: {
         totalSpent: user.totalSpent,
         totalRequests: requestCount,

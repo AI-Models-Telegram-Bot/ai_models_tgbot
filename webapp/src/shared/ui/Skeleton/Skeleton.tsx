@@ -17,7 +17,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   return (
     <div
       className={cn(
-        'animate-pulse bg-dark-border',
+        'animate-pulse bg-surface-elevated',
         {
           'h-4 rounded': variant === 'text',
           'rounded-full': variant === 'circular',

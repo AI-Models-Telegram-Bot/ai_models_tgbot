@@ -78,7 +78,7 @@ export const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                     </span>
                     <span className="shrink-0 ml-3">
                       {model.creditCost === 'unlimited' ? (
-                        <Badge variant="purple">
+                        <Badge variant="cyan">
                           {t('models:unlimited', { defaultValue: 'Unlimited' })}
                         </Badge>
                       ) : model.creditRange ? (

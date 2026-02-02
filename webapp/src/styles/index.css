@@ -1,21 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-bg-primary: #0a0a0a;
-  --color-bg-card: #1f1f1f;
-  --color-bg-card-hover: #2d2d2d;
+  /* Primary Brand Colors */
+  --color-primary: #00d4ff;
+  --color-primary-dark: #0099cc;
+  --color-primary-light: #66e0ff;
+
+  /* Secondary Colors */
+  --color-secondary: #ff6b9d;
+  --color-accent: #ffd700;
+
+  /* Background */
+  --color-bg-primary: #0f0f23;
+  --color-bg-secondary: #1a1a3e;
+  --color-bg-card: #252547;
+  --color-bg-elevated: #2d2d5f;
+
+  /* Text */
   --color-text-primary: #ffffff;
-  --color-text-secondary: #e0e0e0;
-  --color-text-tertiary: #9ca3af;
-  --color-purple-primary: #a855f7;
-  --color-purple-secondary: #6366f1;
+  --color-text-secondary: #b8b8d4;
+  --color-text-tertiary: #8585a8;
+
+  /* Status */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #0066ff 100%);
+  --gradient-premium: linear-gradient(135deg, #ffd700 0%, #ff6b9d 100%);
+  --gradient-background: linear-gradient(180deg, #0f0f23 0%, #1a1a3e 100%);
+
+  /* Z-index */
   --z-modal-backdrop: 1040;
   --z-modal: 1050;
   --z-toast: 1060;
@@ -34,7 +54,7 @@ html, body, #root {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
@@ -59,7 +79,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #4040a0;
   border-radius: 2px;
 }
 
@@ -70,4 +90,21 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Glassmorphism utility */
+.glass-card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* Neon glow utility */
+.neon-glow {
+  box-shadow: 0 0 20px rgba(0,212,255,0.4);
+}
+.neon-glow:hover {
+  box-shadow: 0 0 30px rgba(0,212,255,0.6);
 }

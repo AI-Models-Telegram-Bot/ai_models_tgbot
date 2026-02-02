@@ -20,6 +20,7 @@ import {
   handleAudioCategory,
   handleUserInput,
   handleCallbackQuery,
+  handleWebAppData,
 } from './handlers';
 import { logger } from '../utils/logger';
 import { en } from '../locales/en';
@@ -66,6 +67,14 @@ export function createBot(): Telegraf<BotContext> {
   // Callback queries (inline keyboard)
   bot.on('callback_query', handleCallbackQuery);
 
+  // WebApp data handler (must be before generic text handler)
+  bot.on('message', (ctx, next) => {
+    if (ctx.message && 'web_app_data' in ctx.message) {
+      return handleWebAppData(ctx);
+    }
+    return next();
+  });
+
   // Text messages (user input for models)
   bot.on('text', handleUserInput);
 
@@ -74,6 +83,17 @@ export function createBot(): Telegraf<BotContext> {
     logger.error('Bot error:', err);
     ctx.reply('An error occurred. Please try again.').catch(() => {});
   });
+
+  // Set bot menu button to open WebApp
+  if (config.webapp.url) {
+    bot.telegram.setChatMenuButton({
+      menuButton: {
+        type: 'web_app',
+        text: 'Profile',
+        web_app: { url: config.webapp.url },
+      },
+    }).catch((err) => logger.warn('Failed to set menu button', err));
+  }
 
   return bot;
 }

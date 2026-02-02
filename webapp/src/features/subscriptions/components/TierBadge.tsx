@@ -1,0 +1,40 @@
+import React from 'react';
+import { cn } from '@/shared/utils/cn';
+import type { SubscriptionTier } from '@/types/user.types';
+
+interface TierBadgeProps {
+  tier: SubscriptionTier;
+  className?: string;
+}
+
+const tierStyles: Record<SubscriptionTier, string> = {
+  FREE: 'bg-content-tertiary/20 text-content-tertiary',
+  BASIC: 'bg-brand-primary/20 text-brand-primary',
+  PRO: 'bg-blue-500/20 text-blue-400',
+  VIP: 'bg-purple-500/20 text-purple-400',
+  ELITE: 'bg-brand-accent/20 text-brand-accent',
+  ENTERPRISE: 'bg-gradient-to-r from-brand-accent/20 to-brand-secondary/20 text-brand-accent',
+};
+
+const tierLabels: Record<SubscriptionTier, string> = {
+  FREE: 'Free',
+  BASIC: 'Basic',
+  PRO: 'Pro',
+  VIP: 'VIP',
+  ELITE: 'Elite',
+  ENTERPRISE: 'Enterprise',
+};
+
+export const TierBadge: React.FC<TierBadgeProps> = ({ tier, className }) => {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold',
+        tierStyles[tier],
+        className
+      )}
+    >
+      {tierLabels[tier]}
+    </span>
+  );
+};

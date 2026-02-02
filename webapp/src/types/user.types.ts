@@ -17,12 +17,22 @@ export interface UserWallet {
   currency: string;
 }
 
-export type SubscriptionTier = 'FREE' | 'MIDDLE' | 'PRO' | 'ULTRA_PRO';
+export type SubscriptionTier = 'FREE' | 'BASIC' | 'PRO' | 'VIP' | 'ELITE' | 'ENTERPRISE';
+
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'EXPIRED' | 'PAST_DUE' | 'TRIALING';
 
 export interface CurrentPlan {
   tier: SubscriptionTier;
   name: string;
+  status: SubscriptionStatus;
   expiresAt: string | null;
+  credits: {
+    text: number | null;    // null = unlimited
+    image: number | null;
+    video: number | null;
+    audio: number | null;
+  };
+  referralBonus: number;
 }
 
 export interface UserStats {
