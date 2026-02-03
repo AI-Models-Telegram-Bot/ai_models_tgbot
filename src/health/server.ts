@@ -13,6 +13,23 @@ import { validateTelegramAuth } from '../webapp/middleware/auth.middleware';
 export function createHealthServer(port: number = 3000): express.Application {
   const app = express();
 
+  // --- CORS & JSON parsing (MUST be before all routes) ---
+  const allowedOrigins = [
+    'https://webapp.vseonix.com',
+    'https://webapp-dev.vseonix.com',
+    'https://web.telegram.org',
+  ];
+  if (process.env.WEBAPP_URL) {
+    allowedOrigins.push(process.env.WEBAPP_URL.replace(/\/$/, ''));
+  }
+  app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'X-Telegram-Init-Data', 'Authorization'],
+    credentials: true,
+  }));
+  app.use(express.json());
+
   // --- Health endpoints ---
 
   /** Liveness probe - is the process alive? */
@@ -46,17 +63,6 @@ export function createHealthServer(port: number = 3000): express.Application {
       res.status(500).json({ error: 'Failed to get metrics' });
     }
   });
-
-  // --- CORS & JSON parsing for WebApp API ---
-  const allowedOrigins = ['https://webapp.vseonix.com', 'https://webapp-dev.vseonix.com'];
-  if (process.env.WEBAPP_URL) {
-    allowedOrigins.push(process.env.WEBAPP_URL.replace(/\/$/, ''));
-  }
-  app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  }));
-  app.use(express.json());
 
   // --- Provider monitoring endpoints ---
   app.use('/api', providerRoutes);
