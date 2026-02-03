@@ -16,6 +16,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // Target older browsers/WebViews for Telegram mobile compatibility
+    // Safari 14 = iOS 14 WebView, Chrome 87 = older Android WebView
+    target: ['es2015', 'chrome87', 'safari14'],
     rollupOptions: {
       output: {
         manualChunks: {

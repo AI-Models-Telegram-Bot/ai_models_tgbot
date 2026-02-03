@@ -5,6 +5,9 @@ import { initTelegramWebApp } from './services/telegram/telegram';
 import './i18n/config';
 import './styles/index.css';
 
+// Signal to the timeout detector in index.html that the JS bundle loaded
+(window as any).__appLoaded = true;
+
 try {
   initTelegramWebApp();
 

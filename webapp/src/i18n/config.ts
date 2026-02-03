@@ -31,21 +31,41 @@ const resources = {
   },
 };
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'en',
-    defaultNS: 'common',
-    ns: ['common', 'profile', 'packages', 'referral', 'subscriptions'],
-    interpolation: {
-      escapeValue: false,
-    },
-    detection: {
-      order: ['querystring', 'navigator'],
-      caches: [],
-    },
-  });
+try {
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: 'en',
+      defaultNS: 'common',
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions'],
+      interpolation: {
+        escapeValue: false,
+      },
+      detection: {
+        // Only use navigator — avoid localStorage/sessionStorage which can throw in
+        // restricted WebView environments (Telegram mobile)
+        order: ['navigator'],
+        caches: [],
+        lookupLocalStorage: undefined,
+        lookupSessionStorage: undefined,
+      },
+    });
+} catch {
+  // Fallback: initialize without LanguageDetector if it crashes in mobile WebView
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: 'en',
+      fallbackLng: 'en',
+      defaultNS: 'common',
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions'],
+      interpolation: {
+        escapeValue: false,
+      },
+    });
+}
 
 export default i18n;
