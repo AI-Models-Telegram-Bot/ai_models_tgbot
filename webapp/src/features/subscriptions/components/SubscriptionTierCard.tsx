@@ -84,7 +84,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
               { label: 'Video', value: plan.credits.video, icon: '🎬' },
               { label: 'Audio', value: plan.credits.audio, icon: '🎵' },
             ].map((item) => (
-              <div key={item.label} className="flex items-center gap-1.5 text-sm">
+              <div key={item.label} className="flex items-center text-sm" style={{ columnGap: 6 }}>
                 <span className="text-xs">{item.icon}</span>
                 <span className={cn(
                   'font-mono text-xs',
@@ -100,7 +100,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         {/* Features */}
         <div className="space-y-1.5 mb-5">
           {plan.features.slice(0, 5).map((feature, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm">
+            <div key={i} className="flex items-start text-sm" style={{ columnGap: 8 }}>
               <span className="text-brand-primary mt-0.5 text-xs">✓</span>
               <span className="text-content-secondary text-xs">{feature}</span>
             </div>

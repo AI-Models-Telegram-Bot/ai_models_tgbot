@@ -19,36 +19,38 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
       transition={{ duration: 0.3 }}
     >
       <Card>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           {/* Avatar */}
-          <div className="w-[72px] h-[72px] rounded-full border-2 border-brand-primary/30 bg-surface-elevated flex items-center justify-center overflow-hidden shrink-0">
+          <div
+            className="rounded-full border-2 border-brand-primary/30 bg-surface-elevated flex items-center justify-center overflow-hidden shrink-0"
+            style={{ width: 56, height: 56, minWidth: 56 }}
+          >
             {user.profilePhoto ? (
               <img
                 src={user.profilePhoto}
                 alt={displayName}
-                className="w-full h-full object-cover"
+                width={56}
+                height={56}
+                className="object-cover"
+                style={{ width: 56, height: 56, display: 'block' }}
               />
             ) : (
-              <span className="text-2xl font-bold text-brand-primary/70">
+              <span className="text-xl font-bold text-brand-primary/70">
                 {displayName.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
 
           {/* Name + Balance */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-white text-xl font-semibold truncate">
-                  {displayName}
-                </p>
-                {user.username && (
-                  <p className="text-content-secondary text-sm truncate">
-                    @{user.username}
-                  </p>
-                )}
-              </div>
-            </div>
+          <div className="flex-1 min-w-0 ml-3">
+            <p className="text-white text-lg font-semibold truncate">
+              {displayName}
+            </p>
+            {user.username && (
+              <p className="text-content-secondary text-sm truncate">
+                @{user.username}
+              </p>
+            )}
           </div>
         </div>
 

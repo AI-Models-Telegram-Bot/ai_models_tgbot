@@ -45,7 +45,7 @@ const ReferralPage: React.FC = () => {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-20 rounded-2xl" variant="rectangular" />
-        <div className="flex gap-3">
+        <div className="flex" style={{ columnGap: 12 }}>
           <Skeleton className="flex-1 h-20 rounded-2xl" variant="rectangular" />
           <Skeleton className="flex-1 h-20 rounded-2xl" variant="rectangular" />
         </div>
@@ -75,7 +75,7 @@ const ReferralPage: React.FC = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="flex gap-3"
+          className="flex" style={{ columnGap: 12 }}
         >
           <Card className="flex-1 text-center">
             <p className="text-gray-text text-xs uppercase tracking-wider">Invited</p>
@@ -133,7 +133,7 @@ const ReferralPage: React.FC = () => {
         ) : (
           <>
             {/* Link cards with horizontal scroll */}
-            <div className="overflow-x-auto -mx-4 px-4 pb-2 snap-x snap-mandatory flex gap-3 scrollbar-hide">
+            <div className="overflow-x-auto -mx-4 px-4 pb-2 snap-x snap-mandatory flex scrollbar-hide" style={{ columnGap: 12 }}>
               {links.map((link, index) => (
                 <div
                   key={link.id}
@@ -147,7 +147,7 @@ const ReferralPage: React.FC = () => {
                     <p className="text-white text-sm font-mono break-all bg-dark-border/50 rounded-lg px-3 py-2">
                       {link.url}
                     </p>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex flex-wrap" style={{ gap: 8 }}>
                       <Badge variant="gray">
                         {t('invited', { count: link.invitedCount })}
                       </Badge>
@@ -173,7 +173,7 @@ const ReferralPage: React.FC = () => {
 
             {/* Pagination dots */}
             {links.length > 1 && (
-              <div className="flex justify-center gap-1.5 mt-3">
+              <div className="flex justify-center mt-3" style={{ columnGap: 6 }}>
                 {links.map((_, i) => (
                   <div
                     key={i}
@@ -209,7 +209,7 @@ const ReferralPage: React.FC = () => {
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-100"
+                className="flex items-center p-3 rounded-xl bg-white border border-gray-100" style={{ columnGap: 12 }}
               >
                 <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
                   <span className="text-purple-600 font-bold text-sm">

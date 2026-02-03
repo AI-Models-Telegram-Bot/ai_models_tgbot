@@ -29,9 +29,9 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             <p className="text-content-tertiary text-xs uppercase tracking-wider font-medium">
               {t('currentPlan')}
             </p>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center mt-1">
               <p className="text-white text-lg font-semibold">{planName}</p>
-              {!isFree && <Badge variant="cyan">Active</Badge>}
+              {!isFree && <Badge variant="cyan" className="ml-2">Active</Badge>}
             </div>
             {plan?.expiresAt && (
               <p className="text-content-tertiary text-xs mt-1">
