@@ -8,8 +8,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>AI Models Bot</title>
     <script>
-      // Global error handler — catches module-level crashes that try-catch in main.tsx cannot
-      window.onerror = function(msg, src, line, col, err) {
+      function showError(prefix, detail) {
         var el = document.getElementById('loading-fallback');
         if (el) {
           el.style.whiteSpace = 'pre-wrap';
@@ -17,20 +16,28 @@
           el.style.fontSize = '12px';
           el.style.color = '#ff6b6b';
           el.style.textAlign = 'left';
-          el.textContent = 'Error: ' + msg + '\n\nSource: ' + src + ':' + line + ':' + col;
+          el.textContent = (el.textContent === 'Loading...' ? '' : el.textContent + '\n\n') + prefix + ': ' + detail;
         }
+      }
+
+      // Catch synchronous JS errors
+      window.onerror = function(msg, src, line, col) {
+        showError('Error', msg + '\nSource: ' + src + ':' + line + ':' + col);
       };
+
+      // Catch unhandled promise rejections
       window.addEventListener('unhandledrejection', function(e) {
-        var el = document.getElementById('loading-fallback');
-        if (el) {
-          el.style.whiteSpace = 'pre-wrap';
-          el.style.padding = '20px';
-          el.style.fontSize = '12px';
-          el.style.color = '#ff6b6b';
-          el.style.textAlign = 'left';
-          el.textContent = 'Promise error: ' + (e.reason ? (e.reason.message || e.reason) : 'unknown');
-        }
+        showError('Promise error', e.reason ? (e.reason.message || e.reason) : 'unknown');
       });
+
+      // Detect if the app never loads (module script failed to fetch/parse)
+      // window.onerror does NOT fire for <script type="module"> fetch failures
+      window.__appLoaded = false;
+      setTimeout(function() {
+        if (!window.__appLoaded) {
+          showError('Load timeout', 'App JS bundle did not execute within 10s.\n\nPossible causes:\n- JS assets failed to load (check network)\n- Module parse error in mobile WebView\n- Telegram WebView blocked the script\n\nPlatform: ' + navigator.userAgent);
+        }
+      }, 10000);
     </script>
   </head>
   <body>
