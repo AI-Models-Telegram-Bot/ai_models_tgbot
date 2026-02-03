@@ -65,9 +65,11 @@ jobs:
             # Save current commit for rollback
             PREV_COMMIT=$(git rev-parse HEAD)
 
-            # Pull latest code
+            # Pull latest code (discard build artifacts that may have been generated on server)
             git fetch origin
             git checkout master
+            git checkout -- . 2>/dev/null || true
+            git clean -fd -- '*.tsbuildinfo' 2>/dev/null || true
             git pull origin master
 
             # Build webapp frontend using Docker (no Node.js needed on server)

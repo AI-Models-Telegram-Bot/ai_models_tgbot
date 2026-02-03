@@ -6,6 +6,7 @@ webapp-dist/
 logs/
 *.log
 .DS_Store
+*.tsbuildinfo
 
 # Allow webapp env files (no secrets, just public URLs)
 !webapp/.env.production
