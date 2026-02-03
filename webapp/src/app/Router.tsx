@@ -22,8 +22,8 @@ export function Router() {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         <Route element={<MainLayout />}>
-          <Route path="/" element={<ProfilePage />} />
-          <Route path="/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/" element={<SubscriptionsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/referral" element={<ReferralPage />} />
         </Route>
       </Routes>

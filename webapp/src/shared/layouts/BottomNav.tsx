@@ -30,8 +30,8 @@ const HandshakeIcon = () => (
 );
 
 const navItems: NavItem[] = [
-  { path: '/', labelKey: 'profile:title', icon: <UserIcon /> },
-  { path: '/subscriptions', labelKey: 'subscriptions:title', icon: <CrownIcon /> },
+  { path: '/', labelKey: 'subscriptions:title', icon: <CrownIcon /> },
+  { path: '/profile', labelKey: 'profile:title', icon: <UserIcon /> },
   { path: '/referral', labelKey: 'referral:title', icon: <HandshakeIcon /> },
 ];
 
@@ -58,7 +58,7 @@ export const BottomNav: React.FC = () => {
               )}
             >
               {item.icon}
-              <span className="text-[10px] font-medium mt-1 truncate max-w-[80px]">{t(item.labelKey)}</span>
+              <span className="text-[10px] font-medium mt-1">{t(item.labelKey)}</span>
             </button>
           );
         })}
