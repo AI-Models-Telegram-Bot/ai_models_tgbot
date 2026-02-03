@@ -63,13 +63,13 @@ const SubscriptionsPage: React.FC = () => {
 
         {/* Tier Cards - Horizontal Scroll */}
         {isLoading ? (
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+          <div className="flex overflow-x-auto scrollbar-hide pb-4" style={{ columnGap: 16 }}>
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} variant="rectangular" width={280} height={380} className="flex-shrink-0 rounded-2xl" />
             ))}
           </div>
         ) : (
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory">
+          <div className="flex overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory" style={{ columnGap: 16 }}>
             {plans.map((plan, index) => (
               <div key={plan.tier} className="snap-start">
                 <SubscriptionTierCard

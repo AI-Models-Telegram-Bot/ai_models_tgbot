@@ -108,3 +108,15 @@ body {
 .neon-glow:hover {
   box-shadow: 0 0 30px rgba(0,212,255,0.6);
 }
+
+/* Ensure images in avatar containers are properly constrained */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Telegram WebView overrides - ensure our styles take precedence */
+#root {
+  position: relative;
+  z-index: 1;
+}

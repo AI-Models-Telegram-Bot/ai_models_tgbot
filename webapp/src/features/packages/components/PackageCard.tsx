@@ -59,7 +59,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({
         </div>
 
         {/* Pricing */}
-        <div className="flex items-baseline gap-1.5 mt-3">
+        <div className="flex items-baseline mt-3" style={{ columnGap: 6 }}>
           <span className="text-white text-xl font-bold">${pkg.priceUSD}</span>
           <span className="text-content-tertiary">/</span>
           <span className="text-content-secondary text-base">{pkg.priceRUB} &#8381;</span>
@@ -68,7 +68,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({
         {/* Features */}
         <ul className="space-y-2.5 mt-4">
           {pkg.features.map((feature, i) => (
-            <li key={i} className="flex items-start gap-2.5">
+            <li key={i} className="flex items-start" style={{ columnGap: 10 }}>
               <svg
                 className="w-4 h-4 text-brand-primary mt-0.5 shrink-0"
                 fill="currentColor"

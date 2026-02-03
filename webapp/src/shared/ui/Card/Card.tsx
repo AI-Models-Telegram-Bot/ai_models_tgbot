@@ -18,11 +18,11 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-2xl bg-surface-card/90 backdrop-blur-xl transition-all duration-300',
+        'rounded-2xl bg-surface-card backdrop-blur-xl transition-all duration-300',
         {
-          'border border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-2px]': variant === 'default',
+          'border border-white/[0.12] shadow-card': variant === 'default',
           'border border-white/20 shadow-card-hover': variant === 'elevated',
-          'border border-brand-primary/30': variant === 'bordered',
+          'border border-brand-primary/30 shadow-card': variant === 'bordered',
           'p-0': padding === 'none',
           'p-3': padding === 'sm',
           'p-4': padding === 'md',

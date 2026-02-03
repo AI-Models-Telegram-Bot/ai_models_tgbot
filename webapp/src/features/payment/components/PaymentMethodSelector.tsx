@@ -77,13 +77,13 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               onSelect(method.id);
             }}
             className={cn(
-              'w-full flex items-center gap-3 p-4 rounded-xl',
+              'w-full flex items-center p-4 rounded-xl',
               'bg-white border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50',
               'transition-all duration-150 active:scale-[0.98]',
               'text-left'
             )}
           >
-            <span className="text-2xl w-8 text-center">{method.icon}</span>
+            <span className="text-2xl text-center mr-3" style={{ width: 32 }}>{method.icon}</span>
             <div className="flex-1 min-w-0">
               <p className="text-gray-900 font-medium text-[15px]">
                 {t(method.labelKey, { defaultValue: method.labelKey.split(':')[1] })}

@@ -58,8 +58,8 @@ export function initTelegramWebApp() {
 
   webapp.ready();
   webapp.expand();
-  webapp.setHeaderColor('#0a0a0a');
-  webapp.setBackgroundColor('#0a0a0a');
+  webapp.setHeaderColor('#0f0f23');
+  webapp.setBackgroundColor('#0f0f23');
 
   // Detect language from Telegram user
   const user = webapp.initDataUnsafe.user;

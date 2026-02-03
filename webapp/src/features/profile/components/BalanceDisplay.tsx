@@ -51,14 +51,14 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ wallet }) => {
         <p className="text-content-secondary text-sm uppercase tracking-wide">
           {t('creditBalance')}
         </p>
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end">
           <p className="text-white text-3xl font-bold tabular-nums">
             {formatCredits(totalCredits)}
           </p>
           <motion.svg
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className="w-4 h-4 text-content-secondary"
+            className="w-4 h-4 text-content-secondary ml-1.5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -85,17 +85,17 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ wallet }) => {
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-2.5"
+                  className="flex items-center"
                 >
-                  <span className="text-base w-6 text-center">{item.icon}</span>
+                  <span className="text-base text-center shrink-0 mr-2.5" style={{ width: 24 }}>{item.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span className="text-content-secondary text-xs">{t(item.labelKey)}</span>
                       <span className="text-white text-sm font-semibold tabular-nums">
                         {formatCredits(item.value)}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+                    <div className="bg-surface-elevated rounded-full overflow-hidden" style={{ height: 6 }}>
                       <motion.div
                         className={cn('h-full rounded-full', item.color)}
                         initial={{ width: 0 }}
@@ -115,9 +115,9 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ wallet }) => {
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="flex items-center gap-2.5 pt-1"
+                  className="flex items-center pt-1"
                 >
-                  <span className="text-base w-6 text-center">💰</span>
+                  <span className="text-base text-center shrink-0 mr-2.5" style={{ width: 24 }}>💰</span>
                   <div className="flex items-center justify-between flex-1">
                     <span className="text-content-secondary text-xs">{t('balances.money')}</span>
                     <span className="text-white text-sm font-semibold">

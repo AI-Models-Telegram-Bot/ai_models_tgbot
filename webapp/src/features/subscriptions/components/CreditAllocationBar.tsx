@@ -21,21 +21,21 @@ export const CreditAllocationBar: React.FC<CreditAllocationBarProps> = ({
   const percentage = isUnlimited ? 0 : total > 0 ? Math.min((used / total) * 100, 100) : 0;
 
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="text-base w-6 text-center">{icon}</span>
+    <div className="flex items-center">
+      <span className="text-base text-center shrink-0 mr-2.5" style={{ width: 24 }}>{icon}</span>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
           <span className="text-content-secondary text-xs">{label}</span>
           <span className="text-white text-sm font-semibold tabular-nums font-mono">
             {isUnlimited ? (
               <span className="text-brand-accent">Unlimited</span>
             ) : (
-              <>{formatCredits(used)} / {formatCredits(total)}</>
+              <>{formatCredits(used)}&nbsp;/&nbsp;{formatCredits(total)}</>
             )}
           </span>
         </div>
         {!isUnlimited && (
-          <div className="h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+          <div className="bg-surface-elevated rounded-full overflow-hidden" style={{ height: 6 }}>
             <div
               className={cn('h-full rounded-full transition-all duration-500', color)}
               style={{ width: `${Math.max(percentage, 2)}%` }}
@@ -43,7 +43,7 @@ export const CreditAllocationBar: React.FC<CreditAllocationBarProps> = ({
           </div>
         )}
         {isUnlimited && (
-          <div className="h-1.5 bg-brand-accent/20 rounded-full overflow-hidden">
+          <div className="bg-brand-accent/20 rounded-full overflow-hidden" style={{ height: 6 }}>
             <div className="h-full w-full bg-gradient-to-r from-brand-accent/40 to-brand-accent/60 rounded-full" />
           </div>
         )}
