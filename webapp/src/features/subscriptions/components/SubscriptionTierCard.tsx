@@ -2,9 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
-import { TierBadge } from './TierBadge';
 import type { SubscriptionPlan } from '@/types/subscription.types';
-import type { SubscriptionTier } from '@/types/user.types';
 
 interface SubscriptionTierCardProps {
   plan: SubscriptionPlan;
@@ -60,15 +58,9 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
       )}
 
       <div className="p-5 pt-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <TierBadge tier={plan.tier as SubscriptionTier} />
-        </div>
-
+        {/* Header — name + price */}
         <h3 className="text-xl font-bold text-white font-display">{plan.name}</h3>
-
-        {/* Price */}
-        <div className="mt-2 mb-4">
+        <div className="mt-1 mb-4">
           <span className="text-2xl font-bold text-white font-display">
             {formatPrice(plan.priceUSD)}
           </span>

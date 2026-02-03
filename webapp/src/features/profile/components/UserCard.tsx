@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/shared/ui';
 import { BalanceDisplay } from './BalanceDisplay';
+import { getTelegramUser } from '@/services/telegram/telegram';
 import type { User, UserWallet } from '@/types/user.types';
 
 interface UserCardProps {
@@ -11,6 +12,7 @@ interface UserCardProps {
 
 export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
   const displayName = user.firstName || user.username || 'User';
+  const avatarUrl = user.profilePhoto || getTelegramUser()?.photo_url;
 
   return (
     <motion.div
@@ -25,9 +27,9 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
             className="rounded-full border-2 border-brand-primary/30 bg-surface-elevated flex items-center justify-center overflow-hidden shrink-0"
             style={{ width: 56, height: 56, minWidth: 56 }}
           >
-            {user.profilePhoto ? (
+            {avatarUrl ? (
               <img
-                src={user.profilePhoto}
+                src={avatarUrl}
                 alt={displayName}
                 width={56}
                 height={56}
