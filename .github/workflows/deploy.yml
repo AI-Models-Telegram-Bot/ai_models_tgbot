@@ -81,10 +81,9 @@ jobs:
               -w /app \
               node:20-alpine \
               sh -c "npm ci && npm run build:prod"
-            # Copy built files for nginx mount
-            # Use sudo because Docker creates root-owned files in webapp/dist
-            sudo rm -rf webapp-dist
-            cp -r webapp/dist webapp-dist
+            # Sync built files into webapp-dist (preserve directory inode for nginx bind mount)
+            mkdir -p webapp-dist
+            rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dist/
             chmod -R 755 webapp-dist
             echo "Webapp built successfully"
 
