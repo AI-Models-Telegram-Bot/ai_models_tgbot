@@ -94,7 +94,7 @@ jobs:
             # Restart services
             docker compose -f docker-compose.prod.yml up -d
 
-            # Restart nginx to pick up updated webapp files
+            # Restart nginx to re-mount the new webapp-dist directory
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
