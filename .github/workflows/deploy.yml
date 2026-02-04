@@ -75,6 +75,8 @@ jobs:
             # Build webapp frontend using Docker (no Node.js needed on server)
             echo "Building webapp..."
             docker run --rm \
+              --user "$(id -u):$(id -g)" \
+              -e HOME=/tmp \
               -v "$(pwd)/webapp:/app" \
               -w /app \
               node:20-alpine \
