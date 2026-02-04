@@ -31,11 +31,14 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
   ];
 
   return (
-    <div className="overflow-x-auto scrollbar-hide">
-      <table className="w-full min-w-[600px]">
+    <div className="relative">
+      {/* Scroll hint gradient */}
+      <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-surface-card/90 to-transparent z-10 pointer-events-none rounded-r-2xl" />
+      <div className="overflow-x-auto scrollbar-hide">
+      <table className="w-full min-w-[480px]">
         <thead>
           <tr>
-            <th className="text-left text-xs font-medium text-content-tertiary uppercase tracking-wider py-3 px-3 sticky left-0 bg-surface-bg/90 backdrop-blur-sm">
+            <th className="text-left text-xs font-medium text-content-tertiary uppercase tracking-wider py-3 px-3 sticky left-0 bg-surface-card/90 backdrop-blur-sm w-[100px] min-w-[100px]">
               Feature
             </th>
             {plans.map((plan) => (
@@ -54,7 +57,7 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
         <tbody>
           {rows.map((row, i) => (
             <tr key={row.label} className={i % 2 === 0 ? 'bg-white/[0.02]' : ''}>
-              <td className="text-xs text-content-secondary py-2.5 px-3 sticky left-0 bg-surface-bg/90 backdrop-blur-sm">
+              <td className="text-xs text-content-secondary py-2.5 px-3 sticky left-0 bg-surface-card/90 backdrop-blur-sm w-[100px] min-w-[100px]">
                 {row.label}
               </td>
               {plans.map((plan) => {
@@ -78,6 +81,7 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };

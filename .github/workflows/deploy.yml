@@ -80,8 +80,10 @@ jobs:
               node:20-alpine \
               sh -c "npm ci && npm run build:prod"
             # Copy built files for nginx mount
-            rm -rf webapp-dist
+            # Use sudo because Docker creates root-owned files in webapp/dist
+            sudo rm -rf webapp-dist
             cp -r webapp/dist webapp-dist
+            chmod -R 755 webapp-dist
             echo "Webapp built successfully"
 
             # Build images on server
@@ -92,6 +94,9 @@ jobs:
 
             # Restart services
             docker compose -f docker-compose.prod.yml up -d
+
+            # Restart nginx to re-mount the new webapp-dist directory
+            docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
             sleep 15

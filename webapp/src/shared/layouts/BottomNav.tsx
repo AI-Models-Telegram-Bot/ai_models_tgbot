@@ -11,21 +11,44 @@ interface NavItem {
 }
 
 const UserIcon = () => (
-  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="userGrad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#818cf8" />
+        <stop offset="1" stopColor="#6366f1" />
+      </linearGradient>
+    </defs>
+    <circle cx="12" cy="8" r="4.5" fill="url(#userGrad)" opacity="0.9" />
+    <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" fill="url(#userGrad)" opacity="0.7" />
   </svg>
 );
 
 const CrownIcon = () => (
-  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 16l2-8 5 4 5-4 2 8H5z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 16h14" />
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="crownGrad" x1="3" y1="4" x2="21" y2="20" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#fbbf24" />
+        <stop offset="1" stopColor="#f59e0b" />
+      </linearGradient>
+    </defs>
+    <path d="M3 17l2.5-9L10 12l2-6 2 6 4.5-4L21 17H3z" fill="url(#crownGrad)" opacity="0.9" />
+    <rect x="3" y="17" width="18" height="2.5" rx="1.25" fill="url(#crownGrad)" opacity="0.7" />
   </svg>
 );
 
 const HandshakeIcon = () => (
-  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="refGrad" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#34d399" />
+        <stop offset="1" stopColor="#10b981" />
+      </linearGradient>
+    </defs>
+    <circle cx="8" cy="7" r="3" fill="url(#refGrad)" opacity="0.9" />
+    <circle cx="16" cy="7" r="3" fill="url(#refGrad)" opacity="0.9" />
+    <path d="M2 20c0-2.761 2.686-5 6-5 1.075 0 2.088.216 3 .6" fill="url(#refGrad)" opacity="0.6" />
+    <path d="M22 20c0-2.761-2.686-5-6-5-1.075 0-2.088.216-3 .6" fill="url(#refGrad)" opacity="0.6" />
+    <path d="M9 18.5l2-1.5 2 1.5 2-1.5" stroke="url(#refGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
   </svg>
 );
 
@@ -53,11 +76,13 @@ export const BottomNav: React.FC = () => {
                 navigate(item.path);
               }}
               className={cn(
-                'flex flex-col items-center justify-center flex-1 h-full transition-colors',
+                'flex flex-col items-center justify-center flex-1 h-full transition-all',
                 isActive ? 'text-brand-primary' : 'text-content-tertiary'
               )}
             >
-              {item.icon}
+              <span className={cn('transition-opacity', isActive ? 'opacity-100' : 'opacity-40')}>
+                {item.icon}
+              </span>
               <span className="text-[10px] font-medium mt-1">{t(item.labelKey)}</span>
             </button>
           );

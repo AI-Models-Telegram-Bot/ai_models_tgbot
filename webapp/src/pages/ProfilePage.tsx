@@ -96,7 +96,7 @@ const ProfilePage: React.FC = () => {
         <UserCard user={user} wallet={wallet} />
         <CurrentPlanCard
           plan={currentPlan}
-          onViewPlans={() => navigate('/subscriptions')}
+          onViewPlans={() => navigate('/')}
         />
 
         {/* Credit Usage */}
