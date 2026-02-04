@@ -80,9 +80,7 @@ export const BottomNav: React.FC = () => {
                 isActive ? 'text-brand-primary' : 'text-content-tertiary'
               )}
             >
-              <span className={cn('transition-opacity', isActive ? 'opacity-100' : 'opacity-40')}>
-                {item.icon}
-              </span>
+              {item.icon}
               <span className="text-[10px] font-medium mt-1">{t(item.labelKey)}</span>
             </button>
           );
