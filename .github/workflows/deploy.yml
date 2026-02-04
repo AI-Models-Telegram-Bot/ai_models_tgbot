@@ -81,9 +81,10 @@ jobs:
               -w /app \
               node:20-alpine \
               sh -c "npm ci && npm run build:prod"
-            # Sync built files into webapp-dist (preserve directory inode for nginx bind mount)
-            mkdir -p webapp-dist
-            rsync -a --delete webapp/dist/ webapp-dist/
+            # Copy built files for nginx mount
+            # Use sudo because Docker creates root-owned files in webapp/dist
+            sudo rm -rf webapp-dist
+            cp -r webapp/dist webapp-dist
             chmod -R 755 webapp-dist
             echo "Webapp built successfully"
 
@@ -96,7 +97,7 @@ jobs:
             # Restart services
             docker compose -f docker-compose.prod.yml up -d
 
-            # Restart nginx to pick up updated webapp files
+            # Restart nginx to re-mount the new webapp-dist directory
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
