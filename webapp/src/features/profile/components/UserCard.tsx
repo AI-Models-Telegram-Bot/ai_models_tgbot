@@ -33,8 +33,10 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
                 alt={displayName}
                 width={56}
                 height={56}
-                className="object-cover"
+                className="object-cover rounded-full"
                 style={{ width: 56, height: 56, display: 'block' }}
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
               />
             ) : (
               <span className="text-xl font-bold text-brand-primary/70">

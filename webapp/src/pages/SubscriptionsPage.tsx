@@ -69,7 +69,7 @@ const SubscriptionsPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="flex overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory" style={{ columnGap: 16 }}>
+          <div className="flex overflow-x-auto scrollbar-hide pt-4 pb-4 snap-x snap-mandatory" style={{ columnGap: 16 }}>
             {plans.map((plan, index) => (
               <div key={plan.tier} className="snap-start">
                 <SubscriptionTierCard

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
+import { FeaturesModal } from './FeaturesModal';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
 interface SubscriptionTierCardProps {
@@ -30,6 +31,8 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   index,
   onSelect,
 }) => {
+  const [showFeatures, setShowFeatures] = useState(false);
+
   return (
     <motion.div
       initial={{ y: 30, opacity: 0 }}
@@ -89,20 +92,25 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           </div>
         </div>
 
-        {/* Features */}
-        <div className="space-y-1.5 mb-5">
-          {plan.features.slice(0, 5).map((feature, i) => (
+        {/* Features preview */}
+        <div className="space-y-1.5 mb-3">
+          {plan.features.slice(0, 3).map((feature, i) => (
             <div key={i} className="flex items-start text-sm" style={{ columnGap: 8 }}>
               <span className="text-brand-primary mt-0.5 text-xs">✓</span>
               <span className="text-content-secondary text-xs">{feature}</span>
             </div>
           ))}
-          {plan.features.length > 5 && (
-            <span className="text-content-tertiary text-xs">
-              +{plan.features.length - 5} more
-            </span>
-          )}
         </div>
+
+        {/* All Features button */}
+        {plan.features.length > 0 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowFeatures(true); }}
+            className="w-full text-center text-xs font-medium text-brand-primary/80 hover:text-brand-primary py-1.5 mb-3 rounded-lg bg-brand-primary/5 border border-brand-primary/10 transition-colors"
+          >
+            All Features ({plan.features.length})
+          </button>
+        )}
 
         {/* Action button */}
         {isCurrent ? (
@@ -124,6 +132,12 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           </Button>
         )}
       </div>
+
+      <FeaturesModal
+        isOpen={showFeatures}
+        onClose={() => setShowFeatures(false)}
+        plan={plan}
+      />
     </motion.div>
   );
 };
