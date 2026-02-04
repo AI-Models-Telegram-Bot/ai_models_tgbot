@@ -75,14 +75,15 @@ jobs:
             # Build webapp frontend using Docker (no Node.js needed on server)
             echo "Building webapp..."
             docker run --rm \
+              --user "$(id -u):$(id -g)" \
+              -e HOME=/tmp \
               -v "$(pwd)/webapp:/app" \
               -w /app \
               node:20-alpine \
               sh -c "npm ci && npm run build:prod"
-            # Copy built files for nginx mount
-            # Use sudo because Docker creates root-owned files in webapp/dist
-            sudo rm -rf webapp-dist
-            cp -r webapp/dist webapp-dist
+            # Sync built files into webapp-dist (preserve directory inode for nginx bind mount)
+            mkdir -p webapp-dist
+            rsync -a --delete webapp/dist/ webapp-dist/
             chmod -R 755 webapp-dist
             echo "Webapp built successfully"
 
@@ -95,7 +96,7 @@ jobs:
             # Restart services
             docker compose -f docker-compose.prod.yml up -d
 
-            # Restart nginx to re-mount the new webapp-dist directory
+            # Restart nginx to pick up updated webapp files
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
