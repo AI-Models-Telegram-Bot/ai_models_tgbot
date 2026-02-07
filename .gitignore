@@ -14,5 +14,5 @@ logs/
 !webapp/.env.development
 !webapp/.env.staging
 
-# Keep .env.staging template for reference (actual server file has secrets)
-!.env.staging
+# Template files for reference (actual server files have secrets)
+!.env.staging.example

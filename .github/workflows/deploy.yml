@@ -62,10 +62,10 @@ jobs:
             set -e
             cd ~/ai_models_tgbot
 
-            # Pull latest dev code
+            # Pull latest dev code (preserve .env files)
             git fetch origin
             git checkout dev
-            git checkout -- . 2>/dev/null || true
+            git checkout -- ':(exclude).env*' . 2>/dev/null || true
             git clean -fd -- '*.tsbuildinfo' 2>/dev/null || true
             git pull origin dev
 
@@ -91,7 +91,7 @@ jobs:
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
-            sleep 10
+            sleep 20
             if ! curl -sf http://localhost:3003/health > /dev/null; then
               echo "Dev health check failed!"
               exit 1
@@ -135,10 +135,10 @@ jobs:
             # Save current commit for rollback
             PREV_COMMIT=$(git rev-parse HEAD)
 
-            # Pull latest code (discard build artifacts that may have been generated on server)
+            # Pull latest code (preserve .env files, discard build artifacts)
             git fetch origin
             git checkout master
-            git checkout -- . 2>/dev/null || true
+            git checkout -- ':(exclude).env*' . 2>/dev/null || true
             git clean -fd -- '*.tsbuildinfo' 2>/dev/null || true
             git pull origin master
 
