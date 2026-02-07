@@ -65,7 +65,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: [],
       },
       audio: {
-        allowed: ['tts-basic'],
+        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2'],
       },
     },
     features: [
@@ -103,7 +103,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['runway-gen2', 'pika-1.0'],
       },
       audio: {
-        allowed: ['elevenlabs', 'whisper', 'tts-advanced'],
+        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'whisper', 'tts-advanced'],
         unlimited: ['whisper'],
       },
     },
@@ -144,7 +144,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['runway-gen3', 'pika-1.5', 'kling-1.5', 'luma-ai'],
       },
       audio: {
-        allowed: ['elevenlabs-pro', 'whisper', 'musicgen', 'tts-advanced'],
+        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'whisper', 'musicgen', 'tts-advanced'],
         unlimited: ['whisper', 'tts-advanced'],
       },
     },

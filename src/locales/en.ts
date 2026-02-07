@@ -23,6 +23,14 @@ export const en = {
     // Language
     langEnglish: '🇺🇸 English',
     langRussian: '🇷🇺 Русский',
+    // Audio Functions
+    audioElevenLabs: '🎙️ ElevenLabs Voice',
+    audioVoiceCloning: '👥 Voice Cloning',
+    audioSuno: '🎸 SUNO (Music)',
+    audioSoundGen: '🥁 Sound Generator',
+    audioVoiceSettings: '🎛️ Voice Settings',
+    audioSunoSettings: '🎛️ SUNO Settings',
+    audioSoundSettings: '🎛️ Sound Settings',
   },
 
   // Messages
@@ -131,6 +139,48 @@ Select a model:`,
 Generate speech with ElevenLabs or music with Suno.
 
 Select a model:`,
+
+    // Audio Functions
+    audioFunctionSelect: `🎵 <b>Audio AI</b>
+
+Choose an audio function:`,
+
+    audioElevenLabsDesc: `🎙️ <b>ElevenLabs Voice</b>
+
+Premium text-to-speech synthesis with hundreds of natural voices in 29 languages.
+
+💡 Select your preferred voice in Voice Settings, then send any text to convert to speech.
+
+Fee: ⚡15 credits per generation`,
+
+    audioVoiceCloningDesc: `👥 <b>Voice Cloning</b>
+
+Clone any voice from an audio sample and use it for speech synthesis.
+
+📎 Send a voice message or audio file (5 sec – 5 min) to set the reference voice
+✍️ Then send text to generate speech with the cloned voice
+
+Fee: ⚡8 credits per generation`,
+
+    audioSunoDesc: `🎸 <b>SUNO — Music Generator</b>
+
+Create original songs, covers, and instrumentals powered by AI.
+
+💡 Set your generation mode and music style in SUNO Settings, then describe the song you want.
+
+Fee: ⚡80 credits (you'll receive 2 variations)`,
+
+    audioSoundGenDesc: `🥁 <b>Sound Generator</b>
+
+Create sound effects, ambient audio, and short compositions from text descriptions.
+
+💡 Fine-tune creativity parameters in Sound Settings, then describe the sound you need.
+Example: "birds singing in a forest at dawn"
+
+Fee: ⚡10 credits per generation`,
+
+    audioAccessDenied: 'is not available on your current plan.',
+    audioUpgradeHint: 'Upgrade your subscription to access this feature.',
 
     // Model Selection
     modelSelected: `✅ <b>{modelName}</b> selected ({tokenCost})

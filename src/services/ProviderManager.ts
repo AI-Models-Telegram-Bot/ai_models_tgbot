@@ -96,6 +96,7 @@ export class ProviderManager {
     method: 'generateText' | 'generateImage' | 'generateVideo' | 'generateAudio',
     modelSlug: string,
     input: string,
+    userOptions?: Record<string, unknown>,
   ): Promise<{ result: any; provider: string }> {
     const route = MODEL_ROUTES[modelSlug];
 
@@ -128,7 +129,7 @@ export class ProviderManager {
       try {
         logger.info(`Trying ${name} for ${category}/${modelSlug} (modelId: ${modelId})`);
 
-        const options = { model: modelId, ...extraOptions };
+        const options = { model: modelId, ...extraOptions, ...userOptions };
         const result = await (provider as any)[method](input, options);
 
         logger.info(`✓ ${name} succeeded for ${category}/${modelSlug}`);

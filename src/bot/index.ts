@@ -18,6 +18,7 @@ import {
   handleImageCategory,
   handleVideoCategory,
   handleAudioCategory,
+  handleAudioFunctionSelection,
   handleUserInput,
   handleCallbackQuery,
   handleWebAppData,
@@ -45,6 +46,13 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageAi, ru.buttons.imageAi], handleImageCategory);
   bot.hears([en.buttons.videoAi, ru.buttons.videoAi], handleVideoCategory);
   bot.hears([en.buttons.audioAi, ru.buttons.audioAi], handleAudioCategory);
+
+  // Audio function buttons (EN & RU)
+  bot.hears([en.buttons.audioElevenLabs, ru.buttons.audioElevenLabs], (ctx) => handleAudioFunctionSelection(ctx, 'elevenlabs_voice'));
+  bot.hears([en.buttons.audioVoiceCloning, ru.buttons.audioVoiceCloning], (ctx) => handleAudioFunctionSelection(ctx, 'voice_cloning'));
+  bot.hears([en.buttons.audioSuno, ru.buttons.audioSuno], (ctx) => handleAudioFunctionSelection(ctx, 'suno'));
+  bot.hears([en.buttons.audioSoundGen, ru.buttons.audioSoundGen], (ctx) => handleAudioFunctionSelection(ctx, 'sound_generator'));
+
   bot.hears([en.buttons.profile, ru.buttons.profile], handleProfile);
   bot.hears([en.buttons.help, ru.buttons.help], handleHelp);
 
@@ -63,8 +71,16 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.langEnglish, ru.buttons.langEnglish], (ctx) => handleLanguageChange(ctx, 'en'));
   bot.hears([en.buttons.langRussian, ru.buttons.langRussian], (ctx) => handleLanguageChange(ctx, 'ru'));
 
-  // Back button - goes to help menu
-  bot.hears([en.buttons.back, ru.buttons.back], handleHelp);
+  // Back button - context-aware: audio function menu or help
+  bot.hears([en.buttons.back, ru.buttons.back], async (ctx) => {
+    if (ctx.session?.audioFunction) {
+      ctx.session.audioFunction = undefined;
+      ctx.session.awaitingInput = false;
+      ctx.session.selectedModel = undefined;
+      return handleAudioCategory(ctx);
+    }
+    return handleHelp(ctx);
+  });
 
   // Callback queries (inline keyboard)
   bot.on('callback_query', handleCallbackQuery);

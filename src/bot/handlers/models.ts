@@ -2,6 +2,7 @@ import { WalletCategory } from '@prisma/client';
 import { BotContext } from '../types';
 import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
 import { modelService, requestService, walletService, modelAccessService } from '../../services';
+import { getAudioOptionsForFunction } from './audio';
 import { logger } from '../../utils/logger';
 import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
@@ -158,6 +159,20 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   const processingMessage = t(lang, 'messages.processing', { modelName: model.name });
   const processingMsg = await ctx.reply(processingMessage);
 
+  // Load audio settings if this is an audio function
+  let audioOptions: Record<string, unknown> | undefined;
+  if (ctx.session.audioFunction && ctx.from) {
+    try {
+      audioOptions = await getAudioOptionsForFunction(
+        ctx.user.id,
+        BigInt(ctx.from.id),
+        ctx.session.audioFunction,
+      );
+    } catch (err) {
+      logger.warn('Failed to load audio options, using defaults', { err });
+    }
+  }
+
   // Enqueue the job - worker will handle execution and result delivery
   try {
     await enqueueGeneration({
@@ -173,6 +188,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       creditsCost,
       priceItemCode,
       walletCategory: walletCat,
+      ...(audioOptions && { audioOptions }),
     });
 
     logger.info('Job enqueued', { requestId: request.id, model: model.slug });
@@ -195,4 +211,5 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
 
   ctx.session.awaitingInput = false;
   ctx.session.selectedModel = undefined;
+  ctx.session.audioFunction = undefined;
 }

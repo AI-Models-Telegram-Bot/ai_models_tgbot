@@ -88,6 +88,4 @@ export async function handleVideoCategory(ctx: BotContext): Promise<void> {
   await handleCategorySelection(ctx, 'VIDEO');
 }
 
-export async function handleAudioCategory(ctx: BotContext): Promise<void> {
-  await handleCategorySelection(ctx, 'AUDIO');
-}
+export { handleAudioFunctionMenu as handleAudioCategory } from './audio';

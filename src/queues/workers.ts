@@ -74,7 +74,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input);
         break;
       case 'AUDIO':
-        generationResponse = await manager.generateWithModel('AUDIO', 'generateAudio', modelSlug, input);
+        generationResponse = await manager.generateWithModel('AUDIO', 'generateAudio', modelSlug, input, job.data.audioOptions);
         break;
       default:
         throw new Error(`Unsupported model category: ${model.category}`);
