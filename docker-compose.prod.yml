@@ -53,6 +53,35 @@ services:
   #   networks:
   #     - aibot_network
 
+  # ============================================
+  # DEV/STAGING BOT (uses test bot token)
+  # ============================================
+  dev-bot:
+    build: .
+    container_name: aibot_dev
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    env_file:
+      - .env.staging
+    environment:
+      - NODE_ENV=staging
+      - INSTANCE_ID=dev
+      - BOT_MODE=polling
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aibot_network
+
   # Dedicated Worker (no bot, just queue processing)
   worker:
     build: .
@@ -90,8 +119,10 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
       - ./webapp-dist:/var/www/webapp:ro
+      - ./webapp-dev-dist:/var/www/webapp-dev:ro
     depends_on:
       - bot1
+      - dev-bot
       - pgadmin
     networks:
       - aibot_network

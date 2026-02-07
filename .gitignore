@@ -3,6 +3,7 @@ node_modules/
 .env.*
 dist/
 webapp-dist/
+webapp-dev-dist/
 logs/
 *.log
 .DS_Store
@@ -11,3 +12,7 @@ logs/
 # Allow webapp env files (no secrets, just public URLs)
 !webapp/.env.production
 !webapp/.env.development
+!webapp/.env.staging
+
+# Keep .env.staging template for reference (actual server file has secrets)
+!.env.staging
