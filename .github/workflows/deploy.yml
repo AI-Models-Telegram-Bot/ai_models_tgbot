@@ -65,9 +65,16 @@ jobs:
             # Pull latest dev code (preserve .env files)
             git fetch origin
             git checkout dev
-            git checkout -- ':(exclude).env*' . 2>/dev/null || true
+
+            # Backup and untrack .env files to prevent merge conflicts
+            for f in .env*; do [ -f "$f" ] && cp "$f" "/tmp/$f.bak" && git rm --cached "$f" 2>/dev/null || true; done
+
+            git checkout -- . 2>/dev/null || true
             git clean -fd -- '*.tsbuildinfo' 2>/dev/null || true
             git pull origin dev
+
+            # Restore .env files
+            for f in /tmp/.env*.bak; do [ -f "$f" ] && cp "$f" "$(basename ${f%.bak})" 2>/dev/null || true; done
 
             # Build dev webapp frontend
             echo "Building dev webapp..."
@@ -138,9 +145,16 @@ jobs:
             # Pull latest code (preserve .env files, discard build artifacts)
             git fetch origin
             git checkout master
-            git checkout -- ':(exclude).env*' . 2>/dev/null || true
+
+            # Backup and untrack .env files to prevent merge conflicts
+            for f in .env*; do [ -f "$f" ] && cp "$f" "/tmp/$f.bak" && git rm --cached "$f" 2>/dev/null || true; done
+
+            git checkout -- . 2>/dev/null || true
             git clean -fd -- '*.tsbuildinfo' 2>/dev/null || true
             git pull origin master
+
+            # Restore .env files
+            for f in /tmp/.env*.bak; do [ -f "$f" ] && cp "$f" "$(basename ${f%.bak})" 2>/dev/null || true; done
 
             # Build webapp frontend using Docker (no Node.js needed on server)
             echo "Building webapp..."
