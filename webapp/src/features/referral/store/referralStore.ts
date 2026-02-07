@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { referralApi } from '@/services/api/referral.api';
+import { BOT_USERNAME } from '@/shared/utils/constants';
 import type { ReferralStats, ReferralBenefit } from '@/types/referral.types';
 
 interface ReferralState {
@@ -26,9 +27,15 @@ export const useReferralStore = create<ReferralState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await referralApi.getInfo();
+      // Use server URL if available, otherwise build from VITE_BOT_USERNAME
+      const url =
+        data.referralUrl ||
+        (BOT_USERNAME && data.referralCode
+          ? `https://t.me/${BOT_USERNAME}?start=${data.referralCode}`
+          : '');
       set({
         referralCode: data.referralCode,
-        referralUrl: data.referralUrl,
+        referralUrl: url,
         stats: data.stats,
         isLoading: false,
       });

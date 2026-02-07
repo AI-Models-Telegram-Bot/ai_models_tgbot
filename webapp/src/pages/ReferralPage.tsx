@@ -6,10 +6,12 @@ import { Card, Button, Skeleton, Modal } from '@/shared/ui';
 import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { openTelegramLink } from '@/services/telegram/telegram';
+import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import toast from 'react-hot-toast';
 
 const ReferralPage: React.FC = () => {
   const { t } = useTranslation(['referral', 'common']);
+  const { isLoading: isTelegramLoading } = useTelegramUser();
   const {
     referralUrl,
     stats,
@@ -21,10 +23,13 @@ const ReferralPage: React.FC = () => {
   const { copy } = useCopyToClipboard();
   const [benefitsOpen, setBenefitsOpen] = useState(false);
 
+  // Wait for Telegram SDK to initialize before fetching (initData must be ready for auth)
   useEffect(() => {
-    fetchReferralInfo();
-    fetchBenefits();
-  }, [fetchReferralInfo, fetchBenefits]);
+    if (!isTelegramLoading) {
+      fetchReferralInfo();
+      fetchBenefits();
+    }
+  }, [isTelegramLoading, fetchReferralInfo, fetchBenefits]);
 
   const handleCopyLink = async () => {
     hapticImpact('light');
@@ -42,7 +47,7 @@ const ReferralPage: React.FC = () => {
     openTelegramLink(shareUrl);
   };
 
-  if (isLoading) {
+  if (isLoading || isTelegramLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-20 rounded-2xl" variant="rectangular" />
