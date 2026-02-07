@@ -26,7 +26,7 @@ export function useTelegramUser(): {
     let attempts = 0;
     const maxAttempts = 50; // Try for 5 seconds max (increased from 2)
     const interval = 100;
-    let timer: NodeJS.Timeout | null = null;
+    let timer: ReturnType<typeof setInterval> | null = null;
 
     const checkTelegram = (): boolean => {
       const webapp = window.Telegram?.WebApp;
