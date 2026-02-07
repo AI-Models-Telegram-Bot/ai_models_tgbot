@@ -1,36 +1,51 @@
-export type PaymentMethod = 'telegram_stars' | 'stripe' | 'yookassa';
+export type PaymentMethod = 'telegram_stars' | 'yookassa' | 'sbp' | 'card_ru';
 
 export interface CreatePaymentRequest {
-  planTier: string;
+  telegramId: string;
+  tier: string;
   paymentMethod: PaymentMethod;
-  currency?: 'USD' | 'RUB';
 }
 
 export interface TelegramStarsPaymentResponse {
   method: 'telegram_stars';
   invoiceUrl: string;
-  invoiceId: string;
+  starsAmount: number;
+  priceUSD: number;
 }
 
-export interface StripePaymentResponse {
-  method: 'stripe';
-  clientSecret: string;
-  publicKey: string;
+export interface ComingSoonPaymentResponse {
+  method: 'yookassa' | 'sbp' | 'card_ru';
+  status: 'coming_soon';
+  priceRUB: number;
+  message: string;
 }
 
-export interface YooKassaPaymentResponse {
-  method: 'yookassa';
-  confirmationUrl: string;
-  paymentId: string;
+export interface ContactPaymentResponse {
+  method: 'contact';
+  message: string;
 }
 
 export type CreatePaymentResponse =
   | TelegramStarsPaymentResponse
-  | StripePaymentResponse
-  | YooKassaPaymentResponse;
+  | ComingSoonPaymentResponse
+  | ContactPaymentResponse;
 
 export interface PaymentVerifyResponse {
   status: 'pending' | 'succeeded' | 'failed';
-  packageId?: string;
-  creditsAdded?: number;
+  message?: string;
+}
+
+export interface PaymentMethodInfo {
+  id: PaymentMethod;
+  name: string;
+  nameRu: string;
+  icon: string;
+  available: boolean;
+  description: string;
+  descriptionRu: string;
+  comingSoon?: boolean;
+}
+
+export interface PaymentMethodsResponse {
+  methods: PaymentMethodInfo[];
 }

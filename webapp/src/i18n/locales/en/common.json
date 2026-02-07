@@ -7,5 +7,7 @@
   "error": "Error",
   "success": "Success",
   "retry": "Retry",
-  "copied": "Copied!"
+  "copied": "Copied!",
+  "openInTelegram": "Open in Telegram",
+  "openInTelegramDesc": "This app is designed to be opened from the Telegram bot. Please open it via the bot menu."
 }

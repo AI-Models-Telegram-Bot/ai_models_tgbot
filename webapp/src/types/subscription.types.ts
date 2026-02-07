@@ -51,3 +51,23 @@ export interface CurrentSubscriptionResponse {
     modelAccess: ModelAccessConfig;
   } | null;
 }
+
+export interface TierModel {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  creditCost: number;
+  isUnlimited: boolean;
+}
+
+export interface TierModelsResponse {
+  tier: string;
+  credits: SubscriptionPlan['credits'];
+  models: {
+    text: TierModel[];
+    image: TierModel[];
+    video: TierModel[];
+    audio: TierModel[];
+  };
+}

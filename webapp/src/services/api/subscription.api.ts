@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { SubscriptionPlansResponse, CurrentSubscriptionResponse } from '@/types/subscription.types';
+import type { SubscriptionPlansResponse, CurrentSubscriptionResponse, TierModelsResponse } from '@/types/subscription.types';
 
 export const subscriptionApi = {
   getPlans: () =>
@@ -8,6 +8,11 @@ export const subscriptionApi = {
   getCurrentSubscription: (telegramId: string) =>
     apiClient
       .get<CurrentSubscriptionResponse>(`/subscriptions/current/${telegramId}`)
+      .then((r) => r.data),
+
+  getModelsForTier: (tier: string) =>
+    apiClient
+      .get<TierModelsResponse>(`/subscriptions/models/${tier}`)
       .then((r) => r.data),
 
   upgrade: (telegramId: string, tier: string) =>
