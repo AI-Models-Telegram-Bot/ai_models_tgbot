@@ -25,13 +25,35 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = 'hidden';
       // Prevent Telegram WebApp from closing when scrolling inside modal
       document.body.style.overscrollBehavior = 'contain';
+
+      // Disable Telegram's vertical swipe to close if available
+      try {
+        const webapp = window.Telegram?.WebApp as any;
+        webapp?.disableVerticalSwipes?.();
+      } catch {
+        // Method may not be available in older versions
+      }
     } else {
       document.body.style.overflow = 'unset';
       document.body.style.overscrollBehavior = 'auto';
+
+      // Re-enable Telegram's vertical swipe
+      try {
+        const webapp = window.Telegram?.WebApp as any;
+        webapp?.enableVerticalSwipes?.();
+      } catch {
+        // Method may not be available in older versions
+      }
     }
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.overscrollBehavior = 'auto';
+      try {
+        const webapp = window.Telegram?.WebApp as any;
+        webapp?.enableVerticalSwipes?.();
+      } catch {
+        // Ignore
+      }
     };
   }, [isOpen]);
 
@@ -48,22 +70,35 @@ export const Modal: React.FC<ModalProps> = ({
     const content = contentRef.current;
     if (!content || !isOpen) return;
 
+    let startY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+
     const handleTouchMove = (e: TouchEvent) => {
       const scrollable = content;
+      const currentY = e.touches[0].clientY;
+      const deltaY = currentY - startY;
 
-      // Check if we're at scroll boundaries
       const isAtTop = scrollable.scrollTop <= 0;
-      const isAtBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight;
+      const isAtBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
+      const isScrollingDown = deltaY > 0; // finger moving down = scrolling up
+      const isScrollingUp = deltaY < 0; // finger moving up = scrolling down
 
-      // If at boundaries and trying to scroll past, prevent default
-      // but only stop propagation, don't prevent the touch entirely
-      if ((isAtTop || isAtBottom) && scrollable.scrollHeight > scrollable.clientHeight) {
+      // Prevent default if at boundary and trying to scroll past it
+      if ((isAtTop && isScrollingDown) || (isAtBottom && isScrollingUp)) {
+        e.preventDefault();
         e.stopPropagation();
       }
     };
 
-    content.addEventListener('touchmove', handleTouchMove, { passive: true });
-    return () => content.removeEventListener('touchmove', handleTouchMove);
+    content.addEventListener('touchstart', handleTouchStart, { passive: true });
+    content.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      content.removeEventListener('touchstart', handleTouchStart);
+      content.removeEventListener('touchmove', handleTouchMove);
+    };
   }, [isOpen]);
 
   const modalContent = (

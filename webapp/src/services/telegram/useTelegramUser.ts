@@ -24,17 +24,57 @@ export function useTelegramUser(): {
 
   useEffect(() => {
     let attempts = 0;
-    const maxAttempts = 20; // Try for 2 seconds max
+    const maxAttempts = 50; // Try for 5 seconds max (increased from 2)
     const interval = 100;
+    let timer: NodeJS.Timeout | null = null;
 
-    const checkTelegram = () => {
+    const checkTelegram = (): boolean => {
       const webapp = window.Telegram?.WebApp;
+
+      // Signal that the WebApp is ready
+      if (webapp && typeof webapp.ready === 'function') {
+        try {
+          webapp.ready();
+        } catch {
+          // Ignore errors from ready()
+        }
+      }
+
+      // Try to expand the webapp
+      if (webapp && typeof webapp.expand === 'function') {
+        try {
+          webapp.expand();
+        } catch {
+          // Ignore errors from expand()
+        }
+      }
+
       const telegramUser = webapp?.initDataUnsafe?.user;
 
       if (telegramUser?.id) {
         setUser(telegramUser);
         setIsLoading(false);
         return true;
+      }
+
+      // Also check initData string as a fallback
+      const initData = webapp?.initData;
+      if (initData && initData.length > 0) {
+        // Parse initData to get user if initDataUnsafe is empty
+        try {
+          const params = new URLSearchParams(initData);
+          const userStr = params.get('user');
+          if (userStr) {
+            const parsedUser = JSON.parse(userStr);
+            if (parsedUser?.id) {
+              setUser(parsedUser);
+              setIsLoading(false);
+              return true;
+            }
+          }
+        } catch {
+          // Ignore parsing errors
+        }
       }
 
       attempts++;
@@ -51,13 +91,15 @@ export function useTelegramUser(): {
     if (checkTelegram()) return;
 
     // Poll for Telegram readiness
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
       if (checkTelegram()) {
-        clearInterval(timer);
+        if (timer) clearInterval(timer);
       }
     }, interval);
 
-    return () => clearInterval(timer);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, []);
 
   return {
