@@ -1,18 +1,15 @@
 {
-  "title": "Referral",
-  "description": "Send your unique links to friends and earn together with {{botName}}.",
-  "createLink": "Create Link",
-  "benefits": "Benefits",
-  "myLinks": "My Referral Links",
-  "invited": "Invited: {{count}}",
-  "creditsPurchased": "Credits Purchased: {{count}}",
+  "title": "Referral Program",
+  "description": "Share your referral link with friends and earn bonuses together!",
+  "yourLink": "Your Referral Link",
+  "share": "Share",
+  "shareText": "Join me on AI Models Bot and get free credits!",
   "copyLink": "Copy Link",
-  "swipeHint": "Swipe left or right to view other links.",
-  "linkLabel": "LINK #{{number}}",
+  "benefits": "Benefits",
+  "bonusDescription": "{{percentage}}% bonus from referral purchases",
   "stats": {
     "invited": "Invited",
     "earned": "Earned",
     "bonus": "Bonus"
-  },
-  "noLinks": "No referral links yet. Create one above!"
+  }
 }

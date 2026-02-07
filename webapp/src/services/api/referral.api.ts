@@ -1,18 +1,9 @@
 import apiClient from './client';
-import type {
-  ReferralLinksResponse,
-  ReferralLink,
-  ReferralBenefit,
-} from '@/types/referral.types';
+import type { ReferralInfoResponse, ReferralBenefit } from '@/types/referral.types';
 
 export const referralApi = {
-  getLinks: () =>
-    apiClient.get<ReferralLinksResponse>('/referral/links').then((r) => r.data),
-
-  createLink: () =>
-    apiClient
-      .post<{ link: ReferralLink }>('/referral/create')
-      .then((r) => r.data),
+  getInfo: () =>
+    apiClient.get<ReferralInfoResponse>('/referral/links').then((r) => r.data),
 
   getBenefits: () =>
     apiClient

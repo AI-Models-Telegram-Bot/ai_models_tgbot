@@ -221,7 +221,7 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
         {plan.features.length > 0 && (
           <div>
             <h4 className="text-xs font-medium text-content-tertiary uppercase tracking-wider mb-3">
-              {t('subscriptions:features', 'Features')}
+              {t('subscriptions:featuresTitle', 'Features')}
             </h4>
             <div className="space-y-2">
               {plan.features.map((feature, i) => (
@@ -232,7 +232,7 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
                       <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </span>
-                  <span className="text-content-secondary text-sm">{feature}</span>
+                  <span className="text-content-secondary text-sm">{t(`subscriptions:${feature}`, feature)}</span>
                 </div>
               ))}
             </div>

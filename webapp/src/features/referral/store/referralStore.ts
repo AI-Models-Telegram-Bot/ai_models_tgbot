@@ -1,63 +1,41 @@
 import { create } from 'zustand';
 import { referralApi } from '@/services/api/referral.api';
-import type { ReferralLink, ReferralStats, ReferralBenefit } from '@/types/referral.types';
+import type { ReferralStats, ReferralBenefit } from '@/types/referral.types';
 
 interface ReferralState {
-  links: ReferralLink[];
+  referralCode: string;
+  referralUrl: string;
   stats: ReferralStats | null;
   benefits: ReferralBenefit[];
-  maxLinks: number;
   isLoading: boolean;
-  isCreating: boolean;
   error: string | null;
 
-  fetchReferralLinks: () => Promise<void>;
-  createReferralLink: () => Promise<void>;
+  fetchReferralInfo: () => Promise<void>;
   fetchBenefits: () => Promise<void>;
 }
 
-export const useReferralStore = create<ReferralState>((set, get) => ({
-  links: [],
+export const useReferralStore = create<ReferralState>((set) => ({
+  referralCode: '',
+  referralUrl: '',
   stats: null,
   benefits: [],
-  maxLinks: 10,
   isLoading: false,
-  isCreating: false,
   error: null,
 
-  fetchReferralLinks: async () => {
+  fetchReferralInfo: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await referralApi.getLinks();
+      const data = await referralApi.getInfo();
       set({
-        links: data.links,
+        referralCode: data.referralCode,
+        referralUrl: data.referralUrl,
         stats: data.stats,
-        maxLinks: data.maxLinks,
         isLoading: false,
       });
     } catch (err) {
       set({
-        error: err instanceof Error ? err.message : 'Failed to load links',
+        error: err instanceof Error ? err.message : 'Failed to load referral info',
         isLoading: false,
-      });
-    }
-  },
-
-  createReferralLink: async () => {
-    const { links, maxLinks } = get();
-    if (links.length >= maxLinks) return;
-
-    set({ isCreating: true, error: null });
-    try {
-      const data = await referralApi.createLink();
-      set((state) => ({
-        links: [...state.links, data.link],
-        isCreating: false,
-      }));
-    } catch (err) {
-      set({
-        error: err instanceof Error ? err.message : 'Failed to create link',
-        isCreating: false,
       });
     }
   },

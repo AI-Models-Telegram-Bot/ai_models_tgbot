@@ -15,9 +15,8 @@ interface PaymentMethodModalProps {
   onSuccess?: () => void;
 }
 
-const formatPrice = (priceUSD: number | null, priceRUB: number | null, lang: string) => {
-  if (priceUSD === null) return lang === 'ru' ? 'По запросу' : 'Contact Us';
-  if (priceUSD === 0) return lang === 'ru' ? 'Бесплатно' : 'Free';
+const formatPriceDisplay = (priceUSD: number | null, priceRUB: number | null, lang: string) => {
+  if (priceUSD === null || priceUSD === 0) return '';
   const rub = priceRUB ? `${priceRUB.toLocaleString()} ₽` : '';
   const usd = `$${priceUSD}`;
   return lang === 'ru' && rub ? `${rub} / ${usd}` : usd;
@@ -30,7 +29,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   telegramId,
   onSuccess,
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['subscriptions', 'common']);
   const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
 
   const [methods, setMethods] = useState<PaymentMethodInfo[]>([]);
@@ -46,7 +45,6 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
         .getMethods()
         .then((data) => {
           setMethods(data.methods);
-          // Auto-select first available method
           const firstAvailable = data.methods.find((m) => m.available);
           if (firstAvailable) {
             setSelectedMethod(firstAvailable.id);
@@ -75,7 +73,6 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
       });
 
       if (response.method === 'telegram_stars' && 'invoiceUrl' in response) {
-        // Open Telegram invoice
         openTelegramInvoice(response.invoiceUrl, (status) => {
           if (status === 'paid') {
             hapticNotification('success');
@@ -83,31 +80,27 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
             onClose();
           } else if (status === 'cancelled') {
             hapticNotification('warning');
-            setError(lang === 'ru' ? 'Платёж отменён' : 'Payment cancelled');
+            setError(t('subscriptions:payment.cancelled'));
           } else if (status === 'failed') {
             hapticNotification('error');
-            setError(lang === 'ru' ? 'Платёж не удался' : 'Payment failed');
+            setError(t('subscriptions:payment.failed'));
           }
           setIsProcessing(false);
         });
       } else if ('status' in response && response.status === 'coming_soon') {
-        setError(lang === 'ru' ? 'Этот способ оплаты скоро будет доступен' : 'This payment method is coming soon');
+        setError(t('subscriptions:payment.comingSoon'));
         setIsProcessing(false);
       } else if (response.method === 'contact') {
-        // Contact us flow
-        setError(lang === 'ru'
-          ? 'Для Enterprise тарифа свяжитесь с нами напрямую'
-          : 'For Enterprise plan, please contact us directly');
+        setError(t('subscriptions:payment.enterpriseContact'));
         setIsProcessing(false);
       }
     } catch (err: any) {
       hapticNotification('error');
-      setError(err.message || (lang === 'ru' ? 'Ошибка создания платежа' : 'Failed to create payment'));
+      setError(err.message || t('subscriptions:payment.createError'));
       setIsProcessing(false);
     }
   };
 
-  // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setError(null);
@@ -120,7 +113,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={lang === 'ru' ? 'Выберите способ оплаты' : 'Select Payment Method'}
+      title={t('subscriptions:payment.selectMethod')}
       size="md"
     >
       <div className="p-5 space-y-5">
@@ -130,11 +123,11 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
             <div>
               <p className="text-white font-semibold">{plan.name}</p>
               <p className="text-content-tertiary text-xs mt-0.5">
-                {lang === 'ru' ? 'Месячная подписка' : 'Monthly subscription'}
+                {t('subscriptions:payment.monthlySubscription')}
               </p>
             </div>
             <p className="text-xl font-bold text-white font-mono">
-              {formatPrice(plan.priceUSD, plan.priceRUB, lang)}
+              {formatPriceDisplay(plan.priceUSD, plan.priceRUB, lang)}
             </p>
           </div>
         </div>
@@ -176,7 +169,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                 </div>
                 {method.comingSoon && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-content-tertiary/20 text-content-tertiary">
-                    {lang === 'ru' ? 'Скоро' : 'Soon'}
+                    {t('subscriptions:payment.soon')}
                   </span>
                 )}
                 {selectedMethod === method.id && method.available && (
@@ -212,20 +205,18 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              {lang === 'ru' ? 'Обработка...' : 'Processing...'}
+              {t('subscriptions:payment.processing')}
             </span>
           ) : (
             <>
               {selectedMethod === 'telegram_stars' && '⭐ '}
-              {lang === 'ru' ? 'Оплатить' : 'Pay'} {formatPrice(plan.priceUSD, plan.priceRUB, lang)}
+              {t('subscriptions:payment.pay')} {formatPriceDisplay(plan.priceUSD, plan.priceRUB, lang)}
             </>
           )}
         </Button>
 
         <p className="text-content-tertiary text-[10px] text-center">
-          {lang === 'ru'
-            ? 'Нажимая "Оплатить", вы соглашаетесь с условиями подписки'
-            : 'By clicking "Pay", you agree to the subscription terms'}
+          {t('subscriptions:payment.terms')}
         </p>
       </div>
     </Modal>

@@ -4,6 +4,7 @@ dotenv.config();
 export const config = {
   bot: {
     token: process.env.BOT_TOKEN || '',
+    username: process.env.BOT_USERNAME || '',
     mode: (process.env.BOT_MODE || 'polling') as 'polling' | 'webhook',
     webhookDomain: process.env.WEBHOOK_DOMAIN || '',
   },

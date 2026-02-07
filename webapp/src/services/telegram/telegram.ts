@@ -18,6 +18,7 @@ interface TelegramWebApp {
   setHeaderColor: (color: string) => void;
   setBackgroundColor: (color: string) => void;
   openInvoice: (url: string, callback: (status: string) => void) => void;
+  openTelegramLink: (url: string) => void;
   initData: string;
   initDataUnsafe: {
     user?: {
@@ -86,6 +87,15 @@ export function openTelegramInvoice(
   callback: (status: string) => void
 ) {
   getWebApp()?.openInvoice(url, callback);
+}
+
+export function openTelegramLink(url: string): void {
+  const webapp = getWebApp();
+  if (webapp) {
+    webapp.openTelegramLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
 }
 
 export function isTelegramEnvironment(): boolean {
