@@ -1,7 +1,8 @@
-import { SubscriptionTier, SubscriptionStatus } from '@prisma/client';
+import { SubscriptionTier, SubscriptionStatus, WalletCategory } from '@prisma/client';
 import { prisma } from '../config/database';
 import { logger } from '../utils/logger';
 import { SUBSCRIPTION_PLANS, getPlanByTier, SubscriptionPlanConfig } from '../config/subscriptions';
+import { walletService } from './WalletService';
 
 export class SubscriptionService {
   /**
@@ -88,7 +89,24 @@ export class SubscriptionService {
       },
     });
 
-    logger.info(`User ${userId} upgraded to ${newTier}`);
+    // Grant monthly credits based on the new tier
+    const credits = plan.credits;
+    const creditCategories: Array<{ category: WalletCategory; amount: number | null }> = [
+      { category: 'TEXT', amount: credits.text },
+      { category: 'IMAGE', amount: credits.image },
+      { category: 'VIDEO', amount: credits.video },
+      { category: 'AUDIO', amount: credits.audio },
+    ];
+
+    for (const { category, amount } of creditCategories) {
+      if (amount !== null && amount > 0) {
+        await walletService.addCredits(userId, category, amount, 'BONUS', {
+          description: `${plan.name} subscription credits`,
+        });
+      }
+    }
+
+    logger.info(`User ${userId} upgraded to ${newTier}, credits granted`);
     return subscription;
   }
 
