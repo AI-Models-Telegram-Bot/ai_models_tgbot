@@ -5,3 +5,5 @@ export { modelService, ModelService } from './ModelService';
 export { requestService, RequestService } from './RequestService';
 export { subscriptionService, SubscriptionService } from './SubscriptionService';
 export { modelAccessService, ModelAccessService } from './ModelAccessService';
+export { audioSettingsService, AudioSettingsService } from './AudioSettingsService';
+export type { ElevenLabsSettings, SunoSettings, SoundGenSettings, VoiceCloningSettings } from './AudioSettingsService';

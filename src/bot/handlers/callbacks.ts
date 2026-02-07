@@ -1,6 +1,7 @@
 import { BotContext } from '../types';
 import { handleCategorySelection } from './categories';
 import { handleModelSelection } from './models';
+import { handleAudioFunctionSelection } from './audio';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { ModelCategory } from '@prisma/client';
 import { deleteMessage } from '../utils';
@@ -24,6 +25,9 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
   if (data.startsWith('category:')) {
     const category = data.replace('category:', '') as ModelCategory;
     await handleCategorySelection(ctx, category);
+  } else if (data.startsWith('audio_func:')) {
+    const functionId = data.replace('audio_func:', '');
+    await handleAudioFunctionSelection(ctx, functionId);
   } else if (data.startsWith('select_model:')) {
     const modelSlug = data.replace('select_model:', '');
     await handleModelSelection(ctx, modelSlug);

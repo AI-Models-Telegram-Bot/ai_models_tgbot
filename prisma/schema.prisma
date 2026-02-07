@@ -31,6 +31,7 @@ model User {
   subscription        UserSubscription?
   referrals           User[]    @relation("Referrals")
   referrer            User?     @relation("Referrals", fields: [referredBy], references: [referralCode])
+  audioSettings       UserAudioSettings?
 
   @@map("users")
 }
@@ -245,6 +246,24 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+// ── Audio Settings ─────────────────────────────────────
+
+model UserAudioSettings {
+  id                   String   @id @default(cuid())
+  userId               String   @unique @map("user_id")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  elevenLabsSettings   Json?    @map("elevenlabs_settings")
+  sunoSettings         Json?    @map("suno_settings")
+  soundGenSettings     Json?    @map("sound_gen_settings")
+  voiceCloningSettings Json?    @map("voice_cloning_settings")
+
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("user_audio_settings")
 }
 
 // ── Subscription System ─────────────────────────────────

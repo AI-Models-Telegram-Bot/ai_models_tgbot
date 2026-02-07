@@ -11,6 +11,7 @@ export interface GenerationJobData {
   creditsCost: number;
   priceItemCode: string;
   walletCategory: string; // TEXT | IMAGE | VIDEO | AUDIO
+  audioOptions?: Record<string, unknown>; // User audio settings (voiceId, textTemp, etc.)
 }
 
 export interface GenerationJobResult {
