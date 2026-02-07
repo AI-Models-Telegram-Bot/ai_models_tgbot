@@ -2,8 +2,12 @@
   "title": "Профиль",
   "creditBalance": "Баланс кредитов",
   "currentPlan": "Текущий тариф",
+  "viewPlans": "Смотреть тарифы",
+  "managePlan": "Управление тарифом",
+  "creditUsage": "Использование кредитов",
   "buyCredits": "Купить дополнительные кредиты",
   "totalSpent": "Всего потрачено",
+  "totalRequests": "Запросов",
   "balances": {
     "text": "Текст",
     "image": "Изображения",

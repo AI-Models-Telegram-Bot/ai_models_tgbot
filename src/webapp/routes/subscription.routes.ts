@@ -21,6 +21,81 @@ router.get('/subscriptions/plans', async (_req, res) => {
 });
 
 /**
+ * GET /api/webapp/subscriptions/models/:tier
+ * Returns all AI models available for a given tier, grouped by category.
+ */
+router.get('/subscriptions/models/:tier', async (req, res) => {
+  const { tier } = req.params;
+
+  const validTiers: string[] = Object.values(SubscriptionTier);
+  if (!validTiers.includes(tier)) {
+    return res.status(400).json({ message: `Invalid tier: ${tier}` });
+  }
+
+  try {
+    const planConfig = subscriptionService.getPlanConfig(tier as SubscriptionTier);
+    if (!planConfig) {
+      return res.status(404).json({ message: 'Plan not found' });
+    }
+
+    // Get all active models from DB
+    const allModels = await prisma.aIModel.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+    });
+
+    // Filter models based on tier's modelAccess config
+    const filterModels = (
+      models: typeof allModels,
+      category: 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO',
+      access: { allowed: string[]; unlimited?: string[] }
+    ) => {
+      const categoryModels = models.filter((m) => m.category === category);
+
+      // If '*' in allowed, include all models in this category
+      if (access.allowed.includes('*')) {
+        return categoryModels.map((m) => ({
+          id: m.id,
+          name: m.name,
+          slug: m.slug,
+          description: m.description,
+          creditCost: m.tokenCost,
+          isUnlimited: access.unlimited?.includes('*') || access.unlimited?.includes(m.slug) || false,
+        }));
+      }
+
+      // Otherwise filter to allowed slugs only
+      return categoryModels
+        .filter((m) => access.allowed.includes(m.slug))
+        .map((m) => ({
+          id: m.id,
+          name: m.name,
+          slug: m.slug,
+          description: m.description,
+          creditCost: m.tokenCost,
+          isUnlimited: access.unlimited?.includes(m.slug) || false,
+        }));
+    };
+
+    const models = {
+      text: filterModels(allModels, 'TEXT', planConfig.modelAccess.text),
+      image: filterModels(allModels, 'IMAGE', planConfig.modelAccess.image),
+      video: filterModels(allModels, 'VIDEO', planConfig.modelAccess.video),
+      audio: filterModels(allModels, 'AUDIO', planConfig.modelAccess.audio),
+    };
+
+    return res.json({
+      tier,
+      credits: planConfig.credits,
+      models,
+    });
+  } catch (error) {
+    logger.error('Failed to get models for tier', { error, tier });
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/**
  * GET /api/webapp/subscriptions/current/:telegramId
  * Returns user's current subscription.
  */

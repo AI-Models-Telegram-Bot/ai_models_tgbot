@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import { FeaturesModal } from './FeaturesModal';
+import { PaymentMethodModal } from './PaymentMethodModal';
+import { getTelegramUser } from '@/services/telegram/telegram';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
 interface SubscriptionTierCardProps {
@@ -10,17 +13,17 @@ interface SubscriptionTierCardProps {
   isCurrent: boolean;
   isPopular?: boolean;
   index: number;
-  onSelect: () => void;
+  onUpgradeSuccess?: () => void;
 }
 
-const formatPrice = (priceUSD: number | null) => {
-  if (priceUSD === null) return 'Contact Us';
-  if (priceUSD === 0) return 'Free';
-  return `$${priceUSD}/mo`;
+const formatPrice = (priceUSD: number | null, lang: string) => {
+  if (priceUSD === null) return lang === 'ru' ? 'По запросу' : 'Contact Us';
+  if (priceUSD === 0) return lang === 'ru' ? 'Бесплатно' : 'Free';
+  return `$${priceUSD}/${lang === 'ru' ? 'мес' : 'mo'}`;
 };
 
-const formatCredits = (credits: number | null) => {
-  if (credits === null) return 'Unlimited';
+const formatCredits = (credits: number | null, lang: string) => {
+  if (credits === null) return lang === 'ru' ? 'Безлимит' : 'Unlimited';
   return credits.toLocaleString();
 };
 
@@ -29,9 +32,24 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   isCurrent,
   isPopular = false,
   index,
-  onSelect,
+  onUpgradeSuccess,
 }) => {
+  const { t, i18n } = useTranslation(['subscriptions', 'common']);
+  const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
+
   const [showFeatures, setShowFeatures] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+
+  const telegramUser = getTelegramUser();
+  const telegramId = telegramUser?.id?.toString() ?? '';
+
+  const handleUpgradeClick = () => {
+    if (plan.priceUSD === 0) {
+      // Free tier - no payment needed
+      return;
+    }
+    setShowPayment(true);
+  };
 
   return (
     <motion.div
@@ -47,16 +65,16 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
       )}
     >
       {/* Popular badge */}
-      {isPopular && (
+      {isPopular && !isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-premium rounded-full text-xs font-semibold text-white shadow-gold">
-          Popular
+          {t('subscriptions:popular', 'Popular')}
         </div>
       )}
 
       {/* Current badge */}
       {isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-primary rounded-full text-xs font-semibold text-white shadow-neon">
-          Current Plan
+          {t('subscriptions:currentPlan', 'Current Plan')}
         </div>
       )}
 
@@ -65,19 +83,21 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         <h3 className="text-xl font-bold text-white font-display">{plan.name}</h3>
         <div className="mt-1 mb-4">
           <span className="text-2xl font-bold text-white font-display">
-            {formatPrice(plan.priceUSD)}
+            {formatPrice(plan.priceUSD, lang)}
           </span>
         </div>
 
         {/* Credits */}
         <div className="space-y-2 mb-4">
-          <div className="text-xs font-medium text-content-tertiary uppercase tracking-wider">Credits</div>
+          <div className="text-xs font-medium text-content-tertiary uppercase tracking-wider">
+            {t('subscriptions:credits', 'Credits')}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label: 'Text', value: plan.credits.text, icon: '🤖' },
-              { label: 'Image', value: plan.credits.image, icon: '🖼' },
-              { label: 'Video', value: plan.credits.video, icon: '🎬' },
-              { label: 'Audio', value: plan.credits.audio, icon: '🎵' },
+              { label: t('profile:balances.text', 'Text'), value: plan.credits.text, icon: '💬' },
+              { label: t('profile:balances.image', 'Image'), value: plan.credits.image, icon: '🖼' },
+              { label: t('profile:balances.video', 'Video'), value: plan.credits.video, icon: '🎬' },
+              { label: t('profile:balances.audio', 'Audio'), value: plan.credits.audio, icon: '🎵' },
             ].map((item) => (
               <div key={item.label} className="flex items-center text-sm" style={{ columnGap: 6 }}>
                 <span className="text-xs">{item.icon}</span>
@@ -85,7 +105,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
                   'font-mono text-xs',
                   item.value === null ? 'text-brand-accent font-semibold' : 'text-content-secondary'
                 )}>
-                  {formatCredits(item.value)}
+                  {formatCredits(item.value, lang)}
                 </span>
               </div>
             ))}
@@ -108,27 +128,29 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
             onClick={(e) => { e.stopPropagation(); setShowFeatures(true); }}
             className="w-full text-center text-xs font-medium text-brand-primary/80 hover:text-brand-primary py-1.5 mb-3 rounded-lg bg-brand-primary/5 border border-brand-primary/10 transition-colors"
           >
-            All Features ({plan.features.length})
+            {t('subscriptions:allFeatures', 'All Features')} ({plan.features.length})
           </button>
         )}
 
         {/* Action button */}
         {isCurrent ? (
           <Button variant="secondary" fullWidth size="sm" disabled>
-            Current Plan
+            {t('subscriptions:currentPlan', 'Current Plan')}
           </Button>
         ) : plan.priceUSD === null ? (
-          <Button variant="premium" fullWidth size="sm" onClick={onSelect}>
-            Contact Us
+          <Button variant="premium" fullWidth size="sm" onClick={handleUpgradeClick}>
+            {t('subscriptions:contactUs', 'Contact Us')}
           </Button>
         ) : (
           <Button
             variant={isPopular ? 'primary' : 'secondary'}
             fullWidth
             size="sm"
-            onClick={onSelect}
+            onClick={handleUpgradeClick}
           >
-            {plan.priceUSD === 0 ? 'Get Started' : 'Upgrade'}
+            {plan.priceUSD === 0
+              ? t('subscriptions:getStarted', 'Get Started')
+              : t('subscriptions:upgrade', 'Upgrade')}
           </Button>
         )}
       </div>
@@ -137,6 +159,14 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         isOpen={showFeatures}
         onClose={() => setShowFeatures(false)}
         plan={plan}
+      />
+
+      <PaymentMethodModal
+        isOpen={showPayment}
+        onClose={() => setShowPayment(false)}
+        plan={plan}
+        telegramId={telegramId}
+        onSuccess={onUpgradeSuccess}
       />
     </motion.div>
   );

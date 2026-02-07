@@ -20,6 +20,7 @@ interface MethodOption {
   labelKey: string;
   description: string;
   priceDisplay: (pkg: Package) => string;
+  available: boolean;
 }
 
 const methods: MethodOption[] = [
@@ -29,20 +30,23 @@ const methods: MethodOption[] = [
     labelKey: 'payment:telegramStars',
     description: 'Pay directly in Telegram',
     priceDisplay: (pkg) => `${pkg.priceStars} Stars`,
-  },
-  {
-    id: 'stripe',
-    icon: '💳',
-    labelKey: 'payment:creditCard',
-    description: 'Visa, Mastercard, Apple Pay',
-    priceDisplay: (pkg) => `$${pkg.priceUSD}`,
+    available: true,
   },
   {
     id: 'yookassa',
-    icon: '🇷🇺',
+    icon: '💳',
     labelKey: 'payment:russianMethods',
     description: 'SberPay, YooMoney, bank cards',
     priceDisplay: (pkg) => `${pkg.priceRUB} ₽`,
+    available: false,
+  },
+  {
+    id: 'sbp',
+    icon: '🏦',
+    labelKey: 'payment:sbp',
+    description: 'System of Fast Payments',
+    priceDisplay: (pkg) => `${pkg.priceRUB} ₽`,
+    available: false,
   },
 ];
 
@@ -73,12 +77,17 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: index * 0.06 }}
             onClick={() => {
-              hapticImpact('light');
-              onSelect(method.id);
+              if (method.available) {
+                hapticImpact('light');
+                onSelect(method.id);
+              }
             }}
+            disabled={!method.available}
             className={cn(
               'w-full flex items-center p-4 rounded-xl',
-              'bg-white border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50',
+              method.available
+                ? 'bg-white border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50'
+                : 'bg-gray-50 border border-gray-100 opacity-60 cursor-not-allowed',
               'transition-all duration-150 active:scale-[0.98]',
               'text-left'
             )}
@@ -91,7 +100,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               <p className="text-gray-400 text-xs mt-0.5">{method.description}</p>
             </div>
             <span className="text-gray-900 font-semibold text-sm shrink-0">
-              {method.priceDisplay(pkg)}
+              {method.available ? method.priceDisplay(pkg) : 'Soon'}
             </span>
           </motion.button>
         ))}

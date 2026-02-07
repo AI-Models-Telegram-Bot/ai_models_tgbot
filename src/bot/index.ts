@@ -21,6 +21,8 @@ import {
   handleUserInput,
   handleCallbackQuery,
   handleWebAppData,
+  handlePreCheckoutQuery,
+  handleSuccessfulPayment,
 } from './handlers';
 import { logger } from '../utils/logger';
 import { en } from '../locales/en';
@@ -66,6 +68,15 @@ export function createBot(): Telegraf<BotContext> {
 
   // Callback queries (inline keyboard)
   bot.on('callback_query', handleCallbackQuery);
+
+  // Payment handlers (Telegram Stars)
+  bot.on('pre_checkout_query', handlePreCheckoutQuery);
+  bot.on('message', (ctx, next) => {
+    if (ctx.message && 'successful_payment' in ctx.message) {
+      return handleSuccessfulPayment(ctx);
+    }
+    return next();
+  });
 
   // WebApp data handler (must be before generic text handler)
   bot.on('message', (ctx, next) => {
