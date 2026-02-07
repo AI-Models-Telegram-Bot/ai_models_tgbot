@@ -15,7 +15,7 @@ const SubscriptionsPage: React.FC = () => {
   const { currentPlan, fetchUserProfile } = useProfileStore();
 
   // Use hook that polls for Telegram readiness (handles menu button timing)
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
+  const { telegramId, isLoading: isTelegramLoading, isTelegramEnv } = useTelegramUser();
 
   const currentTier: SubscriptionTier = (currentPlan?.tier as SubscriptionTier) || 'FREE';
 
@@ -52,8 +52,8 @@ const SubscriptionsPage: React.FC = () => {
     );
   }
 
-  // No Telegram context — show prompt to open from bot
-  if (!telegramId) {
+  // Not inside Telegram at all (regular browser) — show prompt
+  if (!telegramId && !isTelegramEnv) {
     return (
       <div className="relative min-h-screen">
         <ParticleBackground />

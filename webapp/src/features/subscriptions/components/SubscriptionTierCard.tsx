@@ -5,7 +5,7 @@ import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import { FeaturesModal } from './FeaturesModal';
 import { PaymentMethodModal } from './PaymentMethodModal';
-import { getTelegramUser } from '@/services/telegram/telegram';
+import { getTelegramUser, openTelegramLink } from '@/services/telegram/telegram';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
 interface SubscriptionTierCardProps {
@@ -16,17 +16,6 @@ interface SubscriptionTierCardProps {
   onUpgradeSuccess?: () => void;
 }
 
-const formatPrice = (priceUSD: number | null, lang: string) => {
-  if (priceUSD === null) return lang === 'ru' ? 'По запросу' : 'Contact Us';
-  if (priceUSD === 0) return lang === 'ru' ? 'Бесплатно' : 'Free';
-  return `$${priceUSD}/${lang === 'ru' ? 'мес' : 'mo'}`;
-};
-
-const formatCredits = (credits: number | null, lang: string) => {
-  if (credits === null) return lang === 'ru' ? 'Безлимит' : 'Unlimited';
-  return credits.toLocaleString();
-};
-
 export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   plan,
   isCurrent,
@@ -34,8 +23,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   index,
   onUpgradeSuccess,
 }) => {
-  const { t, i18n } = useTranslation(['subscriptions', 'common']);
-  const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
+  const { t } = useTranslation(['subscriptions', 'common', 'profile']);
 
   const [showFeatures, setShowFeatures] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
@@ -43,9 +31,27 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   const telegramUser = getTelegramUser();
   const telegramId = telegramUser?.id?.toString() ?? '';
 
+  const formatPrice = (priceUSD: number | null) => {
+    if (priceUSD === null) return t('subscriptions:price.contactUs');
+    if (priceUSD === 0) return t('subscriptions:price.free');
+    return `$${priceUSD}${t('subscriptions:price.perMonth')}`;
+  };
+
+  const formatCredits = (credits: number | null) => {
+    if (credits === null) return t('subscriptions:unlimited');
+    return credits.toLocaleString();
+  };
+
   const handleUpgradeClick = () => {
     if (plan.priceUSD === 0) {
-      // Free tier - no payment needed
+      return;
+    }
+    if (plan.priceUSD === null) {
+      // Enterprise: open direct Telegram link to support
+      const supportUsername = import.meta.env.VITE_SUPPORT_USERNAME || '';
+      if (supportUsername) {
+        openTelegramLink(`https://t.me/${supportUsername}`);
+      }
       return;
     }
     setShowPayment(true);
@@ -83,7 +89,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         <h3 className="text-xl font-bold text-white font-display">{plan.name}</h3>
         <div className="mt-1 mb-4">
           <span className="text-2xl font-bold text-white font-display">
-            {formatPrice(plan.priceUSD, lang)}
+            {formatPrice(plan.priceUSD)}
           </span>
         </div>
 
@@ -105,7 +111,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
                   'font-mono text-xs',
                   item.value === null ? 'text-brand-accent font-semibold' : 'text-content-secondary'
                 )}>
-                  {formatCredits(item.value, lang)}
+                  {formatCredits(item.value)}
                 </span>
               </div>
             ))}
@@ -117,7 +123,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           {plan.features.slice(0, 3).map((feature, i) => (
             <div key={i} className="flex items-start text-sm" style={{ columnGap: 8 }}>
               <span className="text-brand-primary mt-0.5 text-xs">✓</span>
-              <span className="text-content-secondary text-xs">{feature}</span>
+              <span className="text-content-secondary text-xs">{t(`subscriptions:${feature}`, feature)}</span>
             </div>
           ))}
         </div>

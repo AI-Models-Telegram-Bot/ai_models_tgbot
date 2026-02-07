@@ -2,46 +2,52 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReferralStore } from '@/features/referral/store/referralStore';
-import { Card, Button, Badge, Skeleton, Modal } from '@/shared/ui';
+import { Card, Button, Skeleton, Modal } from '@/shared/ui';
 import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
-import { hapticImpact } from '@/services/telegram/haptic';
+import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
+import { openTelegramLink } from '@/services/telegram/telegram';
+import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import toast from 'react-hot-toast';
 
 const ReferralPage: React.FC = () => {
-  const { t } = useTranslation('referral');
+  const { t } = useTranslation(['referral', 'common']);
+  const { isLoading: isTelegramLoading } = useTelegramUser();
   const {
-    links,
+    referralUrl,
     stats,
     benefits,
-    maxLinks,
     isLoading,
-    isCreating,
-    fetchReferralLinks,
-    createReferralLink,
+    fetchReferralInfo,
     fetchBenefits,
   } = useReferralStore();
   const { copy } = useCopyToClipboard();
   const [benefitsOpen, setBenefitsOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState(0);
 
+  // Wait for Telegram SDK to initialize before fetching (initData must be ready for auth)
   useEffect(() => {
-    fetchReferralLinks();
-    fetchBenefits();
-  }, [fetchReferralLinks, fetchBenefits]);
+    if (!isTelegramLoading) {
+      fetchReferralInfo();
+      fetchBenefits();
+    }
+  }, [isTelegramLoading, fetchReferralInfo, fetchBenefits]);
 
-  const handleCreateLink = async () => {
-    hapticImpact('medium');
-    await createReferralLink();
-  };
-
-  const handleCopyLink = async (url: string) => {
-    const success = await copy(url);
+  const handleCopyLink = async () => {
+    hapticImpact('light');
+    const success = await copy(referralUrl);
     if (success) {
+      hapticNotification('success');
       toast.success(t('common:copied'));
     }
   };
 
-  if (isLoading) {
+  const handleShare = () => {
+    hapticImpact('medium');
+    const text = t('referral:shareText');
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(text)}`;
+    openTelegramLink(shareUrl);
+  };
+
+  if (isLoading || isTelegramLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-20 rounded-2xl" variant="rectangular" />
@@ -50,7 +56,6 @@ const ReferralPage: React.FC = () => {
           <Skeleton className="flex-1 h-20 rounded-2xl" variant="rectangular" />
         </div>
         <Skeleton className="h-36 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
       </div>
     );
   }
@@ -63,9 +68,9 @@ const ReferralPage: React.FC = () => {
         animate={{ y: 0, opacity: 1 }}
         className="text-center pt-2"
       >
-        <h1 className="text-white text-2xl font-bold">{t('title')}</h1>
+        <h1 className="text-white text-2xl font-bold">{t('referral:title')}</h1>
         <p className="text-gray-text mt-2 text-[15px] leading-relaxed px-2">
-          {t('description', { botName: 'AI Models Bot' })}
+          {t('referral:description')}
         </p>
       </motion.div>
 
@@ -75,130 +80,80 @@ const ReferralPage: React.FC = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="flex" style={{ columnGap: 12 }}
+          className="grid grid-cols-3"
+          style={{ gap: 12 }}
         >
-          <Card className="flex-1 text-center">
-            <p className="text-gray-text text-xs uppercase tracking-wider">{t('stats.invited')}</p>
+          <Card className="text-center">
+            <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.invited')}</p>
             <p className="text-white text-2xl font-bold mt-1">{stats.totalInvited}</p>
           </Card>
-          <Card className="flex-1 text-center">
-            <p className="text-gray-text text-xs uppercase tracking-wider">{t('stats.earned')}</p>
+          <Card className="text-center">
+            <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.earned')}</p>
             <p className="text-white text-2xl font-bold mt-1">{stats.totalEarned}</p>
           </Card>
-          <Card className="flex-1 text-center">
-            <p className="text-gray-text text-xs uppercase tracking-wider">{t('stats.bonus')}</p>
+          <Card className="text-center">
+            <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.bonus')}</p>
             <p className="text-purple-primary text-2xl font-bold mt-1">{stats.currentTierBonus}%</p>
           </Card>
         </motion.div>
       )}
 
-      {/* Actions */}
+      {/* Referral Link */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="border-2 border-dashed border-purple-primary/40 rounded-xl p-4 space-y-2"
       >
-        <Button
-          variant="primary"
-          fullWidth
-          onClick={handleCreateLink}
-          isLoading={isCreating}
-          disabled={links.length >= maxLinks}
-        >
-          {t('createLink')}
-        </Button>
-        <Button variant="secondary" fullWidth onClick={() => setBenefitsOpen(true)}>
-          {t('benefits')}
-        </Button>
+        <h2 className="text-white text-lg font-bold mb-3">{t('referral:yourLink')}</h2>
+        <Card className="space-y-3">
+          {referralUrl ? (
+            <p className="text-white text-sm font-mono break-all bg-dark-border/50 rounded-lg px-3 py-2">
+              {referralUrl}
+            </p>
+          ) : (
+            <div className="bg-dark-border/50 rounded-lg px-3 py-2">
+              <Skeleton variant="text" className="h-5 w-full rounded" />
+            </div>
+          )}
+          <div className="flex" style={{ columnGap: 8 }}>
+            <Button
+              variant="primary"
+              fullWidth
+              size="sm"
+              onClick={handleShare}
+              disabled={!referralUrl}
+            >
+              {t('referral:share')}
+            </Button>
+            <Button
+              variant="secondary"
+              fullWidth
+              size="sm"
+              onClick={handleCopyLink}
+              disabled={!referralUrl}
+            >
+              {t('referral:copyLink')}
+            </Button>
+          </div>
+        </Card>
       </motion.div>
 
-      {/* Referral Links */}
+      {/* Benefits button */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.15 }}
       >
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-white text-lg font-bold">{t('myLinks')}</h2>
-          <Badge variant="gray">
-            {links.length}/{maxLinks}
-          </Badge>
-        </div>
-
-        {links.length === 0 ? (
-          <Card className="text-center py-8">
-            <p className="text-gray-text text-sm">{t('noLinks')}</p>
-          </Card>
-        ) : (
-          <>
-            {/* Link cards with horizontal scroll */}
-            <div className="overflow-x-auto -mx-4 px-4 pb-2 snap-x snap-mandatory flex scrollbar-hide" style={{ columnGap: 12 }}>
-              {links.map((link, index) => (
-                <div
-                  key={link.id}
-                  className="snap-center shrink-0 w-[calc(100%-16px)] first:ml-0"
-                  onClick={() => setActiveLink(index)}
-                >
-                  <Card className="space-y-3">
-                    <p className="text-gray-text text-xs uppercase tracking-wider font-bold">
-                      {t('linkLabel', { number: index + 1 })}
-                    </p>
-                    <p className="text-white text-sm font-mono break-all bg-dark-border/50 rounded-lg px-3 py-2">
-                      {link.url}
-                    </p>
-                    <div className="flex flex-wrap" style={{ gap: 8 }}>
-                      <Badge variant="gray">
-                        {t('invited', { count: link.invitedCount })}
-                      </Badge>
-                      <Badge variant="gray">
-                        {t('creditsPurchased', { count: link.creditsPurchased })}
-                      </Badge>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      fullWidth
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyLink(link.url);
-                      }}
-                    >
-                      {t('copyLink')}
-                    </Button>
-                  </Card>
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination dots */}
-            {links.length > 1 && (
-              <div className="flex justify-center mt-3" style={{ columnGap: 6 }}>
-                {links.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                      i === activeLink ? 'bg-purple-primary' : 'bg-dark-border'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-
-            {links.length > 1 && (
-              <p className="text-gray-text text-xs text-center mt-2">
-                {t('swipeHint')}
-              </p>
-            )}
-          </>
-        )}
+        <Button variant="secondary" fullWidth onClick={() => setBenefitsOpen(true)}>
+          {t('referral:benefits')}
+        </Button>
       </motion.div>
 
       {/* Benefits Modal */}
       <Modal
         isOpen={benefitsOpen}
         onClose={() => setBenefitsOpen(false)}
-        title={t('benefits')}
+        title={t('referral:benefits')}
         size="sm"
       >
         <div className="p-4 space-y-3 pb-8">
@@ -209,16 +164,19 @@ const ReferralPage: React.FC = () => {
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex items-center p-3 rounded-xl bg-white border border-gray-100" style={{ columnGap: 12 }}
+                className="flex items-center p-3 rounded-xl bg-white/5 border border-white/10"
+                style={{ columnGap: 12 }}
               >
-                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                  <span className="text-purple-600 font-bold text-sm">
+                <div className="w-12 h-12 rounded-full bg-brand-primary/15 flex items-center justify-center shrink-0">
+                  <span className="text-brand-primary font-bold text-sm">
                     {benefit.percentage}%
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-gray-900 font-semibold text-sm">{benefit.tier}</p>
-                  <p className="text-gray-400 text-xs mt-0.5">{benefit.description}</p>
+                  <p className="text-white font-semibold text-sm">{benefit.name}</p>
+                  <p className="text-content-tertiary text-xs mt-0.5">
+                    {t('referral:bonusDescription', { percentage: benefit.percentage })}
+                  </p>
                 </div>
               </motion.div>
             ))}

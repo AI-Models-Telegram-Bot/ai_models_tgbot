@@ -7,7 +7,7 @@
   "upgrade": "Улучшить",
   "downgrade": "Понизить",
   "cancel": "Отменить тариф",
-  "features": "Возможности",
+  "featuresTitle": "Возможности",
   "credits": "Кредиты",
   "creditsShort": "кр",
   "creditsPerMonth": "Кредитов в месяц",
@@ -35,5 +35,78 @@
     "vip": "VIP",
     "elite": "Элит",
     "enterprise": "Корпоративный"
+  },
+  "price": {
+    "contactUs": "По запросу",
+    "free": "Бесплатно",
+    "perMonth": "/мес"
+  },
+  "payment": {
+    "selectMethod": "Выберите способ оплаты",
+    "monthlySubscription": "Месячная подписка",
+    "cancelled": "Платёж отменён",
+    "failed": "Платёж не удался",
+    "comingSoon": "Этот способ оплаты скоро будет доступен",
+    "enterpriseContact": "Для Enterprise тарифа свяжитесь с нами напрямую",
+    "createError": "Ошибка создания платежа",
+    "processing": "Обработка...",
+    "pay": "Оплатить",
+    "terms": "Нажимая \"Оплатить\", вы соглашаетесь с условиями подписки",
+    "soon": "Скоро"
+  },
+  "features": {
+    "free": {
+      "basicModels": "Базовые модели ИИ",
+      "communitySupport": "Поддержка сообщества",
+      "referralBonus": "5% реферальный бонус"
+    },
+    "basic": {
+      "gpt4Claude": "Доступ к GPT-4 и Claude",
+      "advancedImage": "Продвинутая генерация изображений",
+      "basicVideo": "Базовая генерация видео",
+      "referralBonus": "10% реферальный бонус",
+      "emailSupport": "Поддержка по email"
+    },
+    "pro": {
+      "allBasic": "Все функции Basic",
+      "gpt4TurboClaude": "GPT-4 Turbo и Claude Opus",
+      "proImage": "Профессиональная генерация изображений",
+      "advancedVideo": "Продвинутая генерация видео",
+      "referralBonus": "15% реферальный бонус",
+      "priorityEmail": "Приоритетная поддержка по email",
+      "earlyAccess": "Ранний доступ к новым моделям"
+    },
+    "vip": {
+      "unlimitedText": "Безлимитная генерация текста",
+      "unlimitedAudio": "Безлимитная генерация аудио",
+      "allImageVideo": "Все модели изображений и видео",
+      "unlimitedBasicVideo": "Безлимитные базовые модели видео",
+      "referralBonus": "20% реферальный бонус",
+      "priorityChat": "Приоритетный чат-саппорт",
+      "limitedApi": "Доступ к API (ограниченный)",
+      "customTraining": "Обучение моделей (бета)"
+    },
+    "elite": {
+      "unlimitedTextImageAudio": "Безлимитный текст, изображения и аудио",
+      "unlimitedMostVideo": "Безлимит большинства видеомоделей",
+      "referralBonus": "25% реферальный бонус",
+      "support247": "Приоритетная поддержка 24/7",
+      "fullApi": "Полный доступ к API",
+      "fineTuning": "Дообучение моделей",
+      "accountManager": "Персональный менеджер",
+      "whiteLabel": "White-label решения"
+    },
+    "enterprise": {
+      "unlimitedEverything": "Безлимит на всё",
+      "allModelsUnlimited": "Все модели без ограничений",
+      "referralBonus": "30% реферальный бонус",
+      "dedicatedSupport": "Выделенная команда поддержки 24/7",
+      "highLimitApi": "Полный доступ к API с высокими лимитами",
+      "customDevelopment": "Разработка пользовательских моделей",
+      "teamCollaboration": "Командная работа",
+      "customIntegrations": "Кастомные интеграции",
+      "slaGuarantee": "Гарантия SLA",
+      "privateDeployment": "Частное развёртывание"
+    }
   }
 }

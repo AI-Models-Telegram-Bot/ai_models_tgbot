@@ -17,7 +17,7 @@ const ProfilePage: React.FC = () => {
     useProfileStore();
 
   // Use hook that polls for Telegram readiness (handles menu button timing)
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
+  const { telegramId, isLoading: isTelegramLoading, isTelegramEnv } = useTelegramUser();
 
   useEffect(() => {
     if (telegramId) {
@@ -36,8 +36,8 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  // No Telegram context — show prompt to open from bot
-  if (!telegramId) {
+  // Not inside Telegram at all (regular browser) — show prompt
+  if (!telegramId && !isTelegramEnv) {
     return (
       <div className="relative min-h-screen">
         <ParticleBackground />
@@ -78,7 +78,7 @@ const ProfilePage: React.FC = () => {
         </div>
         <p className="text-content-secondary text-sm">{error}</p>
         <button
-          onClick={() => fetchUserProfile(telegramId)}
+          onClick={() => telegramId && fetchUserProfile(telegramId)}
           className="mt-4 text-brand-primary text-sm font-medium"
         >
           {t('common:retry')}
