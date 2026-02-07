@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils/cn';
@@ -18,14 +18,20 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   size = 'md',
 }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Prevent Telegram WebApp from closing when scrolling inside modal
+      document.body.style.overscrollBehavior = 'contain';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.overscrollBehavior = 'auto';
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.overscrollBehavior = 'auto';
     };
   }, [isOpen]);
 
@@ -36,6 +42,29 @@ export const Modal: React.FC<ModalProps> = ({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
+
+  // Prevent touch events from propagating to Telegram WebApp
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content || !isOpen) return;
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const scrollable = content;
+
+      // Check if we're at scroll boundaries
+      const isAtTop = scrollable.scrollTop <= 0;
+      const isAtBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight;
+
+      // If at boundaries and trying to scroll past, prevent default
+      // but only stop propagation, don't prevent the touch entirely
+      if ((isAtTop || isAtBottom) && scrollable.scrollHeight > scrollable.clientHeight) {
+        e.stopPropagation();
+      }
+    };
+
+    content.addEventListener('touchmove', handleTouchMove, { passive: true });
+    return () => content.removeEventListener('touchmove', handleTouchMove);
+  }, [isOpen]);
 
   const modalContent = (
     <AnimatePresence>
@@ -55,21 +84,27 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              'fixed z-[1050] bg-surface-card/95 backdrop-blur-xl border-t border-white/20 rounded-t-3xl shadow-xl overflow-hidden',
+              'fixed z-[1050] bg-surface-card/95 backdrop-blur-xl border-t border-white/20 rounded-t-3xl shadow-xl flex flex-col',
               {
                 'inset-x-4 bottom-0 max-h-[80vh]': size === 'sm',
-                'inset-x-0 bottom-0 max-h-[90vh]': size === 'md',
-                'inset-x-0 bottom-0 max-h-[95vh]': size === 'lg',
+                'inset-x-0 bottom-0 max-h-[85vh]': size === 'md',
+                'inset-x-0 bottom-0 max-h-[90vh]': size === 'lg',
                 'inset-0': size === 'full',
               }
             )}
+            style={{ overscrollBehavior: 'contain' }}
           >
+            {/* Drag handle indicator */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
+
             {title && (
-              <div className="sticky top-0 z-10 bg-surface-elevated/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
+              <div className="shrink-0 bg-surface-card/95 border-b border-white/10 px-6 py-3 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-content-primary">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="text-content-tertiary hover:text-content-primary transition-colors"
+                  className="text-content-tertiary hover:text-content-primary transition-colors p-1"
                   aria-label="Close modal"
                 >
                   <svg
@@ -88,7 +123,13 @@ export const Modal: React.FC<ModalProps> = ({
                 </button>
               </div>
             )}
-            <div className="overflow-y-auto max-h-full">{children}</div>
+            <div
+              ref={contentRef}
+              className="flex-1 overflow-y-auto overscroll-contain"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {children}
+            </div>
           </motion.div>
         </>
       )}

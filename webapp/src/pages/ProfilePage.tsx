@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,7 +7,7 @@ import { UserCard } from '@/features/profile/components/UserCard';
 import { CurrentPlanCard } from '@/features/profile/components/CurrentPlanCard';
 import { CreditAllocationBar } from '@/features/subscriptions/components/CreditAllocationBar';
 import { ParticleBackground, Skeleton, Card } from '@/shared/ui';
-import { getTelegramUser } from '@/services/telegram/telegram';
+import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { formatCredits } from '@/shared/utils/formatters';
 
 const ProfilePage: React.FC = () => {
@@ -16,14 +16,25 @@ const ProfilePage: React.FC = () => {
   const { user, wallet, currentPlan, stats, isLoading, error, fetchUserProfile } =
     useProfileStore();
 
-  // Memoize telegramId to avoid infinite re-render (getTelegramUser returns new object each call)
-  const telegramId = useMemo(() => getTelegramUser()?.id?.toString() ?? null, []);
+  // Use hook that polls for Telegram readiness (handles menu button timing)
+  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
 
   useEffect(() => {
     if (telegramId) {
       fetchUserProfile(telegramId);
     }
   }, [fetchUserProfile, telegramId]);
+
+  // Still waiting for Telegram SDK to initialize
+  if (isTelegramLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-32 rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-28 rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
+      </div>
+    );
+  }
 
   // No Telegram context — show prompt to open from bot
   if (!telegramId) {

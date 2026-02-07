@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ParticleBackground, Skeleton } from '@/shared/ui';
@@ -6,7 +6,7 @@ import { SubscriptionTierCard } from '@/features/subscriptions/components/Subscr
 import { SubscriptionComparisonTable } from '@/features/subscriptions/components/SubscriptionComparisonTable';
 import { useSubscriptionStore } from '@/features/subscriptions/store/subscriptionStore';
 import { useProfileStore } from '@/features/profile/store/profileStore';
-import { getTelegramUser } from '@/services/telegram/telegram';
+import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import type { SubscriptionTier } from '@/types/user.types';
 
 const SubscriptionsPage: React.FC = () => {
@@ -14,8 +14,8 @@ const SubscriptionsPage: React.FC = () => {
   const { plans, isLoading, error, fetchPlans } = useSubscriptionStore();
   const { currentPlan, fetchUserProfile } = useProfileStore();
 
-  const telegramUser = useMemo(() => getTelegramUser(), []);
-  const telegramId = telegramUser?.id?.toString() ?? null;
+  // Use hook that polls for Telegram readiness (handles menu button timing)
+  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
 
   const currentTier: SubscriptionTier = (currentPlan?.tier as SubscriptionTier) || 'FREE';
 
@@ -33,6 +33,24 @@ const SubscriptionsPage: React.FC = () => {
       fetchUserProfile(telegramId);
     }
   };
+
+  // Still waiting for Telegram SDK to initialize
+  if (isTelegramLoading) {
+    return (
+      <div className="relative min-h-screen">
+        <ParticleBackground />
+        <div className="relative z-10 px-4 py-6">
+          <Skeleton variant="text" width={200} height={32} className="mb-2" />
+          <Skeleton variant="text" width={280} height={20} className="mb-6" />
+          <div className="flex overflow-x-auto scrollbar-hide pb-4" style={{ columnGap: 16 }}>
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} variant="rectangular" width={280} height={380} className="flex-shrink-0 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // No Telegram context — show prompt to open from bot
   if (!telegramId) {
