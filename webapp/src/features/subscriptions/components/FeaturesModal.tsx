@@ -115,7 +115,7 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
   onClose,
   plan,
 }) => {
-  const { t } = useTranslation(['subscriptions', 'common']);
+  const { t } = useTranslation(['subscriptions', 'common', 'profile']);
   const [modelsData, setModelsData] = useState<TierModelsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -155,10 +155,10 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
           </h4>
           <div className="grid grid-cols-4" style={{ gap: 8 }}>
             {[
-              { key: 'text' as const, value: plan.credits.text, color: 'bg-cyan-500' },
-              { key: 'image' as const, value: plan.credits.image, color: 'bg-pink-500' },
-              { key: 'video' as const, value: plan.credits.video, color: 'bg-purple-500' },
-              { key: 'audio' as const, value: plan.credits.audio, color: 'bg-emerald-500' },
+              { key: 'text' as const, label: t('profile:balances.text', 'Text'), value: plan.credits.text, color: 'bg-cyan-500' },
+              { key: 'image' as const, label: t('profile:balances.image', 'Image'), value: plan.credits.image, color: 'bg-pink-500' },
+              { key: 'video' as const, label: t('profile:balances.video', 'Video'), value: plan.credits.video, color: 'bg-purple-500' },
+              { key: 'audio' as const, label: t('profile:balances.audio', 'Audio'), value: plan.credits.audio, color: 'bg-emerald-500' },
             ].map((item) => (
               <div
                 key={item.key}
@@ -168,7 +168,7 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
                 <p className={`text-sm font-bold font-mono ${item.value === null ? 'text-brand-accent' : 'text-white'}`}>
                   {formatCredits(item.value)}
                 </p>
-                <p className="text-content-tertiary text-[10px] capitalize">{item.key}</p>
+                <p className="text-content-tertiary text-[10px]">{item.label}</p>
               </div>
             ))}
           </div>

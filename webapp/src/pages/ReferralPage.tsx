@@ -78,15 +78,15 @@ const ReferralPage: React.FC = () => {
           className="flex" style={{ columnGap: 12 }}
         >
           <Card className="flex-1 text-center">
-            <p className="text-gray-text text-xs uppercase tracking-wider">Invited</p>
+            <p className="text-gray-text text-xs uppercase tracking-wider">{t('stats.invited')}</p>
             <p className="text-white text-2xl font-bold mt-1">{stats.totalInvited}</p>
           </Card>
           <Card className="flex-1 text-center">
-            <p className="text-gray-text text-xs uppercase tracking-wider">Earned</p>
+            <p className="text-gray-text text-xs uppercase tracking-wider">{t('stats.earned')}</p>
             <p className="text-white text-2xl font-bold mt-1">{stats.totalEarned}</p>
           </Card>
           <Card className="flex-1 text-center">
-            <p className="text-gray-text text-xs uppercase tracking-wider">Bonus</p>
+            <p className="text-gray-text text-xs uppercase tracking-wider">{t('stats.bonus')}</p>
             <p className="text-purple-primary text-2xl font-bold mt-1">{stats.currentTierBonus}%</p>
           </Card>
         </motion.div>
@@ -128,7 +128,7 @@ const ReferralPage: React.FC = () => {
 
         {links.length === 0 ? (
           <Card className="text-center py-8">
-            <p className="text-gray-text text-sm">No referral links yet. Create one above!</p>
+            <p className="text-gray-text text-sm">{t('noLinks')}</p>
           </Card>
         ) : (
           <>

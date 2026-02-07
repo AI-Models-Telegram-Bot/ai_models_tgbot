@@ -8,5 +8,11 @@
   "creditsPurchased": "Credits Purchased: {{count}}",
   "copyLink": "Copy Link",
   "swipeHint": "Swipe left or right to view other links.",
-  "linkLabel": "LINK #{{number}}"
+  "linkLabel": "LINK #{{number}}",
+  "stats": {
+    "invited": "Invited",
+    "earned": "Earned",
+    "bonus": "Bonus"
+  },
+  "noLinks": "No referral links yet. Create one above!"
 }
