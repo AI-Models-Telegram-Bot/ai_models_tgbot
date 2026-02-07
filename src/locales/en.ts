@@ -179,6 +179,9 @@ Example: "birds singing in a forest at dawn"
 
 Fee: ⚡10 credits per generation`,
 
+    audioAccessDenied: 'is not available on your current plan.',
+    audioUpgradeHint: 'Upgrade your subscription to access this feature.',
+
     // Model Selection
     modelSelected: `✅ <b>{modelName}</b> selected ({tokenCost})
 

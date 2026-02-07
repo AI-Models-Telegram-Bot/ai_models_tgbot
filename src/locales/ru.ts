@@ -181,6 +181,9 @@ export const ru: Locale = {
 
 Стоимость: ⚡10 кредитов за генерацию`,
 
+    audioAccessDenied: 'недоступна на вашем текущем плане.',
+    audioUpgradeHint: 'Обновите подписку для доступа к этой функции.',
+
     // Model Selection
     modelSelected: `✅ <b>{modelName}</b> выбрана ({tokenCost})
 

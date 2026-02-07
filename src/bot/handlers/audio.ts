@@ -28,6 +28,13 @@ interface AudioFunctionConfig {
   getKeyboard: (lang: Language) => any;
 }
 
+const FUNCTION_NAMES: Record<AudioFunction, { en: string; ru: string }> = {
+  elevenlabs_voice: { en: 'ElevenLabs Voice', ru: 'ElevenLabs Голос' },
+  voice_cloning: { en: 'Voice Cloning', ru: 'Клонирование голоса' },
+  suno: { en: 'SUNO (Music)', ru: 'SUNO (Музыка)' },
+  sound_generator: { en: 'Sound Generator', ru: 'Генератор звуков' },
+};
+
 const AUDIO_FUNCTIONS: Record<AudioFunction, AudioFunctionConfig> = {
   elevenlabs_voice: {
     modelSlug: 'elevenlabs-tts',
@@ -72,7 +79,7 @@ export async function handleAudioFunctionMenu(ctx: BotContext): Promise<void> {
 }
 
 /**
- * Handle selection of an audio function (from inline callback)
+ * Handle selection of an audio function (from reply keyboard button)
  */
 export async function handleAudioFunctionSelection(ctx: BotContext, functionId: string): Promise<void> {
   if (!ctx.user || !ctx.session) return;
@@ -96,10 +103,10 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
   // Check subscription access
   const access = await modelAccessService.canUseModel(ctx.user.id, model.slug, 'AUDIO' as WalletCategory);
   if (!access.allowed) {
-    await ctx.reply(
-      `🔒 ${access.reason}\n\nUpgrade your subscription to access this feature.`,
-      { parse_mode: 'HTML' }
-    );
+    const funcName = FUNCTION_NAMES[functionId as AudioFunction]?.[lang] || functionId;
+    const denied = (l.messages as any).audioAccessDenied || 'is not available on your current plan.';
+    const hint = (l.messages as any).audioUpgradeHint || 'Upgrade your subscription to access this feature.';
+    await ctx.reply(`🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
     return;
   }
 

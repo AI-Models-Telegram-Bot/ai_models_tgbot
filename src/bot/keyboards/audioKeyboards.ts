@@ -3,17 +3,15 @@ import { Language, getLocale } from '../../locales';
 import { config } from '../../config';
 
 /**
- * Inline keyboard: 4 audio function buttons + back
+ * Reply keyboard: 4 audio function buttons + back/main
  */
 export function getAudioFunctionsKeyboard(lang: Language) {
   const l = getLocale(lang);
-  return Markup.inlineKeyboard([
-    [Markup.button.callback(l.buttons.audioElevenLabs, 'audio_func:elevenlabs_voice')],
-    [Markup.button.callback(l.buttons.audioVoiceCloning, 'audio_func:voice_cloning')],
-    [Markup.button.callback(l.buttons.audioSuno, 'audio_func:suno')],
-    [Markup.button.callback(l.buttons.audioSoundGen, 'audio_func:sound_generator')],
-    [Markup.button.callback(l.buttons.back, 'back_to_menu')],
-  ]);
+  return Markup.keyboard([
+    [l.buttons.audioElevenLabs, l.buttons.audioVoiceCloning],
+    [l.buttons.audioSuno, l.buttons.audioSoundGen],
+    [l.buttons.back, l.buttons.mainMenu],
+  ]).resize();
 }
 
 /**
