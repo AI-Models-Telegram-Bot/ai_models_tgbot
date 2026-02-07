@@ -75,17 +75,18 @@ const ReferralPage: React.FC = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.05 }}
-          className="flex" style={{ columnGap: 12 }}
+          className="grid grid-cols-3"
+          style={{ gap: 12 }}
         >
-          <Card className="flex-1 text-center">
+          <Card className="text-center">
             <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.invited')}</p>
             <p className="text-white text-2xl font-bold mt-1">{stats.totalInvited}</p>
           </Card>
-          <Card className="flex-1 text-center">
+          <Card className="text-center">
             <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.earned')}</p>
             <p className="text-white text-2xl font-bold mt-1">{stats.totalEarned}</p>
           </Card>
-          <Card className="flex-1 text-center">
+          <Card className="text-center">
             <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.bonus')}</p>
             <p className="text-purple-primary text-2xl font-bold mt-1">{stats.currentTierBonus}%</p>
           </Card>
@@ -93,38 +94,44 @@ const ReferralPage: React.FC = () => {
       )}
 
       {/* Referral Link */}
-      {referralUrl && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h2 className="text-white text-lg font-bold mb-3">{t('referral:yourLink')}</h2>
-          <Card className="space-y-3">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
+        <h2 className="text-white text-lg font-bold mb-3">{t('referral:yourLink')}</h2>
+        <Card className="space-y-3">
+          {referralUrl ? (
             <p className="text-white text-sm font-mono break-all bg-dark-border/50 rounded-lg px-3 py-2">
               {referralUrl}
             </p>
-            <div className="flex" style={{ columnGap: 8 }}>
-              <Button
-                variant="primary"
-                fullWidth
-                size="sm"
-                onClick={handleShare}
-              >
-                {t('referral:share')}
-              </Button>
-              <Button
-                variant="secondary"
-                fullWidth
-                size="sm"
-                onClick={handleCopyLink}
-              >
-                {t('referral:copyLink')}
-              </Button>
+          ) : (
+            <div className="bg-dark-border/50 rounded-lg px-3 py-2">
+              <Skeleton variant="text" className="h-5 w-full rounded" />
             </div>
-          </Card>
-        </motion.div>
-      )}
+          )}
+          <div className="flex" style={{ columnGap: 8 }}>
+            <Button
+              variant="primary"
+              fullWidth
+              size="sm"
+              onClick={handleShare}
+              disabled={!referralUrl}
+            >
+              {t('referral:share')}
+            </Button>
+            <Button
+              variant="secondary"
+              fullWidth
+              size="sm"
+              onClick={handleCopyLink}
+              disabled={!referralUrl}
+            >
+              {t('referral:copyLink')}
+            </Button>
+          </div>
+        </Card>
+      </motion.div>
 
       {/* Benefits button */}
       <motion.div
