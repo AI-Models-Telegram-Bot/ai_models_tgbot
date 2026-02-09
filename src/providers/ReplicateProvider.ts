@@ -123,33 +123,48 @@ export class ReplicateProvider extends BaseProvider {
     return { videoUrl };
   }
 
-  async generateAudio(text: string, options?: { model?: string }): Promise<AudioGenerationResult> {
-    const modelSlug = options?.model || 'bark';
+  async generateAudio(text: string, options?: Record<string, unknown>): Promise<AudioGenerationResult> {
+    const modelSlug = (options?.model as string) || 'bark';
     let modelId: string;
     let input: Record<string, unknown>;
 
     switch (modelSlug) {
       case 'bark':
-        modelId = 'suno-ai/bark';
+        modelId = 'suno-ai/bark:b76242b40d67c76ab6742e987628a2a9ac019e11d56ab96c4e91ce03b79b2787';
         input = {
-          text,
-          text_temp: 0.7,
-          waveform_temp: 0.7,
+          prompt: text,
+          text_temp: (options?.textTemp as number) ?? 0.7,
+          waveform_temp: (options?.waveformTemp as number) ?? 0.7,
         };
         break;
       case 'xtts-v2':
-        modelId = 'coqui/xtts-v2';
-        input = { text };
+        modelId = 'lucataco/xtts-v2:684bc3855b37866c0c65add2ff39c78f3dea3f4ff103a436465326e0f438d55e';
+        input = {
+          text,
+          language: (options?.language as string) || 'en',
+          ...(options?.speaker ? { speaker: options.speaker } : {}),
+        };
         break;
+      case 'suno': {
+        modelId = 'meta/musicgen:671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb';
+        const sunoStyle = options?.sunoStyle as string;
+        const prompt = sunoStyle ? `${text}, style: ${sunoStyle}` : text;
+        input = {
+          prompt,
+          model_version: 'stereo-melody-large',
+          duration: 15,
+          output_format: 'mp3',
+        };
+        break;
+      }
       case 'fish-speech':
         modelId = 'fishaudio/fish-speech-1';
         input = { text };
         break;
       default:
-        // Default to bark for Replicate audio
-        modelId = 'suno-ai/bark';
+        modelId = 'suno-ai/bark:b76242b40d67c76ab6742e987628a2a9ac019e11d56ab96c4e91ce03b79b2787';
         input = {
-          text,
+          prompt: text,
           text_temp: 0.7,
           waveform_temp: 0.7,
         };
