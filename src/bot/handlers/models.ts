@@ -8,6 +8,7 @@ import { logger } from '../../utils/logger';
 import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
 import { enqueueGeneration } from '../../queues/producer';
+import { config } from '../../config';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -203,6 +204,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       creditsCost,
       priceItemCode,
       walletCategory: walletCat,
+      botToken: config.bot.token,
       ...(audioOptions && { audioOptions }),
       ...(imageOptions && { imageOptions }),
     });

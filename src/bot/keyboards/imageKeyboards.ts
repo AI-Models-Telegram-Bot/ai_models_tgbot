@@ -3,14 +3,15 @@ import { Language, getLocale } from '../../locales';
 import { config } from '../../config';
 
 /**
- * Reply keyboard: 4 image family buttons + back/main
+ * Reply keyboard: 4 image family buttons + main menu
+ * No back button here since back would go to main menu anyway.
  */
 export function getImageFamiliesKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.imageFluxFamily, l.buttons.imageSDFamily],
     [l.buttons.imageDalleFamily, l.buttons.imageIdeogramFamily],
-    [l.buttons.back, l.buttons.mainMenu],
+    [l.buttons.mainMenu],
   ]).resize();
 }
 

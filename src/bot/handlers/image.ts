@@ -26,6 +26,7 @@ function formatCredits(amount: number): string {
 interface ImageFamilyConfig {
   descriptionKey: string;
   getKeyboard: (lang: Language) => any;
+  singleModel?: ImageFunction; // If family has only one model, skip submenu
 }
 
 const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
@@ -44,6 +45,7 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
   ideogram: {
     descriptionKey: 'imageIdeogramFamilyDesc',
     getKeyboard: getIdeogramModelsKeyboard,
+    singleModel: 'ideogram',
   },
 };
 
@@ -163,6 +165,11 @@ export async function handleImageFamilySelection(ctx: BotContext, familyId: stri
   ctx.session.imageFunction = undefined;
   ctx.session.awaitingInput = false;
   ctx.session.selectedModel = undefined;
+
+  // If family has only one model, skip the submenu and go directly to the model
+  if (family.singleModel) {
+    return handleImageFunctionSelection(ctx, family.singleModel);
+  }
 
   const description = (l.messages as any)[family.descriptionKey] || '';
   await ctx.reply(description, {

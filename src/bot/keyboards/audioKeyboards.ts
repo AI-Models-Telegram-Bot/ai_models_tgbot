@@ -3,14 +3,15 @@ import { Language, getLocale } from '../../locales';
 import { config } from '../../config';
 
 /**
- * Reply keyboard: 4 audio function buttons + back/main
+ * Reply keyboard: 4 audio function buttons + main menu
+ * No back button here since back would go to main menu anyway.
  */
 export function getAudioFunctionsKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.audioElevenLabs, l.buttons.audioVoiceCloning],
     [l.buttons.audioSuno, l.buttons.audioSoundGen],
-    [l.buttons.back, l.buttons.mainMenu],
+    [l.buttons.mainMenu],
   ]).resize();
 }
 

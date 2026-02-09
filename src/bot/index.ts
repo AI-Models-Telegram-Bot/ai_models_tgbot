@@ -32,6 +32,9 @@ import { logger } from '../utils/logger';
 import { en } from '../locales/en';
 import { ru } from '../locales/ru';
 
+// Families with only one model — back button skips the model submenu
+const IMAGE_SINGLE_MODEL_FAMILIES: Record<string, boolean> = { ideogram: true };
+
 export function createBot(): Telegraf<BotContext> {
   const bot = new Telegraf<BotContext>(config.bot.token);
 
@@ -101,18 +104,20 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.selectedModel = undefined;
       return handleAudioCategory(ctx);
     }
-    // Audio: menu → main menu
-    if (ctx.session?.inAudioMenu) {
-      ctx.session.inAudioMenu = false;
-      return handleMainMenu(ctx);
-    }
-    // Image: model selected → back to family models list
+    // Image: model selected → back to family models list (or families menu for single-model families)
     if (ctx.session?.imageFunction) {
       const family = ctx.session.imageFamily;
       ctx.session.imageFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
       if (family) {
+        // For single-model families (like ideogram), go back to families menu
+        // instead of showing a submenu with one item
+        const familyConfig = IMAGE_SINGLE_MODEL_FAMILIES[family];
+        if (familyConfig) {
+          ctx.session.imageFamily = undefined;
+          return handleImageFamilyMenu(ctx);
+        }
         return handleImageFamilySelection(ctx, family);
       }
       return handleImageFamilyMenu(ctx);
@@ -127,7 +132,7 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.inImageMenu = false;
       return handleMainMenu(ctx);
     }
-    return handleHelp(ctx);
+    return handleMainMenu(ctx);
   });
 
   // Callback queries (inline keyboard)
