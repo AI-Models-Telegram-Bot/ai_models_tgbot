@@ -65,11 +65,12 @@ export async function handleAudioFunctionMenu(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  // Clear any active audio state
+  // Clear any active audio state but mark that we're in the audio menu
   if (ctx.session) {
     ctx.session.audioFunction = undefined;
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
+    ctx.session.inAudioMenu = true;
   }
 
   await ctx.reply(l.messages.audioFunctionSelect, {
@@ -90,6 +91,18 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
 
   if (!func) {
     logger.warn(`Unknown audio function: ${functionId}`);
+    return;
+  }
+
+  // Voice cloning requires audio file upload which is not yet supported
+  if (functionId === 'voice_cloning') {
+    const comingSoon = lang === 'ru'
+      ? '🚧 <b>Клонирование голоса</b>\n\nЭта функция скоро будет доступна! Она требует загрузки аудио-файла с образцом голоса, что находится в разработке.'
+      : '🚧 <b>Voice Cloning</b>\n\nThis feature is coming soon! It requires uploading a voice sample audio file, which is currently under development.';
+    await ctx.reply(comingSoon, {
+      parse_mode: 'HTML',
+      ...getAudioFunctionsKeyboard(lang),
+    });
     return;
   }
 

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
+import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Card, Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -105,6 +106,7 @@ export default function ElevenLabsVoicePage() {
     voicesLoading,
     isLoading,
     isSaving,
+    error,
     fetchSettings,
     updateElevenLabs,
     fetchVoices,
@@ -154,6 +156,7 @@ export default function ElevenLabsVoicePage() {
       });
       hapticNotification('success');
       toast.success(t('saved'));
+      setTimeout(() => closeTelegramWebApp(), 800);
     } catch {
       hapticNotification('error');
       toast.error(t('saveError'));
@@ -235,6 +238,16 @@ export default function ElevenLabsVoicePage() {
             {[1, 2, 3, 4, 5].map(i => (
               <Skeleton key={i} className="h-16" variant="rectangular" />
             ))}
+          </div>
+        ) : error && voices.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-red-400 text-sm mb-3">{error}</p>
+            <button
+              onClick={() => fetchVoices()}
+              className="px-4 py-2 rounded-xl bg-audio-primary/20 text-audio-primary text-sm font-medium hover:bg-audio-primary/30 transition-colors"
+            >
+              {t('retry', 'Retry')}
+            </button>
           </div>
         ) : voices.length === 0 ? (
           <div className="text-center text-content-tertiary py-10 text-sm">

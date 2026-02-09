@@ -71,13 +71,19 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.langEnglish, ru.buttons.langEnglish], (ctx) => handleLanguageChange(ctx, 'en'));
   bot.hears([en.buttons.langRussian, ru.buttons.langRussian], (ctx) => handleLanguageChange(ctx, 'ru'));
 
-  // Back button - context-aware: audio function menu or help
+  // Back button - context-aware: audio function → audio menu, audio menu → main menu, else → help
   bot.hears([en.buttons.back, ru.buttons.back], async (ctx) => {
     if (ctx.session?.audioFunction) {
+      // Inside a specific audio function → go back to audio functions menu
       ctx.session.audioFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
       return handleAudioCategory(ctx);
+    }
+    if (ctx.session?.inAudioMenu) {
+      // In audio functions menu → go back to main menu
+      ctx.session.inAudioMenu = false;
+      return handleMainMenu(ctx);
     }
     return handleHelp(ctx);
   });
