@@ -68,6 +68,7 @@ services:
       - NODE_ENV=staging
       - INSTANCE_ID=dev
       - BOT_MODE=polling
+      - DISABLE_WORKERS=true
     depends_on:
       postgres:
         condition: service_healthy
