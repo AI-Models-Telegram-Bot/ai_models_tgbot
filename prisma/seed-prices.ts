@@ -126,6 +126,15 @@ async function seedPrices() {
       metadata: { provider: 'aimlapi', model: 'flux-pro' },
     },
     {
+      itemCode: 'IMAGE_NANO_BANANA_PRO',
+      category: 'IMAGE',
+      name: 'Nano Banana Pro',
+      description: 'Google Gemini 3 Pro Image (~$0.04)',
+      creditsPerUnit: 20,
+      unitType: '1_image',
+      metadata: { provider: 'aimlapi', model: 'nano-banana-pro' },
+    },
+    {
       itemCode: 'IMAGE_DALLE3',
       category: 'IMAGE',
       name: 'DALL-E 3',
@@ -133,6 +142,15 @@ async function seedPrices() {
       creditsPerUnit: 25,
       unitType: '1_image',
       metadata: { provider: 'openai', model: 'dall-e-3' },
+    },
+    {
+      itemCode: 'IMAGE_MIDJOURNEY',
+      category: 'IMAGE',
+      name: 'Midjourney',
+      description: 'Midjourney artistic image generation (~$0.04)',
+      creditsPerUnit: 25,
+      unitType: '1_image',
+      metadata: { provider: 'kieai', model: 'midjourney' },
     },
     {
       itemCode: 'IMAGE_IDEOGRAM',
