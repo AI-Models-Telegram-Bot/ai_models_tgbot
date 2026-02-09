@@ -33,6 +33,14 @@ export default {
           'surface-card': '#122a22',
           'surface-elevated': '#1a3d30',
         },
+        image: {
+          primary: '#a855f7',
+          'primary-dark': '#9333ea',
+          'primary-light': '#c084fc',
+          surface: '#150f2e',
+          'surface-card': '#1e1540',
+          'surface-elevated': '#2a1d50',
+        },
       },
       fontFamily: {
         sans: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
@@ -52,6 +60,8 @@ export default {
         'gold': '0 0 20px rgba(255,215,0,0.3)',
         'audio-neon': '0 0 20px rgba(16,185,129,0.4)',
         'audio-glow': '0 0 30px rgba(16,185,129,0.6)',
+        'image-neon': '0 0 20px rgba(168,85,247,0.4)',
+        'image-glow': '0 0 30px rgba(168,85,247,0.6)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',

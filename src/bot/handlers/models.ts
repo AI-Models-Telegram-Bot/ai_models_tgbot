@@ -3,6 +3,7 @@ import { BotContext } from '../types';
 import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
 import { modelService, requestService, walletService, modelAccessService } from '../../services';
 import { getAudioOptionsForFunction } from './audio';
+import { getImageOptionsForFunction } from './image';
 import { logger } from '../../utils/logger';
 import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
@@ -173,6 +174,20 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
     }
   }
 
+  // Load image settings if this is an image function
+  let imageOptions: Record<string, unknown> | undefined;
+  if (ctx.session.imageFunction && ctx.from) {
+    try {
+      imageOptions = await getImageOptionsForFunction(
+        ctx.user.id,
+        BigInt(ctx.from.id),
+        ctx.session.imageFunction,
+      );
+    } catch (err) {
+      logger.warn('Failed to load image options, using defaults', { err });
+    }
+  }
+
   // Enqueue the job - worker will handle execution and result delivery
   try {
     await enqueueGeneration({
@@ -189,6 +204,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       priceItemCode,
       walletCategory: walletCat,
       ...(audioOptions && { audioOptions }),
+      ...(imageOptions && { imageOptions }),
     });
 
     logger.info('Job enqueued', { requestId: request.id, model: model.slug });
@@ -212,4 +228,6 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   ctx.session.awaitingInput = false;
   ctx.session.selectedModel = undefined;
   ctx.session.audioFunction = undefined;
+  ctx.session.imageFunction = undefined;
+  ctx.session.imageFamily = undefined;
 }

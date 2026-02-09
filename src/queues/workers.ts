@@ -68,7 +68,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         generationResponse = await manager.generateWithModel('TEXT', 'generateText', modelSlug, input);
         break;
       case 'IMAGE':
-        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input);
+        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input, job.data.imageOptions);
         break;
       case 'VIDEO':
         generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input);

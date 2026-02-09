@@ -92,7 +92,7 @@ export class AIMLAPIProvider extends EnhancedProvider {
       const response = await this.client.post('/images/generations/', {
         model,
         prompt,
-        image_size: (options?.size as string) || 'landscape_4_3',
+        image_size: (options?.size as string) || (options?.aspectRatio === '1:1' ? 'square' : 'landscape_4_3'),
       });
 
       const imageUrl = response.data.data?.[0]?.url;

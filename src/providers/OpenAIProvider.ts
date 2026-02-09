@@ -26,13 +26,24 @@ export class OpenAIProvider extends BaseProvider {
     return { text };
   }
 
-  async generateImage(prompt: string, options?: { model?: string; size?: string }): Promise<ImageGenerationResult> {
-    const response = await this.client.images.generate({
-      model: options?.model || 'dall-e-3',
+  async generateImage(prompt: string, options?: Record<string, unknown>): Promise<ImageGenerationResult> {
+    const modelId = (options?.model as string) || 'dall-e-3';
+    const dalleSize = (options?.dalleSize as string) || (options?.size as string) || '1024x1024';
+
+    const params: any = {
+      model: modelId,
       prompt,
       n: 1,
-      size: (options?.size as '1024x1024' | '1792x1024' | '1024x1792') || '1024x1024',
-    });
+      size: dalleSize as '1024x1024' | '1792x1024' | '1024x1792',
+    };
+
+    // DALL-E 3 supports quality and style
+    if (modelId === 'dall-e-3') {
+      if (options?.quality) params.quality = options.quality;
+      if (options?.style) params.style = options.style;
+    }
+
+    const response = await this.client.images.generate(params);
 
     const imageUrl = response.data?.[0]?.url || '';
     return { imageUrl };

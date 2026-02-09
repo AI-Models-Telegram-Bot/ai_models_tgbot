@@ -43,8 +43,8 @@ export class ReplicateProvider extends BaseProvider {
     throw new Error('Use OpenAI or Anthropic for text generation');
   }
 
-  async generateImage(prompt: string, options?: { model?: string }): Promise<ImageGenerationResult> {
-    const modelSlug = options?.model || 'flux-schnell';
+  async generateImage(prompt: string, options?: Record<string, unknown>): Promise<ImageGenerationResult> {
+    const modelSlug = (options?.model as string) || 'flux-schnell';
 
     // Official Replicate models: use "owner/model" format (no version hash)
     let modelId: string;
@@ -72,9 +72,17 @@ export class ReplicateProvider extends BaseProvider {
 
     logger.info(`Replicate image: running ${modelId}`);
 
-    const output = await this.client.run(modelId as `${string}/${string}`, {
-      input: { prompt },
-    });
+    const input: Record<string, unknown> = { prompt };
+
+    // Pass aspect ratio if provided (Flux models support this)
+    if (options?.aspectRatio) {
+      input.aspect_ratio = options.aspectRatio;
+    }
+    // Pass width/height for SDXL models
+    if (options?.width) input.width = options.width;
+    if (options?.height) input.height = options.height;
+
+    const output = await this.client.run(modelId as `${string}/${string}`, { input });
 
     const imageUrl = extractUrl(output);
     logger.info(`Replicate image result: ${imageUrl.slice(0, 100)}`);

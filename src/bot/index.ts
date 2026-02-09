@@ -19,6 +19,9 @@ import {
   handleVideoCategory,
   handleAudioCategory,
   handleAudioFunctionSelection,
+  handleImageFamilyMenu,
+  handleImageFamilySelection,
+  handleImageFunctionSelection,
   handleUserInput,
   handleCallbackQuery,
   handleWebAppData,
@@ -53,6 +56,24 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.audioSuno, ru.buttons.audioSuno], (ctx) => handleAudioFunctionSelection(ctx, 'suno'));
   bot.hears([en.buttons.audioSoundGen, ru.buttons.audioSoundGen], (ctx) => handleAudioFunctionSelection(ctx, 'sound_generator'));
 
+  // Image family buttons (EN & RU)
+  bot.hears([en.buttons.imageFluxFamily, ru.buttons.imageFluxFamily], (ctx) => handleImageFamilySelection(ctx, 'flux'));
+  bot.hears([en.buttons.imageSDFamily, ru.buttons.imageSDFamily], (ctx) => handleImageFamilySelection(ctx, 'stable-diffusion'));
+  bot.hears([en.buttons.imageDalleFamily, ru.buttons.imageDalleFamily], (ctx) => handleImageFamilySelection(ctx, 'dall-e'));
+  bot.hears([en.buttons.imageIdeogramFamily, ru.buttons.imageIdeogramFamily], (ctx) => handleImageFamilySelection(ctx, 'ideogram'));
+
+  // Image model buttons (EN & RU)
+  bot.hears([en.buttons.imageFluxSchnell, ru.buttons.imageFluxSchnell], (ctx) => handleImageFunctionSelection(ctx, 'flux-schnell'));
+  bot.hears([en.buttons.imageFluxKontext, ru.buttons.imageFluxKontext], (ctx) => handleImageFunctionSelection(ctx, 'flux-kontext'));
+  bot.hears([en.buttons.imageFluxDev, ru.buttons.imageFluxDev], (ctx) => handleImageFunctionSelection(ctx, 'flux-dev'));
+  bot.hears([en.buttons.imageFluxPro, ru.buttons.imageFluxPro], (ctx) => handleImageFunctionSelection(ctx, 'flux-pro'));
+  bot.hears([en.buttons.imageSDXLLightning, ru.buttons.imageSDXLLightning], (ctx) => handleImageFunctionSelection(ctx, 'sdxl-lightning'));
+  bot.hears([en.buttons.imageSDXL, ru.buttons.imageSDXL], (ctx) => handleImageFunctionSelection(ctx, 'sdxl'));
+  bot.hears([en.buttons.imagePlayground, ru.buttons.imagePlayground], (ctx) => handleImageFunctionSelection(ctx, 'playground-v2-5'));
+  bot.hears([en.buttons.imageDallE2, ru.buttons.imageDallE2], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-2'));
+  bot.hears([en.buttons.imageDallE3, ru.buttons.imageDallE3], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-3'));
+  bot.hears([en.buttons.imageIdeogram, ru.buttons.imageIdeogram], (ctx) => handleImageFunctionSelection(ctx, 'ideogram'));
+
   bot.hears([en.buttons.profile, ru.buttons.profile], handleProfile);
   bot.hears([en.buttons.help, ru.buttons.help], handleHelp);
 
@@ -71,18 +92,39 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.langEnglish, ru.buttons.langEnglish], (ctx) => handleLanguageChange(ctx, 'en'));
   bot.hears([en.buttons.langRussian, ru.buttons.langRussian], (ctx) => handleLanguageChange(ctx, 'ru'));
 
-  // Back button - context-aware: audio function → audio menu, audio menu → main menu, else → help
+  // Back button - context-aware navigation
   bot.hears([en.buttons.back, ru.buttons.back], async (ctx) => {
+    // Audio: function → audio menu
     if (ctx.session?.audioFunction) {
-      // Inside a specific audio function → go back to audio functions menu
       ctx.session.audioFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
       return handleAudioCategory(ctx);
     }
+    // Audio: menu → main menu
     if (ctx.session?.inAudioMenu) {
-      // In audio functions menu → go back to main menu
       ctx.session.inAudioMenu = false;
+      return handleMainMenu(ctx);
+    }
+    // Image: model selected → back to family models list
+    if (ctx.session?.imageFunction) {
+      const family = ctx.session.imageFamily;
+      ctx.session.imageFunction = undefined;
+      ctx.session.awaitingInput = false;
+      ctx.session.selectedModel = undefined;
+      if (family) {
+        return handleImageFamilySelection(ctx, family);
+      }
+      return handleImageFamilyMenu(ctx);
+    }
+    // Image: family selected → back to families menu
+    if (ctx.session?.imageFamily) {
+      ctx.session.imageFamily = undefined;
+      return handleImageFamilyMenu(ctx);
+    }
+    // Image: families menu → main menu
+    if (ctx.session?.inImageMenu) {
+      ctx.session.inImageMenu = false;
       return handleMainMenu(ctx);
     }
     return handleHelp(ctx);

@@ -1,0 +1,32 @@
+{
+  "settings": "Настройки изображений",
+  "aspectRatio": "Соотношение сторон",
+  "quality": "Качество",
+  "qualityStandard": "Стандартное",
+  "qualityHD": "HD",
+  "qualityStandardDesc": "Быстрая генерация, хорошее качество",
+  "qualityHDDesc": "Улучшенная детализация и чёткость",
+  "style": "Стиль",
+  "styleVivid": "Яркий",
+  "styleNatural": "Естественный",
+  "styleVividDesc": "Гиперреалистичные, драматичные изображения",
+  "styleNaturalDesc": "Более натуральный, менее гиперреалистичный",
+  "preview": "Предпросмотр",
+  "save": "Сохранить и вернуться",
+  "saving": "Сохранение...",
+  "saved": "Настройки сохранены!",
+  "loadError": "Не удалось загрузить настройки",
+  "saveError": "Не удалось сохранить настройки",
+  "modelNames": {
+    "flux-schnell": "Flux Schnell",
+    "flux-kontext": "Flux Kontext",
+    "flux-dev": "Flux Dev",
+    "flux-pro": "Flux Pro",
+    "sdxl-lightning": "SDXL Lightning",
+    "sdxl": "SDXL",
+    "playground-v2-5": "Playground v2.5",
+    "dall-e-2": "DALL-E 2",
+    "dall-e-3": "DALL-E 3",
+    "ideogram": "Ideogram v2"
+  }
+}

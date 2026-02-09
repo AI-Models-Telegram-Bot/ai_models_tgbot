@@ -1,0 +1,32 @@
+{
+  "settings": "Image Settings",
+  "aspectRatio": "Aspect Ratio",
+  "quality": "Quality",
+  "qualityStandard": "Standard",
+  "qualityHD": "HD",
+  "qualityStandardDesc": "Fast generation, good quality",
+  "qualityHDDesc": "Enhanced detail and sharpness",
+  "style": "Style",
+  "styleVivid": "Vivid",
+  "styleNatural": "Natural",
+  "styleVividDesc": "Hyper-real, dramatic images",
+  "styleNaturalDesc": "More natural, less hyper-real",
+  "preview": "Preview",
+  "save": "Save and go back",
+  "saving": "Saving...",
+  "saved": "Settings saved!",
+  "loadError": "Failed to load settings",
+  "saveError": "Failed to save settings",
+  "modelNames": {
+    "flux-schnell": "Flux Schnell",
+    "flux-kontext": "Flux Kontext",
+    "flux-dev": "Flux Dev",
+    "flux-pro": "Flux Pro",
+    "sdxl-lightning": "SDXL Lightning",
+    "sdxl": "SDXL",
+    "playground-v2-5": "Playground v2.5",
+    "dall-e-2": "DALL-E 2",
+    "dall-e-3": "DALL-E 3",
+    "ideogram": "Ideogram v2"
+  }
+}
