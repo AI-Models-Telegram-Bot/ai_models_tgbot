@@ -22,8 +22,12 @@ router.get('/audio-settings/:telegramId', async (req, res) => {
       soundGenSettings: settings.soundGenSettings || audioSettingsService.getDefaults().soundGenSettings,
       voiceCloningSettings: settings.voiceCloningSettings || audioSettingsService.getDefaults().voiceCloningSettings,
     });
-  } catch (error) {
-    logger.error('Failed to get audio settings', { error, telegramId });
+  } catch (error: any) {
+    // If user not found, return defaults instead of 500
+    if (error?.message?.includes('not found')) {
+      return res.json(audioSettingsService.getDefaults());
+    }
+    logger.error('Failed to get audio settings', { error: error?.message || error, telegramId });
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
