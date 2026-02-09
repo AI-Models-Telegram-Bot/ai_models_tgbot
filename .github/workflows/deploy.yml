@@ -90,6 +90,20 @@ jobs:
             chmod -R 755 webapp-dev-dist
             echo "Dev webapp built successfully"
 
+            # Seed new price items into database (upsert, safe to re-run)
+            docker compose -f docker-compose.prod.yml exec -T postgres psql -U aibot -d aibot_production -c "
+              INSERT INTO price_items (id, item_code, category, name, description, credits_per_unit, unit_type, metadata, is_active, created_at, updated_at)
+              VALUES
+                ('clnbp_' || substr(md5(random()::text), 1, 20), 'IMAGE_NANO_BANANA_PRO', 'IMAGE', 'Nano Banana Pro', 'Google Gemini 3 Pro Image (~\$0.04)', 20, '1_image', '{\"provider\":\"aimlapi\",\"model\":\"nano-banana-pro\"}', true, now(), now()),
+                ('clmjy_' || substr(md5(random()::text), 1, 20), 'IMAGE_MIDJOURNEY', 'IMAGE', 'Midjourney', 'Midjourney artistic image generation (~\$0.04)', 25, '1_image', '{\"provider\":\"kieai\",\"model\":\"midjourney\"}', true, now(), now())
+              ON CONFLICT (item_code) DO UPDATE SET
+                name = EXCLUDED.name,
+                description = EXCLUDED.description,
+                credits_per_unit = EXCLUDED.credits_per_unit,
+                metadata = EXCLUDED.metadata,
+                updated_at = now();
+            " || echo "Price item seeding failed (non-fatal)"
+
             # Rebuild dev-bot container
             docker compose -f docker-compose.prod.yml build dev-bot
 

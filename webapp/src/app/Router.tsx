@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { AudioLayout } from '@/shared/layouts/AudioLayout';
+import { ImageLayout } from '@/shared/layouts/ImageLayout';
 import { Skeleton } from '@/shared/ui';
 
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
@@ -11,6 +12,8 @@ const ReferralPage = lazy(() => import('@/pages/ReferralPage'));
 const ElevenLabsVoicePage = lazy(() => import('@/pages/audio/ElevenLabsVoicePage'));
 const SunoSettingsPage = lazy(() => import('@/pages/audio/SunoSettingsPage'));
 const SoundGeneratorPage = lazy(() => import('@/pages/audio/SoundGeneratorPage'));
+
+const ImageSettingsPage = lazy(() => import('@/pages/image/ImageSettingsPage'));
 
 function LoadingFallback() {
   return (
@@ -35,6 +38,9 @@ export function Router() {
           <Route path="/audio/elevenlabs-voice" element={<ElevenLabsVoicePage />} />
           <Route path="/audio/suno" element={<SunoSettingsPage />} />
           <Route path="/audio/sound-generator" element={<SoundGeneratorPage />} />
+        </Route>
+        <Route element={<ImageLayout />}>
+          <Route path="/image/settings" element={<ImageSettingsPage />} />
         </Route>
       </Routes>
     </Suspense>

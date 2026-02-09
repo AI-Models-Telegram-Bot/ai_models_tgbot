@@ -43,23 +43,14 @@ export class ReplicateProvider extends BaseProvider {
     throw new Error('Use OpenAI or Anthropic for text generation');
   }
 
-  async generateImage(prompt: string, options?: { model?: string }): Promise<ImageGenerationResult> {
-    const modelSlug = options?.model || 'flux-schnell';
+  async generateImage(prompt: string, options?: Record<string, unknown>): Promise<ImageGenerationResult> {
+    const modelSlug = (options?.model as string) || 'flux-schnell';
 
     // Official Replicate models: use "owner/model" format (no version hash)
     let modelId: string;
     switch (modelSlug) {
       case 'flux-pro':
         modelId = 'black-forest-labs/flux-1.1-pro';
-        break;
-      case 'sdxl-lightning':
-        modelId = 'bytedance/sdxl-lightning-4step';
-        break;
-      case 'sdxl':
-        modelId = 'stability-ai/sdxl';
-        break;
-      case 'playground-v2-5':
-        modelId = 'playgroundai/playground-v2.5-1024px-aesthetic';
         break;
       case 'flux-dev':
         modelId = 'black-forest-labs/flux-dev';
@@ -72,9 +63,14 @@ export class ReplicateProvider extends BaseProvider {
 
     logger.info(`Replicate image: running ${modelId}`);
 
-    const output = await this.client.run(modelId as `${string}/${string}`, {
-      input: { prompt },
-    });
+    const input: Record<string, unknown> = { prompt };
+
+    // Flux models: pass aspect_ratio (validated against Replicate's supported values)
+    const SUPPORTED_RATIOS = new Set(['1:1', '16:9', '9:16', '3:2', '2:3', '4:5', '5:4', '3:4', '4:3']);
+    const ar = options?.aspectRatio as string;
+    input.aspect_ratio = (ar && SUPPORTED_RATIOS.has(ar)) ? ar : '1:1';
+
+    const output = await this.client.run(modelId as `${string}/${string}`, { input });
 
     const imageUrl = extractUrl(output);
     logger.info(`Replicate image result: ${imageUrl.slice(0, 100)}`);

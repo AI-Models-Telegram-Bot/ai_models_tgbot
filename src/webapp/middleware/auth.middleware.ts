@@ -12,6 +12,20 @@ export function validateTelegramAuth(req: Request, res: Response, next: NextFunc
   const initData = req.headers['x-telegram-init-data'] as string | undefined;
 
   if (!initData) {
+    // Fallback: check X-Telegram-Id header (set by bot WebApp buttons via ?tgid= URL param)
+    const telegramIdHeader = req.headers['x-telegram-id'] as string | undefined;
+    if (telegramIdHeader) {
+      const parsed = parseInt(telegramIdHeader, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        (req as any).telegramUser = {
+          id: parsed,
+          first_name: 'WebApp',
+          username: 'webapp_user',
+        };
+        return next();
+      }
+    }
+
     // Allow unauthenticated requests in development
     if (process.env.NODE_ENV !== 'production') {
       (req as any).telegramUser = {

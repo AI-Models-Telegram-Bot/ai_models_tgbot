@@ -25,6 +25,10 @@ import { ProviderConfig } from '../providers/base/ProviderConfig';
  *   AIMLAPI Deepgram  ~$0.001  |  Replicate Bark  ~$0.07
  *   ElevenLabs        ~$0.06
  */
+// Support both naming conventions across environments (.env.staging vs .env.production)
+const OPENAI_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_KEY_1 || '';
+const REPLICATE_KEY = process.env.REPLICATE_API_TOKEN || process.env.REPLICATE_KEY_1 || '';
+
 export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
   // ============ TEXT PROVIDERS ============
   // AIMLAPI gpt-4o-mini (1) → OpenAI gpt-4o-mini (2) → XAI grok-3-mini (3) → Anthropic haiku (4)
@@ -38,7 +42,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     name: 'openai',
     enabled: true,
     priority: 2,
-    apiKey: process.env.OPENAI_API_KEY || '',
+    apiKey: OPENAI_KEY,
   },
   text_xai: {
     name: 'xai',
@@ -72,7 +76,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     name: 'replicate',
     enabled: true,
     priority: 3,
-    apiKey: process.env.REPLICATE_API_TOKEN || '',
+    apiKey: REPLICATE_KEY,
   },
   image_kieai: {
     name: 'kieai',
@@ -84,7 +88,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     name: 'openai',
     enabled: true,
     priority: 5,
-    apiKey: process.env.OPENAI_API_KEY || '',
+    apiKey: OPENAI_KEY,
   },
 
   // ============ VIDEO PROVIDERS ============
@@ -111,7 +115,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     name: 'replicate',
     enabled: true,
     priority: 4,
-    apiKey: process.env.REPLICATE_API_TOKEN || '',
+    apiKey: REPLICATE_KEY,
   },
 
   // ============ AUDIO PROVIDERS ============
@@ -126,7 +130,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     name: 'replicate',
     enabled: true,
     priority: 2,
-    apiKey: process.env.REPLICATE_API_TOKEN || '',
+    apiKey: REPLICATE_KEY,
   },
   audio_elevenlabs: {
     name: 'elevenlabs',

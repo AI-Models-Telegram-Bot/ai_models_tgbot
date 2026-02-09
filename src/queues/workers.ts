@@ -12,8 +12,12 @@ import { logger } from '../utils/logger';
 import { t, getLocale } from '../locales';
 import type { Language } from '../locales';
 
-// Raw Telegram API for sending messages from workers (no bot context needed)
-const telegram = new Telegram(config.bot.token);
+// Create Telegram API instance per job using the originating bot's token.
+// This ensures responses go to the correct bot (dev vs prod) when
+// multiple bot instances share the same Redis queues.
+function getTelegram(job: Job<GenerationJobData>): Telegram {
+  return new Telegram(job.data.botToken || config.bot.token);
+}
 
 /**
  * Build a reply_markup with the main keyboard buttons for the user's language.
@@ -47,6 +51,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     processingMsgId, language, creditsCost, priceItemCode, walletCategory,
   } = job.data;
   const lang = language as Language;
+  const telegram = getTelegram(job);
 
   logger.info(`Processing ${job.data.modelCategory} job`, {
     jobId: job.id, requestId, modelSlug, userId,
@@ -68,7 +73,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         generationResponse = await manager.generateWithModel('TEXT', 'generateText', modelSlug, input);
         break;
       case 'IMAGE':
-        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input);
+        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input, job.data.imageOptions);
         break;
       case 'VIDEO':
         generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input);

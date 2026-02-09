@@ -80,9 +80,7 @@ export async function handleTextCategory(ctx: BotContext): Promise<void> {
   await sendTrackedMessage(ctx, message, { parse_mode: 'HTML', ...getCancelKeyboard(lang) });
 }
 
-export async function handleImageCategory(ctx: BotContext): Promise<void> {
-  await handleCategorySelection(ctx, 'IMAGE');
-}
+export { handleImageFamilyMenu as handleImageCategory } from './image';
 
 export async function handleVideoCategory(ctx: BotContext): Promise<void> {
   await handleCategorySelection(ctx, 'VIDEO');

@@ -59,7 +59,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['gpt-3.5-turbo', 'claude-haiku'],
       },
       image: {
-        allowed: ['dall-e-3-mini', 'stable-diffusion-2'],
+        allowed: ['*'],
       },
       video: {
         allowed: [],
@@ -96,8 +96,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['gpt-3.5-turbo'],
       },
       image: {
-        allowed: ['dall-e-3', 'midjourney-v6', 'stable-diffusion-xl'],
-        unlimited: ['stable-diffusion-xl'],
+        allowed: ['*'],
+        unlimited: ['flux-schnell'],
       },
       video: {
         allowed: ['runway-gen2', 'pika-1.0'],
@@ -137,8 +137,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['gpt-4', 'claude-sonnet'],
       },
       image: {
-        allowed: ['dall-e-3', 'midjourney-v6', 'stable-diffusion-xl', 'flux-pro'],
-        unlimited: ['dall-e-3', 'stable-diffusion-xl'],
+        allowed: ['*'],
+        unlimited: ['flux-schnell'],
       },
       video: {
         allowed: ['runway-gen3', 'pika-1.5', 'kling-1.5', 'luma-ai'],
@@ -181,7 +181,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       image: {
         allowed: ['*'],
-        unlimited: ['dall-e-3', 'midjourney-v6', 'stable-diffusion-xl'],
+        unlimited: ['flux-schnell'],
       },
       video: {
         allowed: ['*'],

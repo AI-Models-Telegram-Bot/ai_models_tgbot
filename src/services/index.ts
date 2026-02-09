@@ -7,3 +7,5 @@ export { subscriptionService, SubscriptionService } from './SubscriptionService'
 export { modelAccessService, ModelAccessService } from './ModelAccessService';
 export { audioSettingsService, AudioSettingsService } from './AudioSettingsService';
 export type { ElevenLabsSettings, SunoSettings, SoundGenSettings, VoiceCloningSettings } from './AudioSettingsService';
+export { imageSettingsService, ImageSettingsService } from './ImageSettingsService';
+export type { ImageModelSettings } from './ImageSettingsService';

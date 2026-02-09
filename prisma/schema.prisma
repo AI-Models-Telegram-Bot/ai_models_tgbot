@@ -32,6 +32,7 @@ model User {
   referrals           User[]    @relation("Referrals")
   referrer            User?     @relation("Referrals", fields: [referredBy], references: [referralCode])
   audioSettings       UserAudioSettings?
+  imageSettings       UserImageSettings?
 
   @@map("users")
 }
@@ -264,6 +265,21 @@ model UserAudioSettings {
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("user_audio_settings")
+}
+
+// ── Image Settings ────────────────────────────────────
+
+model UserImageSettings {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  settings  Json?    // { "flux-schnell": { aspectRatio: "1:1" }, "dall-e-3": { aspectRatio: "1:1", quality: "standard", style: "vivid" }, ... }
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_image_settings")
 }
 
 // ── Subscription System ─────────────────────────────────

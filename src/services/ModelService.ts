@@ -29,6 +29,8 @@ const SLUG_TO_PRICE: Record<string, string> = {
   'suno': 'AUDIO_SUNO',
   'xtts-v2': 'AUDIO_XTTS',
   'bark': 'AUDIO_BARK',
+  'midjourney': 'IMAGE_MIDJOURNEY',
+  'nano-banana-pro': 'IMAGE_NANO_BANANA_PRO',
   'fish-speech': 'AUDIO_FISH_SPEECH',
 };
 
@@ -101,7 +103,9 @@ export class ModelService {
       { name: 'Flux Pro', slug: 'flux-pro', provider: 'aimlapi', category: 'IMAGE', tokenCost: 20, priceItemCode: 'IMAGE_FLUX_PRO', description: 'Flux Pro v1.1 - best quality' },
       { name: 'Stable Diffusion XL', slug: 'sdxl', provider: 'replicate', category: 'IMAGE', tokenCost: 8, priceItemCode: 'IMAGE_SDXL', description: 'High-quality versatile generation' },
       { name: 'Playground v2.5', slug: 'playground-v2-5', provider: 'replicate', category: 'IMAGE', tokenCost: 8, priceItemCode: 'IMAGE_PLAYGROUND', description: 'Aesthetic high-quality images' },
+      { name: 'Nano Banana Pro', slug: 'nano-banana-pro', provider: 'aimlapi', category: 'IMAGE', tokenCost: 20, priceItemCode: 'IMAGE_NANO_BANANA_PRO', description: 'Google Gemini 3 Pro Image — powerful AI image generation' },
       { name: 'DALL-E 3', slug: 'dall-e-3', provider: 'openai', category: 'IMAGE', tokenCost: 25, priceItemCode: 'IMAGE_DALLE3', description: 'OpenAI DALL-E 3 - premium quality' },
+      { name: 'Midjourney', slug: 'midjourney', provider: 'kieai', category: 'IMAGE', tokenCost: 25, priceItemCode: 'IMAGE_MIDJOURNEY', description: 'Midjourney artistic image generation via KieAI' },
       { name: 'Ideogram v2', slug: 'ideogram', provider: 'aimlapi', category: 'IMAGE', tokenCost: 30, priceItemCode: 'IMAGE_IDEOGRAM', description: 'Best for text in images' },
 
       // Video models

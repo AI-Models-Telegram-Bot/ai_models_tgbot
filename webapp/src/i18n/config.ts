@@ -8,6 +8,7 @@ import enPackages from './locales/en/packages.json';
 import enReferral from './locales/en/referral.json';
 import enSubscriptions from './locales/en/subscriptions.json';
 import enAudio from './locales/en/audio.json';
+import enImage from './locales/en/image.json';
 
 import ruCommon from './locales/ru/common.json';
 import ruProfile from './locales/ru/profile.json';
@@ -15,6 +16,7 @@ import ruPackages from './locales/ru/packages.json';
 import ruReferral from './locales/ru/referral.json';
 import ruSubscriptions from './locales/ru/subscriptions.json';
 import ruAudio from './locales/ru/audio.json';
+import ruImage from './locales/ru/image.json';
 
 const resources = {
   en: {
@@ -24,6 +26,7 @@ const resources = {
     referral: enReferral,
     subscriptions: enSubscriptions,
     audio: enAudio,
+    image: enImage,
   },
   ru: {
     common: ruCommon,
@@ -32,6 +35,7 @@ const resources = {
     referral: ruReferral,
     subscriptions: ruSubscriptions,
     audio: ruAudio,
+    image: ruImage,
   },
 };
 
@@ -43,7 +47,7 @@ try {
       resources,
       fallbackLng: 'en',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image'],
       interpolation: {
         escapeValue: false,
       },
@@ -65,7 +69,7 @@ try {
       lng: 'en',
       fallbackLng: 'en',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image'],
       interpolation: {
         escapeValue: false,
       },

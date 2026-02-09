@@ -34,8 +34,13 @@ async function main(): Promise<void> {
     setupQueueEvents();
 
     // Start queue workers (in-process for single-instance mode)
-    startWorkers();
-    logger.info('Queue workers started');
+    // Skip workers when DISABLE_WORKERS=true (e.g. dev-bot that shares Redis with a dedicated worker)
+    if (process.env.DISABLE_WORKERS === 'true') {
+      logger.info('Queue workers DISABLED (DISABLE_WORKERS=true) — jobs will be processed by the dedicated worker');
+    } else {
+      startWorkers();
+      logger.info('Queue workers started');
+    }
 
     // Create and launch bot
     const bot = createBot();
