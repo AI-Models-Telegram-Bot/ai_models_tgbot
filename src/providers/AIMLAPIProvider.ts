@@ -91,7 +91,7 @@ export class AIMLAPIProvider extends EnhancedProvider {
 
       const requestBody: Record<string, unknown> = { model, prompt };
 
-      if (model.includes('nano-banana-pro')) {
+      if (model.includes('nano-banana') || model.includes('gemini-3-pro-image')) {
         requestBody.aspect_ratio = (options?.aspectRatio as string) || '1:1';
         requestBody.resolution = (options?.resolution as string) || '1K';
         requestBody.num_images = 1;
@@ -99,7 +99,7 @@ export class AIMLAPIProvider extends EnhancedProvider {
         requestBody.image_size = (options?.size as string) || (options?.aspectRatio === '1:1' ? 'square' : 'landscape_4_3');
       }
 
-      const response = await this.client.post('/images/generations/', requestBody);
+      const response = await this.client.post('/images/generations', requestBody);
 
       const imageUrl = response.data.data?.[0]?.url;
       if (!imageUrl) {

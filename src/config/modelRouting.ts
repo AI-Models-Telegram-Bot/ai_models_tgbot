@@ -96,13 +96,13 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'midjourney': {
     category: 'IMAGE',
     providers: [
-      { name: 'kieai', modelId: 'midjourney' },                   // ~$0.04
+      { name: 'piapi', modelId: 'midjourney' },                    // PiAPI imagine endpoint
     ],
   },
   'nano-banana-pro': {
     category: 'IMAGE',
     providers: [
-      { name: 'aimlapi', modelId: 'google/nano-banana-pro' },     // ~$0.04
+      { name: 'aimlapi', modelId: 'google/gemini-3-pro-image-preview' }, // ~$0.04
     ],
   },
 

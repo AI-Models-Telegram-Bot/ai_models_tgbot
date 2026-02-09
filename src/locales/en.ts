@@ -280,9 +280,9 @@ Artistic image generation with one of the most popular AI art tools.
 
 Fee: ⚡25 credits per image`,
 
-    imageNanoBananaProDesc: `🤖 <b>Nano Banana Pro</b>
+    imageNanoBananaProDesc: `🤖 <b>Google AI Image</b>
 
-Google Gemini 3 Pro Image — powerful generation with excellent quality.
+Google Gemini image generation — powerful quality with excellent detail.
 
 💡 Adjust aspect ratio and resolution in Image Settings, then send a text prompt.
 
