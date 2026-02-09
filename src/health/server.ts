@@ -25,7 +25,7 @@ export function createHealthServer(port: number = 3000): express.Application {
   app.use(cors({
     origin: process.env.NODE_ENV === 'production' ? allowedOrigins : true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'X-Telegram-Init-Data', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'X-Telegram-Init-Data', 'X-Telegram-Id', 'Authorization'],
     credentials: true,
   }));
   app.use(express.json());
