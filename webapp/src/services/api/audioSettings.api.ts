@@ -39,11 +39,11 @@ export interface VoiceInfo {
 }
 
 export const audioSettingsApi = {
-  getSettings: (telegramId: string): Promise<AudioSettingsResponse> =>
-    apiClient.get(`/audio-settings/${telegramId}`).then(r => r.data),
+  getSettings: (): Promise<AudioSettingsResponse> =>
+    apiClient.get('/audio-settings/me').then(r => r.data),
 
-  updateSettings: (telegramId: string, func: string, settings: Record<string, unknown>): Promise<{ success: boolean }> =>
-    apiClient.put(`/audio-settings/${telegramId}`, { function: func, settings }).then(r => r.data),
+  updateSettings: (func: string, settings: Record<string, unknown>): Promise<{ success: boolean }> =>
+    apiClient.put('/audio-settings/me', { function: func, settings }).then(r => r.data),
 
   getVoices: (params?: { search?: string; category?: string }): Promise<{ voices: VoiceInfo[]; total: number }> =>
     apiClient.get('/audio/voices', { params }).then(r => r.data),

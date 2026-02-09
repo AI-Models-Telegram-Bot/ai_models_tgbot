@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
@@ -99,7 +98,6 @@ function VoiceCard({
 
 export default function ElevenLabsVoicePage() {
   const { t } = useTranslation('audio');
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
   const {
     elevenLabsSettings,
     voices,
@@ -117,12 +115,11 @@ export default function ElevenLabsVoicePage() {
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Fetch voices and settings on mount (auth via X-Telegram-Init-Data header)
   useEffect(() => {
-    if (telegramId) {
-      fetchSettings(telegramId);
-      fetchVoices();
-    }
-  }, [telegramId]);
+    fetchVoices();
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (elevenLabsSettings?.voiceId) {
@@ -145,12 +142,15 @@ export default function ElevenLabsVoicePage() {
   };
 
   const handleSave = async () => {
-    if (!telegramId || !selectedVoiceId) return;
+    if (!selectedVoiceId) {
+      toast.error(t('saveError'));
+      return;
+    }
     hapticImpact('medium');
 
     const voice = voices.find(v => v.voiceId === selectedVoiceId);
     try {
-      await updateElevenLabs(telegramId, {
+      await updateElevenLabs({
         voiceId: selectedVoiceId,
         voiceName: voice?.name || 'Unknown',
       });
@@ -163,7 +163,7 @@ export default function ElevenLabsVoicePage() {
     }
   };
 
-  if (isTelegramLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-16" variant="rectangular" />

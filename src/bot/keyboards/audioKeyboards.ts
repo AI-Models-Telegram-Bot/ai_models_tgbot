@@ -17,13 +17,14 @@ export function getAudioFunctionsKeyboard(lang: Language) {
 /**
  * Reply keyboard for ElevenLabs Voice (with webapp settings)
  */
-export function getElevenLabsMenuKeyboard(lang: Language) {
+export function getElevenLabsMenuKeyboard(lang: Language, telegramId?: number) {
   const l = getLocale(lang);
   const webappUrl = config.webapp?.url;
 
   const rows: any[][] = [];
   if (webappUrl) {
-    rows.push([Markup.button.webApp(l.buttons.audioVoiceSettings, `${webappUrl}/audio/elevenlabs-voice`)]);
+    const url = `${webappUrl}/audio/elevenlabs-voice${telegramId ? `?tgid=${telegramId}` : ''}`;
+    rows.push([Markup.button.webApp(l.buttons.audioVoiceSettings, url)]);
   }
   rows.push([l.buttons.back, l.buttons.mainMenu]);
 
@@ -33,7 +34,7 @@ export function getElevenLabsMenuKeyboard(lang: Language) {
 /**
  * Reply keyboard for Voice Cloning (no webapp settings)
  */
-export function getVoiceCloningMenuKeyboard(lang: Language) {
+export function getVoiceCloningMenuKeyboard(lang: Language, _telegramId?: number) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.back, l.buttons.mainMenu],
@@ -43,13 +44,14 @@ export function getVoiceCloningMenuKeyboard(lang: Language) {
 /**
  * Reply keyboard for SUNO (with webapp settings)
  */
-export function getSunoMenuKeyboard(lang: Language) {
+export function getSunoMenuKeyboard(lang: Language, telegramId?: number) {
   const l = getLocale(lang);
   const webappUrl = config.webapp?.url;
 
   const rows: any[][] = [];
   if (webappUrl) {
-    rows.push([Markup.button.webApp(l.buttons.audioSunoSettings, `${webappUrl}/audio/suno`)]);
+    const url = `${webappUrl}/audio/suno${telegramId ? `?tgid=${telegramId}` : ''}`;
+    rows.push([Markup.button.webApp(l.buttons.audioSunoSettings, url)]);
   }
   rows.push([l.buttons.back, l.buttons.mainMenu]);
 
@@ -59,13 +61,14 @@ export function getSunoMenuKeyboard(lang: Language) {
 /**
  * Reply keyboard for Sound Generator (with webapp settings)
  */
-export function getSoundGenMenuKeyboard(lang: Language) {
+export function getSoundGenMenuKeyboard(lang: Language, telegramId?: number) {
   const l = getLocale(lang);
   const webappUrl = config.webapp?.url;
 
   const rows: any[][] = [];
   if (webappUrl) {
-    rows.push([Markup.button.webApp(l.buttons.audioSoundSettings, `${webappUrl}/audio/sound-generator`)]);
+    const url = `${webappUrl}/audio/sound-generator${telegramId ? `?tgid=${telegramId}` : ''}`;
+    rows.push([Markup.button.webApp(l.buttons.audioSoundSettings, url)]);
   }
   rows.push([l.buttons.back, l.buttons.mainMenu]);
 

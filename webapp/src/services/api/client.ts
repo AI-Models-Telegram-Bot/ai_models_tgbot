@@ -15,6 +15,14 @@ apiClient.interceptors.request.use((config) => {
   if (initData) {
     config.headers['X-Telegram-Init-Data'] = initData;
   }
+
+  // Fallback: pass telegramId from URL query param (set by bot WebApp buttons)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tgid = urlParams.get('tgid');
+  if (tgid) {
+    config.headers['X-Telegram-Id'] = tgid;
+  }
+
   return config;
 });
 

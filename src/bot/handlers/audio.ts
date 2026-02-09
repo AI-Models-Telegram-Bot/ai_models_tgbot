@@ -25,7 +25,7 @@ function formatCredits(amount: number): string {
 interface AudioFunctionConfig {
   modelSlug: string;
   descriptionKey: string;
-  getKeyboard: (lang: Language) => any;
+  getKeyboard: (lang: Language, telegramId?: number) => any;
 }
 
 const FUNCTION_NAMES: Record<AudioFunction, { en: string; ru: string }> = {
@@ -146,7 +146,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
   const description = (l.messages as any)[func.descriptionKey] || '';
   await ctx.reply(description, {
     parse_mode: 'HTML',
-    ...func.getKeyboard(lang),
+    ...func.getKeyboard(lang, ctx.from?.id),
   });
 }
 

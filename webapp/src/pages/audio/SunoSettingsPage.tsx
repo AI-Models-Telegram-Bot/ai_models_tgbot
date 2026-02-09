@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
@@ -19,7 +18,6 @@ const STYLE_PRESETS = ['pop', 'rock', 'jazz', 'electronic', 'hip-hop', 'classica
 
 export default function SunoSettingsPage() {
   const { t } = useTranslation('audio');
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
   const {
     sunoSettings,
     isLoading,
@@ -32,10 +30,8 @@ export default function SunoSettingsPage() {
   const [style, setStyle] = useState('');
 
   useEffect(() => {
-    if (telegramId) {
-      fetchSettings(telegramId);
-    }
-  }, [telegramId]);
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (sunoSettings) {
@@ -61,11 +57,9 @@ export default function SunoSettingsPage() {
   };
 
   const handleSave = async () => {
-    if (!telegramId) return;
     hapticImpact('medium');
-
     try {
-      await updateSuno(telegramId, { mode, style });
+      await updateSuno({ mode, style });
       hapticNotification('success');
       toast.success(t('saved'));
       setTimeout(() => closeTelegramWebApp(), 800);
@@ -75,7 +69,7 @@ export default function SunoSettingsPage() {
     }
   };
 
-  if (isTelegramLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-16" variant="rectangular" />

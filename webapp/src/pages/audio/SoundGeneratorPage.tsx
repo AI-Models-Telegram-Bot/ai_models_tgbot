@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
@@ -52,7 +51,6 @@ function TemperatureSlider({
 
 export default function SoundGeneratorPage() {
   const { t } = useTranslation('audio');
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
   const {
     soundGenSettings,
     isLoading,
@@ -65,10 +63,8 @@ export default function SoundGeneratorPage() {
   const [waveformTemp, setWaveformTemp] = useState(0.7);
 
   useEffect(() => {
-    if (telegramId) {
-      fetchSettings(telegramId);
-    }
-  }, [telegramId]);
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (soundGenSettings) {
@@ -78,11 +74,9 @@ export default function SoundGeneratorPage() {
   }, [soundGenSettings]);
 
   const handleSave = async () => {
-    if (!telegramId) return;
     hapticImpact('medium');
-
     try {
-      await updateSoundGen(telegramId, { textTemp, waveformTemp });
+      await updateSoundGen({ textTemp, waveformTemp });
       hapticNotification('success');
       toast.success(t('saved'));
       setTimeout(() => closeTelegramWebApp(), 800);
@@ -92,7 +86,7 @@ export default function SoundGeneratorPage() {
     }
   };
 
-  if (isTelegramLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-16" variant="rectangular" />
