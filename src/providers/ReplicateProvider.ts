@@ -48,9 +48,19 @@ export class ReplicateProvider extends BaseProvider {
 
     // Official Replicate models: use "owner/model" format (no version hash)
     let modelId: string;
+    let isFlux = false;
     switch (modelSlug) {
       case 'flux-pro':
         modelId = 'black-forest-labs/flux-1.1-pro';
+        isFlux = true;
+        break;
+      case 'flux-dev':
+        modelId = 'black-forest-labs/flux-dev';
+        isFlux = true;
+        break;
+      case 'flux-schnell':
+        modelId = 'black-forest-labs/flux-schnell';
+        isFlux = true;
         break;
       case 'sdxl-lightning':
         modelId = 'bytedance/sdxl-lightning-4step';
@@ -61,12 +71,9 @@ export class ReplicateProvider extends BaseProvider {
       case 'playground-v2-5':
         modelId = 'playgroundai/playground-v2.5-1024px-aesthetic';
         break;
-      case 'flux-dev':
-        modelId = 'black-forest-labs/flux-dev';
-        break;
-      case 'flux-schnell':
       default:
         modelId = 'black-forest-labs/flux-schnell';
+        isFlux = true;
         break;
     }
 
@@ -74,13 +81,18 @@ export class ReplicateProvider extends BaseProvider {
 
     const input: Record<string, unknown> = { prompt };
 
-    // Pass aspect ratio if provided (Flux models support this)
-    if (options?.aspectRatio) {
-      input.aspect_ratio = options.aspectRatio;
+    if (isFlux) {
+      // Flux models: pass aspect_ratio (validated against Replicate's supported values)
+      const SUPPORTED_RATIOS = new Set(['1:1', '16:9', '9:16', '3:2', '2:3', '4:5', '5:4', '3:4', '4:3']);
+      const ar = options?.aspectRatio as string;
+      input.aspect_ratio = (ar && SUPPORTED_RATIOS.has(ar)) ? ar : '1:1';
+    } else {
+      // SDXL/Playground: pass width/height, capped to safe limits
+      const w = Math.min((options?.width as number) || 1024, 1440);
+      const h = Math.min((options?.height as number) || 1024, 1440);
+      input.width = w;
+      input.height = h;
     }
-    // Pass width/height for SDXL models
-    if (options?.width) input.width = options.width;
-    if (options?.height) input.height = options.height;
 
     const output = await this.client.run(modelId as `${string}/${string}`, { input });
 
