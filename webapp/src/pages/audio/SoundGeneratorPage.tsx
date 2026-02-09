@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
-import { closeTelegramWebApp, getTelegramUser } from '@/services/telegram/telegram';
+import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Card, Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -52,7 +51,6 @@ function TemperatureSlider({
 
 export default function SoundGeneratorPage() {
   const { t } = useTranslation('audio');
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
   const {
     soundGenSettings,
     isLoading,
@@ -65,11 +63,8 @@ export default function SoundGeneratorPage() {
   const [waveformTemp, setWaveformTemp] = useState(0.7);
 
   useEffect(() => {
-    const id = telegramId || getTelegramUser()?.id?.toString();
-    if (id) {
-      fetchSettings(id);
-    }
-  }, [telegramId]);
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     if (soundGenSettings) {
@@ -79,15 +74,9 @@ export default function SoundGeneratorPage() {
   }, [soundGenSettings]);
 
   const handleSave = async () => {
-    const id = telegramId || getTelegramUser()?.id?.toString();
-    if (!id) {
-      toast.error(t('saveError'));
-      return;
-    }
     hapticImpact('medium');
-
     try {
-      await updateSoundGen(id, { textTemp, waveformTemp });
+      await updateSoundGen({ textTemp, waveformTemp });
       hapticNotification('success');
       toast.success(t('saved'));
       setTimeout(() => closeTelegramWebApp(), 800);
@@ -97,7 +86,7 @@ export default function SoundGeneratorPage() {
     }
   };
 
-  if (isTelegramLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-16" variant="rectangular" />

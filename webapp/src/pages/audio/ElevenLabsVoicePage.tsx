@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
-import { closeTelegramWebApp, getTelegramUser } from '@/services/telegram/telegram';
+import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Card, Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -99,7 +98,6 @@ function VoiceCard({
 
 export default function ElevenLabsVoicePage() {
   const { t } = useTranslation('audio');
-  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
   const {
     elevenLabsSettings,
     voices,
@@ -117,18 +115,11 @@ export default function ElevenLabsVoicePage() {
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch voices immediately on mount (doesn't need telegramId)
+  // Fetch voices and settings on mount (auth via X-Telegram-Init-Data header)
   useEffect(() => {
     fetchVoices();
+    fetchSettings();
   }, []);
-
-  // Fetch user settings when telegramId available
-  useEffect(() => {
-    const id = telegramId || getTelegramUser()?.id?.toString();
-    if (id) {
-      fetchSettings(id);
-    }
-  }, [telegramId]);
 
   useEffect(() => {
     if (elevenLabsSettings?.voiceId) {
@@ -151,8 +142,7 @@ export default function ElevenLabsVoicePage() {
   };
 
   const handleSave = async () => {
-    const id = telegramId || getTelegramUser()?.id?.toString();
-    if (!id || !selectedVoiceId) {
+    if (!selectedVoiceId) {
       toast.error(t('saveError'));
       return;
     }
@@ -160,7 +150,7 @@ export default function ElevenLabsVoicePage() {
 
     const voice = voices.find(v => v.voiceId === selectedVoiceId);
     try {
-      await updateElevenLabs(id, {
+      await updateElevenLabs({
         voiceId: selectedVoiceId,
         voiceName: voice?.name || 'Unknown',
       });
@@ -173,7 +163,7 @@ export default function ElevenLabsVoicePage() {
     }
   };
 
-  if (isTelegramLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-16" variant="rectangular" />

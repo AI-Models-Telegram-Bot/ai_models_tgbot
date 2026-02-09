@@ -7,8 +7,92 @@ import { logger } from '../../utils/logger';
 const router = Router();
 
 /**
+ * GET /api/webapp/audio-settings/me
+ * Returns audio settings for the authenticated user (from X-Telegram-Init-Data header).
+ */
+router.get('/audio-settings/me', async (req, res) => {
+  const telegramUser = (req as any).telegramUser;
+  const telegramId = telegramUser?.id;
+
+  logger.info('GET /audio-settings/me', { telegramId, hasTelegramUser: !!telegramUser });
+
+  if (!telegramId || telegramId === 0) {
+    return res.json(audioSettingsService.getDefaults());
+  }
+
+  try {
+    const settings = await audioSettingsService.getByTelegramId(BigInt(telegramId));
+
+    return res.json({
+      elevenLabsSettings: settings.elevenLabsSettings || audioSettingsService.getDefaults().elevenLabsSettings,
+      sunoSettings: settings.sunoSettings || audioSettingsService.getDefaults().sunoSettings,
+      soundGenSettings: settings.soundGenSettings || audioSettingsService.getDefaults().soundGenSettings,
+      voiceCloningSettings: settings.voiceCloningSettings || audioSettingsService.getDefaults().voiceCloningSettings,
+    });
+  } catch (error: any) {
+    if (error?.message?.includes('not found')) {
+      return res.json(audioSettingsService.getDefaults());
+    }
+    logger.error('Failed to get audio settings', { error: error?.message || error, telegramId });
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/**
+ * PUT /api/webapp/audio-settings/me
+ * Updates audio settings for the authenticated user.
+ * Body: { function: 'elevenlabs' | 'suno' | 'soundGen', settings: {...} }
+ */
+router.put('/audio-settings/me', async (req, res) => {
+  const telegramUser = (req as any).telegramUser;
+  const telegramId = telegramUser?.id;
+  const { function: func, settings } = req.body;
+
+  logger.info('PUT /audio-settings/me', { telegramId, func, hasTelegramUser: !!telegramUser });
+
+  if (!telegramId || telegramId === 0) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+
+  if (!func || !settings) {
+    return res.status(400).json({ message: 'Missing function or settings in body' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { telegramId: BigInt(telegramId) },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    let updated;
+    switch (func) {
+      case 'elevenlabs':
+        updated = await audioSettingsService.updateElevenLabs(user.id, settings);
+        break;
+      case 'suno':
+        updated = await audioSettingsService.updateSuno(user.id, settings);
+        break;
+      case 'soundGen':
+        updated = await audioSettingsService.updateSoundGen(user.id, settings);
+        break;
+      default:
+        return res.status(400).json({ message: `Unknown function: ${func}` });
+    }
+
+    return res.json({ success: true, settings: updated });
+  } catch (error) {
+    logger.error('Failed to update audio settings', { error, telegramId, func });
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/**
  * GET /api/webapp/audio-settings/:telegramId
- * Returns all audio settings for user (creates defaults if needed).
+ * Legacy: Returns all audio settings for user by telegramId.
  */
 router.get('/audio-settings/:telegramId', async (req, res) => {
   const { telegramId } = req.params;
@@ -23,7 +107,6 @@ router.get('/audio-settings/:telegramId', async (req, res) => {
       voiceCloningSettings: settings.voiceCloningSettings || audioSettingsService.getDefaults().voiceCloningSettings,
     });
   } catch (error: any) {
-    // If user not found, return defaults instead of 500
     if (error?.message?.includes('not found')) {
       return res.json(audioSettingsService.getDefaults());
     }
@@ -34,7 +117,7 @@ router.get('/audio-settings/:telegramId', async (req, res) => {
 
 /**
  * PUT /api/webapp/audio-settings/:telegramId
- * Body: { function: 'elevenlabs' | 'suno' | 'soundGen', settings: {...} }
+ * Legacy: Updates audio settings by telegramId.
  */
 router.put('/audio-settings/:telegramId', async (req, res) => {
   const { telegramId } = req.params;

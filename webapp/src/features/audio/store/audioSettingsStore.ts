@@ -17,10 +17,10 @@ interface AudioSettingsState {
   isSaving: boolean;
   error: string | null;
 
-  fetchSettings: (telegramId: string) => Promise<void>;
-  updateElevenLabs: (telegramId: string, settings: Partial<ElevenLabsSettings>) => Promise<void>;
-  updateSuno: (telegramId: string, settings: Partial<SunoSettings>) => Promise<void>;
-  updateSoundGen: (telegramId: string, settings: Partial<SoundGenSettings>) => Promise<void>;
+  fetchSettings: () => Promise<void>;
+  updateElevenLabs: (settings: Partial<ElevenLabsSettings>) => Promise<void>;
+  updateSuno: (settings: Partial<SunoSettings>) => Promise<void>;
+  updateSoundGen: (settings: Partial<SoundGenSettings>) => Promise<void>;
   fetchVoices: (search?: string, category?: string) => Promise<void>;
 }
 
@@ -34,10 +34,10 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
   isSaving: false,
   error: null,
 
-  fetchSettings: async (telegramId: string) => {
+  fetchSettings: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await audioSettingsApi.getSettings(telegramId);
+      const data = await audioSettingsApi.getSettings();
       set({
         elevenLabsSettings: data.elevenLabsSettings,
         sunoSettings: data.sunoSettings,
@@ -49,10 +49,10 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
     }
   },
 
-  updateElevenLabs: async (telegramId: string, settings: Partial<ElevenLabsSettings>) => {
+  updateElevenLabs: async (settings: Partial<ElevenLabsSettings>) => {
     set({ isSaving: true, error: null });
     try {
-      await audioSettingsApi.updateSettings(telegramId, 'elevenlabs', settings);
+      await audioSettingsApi.updateSettings('elevenlabs', settings);
       const current = get().elevenLabsSettings;
       set({
         elevenLabsSettings: { ...current!, ...settings },
@@ -64,10 +64,10 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
     }
   },
 
-  updateSuno: async (telegramId: string, settings: Partial<SunoSettings>) => {
+  updateSuno: async (settings: Partial<SunoSettings>) => {
     set({ isSaving: true, error: null });
     try {
-      await audioSettingsApi.updateSettings(telegramId, 'suno', settings);
+      await audioSettingsApi.updateSettings('suno', settings);
       const current = get().sunoSettings;
       set({
         sunoSettings: { ...current!, ...settings } as SunoSettings,
@@ -79,10 +79,10 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
     }
   },
 
-  updateSoundGen: async (telegramId: string, settings: Partial<SoundGenSettings>) => {
+  updateSoundGen: async (settings: Partial<SoundGenSettings>) => {
     set({ isSaving: true, error: null });
     try {
-      await audioSettingsApi.updateSettings(telegramId, 'soundGen', settings);
+      await audioSettingsApi.updateSettings('soundGen', settings);
       const current = get().soundGenSettings;
       set({
         soundGenSettings: { ...current!, ...settings } as SoundGenSettings,
@@ -98,7 +98,6 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
     set({ voicesLoading: true, error: null });
     try {
       const data = await audioSettingsApi.getVoices({ search, category });
-      console.log('[AudioStore] fetchVoices result:', { count: data?.voices?.length, total: data?.total });
       set({ voices: data?.voices || [], voicesLoading: false });
     } catch (err: any) {
       console.error('[AudioStore] fetchVoices error:', err);
