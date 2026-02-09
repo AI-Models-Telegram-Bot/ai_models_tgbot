@@ -24,6 +24,7 @@ function formatCredits(amount: number): string {
 interface ImageFamilyConfig {
   descriptionKey: string;
   getKeyboard: (lang: Language) => any;
+  singleModel?: ImageFunction;
 }
 
 const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
@@ -34,6 +35,16 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
   'dall-e': {
     descriptionKey: 'imageDalleFamilyDesc',
     getKeyboard: getDalleModelsKeyboard,
+  },
+  midjourney: {
+    descriptionKey: 'imageMidjourneyFamilyDesc',
+    getKeyboard: () => null,
+    singleModel: 'midjourney',
+  },
+  'google-ai': {
+    descriptionKey: 'imageGoogleAIFamilyDesc',
+    getKeyboard: () => null,
+    singleModel: 'nano-banana-pro',
   },
 };
 
@@ -76,6 +87,16 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageDallE3Desc',
     family: 'dall-e',
   },
+  'midjourney': {
+    modelSlug: 'midjourney',
+    descriptionKey: 'imageMidjourneyDesc',
+    family: 'midjourney',
+  },
+  'nano-banana-pro': {
+    modelSlug: 'nano-banana-pro',
+    descriptionKey: 'imageNanoBananaProDesc',
+    family: 'google-ai',
+  },
 };
 
 const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
@@ -85,6 +106,8 @@ const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
   'flux-pro': { en: 'Flux Pro', ru: 'Flux Pro' },
   'dall-e-2': { en: 'DALL-E 2', ru: 'DALL-E 2' },
   'dall-e-3': { en: 'DALL-E 3', ru: 'DALL-E 3' },
+  'midjourney': { en: 'Midjourney', ru: 'Midjourney' },
+  'nano-banana-pro': { en: 'Nano Banana Pro', ru: 'Nano Banana Pro' },
 };
 
 // ── Handlers ────────────────────────────────────────────
@@ -129,6 +152,11 @@ export async function handleImageFamilySelection(ctx: BotContext, familyId: stri
   ctx.session.imageFunction = undefined;
   ctx.session.awaitingInput = false;
   ctx.session.selectedModel = undefined;
+
+  // Single-model families skip the model list
+  if (family.singleModel) {
+    return handleImageFunctionSelection(ctx, family.singleModel);
+  }
 
   const description = (l.messages as any)[family.descriptionKey] || '';
   await ctx.reply(description, {
@@ -252,9 +280,27 @@ export async function getImageOptionsForFunction(
       if (settings.style) options.style = settings.style;
     }
 
+    // Midjourney specific options
+    if (imageFunction === 'midjourney') {
+      if (settings.version) options.version = settings.version;
+      if (settings.stylize !== undefined) options.stylize = settings.stylize;
+    }
+
+    // Nano Banana Pro specific options
+    if (imageFunction === 'nano-banana-pro') {
+      if (settings.resolution) options.resolution = settings.resolution;
+    }
+
     return options;
   } catch (error) {
     logger.warn('Failed to load image settings, using defaults', { error });
     return {};
   }
+}
+
+/**
+ * Check if a family has only one model (skips model list)
+ */
+export function isSingleModelFamily(familyId: string): boolean {
+  return !!IMAGE_FAMILIES[familyId as ImageFamily]?.singleModel;
 }

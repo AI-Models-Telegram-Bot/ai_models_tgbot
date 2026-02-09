@@ -10,6 +10,7 @@ export function getImageFamiliesKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.imageFluxFamily, l.buttons.imageDalleFamily],
+    [l.buttons.imageMidjourneyFamily, l.buttons.imageGoogleAIFamily],
     [l.buttons.mainMenu],
   ]).resize();
 }

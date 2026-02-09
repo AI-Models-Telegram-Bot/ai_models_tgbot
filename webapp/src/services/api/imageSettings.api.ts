@@ -4,6 +4,9 @@ export interface ImageModelSettings {
   aspectRatio?: string;
   quality?: string;
   style?: string;
+  version?: string;
+  stylize?: number;
+  resolution?: string;
 }
 
 export interface ImageSettingsResponse {

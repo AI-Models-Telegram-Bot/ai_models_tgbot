@@ -59,9 +59,14 @@ export class KieAIProvider extends EnhancedProvider {
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<ImageGenerationResult> {
+    const model = (options?.model as string) || 'flux-kontext-pro';
+
+    if (model === 'midjourney') {
+      return this.generateMidjourneyImage(prompt, options);
+    }
+
     const start = Date.now();
     try {
-      const model = (options?.model as string) || 'flux-kontext-pro';
       logger.info(`KieAI image: starting Flux Kontext generation (${model})`);
 
       const createResponse = await this.client.post('/flux/kontext/generate', {
@@ -148,6 +153,57 @@ export class KieAIProvider extends EnhancedProvider {
   }
 
   /**
+   * Midjourney image generation via Market endpoint
+   * POST /jobs/createTask → poll /jobs/recordInfo
+   */
+  private async generateMidjourneyImage(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<ImageGenerationResult> {
+    const start = Date.now();
+    try {
+      logger.info('KieAI image: starting Midjourney generation');
+
+      // Map version string: 'v6.1' → '6.1', 'v7' → '7'
+      const versionStr = (options?.version as string) || 'v6.1';
+      const versionNum = versionStr.replace('v', '');
+
+      const createResponse = await this.client.post('/jobs/createTask', {
+        taskType: 'mj_txt2img',
+        params: {
+          prompt,
+          aspectRatio: (options?.aspectRatio as string) || '1:1',
+          version: versionNum,
+          stylization: (options?.stylize as number) || 100,
+          speed: 'fast',
+          waterMark: false,
+        },
+      });
+
+      const taskId = createResponse.data?.data?.taskId;
+      if (!taskId) {
+        throw new Error('KieAI Midjourney: no taskId in response');
+      }
+
+      logger.info(`KieAI Midjourney: task created, taskId=${taskId}`);
+
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+
+      const time = Date.now() - start;
+      const cost = 0.04;
+      this.updateStats(true, cost, time);
+
+      logger.info(`KieAI Midjourney: success (${time}ms, $${cost})`);
+      return { imageUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Midjourney: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
    * Poll Flux Kontext image task
    * GET /flux/kontext/record-info?taskId=...
    * successFlag: 0=processing, 1=success, 2=create failed, 3=gen failed
@@ -190,8 +246,8 @@ export class KieAIProvider extends EnhancedProvider {
    * state: waiting, queuing, generating, success, fail
    * result in resultJson (JSON string) → { resultUrls: [...] }
    */
-  private async pollMarketTaskResult(taskId: string): Promise<string> {
-    const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
+  private async pollMarketTaskResult(taskId: string, timeoutMs: number = VIDEO_POLL_TIMEOUT_MS): Promise<string> {
+    const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {
       await this.sleep(POLL_INTERVAL_MS);

@@ -34,6 +34,8 @@ export const en = {
     // Image Families
     imageFluxFamily: '🔥 Flux Family',
     imageDalleFamily: '✨ DALL-E',
+    imageMidjourneyFamily: '🎨 Midjourney',
+    imageGoogleAIFamily: '🤖 Google AI',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
     imageFluxKontext: '🎨 Flux Kontext (⚡5)',
@@ -210,6 +212,18 @@ OpenAI's image generation models — reliable and versatile.
 
 Select a model:`,
 
+    imageMidjourneyFamilyDesc: `🎨 <b>Midjourney</b>
+
+Artistic image generation — stunning, creative, highly detailed.
+
+Select a model:`,
+
+    imageGoogleAIFamilyDesc: `🤖 <b>Google AI</b>
+
+Cutting-edge image generation powered by Google.
+
+Select a model:`,
+
     imageFluxSchnellDesc: `⚡ <b>Flux Schnell</b>
 
 Fast and affordable image generation by Black Forest Labs. Great for quick iterations and drafts.
@@ -257,6 +271,22 @@ OpenAI's premium image model with excellent prompt understanding and high qualit
 💡 Adjust aspect ratio, quality, and style in Image Settings, then send a text prompt.
 
 Fee: ⚡25 credits per image`,
+
+    imageMidjourneyDesc: `🎨 <b>Midjourney</b>
+
+Artistic image generation with one of the most popular AI art tools.
+
+💡 Adjust aspect ratio, version, and stylize in Image Settings, then send a text prompt.
+
+Fee: ⚡25 credits per image`,
+
+    imageNanoBananaProDesc: `🤖 <b>Nano Banana Pro</b>
+
+Google Gemini 3 Pro Image — powerful generation with excellent quality.
+
+💡 Adjust aspect ratio and resolution in Image Settings, then send a text prompt.
+
+Fee: ⚡20 credits per image`,
 
     imageAccessDenied: 'is not available on your current plan.',
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',

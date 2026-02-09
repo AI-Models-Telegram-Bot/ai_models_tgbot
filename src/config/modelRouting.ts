@@ -93,6 +93,18 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'openai', modelId: 'dall-e-2' },                   // $0.02
     ],
   },
+  'midjourney': {
+    category: 'IMAGE',
+    providers: [
+      { name: 'kieai', modelId: 'midjourney' },                   // ~$0.04
+    ],
+  },
+  'nano-banana-pro': {
+    category: 'IMAGE',
+    providers: [
+      { name: 'aimlapi', modelId: 'google/nano-banana-pro' },     // ~$0.04
+    ],
+  },
 
   // ===================== VIDEO =====================
   'kling': {

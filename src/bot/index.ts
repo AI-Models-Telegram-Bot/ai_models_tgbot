@@ -27,6 +27,7 @@ import {
   handleWebAppData,
   handlePreCheckoutQuery,
   handleSuccessfulPayment,
+  isSingleModelFamily,
 } from './handlers';
 import { logger } from '../utils/logger';
 import { en } from '../locales/en';
@@ -59,6 +60,8 @@ export function createBot(): Telegraf<BotContext> {
   // Image family buttons (EN & RU)
   bot.hears([en.buttons.imageFluxFamily, ru.buttons.imageFluxFamily], (ctx) => handleImageFamilySelection(ctx, 'flux'));
   bot.hears([en.buttons.imageDalleFamily, ru.buttons.imageDalleFamily], (ctx) => handleImageFamilySelection(ctx, 'dall-e'));
+  bot.hears([en.buttons.imageMidjourneyFamily, ru.buttons.imageMidjourneyFamily], (ctx) => handleImageFamilySelection(ctx, 'midjourney'));
+  bot.hears([en.buttons.imageGoogleAIFamily, ru.buttons.imageGoogleAIFamily], (ctx) => handleImageFamilySelection(ctx, 'google-ai'));
 
   // Image model buttons (EN & RU)
   bot.hears([en.buttons.imageFluxSchnell, ru.buttons.imageFluxSchnell], (ctx) => handleImageFunctionSelection(ctx, 'flux-schnell'));
@@ -95,12 +98,16 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.selectedModel = undefined;
       return handleAudioCategory(ctx);
     }
-    // Image: model selected → back to family models list
+    // Image: model selected → back to family models list (or families menu for single-model families)
     if (ctx.session?.imageFunction) {
       const family = ctx.session.imageFamily;
       ctx.session.imageFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
+      if (family && isSingleModelFamily(family)) {
+        ctx.session.imageFamily = undefined;
+        return handleImageFamilyMenu(ctx);
+      }
       if (family) {
         return handleImageFamilySelection(ctx, family);
       }
