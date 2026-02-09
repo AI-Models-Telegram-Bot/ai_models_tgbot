@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
-import { closeTelegramWebApp } from '@/services/telegram/telegram';
+import { closeTelegramWebApp, getTelegramUser } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Card, Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -117,10 +117,16 @@ export default function ElevenLabsVoicePage() {
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Fetch voices immediately on mount (doesn't need telegramId)
   useEffect(() => {
-    if (telegramId) {
-      fetchSettings(telegramId);
-      fetchVoices();
+    fetchVoices();
+  }, []);
+
+  // Fetch user settings when telegramId available
+  useEffect(() => {
+    const id = telegramId || getTelegramUser()?.id?.toString();
+    if (id) {
+      fetchSettings(id);
     }
   }, [telegramId]);
 
@@ -145,12 +151,16 @@ export default function ElevenLabsVoicePage() {
   };
 
   const handleSave = async () => {
-    if (!telegramId || !selectedVoiceId) return;
+    const id = telegramId || getTelegramUser()?.id?.toString();
+    if (!id || !selectedVoiceId) {
+      toast.error(t('saveError'));
+      return;
+    }
     hapticImpact('medium');
 
     const voice = voices.find(v => v.voiceId === selectedVoiceId);
     try {
-      await updateElevenLabs(telegramId, {
+      await updateElevenLabs(id, {
         voiceId: selectedVoiceId,
         voiceName: voice?.name || 'Unknown',
       });

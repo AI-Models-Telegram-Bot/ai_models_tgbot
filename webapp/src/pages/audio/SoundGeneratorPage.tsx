@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
-import { closeTelegramWebApp } from '@/services/telegram/telegram';
+import { closeTelegramWebApp, getTelegramUser } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Card, Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -65,8 +65,9 @@ export default function SoundGeneratorPage() {
   const [waveformTemp, setWaveformTemp] = useState(0.7);
 
   useEffect(() => {
-    if (telegramId) {
-      fetchSettings(telegramId);
+    const id = telegramId || getTelegramUser()?.id?.toString();
+    if (id) {
+      fetchSettings(id);
     }
   }, [telegramId]);
 
@@ -78,11 +79,15 @@ export default function SoundGeneratorPage() {
   }, [soundGenSettings]);
 
   const handleSave = async () => {
-    if (!telegramId) return;
+    const id = telegramId || getTelegramUser()?.id?.toString();
+    if (!id) {
+      toast.error(t('saveError'));
+      return;
+    }
     hapticImpact('medium');
 
     try {
-      await updateSoundGen(telegramId, { textTemp, waveformTemp });
+      await updateSoundGen(id, { textTemp, waveformTemp });
       hapticNotification('success');
       toast.success(t('saved'));
       setTimeout(() => closeTelegramWebApp(), 800);
