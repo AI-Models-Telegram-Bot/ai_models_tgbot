@@ -95,12 +95,14 @@ export const useAudioSettingsStore = create<AudioSettingsState>((set, get) => ({
   },
 
   fetchVoices: async (search?: string, category?: string) => {
-    set({ voicesLoading: true });
+    set({ voicesLoading: true, error: null });
     try {
       const data = await audioSettingsApi.getVoices({ search, category });
-      set({ voices: data.voices, voicesLoading: false });
+      console.log('[AudioStore] fetchVoices result:', { count: data?.voices?.length, total: data?.total });
+      set({ voices: data?.voices || [], voicesLoading: false });
     } catch (err: any) {
-      set({ voicesLoading: false, error: err.message });
+      console.error('[AudioStore] fetchVoices error:', err);
+      set({ voicesLoading: false, voices: [], error: err.message || 'Failed to fetch voices' });
     }
   },
 }));

@@ -117,6 +117,12 @@ export async function handleMainMenu(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
+  // Clear audio menu state
+  if (ctx.session) {
+    ctx.session.inAudioMenu = false;
+    ctx.session.audioFunction = undefined;
+  }
+
   await ctx.reply(l.messages.chooseOption, getMainKeyboard(lang));
 }
 

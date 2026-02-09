@@ -130,7 +130,7 @@ export class ReplicateProvider extends BaseProvider {
 
     switch (modelSlug) {
       case 'bark':
-        modelId = 'suno-ai/bark:b76242b40d67c76ab6742e987628a2a9ac019e11d56ab96c4e91ce03b79b2787';
+        modelId = 'suno-ai/bark';
         input = {
           prompt: text,
           text_temp: (options?.textTemp as number) ?? 0.7,
@@ -162,7 +162,7 @@ export class ReplicateProvider extends BaseProvider {
         input = { text };
         break;
       default:
-        modelId = 'suno-ai/bark:b76242b40d67c76ab6742e987628a2a9ac019e11d56ab96c4e91ce03b79b2787';
+        modelId = 'suno-ai/bark';
         input = {
           prompt: text,
           text_temp: 0.7,
@@ -177,6 +177,9 @@ export class ReplicateProvider extends BaseProvider {
       modelId.includes(':') ? (modelId as `${string}/${string}:${string}`) : (modelId as `${string}/${string}`),
       { input }
     );
+
+    // Log raw output for debugging
+    logger.info(`Replicate audio raw output type: ${typeof output}, keys: ${typeof output === 'object' && output !== null ? Object.keys(output as any).join(',') : 'N/A'}`);
 
     // Handle different output formats
     let audioUrl: string;

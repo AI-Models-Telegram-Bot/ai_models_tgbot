@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
+import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -67,6 +68,7 @@ export default function SunoSettingsPage() {
       await updateSuno(telegramId, { mode, style });
       hapticNotification('success');
       toast.success(t('saved'));
+      setTimeout(() => closeTelegramWebApp(), 800);
     } catch {
       hapticNotification('error');
       toast.error(t('saveError'));

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
+import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useAudioSettingsStore } from '@/features/audio/store/audioSettingsStore';
 import { Card, Skeleton } from '@/shared/ui';
 import toast from 'react-hot-toast';
@@ -84,6 +85,7 @@ export default function SoundGeneratorPage() {
       await updateSoundGen(telegramId, { textTemp, waveformTemp });
       hapticNotification('success');
       toast.success(t('saved'));
+      setTimeout(() => closeTelegramWebApp(), 800);
     } catch {
       hapticNotification('error');
       toast.error(t('saveError'));

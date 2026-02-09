@@ -10,5 +10,6 @@ export interface BotContext extends Context {
     awaitingInput?: boolean;
     lastBotMessageId?: number;
     audioFunction?: AudioFunction;
+    inAudioMenu?: boolean;
   };
 }

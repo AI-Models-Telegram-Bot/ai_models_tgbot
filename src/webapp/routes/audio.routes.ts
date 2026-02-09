@@ -81,11 +81,13 @@ router.get('/audio/voices', async (req, res) => {
   const { search, category } = req.query;
 
   try {
+    logger.info('Fetching ElevenLabs voices', { search, category });
     const voices = await elevenLabsProvider.listVoices({
       search: search as string | undefined,
       category: category as string | undefined,
     });
 
+    logger.info(`Returning ${voices.length} voices`);
     return res.json({ voices, total: voices.length });
   } catch (error) {
     logger.error('Failed to list voices', { error });
