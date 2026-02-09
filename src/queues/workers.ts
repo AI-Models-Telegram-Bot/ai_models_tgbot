@@ -16,7 +16,17 @@ import type { Language } from '../locales';
 // This ensures responses go to the correct bot (dev vs prod) when
 // multiple bot instances share the same Redis queues.
 function getTelegram(job: Job<GenerationJobData>): Telegram {
-  return new Telegram(job.data.botToken || config.bot.token);
+  const jobToken = job.data.botToken;
+  const fallbackToken = config.bot.token;
+  const usedToken = jobToken || fallbackToken;
+  logger.info('getTelegram: resolving bot token', {
+    jobId: job.id,
+    hasJobToken: !!jobToken,
+    jobTokenPrefix: jobToken ? jobToken.slice(0, 10) + '...' : 'NONE',
+    fallbackTokenPrefix: fallbackToken ? fallbackToken.slice(0, 10) + '...' : 'NONE',
+    usedTokenPrefix: usedToken ? usedToken.slice(0, 10) + '...' : 'NONE',
+  });
+  return new Telegram(usedToken);
 }
 
 /**
