@@ -7,16 +7,31 @@ import { logger } from '../../utils/logger';
 const router = Router();
 
 /**
+ * Extract telegramId from auth middleware or X-Telegram-Id fallback header.
+ */
+function getEffectiveTelegramId(req: any): number | null {
+  const authId = req.telegramUser?.id;
+  if (authId && authId !== 0) return authId;
+
+  const headerId = req.headers['x-telegram-id'] as string | undefined;
+  if (headerId) {
+    const parsed = parseInt(headerId, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+
+  return null;
+}
+
+/**
  * GET /api/webapp/audio-settings/me
- * Returns audio settings for the authenticated user (from X-Telegram-Init-Data header).
+ * Returns audio settings for the authenticated user.
  */
 router.get('/audio-settings/me', async (req, res) => {
-  const telegramUser = (req as any).telegramUser;
-  const telegramId = telegramUser?.id;
+  const telegramId = getEffectiveTelegramId(req);
 
-  logger.info('GET /audio-settings/me', { telegramId, hasTelegramUser: !!telegramUser });
+  logger.info('GET /audio-settings/me', { telegramId });
 
-  if (!telegramId || telegramId === 0) {
+  if (!telegramId) {
     return res.json(audioSettingsService.getDefaults());
   }
 
@@ -44,13 +59,12 @@ router.get('/audio-settings/me', async (req, res) => {
  * Body: { function: 'elevenlabs' | 'suno' | 'soundGen', settings: {...} }
  */
 router.put('/audio-settings/me', async (req, res) => {
-  const telegramUser = (req as any).telegramUser;
-  const telegramId = telegramUser?.id;
+  const telegramId = getEffectiveTelegramId(req);
   const { function: func, settings } = req.body;
 
-  logger.info('PUT /audio-settings/me', { telegramId, func, hasTelegramUser: !!telegramUser });
+  logger.info('PUT /audio-settings/me', { telegramId, func });
 
-  if (!telegramId || telegramId === 0) {
+  if (!telegramId) {
     return res.status(401).json({ message: 'Not authenticated' });
   }
 
