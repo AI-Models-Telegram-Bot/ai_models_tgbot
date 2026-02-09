@@ -93,30 +93,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'openai', modelId: 'dall-e-2' },                   // $0.02
     ],
   },
-  'sdxl-lightning': {
-    category: 'IMAGE',
-    providers: [
-      { name: 'replicate', modelId: 'sdxl-lightning' },          // ~$0.003
-    ],
-  },
-  'sdxl': {
-    category: 'IMAGE',
-    providers: [
-      { name: 'replicate', modelId: 'sdxl' },                    // ~$0.01
-    ],
-  },
-  'playground-v2-5': {
-    category: 'IMAGE',
-    providers: [
-      { name: 'replicate', modelId: 'playground-v2-5' },         // ~$0.01
-    ],
-  },
-  'ideogram': {
-    category: 'IMAGE',
-    providers: [
-      { name: 'aimlapi', modelId: 'ideogram/v2' },               // ~$0.08
-    ],
-  },
 
   // ===================== VIDEO =====================
   'kling': {

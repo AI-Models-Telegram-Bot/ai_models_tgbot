@@ -3,14 +3,13 @@ import { Language, getLocale } from '../../locales';
 import { config } from '../../config';
 
 /**
- * Reply keyboard: 4 image family buttons + main menu
+ * Reply keyboard: 2 image family buttons + main menu
  * No back button here since back would go to main menu anyway.
  */
 export function getImageFamiliesKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
-    [l.buttons.imageFluxFamily, l.buttons.imageSDFamily],
-    [l.buttons.imageDalleFamily, l.buttons.imageIdeogramFamily],
+    [l.buttons.imageFluxFamily, l.buttons.imageDalleFamily],
     [l.buttons.mainMenu],
   ]).resize();
 }
@@ -28,35 +27,12 @@ export function getFluxModelsKeyboard(lang: Language) {
 }
 
 /**
- * Reply keyboard: Stable Diffusion family models + back/main
- */
-export function getSDModelsKeyboard(lang: Language) {
-  const l = getLocale(lang);
-  return Markup.keyboard([
-    [l.buttons.imageSDXLLightning, l.buttons.imageSDXL],
-    [l.buttons.imagePlayground],
-    [l.buttons.back, l.buttons.mainMenu],
-  ]).resize();
-}
-
-/**
  * Reply keyboard: DALL-E family models + back/main
  */
 export function getDalleModelsKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.imageDallE2, l.buttons.imageDallE3],
-    [l.buttons.back, l.buttons.mainMenu],
-  ]).resize();
-}
-
-/**
- * Reply keyboard: Ideogram models + back/main
- */
-export function getIdeogramModelsKeyboard(lang: Language) {
-  const l = getLocale(lang);
-  return Markup.keyboard([
-    [l.buttons.imageIdeogram],
     [l.buttons.back, l.buttons.mainMenu],
   ]).resize();
 }

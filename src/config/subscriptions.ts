@@ -138,7 +138,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell', 'sdxl-lightning'],
+        unlimited: ['flux-schnell'],
       },
       video: {
         allowed: ['runway-gen3', 'pika-1.5', 'kling-1.5', 'luma-ai'],
@@ -181,7 +181,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell', 'sdxl-lightning', 'sdxl'],
+        unlimited: ['flux-schnell'],
       },
       video: {
         allowed: ['*'],

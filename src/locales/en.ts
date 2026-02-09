@@ -33,20 +33,14 @@ export const en = {
     audioSoundSettings: '🎛️ Sound Settings',
     // Image Families
     imageFluxFamily: '🔥 Flux Family',
-    imageSDFamily: '🎨 Stable Diffusion',
     imageDalleFamily: '✨ DALL-E',
-    imageIdeogramFamily: '📝 Ideogram',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
     imageFluxKontext: '🎨 Flux Kontext (⚡5)',
     imageFluxDev: '🔧 Flux Dev (⚡12)',
     imageFluxPro: '💎 Flux Pro (⚡20)',
-    imageSDXLLightning: '⚡ SDXL Lightning (⚡3)',
-    imageSDXL: '🖼 SDXL (⚡8)',
-    imagePlayground: '🎪 Playground v2.5 (⚡8)',
     imageDallE2: '🎨 DALL-E 2 (⚡10)',
     imageDallE3: '✨ DALL-E 3 (⚡25)',
-    imageIdeogram: '📝 Ideogram v2 (⚡30)',
     imageSettings: '🎛️ Image Settings',
   },
 
@@ -210,21 +204,9 @@ Black Forest Labs Flux models — from fast drafts to premium quality.
 
 Select a model:`,
 
-    imageSDFamilyDesc: `🎨 <b>Stable Diffusion</b>
-
-Stability AI's powerful open-source image generation models.
-
-Select a model:`,
-
     imageDalleFamilyDesc: `✨ <b>DALL-E</b>
 
 OpenAI's image generation models — reliable and versatile.
-
-Select a model:`,
-
-    imageIdeogramFamilyDesc: `📝 <b>Ideogram</b>
-
-Best-in-class text rendering in images.
 
 Select a model:`,
 
@@ -260,30 +242,6 @@ Premium Flux Pro v1.1 — the best quality in the Flux family. Ideal for final p
 
 Fee: ⚡20 credits per image`,
 
-    imageSDXLLightningDesc: `⚡ <b>SDXL Lightning</b>
-
-Ultra-fast 4-step image generation by ByteDance. Extremely quick results with good quality.
-
-💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
-
-Fee: ⚡3 credits per image`,
-
-    imageSDXLDesc: `🖼 <b>Stable Diffusion XL</b>
-
-High-quality versatile image generation. The go-to model for detailed, creative artwork.
-
-💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
-
-Fee: ⚡8 credits per image`,
-
-    imagePlaygroundDesc: `🎪 <b>Playground v2.5</b>
-
-Aesthetic high-quality images optimized for visual appeal and artistic style.
-
-💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
-
-Fee: ⚡8 credits per image`,
-
     imageDallE2Desc: `🎨 <b>DALL-E 2</b>
 
 OpenAI's fast and affordable image model. Good for simple illustrations and quick concepts.
@@ -299,14 +257,6 @@ OpenAI's premium image model with excellent prompt understanding and high qualit
 💡 Adjust aspect ratio, quality, and style in Image Settings, then send a text prompt.
 
 Fee: ⚡25 credits per image`,
-
-    imageIdeogramDesc: `📝 <b>Ideogram v2</b>
-
-The best model for rendering text within images. Perfect for posters, logos, and designs with text.
-
-💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
-
-Fee: ⚡30 credits per image`,
 
     imageAccessDenied: 'is not available on your current plan.',
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',

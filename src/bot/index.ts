@@ -32,9 +32,6 @@ import { logger } from '../utils/logger';
 import { en } from '../locales/en';
 import { ru } from '../locales/ru';
 
-// Families with only one model — back button skips the model submenu
-const IMAGE_SINGLE_MODEL_FAMILIES: Record<string, boolean> = { ideogram: true };
-
 export function createBot(): Telegraf<BotContext> {
   const bot = new Telegraf<BotContext>(config.bot.token);
 
@@ -61,21 +58,15 @@ export function createBot(): Telegraf<BotContext> {
 
   // Image family buttons (EN & RU)
   bot.hears([en.buttons.imageFluxFamily, ru.buttons.imageFluxFamily], (ctx) => handleImageFamilySelection(ctx, 'flux'));
-  bot.hears([en.buttons.imageSDFamily, ru.buttons.imageSDFamily], (ctx) => handleImageFamilySelection(ctx, 'stable-diffusion'));
   bot.hears([en.buttons.imageDalleFamily, ru.buttons.imageDalleFamily], (ctx) => handleImageFamilySelection(ctx, 'dall-e'));
-  bot.hears([en.buttons.imageIdeogramFamily, ru.buttons.imageIdeogramFamily], (ctx) => handleImageFamilySelection(ctx, 'ideogram'));
 
   // Image model buttons (EN & RU)
   bot.hears([en.buttons.imageFluxSchnell, ru.buttons.imageFluxSchnell], (ctx) => handleImageFunctionSelection(ctx, 'flux-schnell'));
   bot.hears([en.buttons.imageFluxKontext, ru.buttons.imageFluxKontext], (ctx) => handleImageFunctionSelection(ctx, 'flux-kontext'));
   bot.hears([en.buttons.imageFluxDev, ru.buttons.imageFluxDev], (ctx) => handleImageFunctionSelection(ctx, 'flux-dev'));
   bot.hears([en.buttons.imageFluxPro, ru.buttons.imageFluxPro], (ctx) => handleImageFunctionSelection(ctx, 'flux-pro'));
-  bot.hears([en.buttons.imageSDXLLightning, ru.buttons.imageSDXLLightning], (ctx) => handleImageFunctionSelection(ctx, 'sdxl-lightning'));
-  bot.hears([en.buttons.imageSDXL, ru.buttons.imageSDXL], (ctx) => handleImageFunctionSelection(ctx, 'sdxl'));
-  bot.hears([en.buttons.imagePlayground, ru.buttons.imagePlayground], (ctx) => handleImageFunctionSelection(ctx, 'playground-v2-5'));
   bot.hears([en.buttons.imageDallE2, ru.buttons.imageDallE2], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-2'));
   bot.hears([en.buttons.imageDallE3, ru.buttons.imageDallE3], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-3'));
-  bot.hears([en.buttons.imageIdeogram, ru.buttons.imageIdeogram], (ctx) => handleImageFunctionSelection(ctx, 'ideogram'));
 
   bot.hears([en.buttons.profile, ru.buttons.profile], handleProfile);
   bot.hears([en.buttons.help, ru.buttons.help], handleHelp);
@@ -104,20 +95,13 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.selectedModel = undefined;
       return handleAudioCategory(ctx);
     }
-    // Image: model selected → back to family models list (or families menu for single-model families)
+    // Image: model selected → back to family models list
     if (ctx.session?.imageFunction) {
       const family = ctx.session.imageFamily;
       ctx.session.imageFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
       if (family) {
-        // For single-model families (like ideogram), go back to families menu
-        // instead of showing a submenu with one item
-        const familyConfig = IMAGE_SINGLE_MODEL_FAMILIES[family];
-        if (familyConfig) {
-          ctx.session.imageFamily = undefined;
-          return handleImageFamilyMenu(ctx);
-        }
         return handleImageFamilySelection(ctx, family);
       }
       return handleImageFamilyMenu(ctx);

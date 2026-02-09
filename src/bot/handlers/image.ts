@@ -2,9 +2,7 @@ import { BotContext, ImageFamily, ImageFunction } from '../types';
 import {
   getImageFamiliesKeyboard,
   getFluxModelsKeyboard,
-  getSDModelsKeyboard,
   getDalleModelsKeyboard,
-  getIdeogramModelsKeyboard,
   getImageModelMenuKeyboard,
 } from '../keyboards/imageKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -26,7 +24,6 @@ function formatCredits(amount: number): string {
 interface ImageFamilyConfig {
   descriptionKey: string;
   getKeyboard: (lang: Language) => any;
-  singleModel?: ImageFunction; // If family has only one model, skip submenu
 }
 
 const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
@@ -34,18 +31,9 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
     descriptionKey: 'imageFluxFamilyDesc',
     getKeyboard: getFluxModelsKeyboard,
   },
-  'stable-diffusion': {
-    descriptionKey: 'imageSDFamilyDesc',
-    getKeyboard: getSDModelsKeyboard,
-  },
   'dall-e': {
     descriptionKey: 'imageDalleFamilyDesc',
     getKeyboard: getDalleModelsKeyboard,
-  },
-  ideogram: {
-    descriptionKey: 'imageIdeogramFamilyDesc',
-    getKeyboard: getIdeogramModelsKeyboard,
-    singleModel: 'ideogram',
   },
 };
 
@@ -78,21 +66,6 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageFluxProDesc',
     family: 'flux',
   },
-  'sdxl-lightning': {
-    modelSlug: 'sdxl-lightning',
-    descriptionKey: 'imageSDXLLightningDesc',
-    family: 'stable-diffusion',
-  },
-  sdxl: {
-    modelSlug: 'sdxl',
-    descriptionKey: 'imageSDXLDesc',
-    family: 'stable-diffusion',
-  },
-  'playground-v2-5': {
-    modelSlug: 'playground-v2-5',
-    descriptionKey: 'imagePlaygroundDesc',
-    family: 'stable-diffusion',
-  },
   'dall-e-2': {
     modelSlug: 'dall-e-2',
     descriptionKey: 'imageDallE2Desc',
@@ -103,11 +76,6 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageDallE3Desc',
     family: 'dall-e',
   },
-  ideogram: {
-    modelSlug: 'ideogram',
-    descriptionKey: 'imageIdeogramDesc',
-    family: 'ideogram',
-  },
 };
 
 const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
@@ -115,12 +83,8 @@ const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
   'flux-kontext': { en: 'Flux Kontext', ru: 'Flux Kontext' },
   'flux-dev': { en: 'Flux Dev', ru: 'Flux Dev' },
   'flux-pro': { en: 'Flux Pro', ru: 'Flux Pro' },
-  'sdxl-lightning': { en: 'SDXL Lightning', ru: 'SDXL Lightning' },
-  sdxl: { en: 'SDXL', ru: 'SDXL' },
-  'playground-v2-5': { en: 'Playground v2.5', ru: 'Playground v2.5' },
   'dall-e-2': { en: 'DALL-E 2', ru: 'DALL-E 2' },
   'dall-e-3': { en: 'DALL-E 3', ru: 'DALL-E 3' },
-  ideogram: { en: 'Ideogram v2', ru: 'Ideogram v2' },
 };
 
 // ── Handlers ────────────────────────────────────────────
@@ -165,11 +129,6 @@ export async function handleImageFamilySelection(ctx: BotContext, familyId: stri
   ctx.session.imageFunction = undefined;
   ctx.session.awaitingInput = false;
   ctx.session.selectedModel = undefined;
-
-  // If family has only one model, skip the submenu and go directly to the model
-  if (family.singleModel) {
-    return handleImageFunctionSelection(ctx, family.singleModel);
-  }
 
   const description = (l.messages as any)[family.descriptionKey] || '';
   await ctx.reply(description, {

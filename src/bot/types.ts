@@ -3,9 +3,8 @@ import { User } from '@prisma/client';
 
 export type AudioFunction = 'elevenlabs_voice' | 'voice_cloning' | 'suno' | 'sound_generator';
 
-export type ImageFamily = 'flux' | 'stable-diffusion' | 'dall-e' | 'ideogram';
-export type ImageFunction = 'flux-schnell' | 'sdxl-lightning' | 'flux-kontext' | 'dall-e-2'
-  | 'sdxl' | 'playground-v2-5' | 'flux-dev' | 'flux-pro' | 'dall-e-3' | 'ideogram';
+export type ImageFamily = 'flux' | 'dall-e';
+export type ImageFunction = 'flux-schnell' | 'flux-kontext' | 'flux-dev' | 'flux-pro' | 'dall-e-2' | 'dall-e-3';
 
 export interface BotContext extends Context {
   user?: User;
