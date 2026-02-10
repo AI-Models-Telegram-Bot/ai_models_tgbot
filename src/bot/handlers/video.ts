@@ -139,6 +139,13 @@ export async function handleVideoFamilyMenu(ctx: BotContext): Promise<void> {
   const l = getLocale(lang);
 
   if (ctx.session) {
+    // Clear other category state
+    ctx.session.inImageMenu = false;
+    ctx.session.imageFamily = undefined;
+    ctx.session.imageFunction = undefined;
+    ctx.session.inAudioMenu = false;
+    ctx.session.audioFunction = undefined;
+    // Set video state
     ctx.session.videoFunction = undefined;
     ctx.session.videoFamily = undefined;
     ctx.session.awaitingInput = false;

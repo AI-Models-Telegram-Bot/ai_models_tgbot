@@ -120,6 +120,13 @@ export async function handleImageFamilyMenu(ctx: BotContext): Promise<void> {
   const l = getLocale(lang);
 
   if (ctx.session) {
+    // Clear other category state
+    ctx.session.inVideoMenu = false;
+    ctx.session.videoFamily = undefined;
+    ctx.session.videoFunction = undefined;
+    ctx.session.inAudioMenu = false;
+    ctx.session.audioFunction = undefined;
+    // Set image state
     ctx.session.imageFunction = undefined;
     ctx.session.imageFamily = undefined;
     ctx.session.awaitingInput = false;

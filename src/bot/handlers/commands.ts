@@ -117,10 +117,18 @@ export async function handleMainMenu(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  // Clear audio menu state
+  // Clear all category menu state
   if (ctx.session) {
     ctx.session.inAudioMenu = false;
     ctx.session.audioFunction = undefined;
+    ctx.session.inImageMenu = false;
+    ctx.session.imageFamily = undefined;
+    ctx.session.imageFunction = undefined;
+    ctx.session.inVideoMenu = false;
+    ctx.session.videoFamily = undefined;
+    ctx.session.videoFunction = undefined;
+    ctx.session.awaitingInput = false;
+    ctx.session.selectedModel = undefined;
   }
 
   await ctx.reply(l.messages.chooseOption, getMainKeyboard(lang));
