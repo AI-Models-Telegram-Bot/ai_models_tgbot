@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { MainLayout } from '@/shared/layouts/MainLayout';
 import { AudioLayout } from '@/shared/layouts/AudioLayout';
 import { ImageLayout } from '@/shared/layouts/ImageLayout';
+import { VideoLayout } from '@/shared/layouts/VideoLayout';
 import { Skeleton } from '@/shared/ui';
 
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
@@ -14,6 +15,7 @@ const SunoSettingsPage = lazy(() => import('@/pages/audio/SunoSettingsPage'));
 const SoundGeneratorPage = lazy(() => import('@/pages/audio/SoundGeneratorPage'));
 
 const ImageSettingsPage = lazy(() => import('@/pages/image/ImageSettingsPage'));
+const VideoSettingsPage = lazy(() => import('@/pages/video/VideoSettingsPage'));
 
 function LoadingFallback() {
   return (
@@ -41,6 +43,9 @@ export function Router() {
         </Route>
         <Route element={<ImageLayout />}>
           <Route path="/image/settings" element={<ImageSettingsPage />} />
+        </Route>
+        <Route element={<VideoLayout />}>
+          <Route path="/video/settings" element={<VideoSettingsPage />} />
         </Route>
       </Routes>
     </Suspense>

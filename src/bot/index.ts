@@ -28,6 +28,10 @@ import {
   handlePreCheckoutQuery,
   handleSuccessfulPayment,
   isSingleModelFamily,
+  handleVideoFamilyMenu,
+  handleVideoFamilySelection,
+  handleVideoFunctionSelection,
+  isSingleVideoFamily,
 } from './handlers';
 import { logger } from '../utils/logger';
 import { en } from '../locales/en';
@@ -70,6 +74,20 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageFluxPro, ru.buttons.imageFluxPro], (ctx) => handleImageFunctionSelection(ctx, 'flux-pro'));
   bot.hears([en.buttons.imageDallE2, ru.buttons.imageDallE2], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-2'));
   bot.hears([en.buttons.imageDallE3, ru.buttons.imageDallE3], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-3'));
+
+  // Video family buttons (EN & RU)
+  bot.hears([en.buttons.videoKlingFamily, ru.buttons.videoKlingFamily], (ctx) => handleVideoFamilySelection(ctx, 'kling'));
+  bot.hears([en.buttons.videoVeoFamily, ru.buttons.videoVeoFamily], (ctx) => handleVideoFamilySelection(ctx, 'veo'));
+  bot.hears([en.buttons.videoSoraFamily, ru.buttons.videoSoraFamily], (ctx) => handleVideoFamilySelection(ctx, 'sora'));
+  bot.hears([en.buttons.videoRunwayFamily, ru.buttons.videoRunwayFamily], (ctx) => handleVideoFamilySelection(ctx, 'runway'));
+  bot.hears([en.buttons.videoLumaFamily, ru.buttons.videoLumaFamily], (ctx) => handleVideoFamilySelection(ctx, 'luma'));
+  bot.hears([en.buttons.videoWanFamily, ru.buttons.videoWanFamily], (ctx) => handleVideoFamilySelection(ctx, 'wan'));
+
+  // Video model buttons (EN & RU)
+  bot.hears([en.buttons.videoKling, ru.buttons.videoKling], (ctx) => handleVideoFunctionSelection(ctx, 'kling'));
+  bot.hears([en.buttons.videoKlingPro, ru.buttons.videoKlingPro], (ctx) => handleVideoFunctionSelection(ctx, 'kling-pro'));
+  bot.hears([en.buttons.videoVeoFast, ru.buttons.videoVeoFast], (ctx) => handleVideoFunctionSelection(ctx, 'veo-fast'));
+  bot.hears([en.buttons.videoVeoQuality, ru.buttons.videoVeoQuality], (ctx) => handleVideoFunctionSelection(ctx, 'veo'));
 
   bot.hears([en.buttons.profile, ru.buttons.profile], handleProfile);
   bot.hears([en.buttons.help, ru.buttons.help], handleHelp);
@@ -121,6 +139,31 @@ export function createBot(): Telegraf<BotContext> {
     // Image: families menu → main menu
     if (ctx.session?.inImageMenu) {
       ctx.session.inImageMenu = false;
+      return handleMainMenu(ctx);
+    }
+    // Video: model selected → back to family models list (or families menu for single-model families)
+    if (ctx.session?.videoFunction) {
+      const family = ctx.session.videoFamily;
+      ctx.session.videoFunction = undefined;
+      ctx.session.awaitingInput = false;
+      ctx.session.selectedModel = undefined;
+      if (family && isSingleVideoFamily(family)) {
+        ctx.session.videoFamily = undefined;
+        return handleVideoFamilyMenu(ctx);
+      }
+      if (family) {
+        return handleVideoFamilySelection(ctx, family);
+      }
+      return handleVideoFamilyMenu(ctx);
+    }
+    // Video: family selected → back to families menu
+    if (ctx.session?.videoFamily) {
+      ctx.session.videoFamily = undefined;
+      return handleVideoFamilyMenu(ctx);
+    }
+    // Video: families menu → main menu
+    if (ctx.session?.inVideoMenu) {
+      ctx.session.inVideoMenu = false;
       return handleMainMenu(ctx);
     }
     return handleMainMenu(ctx);

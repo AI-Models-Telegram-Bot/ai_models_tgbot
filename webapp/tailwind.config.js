@@ -41,6 +41,14 @@ export default {
           'surface-card': '#1e1540',
           'surface-elevated': '#2a1d50',
         },
+        video: {
+          primary: '#f97316',
+          'primary-dark': '#ea580c',
+          'primary-light': '#fb923c',
+          surface: '#1a0f0a',
+          'surface-card': '#2a1a10',
+          'surface-elevated': '#3d2518',
+        },
       },
       fontFamily: {
         sans: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
@@ -62,6 +70,8 @@ export default {
         'audio-glow': '0 0 30px rgba(16,185,129,0.6)',
         'image-neon': '0 0 20px rgba(168,85,247,0.4)',
         'image-glow': '0 0 30px rgba(168,85,247,0.6)',
+        'video-neon': '0 0 20px rgba(249,115,22,0.4)',
+        'video-glow': '0 0 30px rgba(249,115,22,0.6)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',

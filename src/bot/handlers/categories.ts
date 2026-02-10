@@ -82,8 +82,6 @@ export async function handleTextCategory(ctx: BotContext): Promise<void> {
 
 export { handleImageFamilyMenu as handleImageCategory } from './image';
 
-export async function handleVideoCategory(ctx: BotContext): Promise<void> {
-  await handleCategorySelection(ctx, 'VIDEO');
-}
+export { handleVideoFamilyMenu as handleVideoCategory } from './video';
 
 export { handleAudioFunctionMenu as handleAudioCategory } from './audio';

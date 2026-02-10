@@ -137,16 +137,31 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'replicate', modelId: 'wan' },                     // ~$0.18
     ],
   },
-  'animatediff': {
+  'veo-fast': {
     category: 'VIDEO',
     providers: [
-      { name: 'replicate', modelId: 'animatediff' },             // ~$0.06
+      { name: 'kieai', modelId: 'veo3_fast' },                   // ~$0.40
+      { name: 'aimlapi', modelId: 'google/veo-3.1-t2v-fast' },   // ~$0.40
     ],
   },
-  'zeroscope-v2': {
+  'veo': {
     category: 'VIDEO',
     providers: [
-      { name: 'replicate', modelId: 'zeroscope-v2' },            // ~$0.06
+      { name: 'kieai', modelId: 'veo3' },                        // ~$2.00
+      { name: 'aimlapi', modelId: 'google/veo-3.1-t2v' },        // ~$2.00
+    ],
+  },
+  'sora': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'aimlapi', modelId: 'openai/sora-2-t2v' },         // ~$0.50
+      { name: 'kieai', modelId: 'sora-2-text-to-video' },         // ~$0.50
+    ],
+  },
+  'runway': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'runway' },                       // ~$0.30
     ],
   },
 

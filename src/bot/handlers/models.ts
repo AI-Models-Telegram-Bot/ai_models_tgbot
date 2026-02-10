@@ -4,6 +4,7 @@ import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
 import { modelService, requestService, walletService, modelAccessService } from '../../services';
 import { getAudioOptionsForFunction } from './audio';
 import { getImageOptionsForFunction } from './image';
+import { getVideoOptionsForFunction } from './video';
 import { logger } from '../../utils/logger';
 import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
@@ -189,6 +190,20 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
     }
   }
 
+  // Load video settings if this is a video function
+  let videoOptions: Record<string, unknown> | undefined;
+  if (ctx.session.videoFunction && ctx.from) {
+    try {
+      videoOptions = await getVideoOptionsForFunction(
+        ctx.user.id,
+        BigInt(ctx.from.id),
+        ctx.session.videoFunction,
+      );
+    } catch (err) {
+      logger.warn('Failed to load video options, using defaults', { err });
+    }
+  }
+
   // Enqueue the job - worker will handle execution and result delivery
   try {
     await enqueueGeneration({
@@ -207,6 +222,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       botToken: config.bot.token,
       ...(audioOptions && { audioOptions }),
       ...(imageOptions && { imageOptions }),
+      ...(videoOptions && { videoOptions }),
     });
 
     logger.info('Job enqueued', { requestId: request.id, model: model.slug });
@@ -232,4 +248,6 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   ctx.session.audioFunction = undefined;
   ctx.session.imageFunction = undefined;
   ctx.session.imageFamily = undefined;
+  ctx.session.videoFunction = undefined;
+  ctx.session.videoFamily = undefined;
 }

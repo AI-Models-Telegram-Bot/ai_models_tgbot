@@ -121,20 +121,34 @@ export class AIMLAPIProvider extends EnhancedProvider {
   }
 
   /**
-   * Video generation via AIMLAPI Kling models (async with polling)
-   * Step 1: POST /v2/generate/video/kling/generation -> get generation_id
-   * Step 2: Poll GET /v2/generate/video/kling/generation?generation_id=... until completed
+   * Video generation via AIMLAPI
+   * Kling: POST /v2/generate/video/kling/generation (legacy endpoint)
+   * Veo/Sora/etc: POST /v2/video/generations (universal endpoint)
    */
   async generateVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const model = (options?.model as string) || 'klingai/v2-master-text-to-video';
+
+    // Kling uses the legacy endpoint
+    if (model.startsWith('klingai/')) {
+      return this.generateKlingVideo(prompt, options);
+    }
+
+    // Veo, Sora, etc. use the universal endpoint
+    return this.generateUniversalVideo(prompt, options);
+  }
+
+  private async generateKlingVideo(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<VideoGenerationResult> {
     const start = Date.now();
     try {
       const model = (options?.model as string) || 'klingai/v2-master-text-to-video';
-      logger.info(`AIMLAPI video: starting generation with ${model}`);
+      logger.info(`AIMLAPI video: starting Kling generation with ${model}`);
 
-      // Step 1: Submit generation task
       const submitResponse = await this.v2Client.post('/generate/video/kling/generation', {
         model,
         prompt,
@@ -149,8 +163,7 @@ export class AIMLAPIProvider extends EnhancedProvider {
 
       logger.info(`AIMLAPI video: task submitted, generation_id=${generationId}`);
 
-      // Step 2: Poll for completion
-      const videoUrl = await this.pollVideoResult(generationId);
+      const videoUrl = await this.pollVideoResult(generationId, '/generate/video/kling/generation');
 
       const time = Date.now() - start;
       const cost = 0.1;
@@ -166,13 +179,66 @@ export class AIMLAPIProvider extends EnhancedProvider {
     }
   }
 
-  private async pollVideoResult(generationId: string): Promise<string> {
+  private async generateUniversalVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      const model = (options?.model as string) || 'google/veo-3.1-t2v-fast';
+      logger.info(`AIMLAPI video: starting universal generation with ${model}`);
+
+      const body: Record<string, unknown> = { model, prompt };
+
+      // Veo parameters
+      if (model.includes('veo')) {
+        body.aspect_ratio = (options?.aspectRatio as string) || '16:9';
+        body.duration = (options?.duration as number) || 8;
+        body.resolution = (options?.resolution as string) || '1080p';
+        if (options?.generateAudio !== undefined) {
+          body.generate_audio = options.generateAudio;
+        }
+      }
+
+      // Sora parameters
+      if (model.includes('sora')) {
+        body.aspect_ratio = (options?.aspectRatio as string) || '16:9';
+        body.duration = (options?.duration as number) || 4;
+        body.resolution = (options?.resolution as string) || '720p';
+      }
+
+      const submitResponse = await this.v2Client.post('/video/generations', body);
+
+      const generationId = submitResponse.data?.id || submitResponse.data?.generation_id;
+      if (!generationId) {
+        throw new Error('AIMLAPI video: no generation id in response');
+      }
+
+      logger.info(`AIMLAPI video: task submitted, id=${generationId}`);
+
+      const videoUrl = await this.pollVideoResult(generationId, '/video/generations');
+
+      const time = Date.now() - start;
+      const cost = 0.4;
+      this.updateStats(true, cost, time);
+
+      logger.info(`AIMLAPI video: success (${time}ms, $${cost})`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('AIMLAPI video: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  private async pollVideoResult(generationId: string, pollPath: string): Promise<string> {
     const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
 
     while (Date.now() < deadline) {
       await this.sleep(POLL_INTERVAL_MS);
 
-      const response = await this.v2Client.get('/generate/video/kling/generation', {
+      const response = await this.v2Client.get(pollPath, {
         params: { generation_id: generationId },
       });
 
@@ -180,7 +246,6 @@ export class AIMLAPIProvider extends EnhancedProvider {
       logger.debug(`AIMLAPI video poll: status=${status}, generation_id=${generationId}`);
 
       if (status === 'completed') {
-        // Try multiple response format paths
         const videoUrl =
           response.data?.video?.url ||
           response.data?.output?.video_url ||

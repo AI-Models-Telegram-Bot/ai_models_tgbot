@@ -14,6 +14,7 @@ export interface GenerationJobData {
   botToken: string; // Bot token of the originating instance (dev vs prod)
   audioOptions?: Record<string, unknown>; // User audio settings (voiceId, textTemp, etc.)
   imageOptions?: Record<string, unknown>; // User image settings (aspectRatio, quality, style, etc.)
+  videoOptions?: Record<string, unknown>; // User video settings (aspectRatio, duration, resolution, etc.)
 }
 
 export interface GenerationJobResult {

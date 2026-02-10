@@ -15,16 +15,17 @@ const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes for video
 
 /**
  * Kie.ai Provider — Async task-based API
- * Supports: Image (Flux Kontext), Video (Kling 2.6 via Market)
+ * Supports: Image (Flux Kontext, Midjourney), Video (Kling, Veo, Sora, Runway)
  * Docs: https://docs.kie.ai
  *
  * Image flow:
  *   POST /api/v1/flux/kontext/generate → taskId
  *   Poll GET /api/v1/flux/kontext/record-info?taskId=... → successFlag=1 → resultImageUrl
  *
- * Video flow:
- *   POST /api/v1/jobs/createTask (model: kling-2.6/text-to-video) → taskId
- *   Poll GET /api/v1/jobs/recordInfo?taskId=... → state=success → resultJson.resultUrls[0]
+ * Video flows:
+ *   Kling/Sora: POST /api/v1/jobs/createTask → poll /jobs/recordInfo
+ *   Veo:        POST /api/v1/veo/generate → poll /jobs/recordInfo
+ *   Runway:     POST /api/v1/runway/generate → poll /jobs/recordInfo
  *
  * Auth: Bearer token
  */
@@ -100,26 +101,61 @@ export class KieAIProvider extends EnhancedProvider {
   }
 
   /**
-   * Video generation via Kling 2.6 (Market endpoint)
-   * POST /jobs/createTask → poll /jobs/recordInfo
+   * Video generation — routes to the correct KieAI endpoint based on model
    */
   async generateVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const model = (options?.model as string) || 'kling-2.6/text-to-video';
+
+    if (model.startsWith('veo3')) {
+      return this.generateVeoVideo(prompt, options);
+    }
+    if (model === 'runway') {
+      return this.generateRunwayVideo(prompt, options);
+    }
+
+    // Default: Kling / Sora via market endpoint
+    return this.generateMarketVideo(prompt, options);
+  }
+
+  /**
+   * Kling / Sora via Market endpoint
+   * POST /jobs/createTask → poll /jobs/recordInfo
+   */
+  private async generateMarketVideo(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<VideoGenerationResult> {
     const start = Date.now();
     try {
       const model = (options?.model as string) || 'kling-2.6/text-to-video';
-      logger.info(`KieAI video: starting generation (${model})`);
+      logger.info(`KieAI video: starting market generation (${model})`);
+
+      const input: Record<string, unknown> = {
+        prompt,
+        aspect_ratio: (options?.aspectRatio as string) || '16:9',
+        duration: (options?.duration as string) || '5',
+      };
+
+      // Kling-specific: sound off
+      if (model.includes('kling')) {
+        input.sound = false;
+      }
+
+      // Sora-specific: n_frames instead of duration
+      if (model.startsWith('sora-')) {
+        delete input.duration;
+        const dur = parseInt(String(options?.duration || '4'), 10);
+        input.n_frames = dur <= 4 ? '10' : '15';
+        const ar = (options?.aspectRatio as string) || '16:9';
+        input.aspect_ratio = ar === '9:16' ? 'portrait' : 'landscape';
+      }
 
       const createResponse = await this.client.post('/jobs/createTask', {
         model,
-        input: {
-          prompt,
-          sound: false,
-          aspect_ratio: (options?.aspectRatio as string) || '16:9',
-          duration: (options?.duration as string) || '5',
-        },
+        input,
       });
 
       const taskId = createResponse.data?.data?.taskId;
@@ -132,7 +168,7 @@ export class KieAIProvider extends EnhancedProvider {
       const videoUrl = await this.pollMarketTaskResult(taskId);
 
       const time = Date.now() - start;
-      const cost = 0.28; // $0.28 per 5s video
+      const cost = 0.28;
       this.updateStats(true, cost, time);
 
       logger.info(`KieAI video: success (${time}ms, $${cost})`);
@@ -141,6 +177,99 @@ export class KieAIProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('KieAI video: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Google Veo 3.1 via dedicated endpoint
+   * POST /veo/generate → poll /jobs/recordInfo
+   */
+  private async generateVeoVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      const model = (options?.model as string) || 'veo3_fast';
+      logger.info(`KieAI Veo: starting generation (${model})`);
+
+      const createResponse = await this.client.post('/veo/generate', {
+        prompt,
+        model,
+        aspect_ratio: (options?.aspectRatio as string) || '16:9',
+        enableTranslation: true,
+      });
+
+      const taskId = createResponse.data?.data?.taskId;
+      if (!taskId) {
+        throw new Error('KieAI Veo: no taskId in response');
+      }
+
+      logger.info(`KieAI Veo: task created, taskId=${taskId}`);
+
+      const videoUrl = await this.pollMarketTaskResult(taskId);
+
+      const time = Date.now() - start;
+      const cost = model === 'veo3' ? 2.0 : 0.4;
+      this.updateStats(true, cost, time);
+
+      logger.info(`KieAI Veo: success (${time}ms, $${cost})`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Veo: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Runway Gen-3 via dedicated endpoint
+   * POST /runway/generate → poll /jobs/recordInfo
+   */
+  private async generateRunwayVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      logger.info('KieAI Runway: starting generation');
+
+      const duration = parseInt(String(options?.duration || '5'), 10);
+      let quality = (options?.resolution as string) || '720p';
+
+      // Runway constraint: duration=10 cannot use 1080p
+      if (duration === 10 && quality === '1080p') {
+        quality = '720p';
+      }
+
+      const createResponse = await this.client.post('/runway/generate', {
+        prompt,
+        duration,
+        quality,
+        aspectRatio: (options?.aspectRatio as string) || '16:9',
+      });
+
+      const taskId = createResponse.data?.data?.taskId;
+      if (!taskId) {
+        throw new Error('KieAI Runway: no taskId in response');
+      }
+
+      logger.info(`KieAI Runway: task created, taskId=${taskId}`);
+
+      const videoUrl = await this.pollMarketTaskResult(taskId);
+
+      const time = Date.now() - start;
+      const cost = 0.3;
+      this.updateStats(true, cost, time);
+
+      logger.info(`KieAI Runway: success (${time}ms, $${cost})`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Runway: failed', error.response?.data || error.message);
       throw error;
     }
   }

@@ -33,6 +33,7 @@ model User {
   referrer            User?     @relation("Referrals", fields: [referredBy], references: [referralCode])
   audioSettings       UserAudioSettings?
   imageSettings       UserImageSettings?
+  videoSettings       UserVideoSettings?
 
   @@map("users")
 }
@@ -280,6 +281,21 @@ model UserImageSettings {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("user_image_settings")
+}
+
+// ── Video Settings ────────────────────────────────────
+
+model UserVideoSettings {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  settings  Json?    // { "kling": { aspectRatio: "16:9" }, "veo-fast": { aspectRatio: "16:9", duration: 8, resolution: "1080p" }, ... }
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_video_settings")
 }
 
 // ── Subscription System ─────────────────────────────────

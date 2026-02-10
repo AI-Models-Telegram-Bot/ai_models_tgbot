@@ -9,3 +9,5 @@ export { audioSettingsService, AudioSettingsService } from './AudioSettingsServi
 export type { ElevenLabsSettings, SunoSettings, SoundGenSettings, VoiceCloningSettings } from './AudioSettingsService';
 export { imageSettingsService, ImageSettingsService } from './ImageSettingsService';
 export type { ImageModelSettings } from './ImageSettingsService';
+export { videoSettingsService, VideoSettingsService } from './VideoSettingsService';
+export type { VideoModelSettings } from './VideoSettingsService';
