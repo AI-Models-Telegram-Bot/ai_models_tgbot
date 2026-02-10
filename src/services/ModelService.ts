@@ -111,11 +111,11 @@ export class ModelService {
       { name: 'Ideogram v2', slug: 'ideogram', provider: 'aimlapi', category: 'IMAGE', tokenCost: 30, priceItemCode: 'IMAGE_IDEOGRAM', description: 'Best for text in images' },
 
       // Video models
-      { name: 'Wan 2.1', slug: 'wan', provider: 'aimlapi', category: 'VIDEO', tokenCost: 80, priceItemCode: 'VIDEO_WAN', description: 'Wan AI video generation (~$0.10)' },
-      { name: 'Kling', slug: 'kling', provider: 'piapi', category: 'VIDEO', tokenCost: 100, priceItemCode: 'VIDEO_KLING', description: 'Kling 5s video ($0.13)' },
-      { name: 'Runway', slug: 'runway', provider: 'kieai', category: 'VIDEO', tokenCost: 150, priceItemCode: 'VIDEO_RUNWAY', description: 'Runway Gen-3 text-to-video (~$0.30)' },
-      { name: 'Luma Dream Machine', slug: 'luma', provider: 'replicate', category: 'VIDEO', tokenCost: 150, priceItemCode: 'VIDEO_LUMA', description: 'Luma AI Dream Machine (~$0.40)' },
-      { name: 'Kling Pro (10s)', slug: 'kling-pro', provider: 'piapi', category: 'VIDEO', tokenCost: 200, priceItemCode: 'VIDEO_KLING_PRO', description: 'Kling 10s extended video ($0.26)' },
+      { name: 'Wan 2.1', slug: 'wan', provider: 'aimlapi', category: 'VIDEO', tokenCost: 30, priceItemCode: 'VIDEO_WAN', description: 'Wan AI video generation (~$0.10)' },
+      { name: 'Kling', slug: 'kling', provider: 'piapi', category: 'VIDEO', tokenCost: 50, priceItemCode: 'VIDEO_KLING', description: 'Kling 5s video ($0.13)' },
+      { name: 'Luma Dream Machine', slug: 'luma', provider: 'replicate', category: 'VIDEO', tokenCost: 50, priceItemCode: 'VIDEO_LUMA', description: 'Luma AI Dream Machine (~$0.40)' },
+      { name: 'Kling Pro', slug: 'kling-pro', provider: 'piapi', category: 'VIDEO', tokenCost: 100, priceItemCode: 'VIDEO_KLING_PRO', description: 'Kling 10s extended video ($0.26)' },
+      { name: 'Runway', slug: 'runway', provider: 'kieai', category: 'VIDEO', tokenCost: 150, priceItemCode: 'VIDEO_RUNWAY', description: 'Runway Gen-4 Turbo text-to-video (~$0.30)' },
       { name: 'Veo Fast', slug: 'veo-fast', provider: 'kieai', category: 'VIDEO', tokenCost: 200, priceItemCode: 'VIDEO_VEO_FAST', description: 'Google Veo 3.1 Fast (~$0.40)' },
       { name: 'Sora', slug: 'sora', provider: 'aimlapi', category: 'VIDEO', tokenCost: 250, priceItemCode: 'VIDEO_SORA', description: 'OpenAI Sora 2 text-to-video (~$0.50)' },
       { name: 'Veo Quality', slug: 'veo', provider: 'kieai', category: 'VIDEO', tokenCost: 500, priceItemCode: 'VIDEO_VEO', description: 'Google Veo 3.1 Quality (~$2.00)' },
