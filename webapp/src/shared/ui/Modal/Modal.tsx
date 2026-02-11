@@ -11,13 +11,6 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'full';
 }
 
-const SIZE_MOBILE: Record<string, string> = {
-  sm: 'inset-x-4 bottom-0 max-h-[80vh]',
-  md: 'inset-x-0 bottom-0 max-h-[85vh]',
-  lg: 'inset-x-0 bottom-0 max-h-[90vh]',
-  full: 'inset-0',
-};
-
 const SIZE_DESKTOP: Record<string, string> = {
   sm: 'max-w-sm',
   md: 'max-w-lg',
