@@ -6,6 +6,8 @@ import { GoogleLoginButton } from '@/features/auth/components/GoogleLoginButton'
 import { TelegramLoginWidget } from '@/features/auth/components/TelegramLoginWidget';
 import { Button, Card } from '@/shared/ui';
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 const RegisterPage: React.FC = () => {
   const { t, i18n } = useTranslation('auth');
   const navigate = useNavigate();
@@ -187,7 +189,7 @@ const RegisterPage: React.FC = () => {
 
           {/* Social logins */}
           <div className="space-y-3">
-            <GoogleLoginButton onSuccess={handleGoogleLogin} />
+            {GOOGLE_CLIENT_ID && <GoogleLoginButton onSuccess={handleGoogleLogin} />}
             <TelegramLoginWidget onAuth={handleTelegramAuth} />
           </div>
         </Card>
