@@ -64,13 +64,13 @@ export default function LandingPage() {
           <p className="text-lg text-content-secondary mb-10 max-w-xl mx-auto">
             {t('auth:welcomeSubtitle', 'Access powerful AI models for text, image, video, and audio generation')}
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center" style={{ gap: 16 }}>
+          <div className="flex flex-col sm:flex-row items-center justify-center" style={{ rowGap: 16, columnGap: 16 }}>
             {isAuthenticated ? (
               <Link
-                to="/chat"
+                to="/create"
                 className="px-8 py-3 bg-brand-primary text-surface-bg font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors text-lg"
               >
-                Start Chatting
+                Start Creating
               </Link>
             ) : (
               <>
@@ -94,7 +94,7 @@ export default function LandingPage() {
 
       {/* Features */}
       <section className="px-4 pb-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 20 }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ rowGap: 20, columnGap: 20 }}>
           {features.map((f) => (
             <div
               key={f.title}

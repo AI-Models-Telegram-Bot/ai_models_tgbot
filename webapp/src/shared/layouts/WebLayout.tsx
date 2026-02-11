@@ -12,7 +12,7 @@ export const WebLayout: React.FC = () => {
 
   const navLinks = isAuthenticated
     ? [
-        { to: '/chat', label: 'Chat' },
+        { to: '/create', label: 'Create' },
         { to: '/subscriptions', label: t('common:subscriptions', 'Pricing') },
         { to: '/profile', label: t('common:profile', 'Profile') },
       ]
