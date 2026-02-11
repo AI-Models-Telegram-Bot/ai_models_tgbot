@@ -13,7 +13,7 @@ import type { SubscriptionTier } from '@/types/user.types';
 const SubscriptionsPage: React.FC = () => {
   const { t } = useTranslation(['subscriptions', 'common']);
   const { plans, isLoading, error, fetchPlans } = useSubscriptionStore();
-  const { currentPlan, fetchUserProfile } = useProfileStore();
+  const { currentPlan, fetchUserProfile, fetchWebProfile } = useProfileStore();
 
   const isTelegram = isTelegramEnvironment();
 
@@ -24,16 +24,18 @@ const SubscriptionsPage: React.FC = () => {
 
   useEffect(() => {
     fetchPlans();
-    // Also fetch user profile to get currentPlan (Telegram only)
-    if (telegramId) {
+    if (isTelegram && telegramId) {
       fetchUserProfile(telegramId);
+    } else if (!isTelegram) {
+      fetchWebProfile();
     }
-  }, [fetchPlans, fetchUserProfile, telegramId]);
+  }, [fetchPlans, fetchUserProfile, fetchWebProfile, telegramId, isTelegram]);
 
   const handleUpgradeSuccess = () => {
-    // Refresh user profile after successful upgrade
-    if (telegramId) {
+    if (isTelegram && telegramId) {
       fetchUserProfile(telegramId);
+    } else if (!isTelegram) {
+      fetchWebProfile();
     }
   };
 

@@ -163,12 +163,26 @@ export const WebLayout: React.FC = () => {
       {/* Footer */}
       <footer className="border-t border-white/5 py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between" style={{ rowGap: 16 }}>
-          <span className="text-sm text-content-tertiary">
-            &copy; {new Date().getFullYear()} VseoNix AI
-          </span>
-          <div className="flex items-center" style={{ columnGap: 16 }}>
+          <div className="flex items-center" style={{ columnGap: 8 }}>
+            <div className="w-6 h-6 rounded-md bg-brand-primary/20 flex items-center justify-center">
+              <span className="text-brand-primary font-bold text-[10px]">AI</span>
+            </div>
+            <span className="text-sm text-content-tertiary">
+              &copy; {new Date().getFullYear()} VseoNix AI
+            </span>
+          </div>
+          <div className="flex items-center" style={{ columnGap: 20 }}>
             <Link to="/pricing" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
               {t('common:subscriptions', 'Pricing')}
+            </Link>
+            <a href="https://t.me/vseonix_support" target="_blank" rel="noopener noreferrer" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
+              {t('common:support', 'Support')}
+            </a>
+            <Link to="/terms" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
+              {t('common:terms', 'Terms')}
+            </Link>
+            <Link to="/privacy" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
+              {t('common:privacy', 'Privacy')}
             </Link>
           </div>
         </div>

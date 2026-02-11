@@ -11,8 +11,8 @@ interface UserCardProps {
 }
 
 export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
-  const displayName = user.firstName || user.username || 'User';
-  const avatarUrl = user.profilePhoto || getTelegramUser()?.photo_url;
+  const displayName = user.firstName || user.username || user.email?.split('@')[0] || 'User';
+  const avatarUrl = user.profilePhoto || user.avatarUrl || getTelegramUser()?.photo_url;
 
   return (
     <motion.div
@@ -48,11 +48,15 @@ export const UserCard: React.FC<UserCardProps> = ({ user, wallet }) => {
             <p className="text-white text-lg font-semibold truncate">
               {displayName}
             </p>
-            {user.username && (
+            {user.username ? (
               <p className="text-content-secondary text-sm truncate">
                 @{user.username}
               </p>
-            )}
+            ) : user.email ? (
+              <p className="text-content-secondary text-sm truncate">
+                {user.email}
+              </p>
+            ) : null}
           </div>
         </div>
 

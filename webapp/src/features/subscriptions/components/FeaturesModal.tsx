@@ -153,7 +153,7 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
           <h4 className="text-xs font-medium text-content-tertiary uppercase tracking-wider mb-3">
             {t('subscriptions:creditsPerMonth', 'Monthly Credits')}
           </h4>
-          <div className="grid grid-cols-4" style={{ gap: 8 }}>
+          <div className="grid grid-cols-4" style={{ rowGap: 8, columnGap: 8 }}>
             {[
               { key: 'text' as const, label: t('profile:balances.text', 'Text'), value: plan.credits.text, color: 'bg-cyan-500' },
               { key: 'image' as const, label: t('profile:balances.image', 'Image'), value: plan.credits.image, color: 'bg-pink-500' },
@@ -240,7 +240,7 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
         )}
 
         {/* Badges */}
-        <div className="flex flex-wrap" style={{ gap: 8 }}>
+        <div className="flex flex-wrap" style={{ rowGap: 8, columnGap: 8 }}>
           {plan.prioritySupport && (
             <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-medium">
               {t('subscriptions:prioritySupport', 'Priority Support')}

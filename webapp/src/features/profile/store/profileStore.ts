@@ -12,10 +12,12 @@ interface ProfileState {
   error: string | null;
 
   fetchUserProfile: (telegramId: string) => Promise<void>;
+  fetchWebProfile: () => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
 let lastTelegramId = '';
+let lastFetchMode: 'telegram' | 'web' = 'telegram';
 
 export const useProfileStore = create<ProfileState>((set, get) => ({
   user: null,
@@ -27,10 +29,37 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   fetchUserProfile: async (telegramId: string) => {
     lastTelegramId = telegramId;
+    lastFetchMode = 'telegram';
     set({ isLoading: true, error: null });
     try {
       const data = await userApi.getProfile(telegramId);
-      // Sync webapp language with user's stored language preference
+      if (data.user.language) {
+        const lang = data.user.language.startsWith('ru') ? 'ru' : 'en';
+        if (i18n.language !== lang) {
+          i18n.changeLanguage(lang);
+        }
+      }
+
+      set({
+        user: data.user,
+        wallet: data.wallet,
+        currentPlan: data.currentPlan,
+        stats: data.stats,
+        isLoading: false,
+      });
+    } catch (err) {
+      set({
+        error: err instanceof Error ? err.message : 'Failed to load profile',
+        isLoading: false,
+      });
+    }
+  },
+
+  fetchWebProfile: async () => {
+    lastFetchMode = 'web';
+    set({ isLoading: true, error: null });
+    try {
+      const data = await userApi.getWebProfile();
       if (data.user.language) {
         const lang = data.user.language.startsWith('ru') ? 'ru' : 'en';
         if (i18n.language !== lang) {
@@ -54,7 +83,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   },
 
   refreshData: async () => {
-    if (lastTelegramId) {
+    if (lastFetchMode === 'web') {
+      await get().fetchWebProfile();
+    } else if (lastTelegramId) {
       await get().fetchUserProfile(lastTelegramId);
     }
   },

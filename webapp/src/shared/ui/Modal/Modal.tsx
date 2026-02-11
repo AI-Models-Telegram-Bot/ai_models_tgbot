@@ -119,18 +119,22 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              'fixed z-[1050] bg-surface-card/95 backdrop-blur-xl border-t border-white/20 rounded-t-3xl shadow-xl flex flex-col',
+              'fixed z-[1050] bg-surface-card/95 backdrop-blur-xl shadow-xl flex flex-col',
+              // Mobile: bottom sheet
+              'border-t border-white/20 rounded-t-3xl',
+              // Desktop: centered dialog
+              'md:border md:border-white/10 md:rounded-2xl md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:right-auto',
               {
-                'inset-x-4 bottom-0 max-h-[80vh]': size === 'sm',
-                'inset-x-0 bottom-0 max-h-[85vh]': size === 'md',
-                'inset-x-0 bottom-0 max-h-[90vh]': size === 'lg',
-                'inset-0': size === 'full',
+                'inset-x-4 bottom-0 max-h-[80vh] md:inset-x-auto md:w-full md:max-w-sm': size === 'sm',
+                'inset-x-0 bottom-0 max-h-[85vh] md:inset-x-auto md:w-full md:max-w-lg': size === 'md',
+                'inset-x-0 bottom-0 max-h-[90vh] md:inset-x-auto md:w-full md:max-w-2xl': size === 'lg',
+                'inset-0 md:inset-auto md:w-full md:max-w-4xl md:max-h-[90vh]': size === 'full',
               }
             )}
             style={{ overscrollBehavior: 'contain' }}
           >
-            {/* Drag handle indicator */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            {/* Drag handle indicator — mobile only */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0 md:hidden">
               <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
 
