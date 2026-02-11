@@ -37,10 +37,10 @@ const PaymentFailedPage = lazy(() => import('@/pages/payment/PaymentFailedPage')
 
 function LoadingFallback() {
   return (
-    <div className="p-4 space-y-4">
-      <Skeleton className="h-28" variant="rectangular" />
-      <Skeleton className="h-24" variant="rectangular" />
-      <Skeleton className="h-64" variant="rectangular" />
+    <div className="p-4 space-y-4 max-w-2xl mx-auto w-full">
+      <Skeleton className="h-28 w-full rounded-2xl" variant="rectangular" />
+      <Skeleton className="h-24 w-full rounded-2xl" variant="rectangular" />
+      <Skeleton className="h-64 w-full rounded-2xl" variant="rectangular" />
     </div>
   );
 }

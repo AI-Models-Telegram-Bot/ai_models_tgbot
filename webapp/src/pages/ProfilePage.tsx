@@ -8,62 +8,45 @@ import { CurrentPlanCard } from '@/features/profile/components/CurrentPlanCard';
 import { CreditAllocationBar } from '@/features/subscriptions/components/CreditAllocationBar';
 import { ParticleBackground, Skeleton, Card } from '@/shared/ui';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
+import { isTelegramEnvironment } from '@/services/telegram/telegram';
 import { formatCredits } from '@/shared/utils/formatters';
 
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, wallet, currentPlan, stats, isLoading, error, fetchUserProfile } =
+  const { user, wallet, currentPlan, stats, isLoading, error, fetchUserProfile, fetchWebProfile } =
     useProfileStore();
 
+  const isTelegram = isTelegramEnvironment();
+
   // Use hook that polls for Telegram readiness (handles menu button timing)
-  const { telegramId, isLoading: isTelegramLoading, isTelegramEnv } = useTelegramUser();
+  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
 
   useEffect(() => {
-    if (telegramId) {
+    if (isTelegram && telegramId) {
       fetchUserProfile(telegramId);
+    } else if (!isTelegram) {
+      fetchWebProfile();
     }
-  }, [fetchUserProfile, telegramId]);
+  }, [fetchUserProfile, fetchWebProfile, telegramId, isTelegram]);
 
-  // Still waiting for Telegram SDK to initialize
-  if (isTelegramLoading) {
+  // Still waiting for Telegram SDK to initialize (Telegram env only)
+  if (isTelegram && isTelegramLoading) {
     return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-32 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-28 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
-      </div>
-    );
-  }
-
-  // Not inside Telegram at all (regular browser) — show prompt
-  if (!telegramId && !isTelegramEnv) {
-    return (
-      <div className="relative min-h-screen">
-        <ParticleBackground />
-        <div className="relative z-10 p-4 flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h2 className="text-white text-lg font-bold font-display mb-2">
-            {t('common:openInTelegram', 'Open in Telegram')}
-          </h2>
-          <p className="text-content-secondary text-sm max-w-xs">
-            {t('common:openInTelegramDesc', 'This app is designed to be opened from the Telegram bot. Please open it via the bot menu or profile button.')}
-          </p>
-        </div>
+      <div className="p-4 space-y-4 max-w-2xl mx-auto w-full">
+        <Skeleton className="h-32 w-full rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-28 w-full rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-48 w-full rounded-2xl" variant="rectangular" />
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-32 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-28 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
+      <div className="p-4 space-y-4 max-w-2xl mx-auto w-full">
+        <Skeleton className="h-32 w-full rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-28 w-full rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-48 w-full rounded-2xl" variant="rectangular" />
       </div>
     );
   }
@@ -90,10 +73,10 @@ const ProfilePage: React.FC = () => {
   // Data loaded but user/wallet still null — shouldn't normally happen, show loading
   if (!user || !wallet) {
     return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-32 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-28 rounded-2xl" variant="rectangular" />
-        <Skeleton className="h-48 rounded-2xl" variant="rectangular" />
+      <div className="p-4 space-y-4 max-w-2xl mx-auto w-full">
+        <Skeleton className="h-32 w-full rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-28 w-full rounded-2xl" variant="rectangular" />
+        <Skeleton className="h-48 w-full rounded-2xl" variant="rectangular" />
       </div>
     );
   }

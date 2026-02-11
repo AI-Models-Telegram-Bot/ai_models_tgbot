@@ -6,6 +6,8 @@ export interface User {
   lastName: string | null;
   language: string;
   profilePhoto?: string;
+  email?: string;
+  avatarUrl?: string;
 }
 
 export interface UserWallet {

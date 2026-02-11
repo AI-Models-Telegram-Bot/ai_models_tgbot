@@ -7,35 +7,40 @@ import { SubscriptionComparisonTable } from '@/features/subscriptions/components
 import { useSubscriptionStore } from '@/features/subscriptions/store/subscriptionStore';
 import { useProfileStore } from '@/features/profile/store/profileStore';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
+import { isTelegramEnvironment } from '@/services/telegram/telegram';
 import type { SubscriptionTier } from '@/types/user.types';
 
 const SubscriptionsPage: React.FC = () => {
   const { t } = useTranslation(['subscriptions', 'common']);
   const { plans, isLoading, error, fetchPlans } = useSubscriptionStore();
-  const { currentPlan, fetchUserProfile } = useProfileStore();
+  const { currentPlan, fetchUserProfile, fetchWebProfile } = useProfileStore();
+
+  const isTelegram = isTelegramEnvironment();
 
   // Use hook that polls for Telegram readiness (handles menu button timing)
-  const { telegramId, isLoading: isTelegramLoading, isTelegramEnv } = useTelegramUser();
+  const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
 
   const currentTier: SubscriptionTier = (currentPlan?.tier as SubscriptionTier) || 'FREE';
 
   useEffect(() => {
     fetchPlans();
-    // Also fetch user profile to get currentPlan
-    if (telegramId) {
+    if (isTelegram && telegramId) {
       fetchUserProfile(telegramId);
+    } else if (!isTelegram) {
+      fetchWebProfile();
     }
-  }, [fetchPlans, fetchUserProfile, telegramId]);
+  }, [fetchPlans, fetchUserProfile, fetchWebProfile, telegramId, isTelegram]);
 
   const handleUpgradeSuccess = () => {
-    // Refresh user profile after successful upgrade
-    if (telegramId) {
+    if (isTelegram && telegramId) {
       fetchUserProfile(telegramId);
+    } else if (!isTelegram) {
+      fetchWebProfile();
     }
   };
 
-  // Still waiting for Telegram SDK to initialize
-  if (isTelegramLoading) {
+  // Still waiting for Telegram SDK to initialize (only in Telegram env)
+  if (isTelegram && isTelegramLoading) {
     return (
       <div className="relative min-h-screen">
         <ParticleBackground />
@@ -47,28 +52,6 @@ const SubscriptionsPage: React.FC = () => {
               <Skeleton key={i} variant="rectangular" width={280} height={380} className="flex-shrink-0 rounded-2xl" />
             ))}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Not inside Telegram at all (regular browser) — show prompt
-  if (!telegramId && !isTelegramEnv) {
-    return (
-      <div className="relative min-h-screen">
-        <ParticleBackground />
-        <div className="relative z-10 p-4 flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h2 className="text-white text-lg font-bold font-display mb-2">
-            {t('common:openInTelegram', 'Open in Telegram')}
-          </h2>
-          <p className="text-content-secondary text-sm max-w-xs">
-            {t('common:openInTelegramDesc', 'This app is designed to be opened from the Telegram bot. Please open it via the bot menu.')}
-          </p>
         </div>
       </div>
     );

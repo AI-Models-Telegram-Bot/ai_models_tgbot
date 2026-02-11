@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { authService } from '../services/AuthService';
 import { unifiedAuth } from '../webapp/middleware/auth.middleware';
 import { prisma } from '../config/database';
+import { walletService } from '../services';
+import { subscriptionService } from '../services/SubscriptionService';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -172,6 +174,77 @@ router.get('/me', unifiedAuth, async (req: Request, res: Response) => {
   } catch (error: any) {
     logger.error('Failed to get user profile', { error: error.message });
     return res.status(500).json({ message: 'Failed to get profile' });
+  }
+});
+
+/**
+ * GET /api/auth/profile
+ * Full profile with wallet, subscription, stats (same shape as /api/webapp/user/:telegramId).
+ */
+router.get('/profile', unifiedAuth, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authenticated' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const wallet = await walletService.getOrCreateWallet(user.id);
+
+    const requestCount = await prisma.request.count({
+      where: { userId: user.id },
+    });
+
+    let currentPlan = null;
+    try {
+      const subscription = await subscriptionService.getUserSubscription(user.id);
+      const planConfig = subscriptionService.getPlanConfig(subscription.tier);
+      currentPlan = {
+        tier: subscription.tier,
+        name: planConfig?.name || subscription.tier,
+        status: subscription.status,
+        expiresAt: subscription.currentPeriodEnd?.toISOString() || null,
+        credits: planConfig?.credits ?? { text: 0, image: 0, video: 0, audio: 0 },
+        referralBonus: planConfig?.referralBonus ?? 0,
+      };
+    } catch (subError) {
+      logger.warn('Failed to load subscription data', { error: subError });
+    }
+
+    return res.json({
+      user: {
+        id: user.id,
+        telegramId: user.telegramId?.toString() ?? '',
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        language: user.language,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+      },
+      wallet: {
+        textBalance: wallet.textBalance,
+        imageBalance: wallet.imageBalance,
+        videoBalance: wallet.videoBalance,
+        audioBalance: wallet.audioBalance,
+        moneyBalance: wallet.moneyBalance,
+        currency: wallet.currency,
+      },
+      currentPlan,
+      stats: {
+        totalSpent: user.totalSpent,
+        totalRequests: requestCount,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Failed to get profile', { error: error.message });
+    return res.status(500).json({ message: 'Failed to load profile' });
   }
 });
 

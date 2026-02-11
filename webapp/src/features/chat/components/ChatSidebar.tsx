@@ -52,7 +52,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ isOpen, onClose, onSelect
   const [search, setSearch] = useState('');
 
   const grouped = useMemo(() => {
-    const filtered = availableModels.filter(
+    const filtered = (availableModels || []).filter(
       (m) =>
         m.name.toLowerCase().includes(search.toLowerCase()) ||
         m.slug.toLowerCase().includes(search.toLowerCase()),
