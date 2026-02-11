@@ -61,7 +61,7 @@ const ProfilePage: React.FC = () => {
         </div>
         <p className="text-content-secondary text-sm">{error}</p>
         <button
-          onClick={() => telegramId && fetchUserProfile(telegramId)}
+          onClick={() => isTelegram && telegramId ? fetchUserProfile(telegramId) : fetchWebProfile()}
           className="mt-4 text-brand-primary text-sm font-medium"
         >
           {t('common:retry')}
@@ -85,7 +85,7 @@ const ProfilePage: React.FC = () => {
     <div className="relative min-h-screen">
       <ParticleBackground />
 
-      <div className="relative z-10 p-4 space-y-5">
+      <div className="relative z-10 p-4 space-y-5 max-w-2xl mx-auto w-full">
         {/* User profile + balance */}
         <UserCard user={user} wallet={wallet} />
         <CurrentPlanCard
