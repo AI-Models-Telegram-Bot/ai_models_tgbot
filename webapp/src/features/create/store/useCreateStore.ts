@@ -79,8 +79,8 @@ export const useCreateStore = create<CreateState>((set, get) => ({
     if (get().models.length > 0) return; // already fetched
     set({ isLoadingModels: true });
     try {
-      const data = await chatApi.getModels();
-      set({ models: data?.models || [], isLoadingModels: false });
+      const models = await chatApi.getModels();
+      set({ models: Array.isArray(models) ? models : [], isLoadingModels: false });
     } catch (err) {
       console.error('Failed to fetch models', err);
       set({ isLoadingModels: false });

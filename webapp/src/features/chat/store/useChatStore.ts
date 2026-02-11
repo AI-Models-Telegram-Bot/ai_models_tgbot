@@ -62,8 +62,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   fetchModels: async () => {
     try {
-      const { models } = await chatApi.getModels();
-      set({ availableModels: models });
+      const models = await chatApi.getModels();
+      set({ availableModels: Array.isArray(models) ? models : [] });
     } catch (err) {
       console.error('Failed to fetch models', err);
     }
