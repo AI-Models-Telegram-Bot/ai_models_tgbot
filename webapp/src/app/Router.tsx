@@ -23,7 +23,7 @@ const VideoSettingsPage = lazy(() => import('@/pages/video/VideoSettingsPage'));
 
 // New web pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
-const ChatPage = lazy(() => import('@/pages/ChatPage'));
+const CreatePage = lazy(() => import('@/pages/CreatePage'));
 
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -83,7 +83,7 @@ function RedirectIfAuth({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/chat" replace />;
+    return <Navigate to="/create" replace />;
   }
 
   return <>{children}</>;
@@ -136,7 +136,7 @@ export function Router() {
               <Route path="/pricing" element={<SubscriptionsPage />} />
 
               {/* Protected */}
-              <Route path="/chat" element={<RequireAuth><ChatPage /></RequireAuth>} />
+              <Route path="/create" element={<RequireAuth><CreatePage /></RequireAuth>} />
               <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
               <Route path="/subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
               <Route path="/referral" element={<RequireAuth><ReferralPage /></RequireAuth>} />

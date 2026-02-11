@@ -11,6 +11,20 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'full';
 }
 
+const SIZE_MOBILE: Record<string, string> = {
+  sm: 'inset-x-4 bottom-0 max-h-[80vh]',
+  md: 'inset-x-0 bottom-0 max-h-[85vh]',
+  lg: 'inset-x-0 bottom-0 max-h-[90vh]',
+  full: 'inset-0',
+};
+
+const SIZE_DESKTOP: Record<string, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  full: 'max-w-4xl',
+};
+
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -23,10 +37,8 @@ export const Modal: React.FC<ModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      // Prevent Telegram WebApp from closing when scrolling inside modal
       document.body.style.overscrollBehavior = 'contain';
 
-      // Disable Telegram's vertical swipe to close if available
       try {
         const webapp = window.Telegram?.WebApp as any;
         webapp?.disableVerticalSwipes?.();
@@ -37,7 +49,6 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = 'unset';
       document.body.style.overscrollBehavior = 'auto';
 
-      // Re-enable Telegram's vertical swipe
       try {
         const webapp = window.Telegram?.WebApp as any;
         webapp?.enableVerticalSwipes?.();
@@ -83,10 +94,9 @@ export const Modal: React.FC<ModalProps> = ({
 
       const isAtTop = scrollable.scrollTop <= 0;
       const isAtBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
-      const isScrollingDown = deltaY > 0; // finger moving down = scrolling up
-      const isScrollingUp = deltaY < 0; // finger moving up = scrolling down
+      const isScrollingDown = deltaY > 0;
+      const isScrollingUp = deltaY < 0;
 
-      // Prevent default if at boundary and trying to scroll past it
       if ((isAtTop && isScrollingDown) || (isAtBottom && isScrollingUp)) {
         e.preventDefault();
         e.stopPropagation();
@@ -101,10 +111,36 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
+  const titleBar = title && (
+    <div className="shrink-0 bg-surface-card/95 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+      <h2 className="text-xl font-bold text-content-primary">{title}</h2>
+      <button
+        onClick={onClose}
+        className="text-content-tertiary hover:text-content-primary transition-colors p-1"
+        aria-label="Close modal"
+      >
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+
+  const scrollBody = (
+    <div
+      ref={contentRef}
+      className="flex-1 overflow-y-auto overscroll-contain"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
+      {children}
+    </div>
+  );
+
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -113,6 +149,8 @@ export const Modal: React.FC<ModalProps> = ({
             className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1040]"
             onClick={onClose}
           />
+
+          {/* Mobile: bottom sheet (hidden on md+) */}
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -137,39 +175,29 @@ export const Modal: React.FC<ModalProps> = ({
             <div className="flex justify-center pt-3 pb-1 shrink-0 md:hidden">
               <div className="w-10 h-1 rounded-full bg-white/20" />
             </div>
-
-            {title && (
-              <div className="shrink-0 bg-surface-card/95 border-b border-white/10 px-6 py-3 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-content-primary">{title}</h2>
-                <button
-                  onClick={onClose}
-                  className="text-content-tertiary hover:text-content-primary transition-colors p-1"
-                  aria-label="Close modal"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
-            <div
-              ref={contentRef}
-              className="flex-1 overflow-y-auto overscroll-contain"
-              style={{ WebkitOverflowScrolling: 'touch' }}
-            >
-              {children}
-            </div>
+            {titleBar}
+            {scrollBody}
           </motion.div>
+
+          {/* Desktop: centered dialog (hidden below md) */}
+          <div className="fixed inset-0 z-[1050] hidden md:flex items-center justify-center p-6 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className={cn(
+                'bg-surface-card/95 backdrop-blur-xl shadow-2xl flex flex-col pointer-events-auto',
+                'border border-white/10 rounded-2xl w-full',
+                size === 'full' ? 'max-h-[90vh]' : 'max-h-[85vh]',
+                SIZE_DESKTOP[size],
+              )}
+              style={{ overscrollBehavior: 'contain' }}
+            >
+              {titleBar}
+              {scrollBody}
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

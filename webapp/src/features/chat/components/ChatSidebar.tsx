@@ -224,7 +224,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ onNewChat, onClose }) => {
 
   const sortedConversations = useMemo(
     () =>
-      [...conversations].sort(
+      [...(conversations || [])].sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
       ),
     [conversations],

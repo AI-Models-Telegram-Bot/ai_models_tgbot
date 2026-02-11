@@ -82,7 +82,7 @@ jobs:
               -v "$(pwd)/webapp:/app" \
               -w /app \
               node:20-alpine \
-              sh -c "npm ci && npm run build:staging"
+              sh -c "npm ci --include=dev && npm run build:staging"
 
             # Sync built files into webapp-dev-dist
             mkdir -p webapp-dev-dist
@@ -176,7 +176,7 @@ jobs:
               -v "$(pwd)/webapp:/app" \
               -w /app \
               node:20-alpine \
-              sh -c "npm ci && npm run build:prod"
+              sh -c "npm ci --include=dev && npm run build:prod"
             # Sync built files into webapp-dist (preserve directory inode for nginx bind mount)
             mkdir -p webapp-dist
             rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dist/
