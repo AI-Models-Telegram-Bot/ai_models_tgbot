@@ -1,42 +1,49 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { getTelegramInitData, isTelegramEnvironment } from '@/services/telegram/telegram';
 
 const TOKEN_KEY = 'vseonix_access_token';
 const REFRESH_KEY = 'vseonix_refresh_token';
 
+const timeout = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
+
+// Webapp API client — baseURL includes /api/webapp prefix
+// Used for existing Telegram webapp endpoints (user, payment, subscriptions, etc.)
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: import.meta.env.VITE_API_URL || '/api/webapp',
+  timeout,
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach auth headers to every request
-apiClient.interceptors.request.use((config) => {
+// Root API client — no path prefix, resolves from origin
+// Used for auth (/api/auth/*) and web chat (/api/web/chat/*) routes
+export const rootApiClient = axios.create({
+  timeout,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Shared request interceptor: attach auth headers
+function attachAuth(config: InternalAxiosRequestConfig) {
   if (isTelegramEnvironment()) {
-    // Telegram environment: use init data
     const initData = getTelegramInitData();
     if (initData) {
       config.headers['X-Telegram-Init-Data'] = initData;
     }
-
-    // Fallback: pass telegramId from URL query param
     const urlParams = new URLSearchParams(window.location.search);
     const tgid = urlParams.get('tgid');
     if (tgid) {
       config.headers['X-Telegram-Id'] = tgid;
     }
   } else {
-    // Web environment: use JWT token
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
   }
-
   return config;
-});
+}
+
+apiClient.interceptors.request.use(attachAuth);
+rootApiClient.interceptors.request.use(attachAuth);
 
 // Handle responses and token refresh
 let isRefreshing = false;
@@ -56,70 +63,71 @@ function processQueue(error: any, token: string | null) {
   failedQueue = [];
 }
 
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+function createResponseInterceptor(client: typeof apiClient) {
+  client.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
 
-    // If 401 and not a refresh/auth request, try to refresh token
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url?.includes('/api/auth/') &&
-      !isTelegramEnvironment()
-    ) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers['Authorization'] = `Bearer ${token}`;
-          return apiClient(originalRequest);
-        });
-      }
+      if (
+        error.response?.status === 401 &&
+        !originalRequest._retry &&
+        !originalRequest.url?.includes('/api/auth/') &&
+        !isTelegramEnvironment()
+      ) {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          }).then((token) => {
+            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            return client(originalRequest);
+          });
+        }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+        originalRequest._retry = true;
+        isRefreshing = true;
 
-      const refreshToken = localStorage.getItem(REFRESH_KEY);
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(
-            `${import.meta.env.VITE_API_URL}/api/auth/refresh`,
-            { refreshToken }
-          );
+        const refreshToken = localStorage.getItem(REFRESH_KEY);
+        if (refreshToken) {
+          try {
+            const { data } = await axios.post('/api/auth/refresh', {
+              refreshToken,
+            });
 
-          localStorage.setItem(TOKEN_KEY, data.accessToken);
-          localStorage.setItem(REFRESH_KEY, data.refreshToken);
+            localStorage.setItem(TOKEN_KEY, data.accessToken);
+            localStorage.setItem(REFRESH_KEY, data.refreshToken);
 
-          processQueue(null, data.accessToken);
-          isRefreshing = false;
+            processQueue(null, data.accessToken);
+            isRefreshing = false;
 
-          originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
-          return apiClient(originalRequest);
-        } catch (refreshError) {
-          processQueue(refreshError, null);
-          isRefreshing = false;
+            originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
+            return client(originalRequest);
+          } catch (refreshError) {
+            processQueue(refreshError, null);
+            isRefreshing = false;
 
-          // Clear tokens and redirect to login
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem(REFRESH_KEY);
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(REFRESH_KEY);
 
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/auth/login';
+            }
+
+            return Promise.reject(refreshError);
           }
-
-          return Promise.reject(refreshError);
         }
       }
-    }
 
-    // Extract error message
-    if (axios.isAxiosError(error) && error.response) {
-      const message = error.response.data?.message || 'An error occurred';
-      return Promise.reject(new Error(message));
-    }
-    return Promise.reject(error);
-  }
-);
+      if (axios.isAxiosError(error) && error.response) {
+        const message = error.response.data?.message || 'An error occurred';
+        return Promise.reject(new Error(message));
+      }
+      return Promise.reject(error);
+    },
+  );
+}
+
+createResponseInterceptor(apiClient);
+createResponseInterceptor(rootApiClient);
 
 export default apiClient;

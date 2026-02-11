@@ -99,5 +99,8 @@ export function openTelegramLink(url: string): void {
 }
 
 export function isTelegramEnvironment(): boolean {
-  return !!getWebApp();
+  const webapp = getWebApp();
+  // The Telegram SDK script creates window.Telegram.WebApp even in regular browsers.
+  // Check for initData which is only populated when opened inside Telegram.
+  return !!webapp && !!webapp.initData;
 }

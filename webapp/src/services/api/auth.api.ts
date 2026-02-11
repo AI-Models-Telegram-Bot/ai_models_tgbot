@@ -1,4 +1,4 @@
-import apiClient from './client';
+import { rootApiClient } from './client';
 
 export interface AuthTokens {
   accessToken: string;
@@ -21,32 +21,32 @@ export interface UserProfile {
 
 export const authApi = {
   register: (email: string, password: string, name?: string, language?: string) =>
-    apiClient.post<AuthTokens>('/api/auth/register', { email, password, name, language }),
+    rootApiClient.post<AuthTokens>('/api/auth/register', { email, password, name, language }),
 
   login: (email: string, password: string) =>
-    apiClient.post<AuthTokens>('/api/auth/login', { email, password }),
+    rootApiClient.post<AuthTokens>('/api/auth/login', { email, password }),
 
   loginWithGoogle: (idToken: string) =>
-    apiClient.post<AuthTokens>('/api/auth/google', { idToken }),
+    rootApiClient.post<AuthTokens>('/api/auth/google', { idToken }),
 
   loginWithTelegram: (data: Record<string, unknown>) =>
-    apiClient.post<AuthTokens>('/api/auth/telegram', data),
+    rootApiClient.post<AuthTokens>('/api/auth/telegram', data),
 
   refreshToken: (refreshToken: string) =>
-    apiClient.post<AuthTokens>('/api/auth/refresh', { refreshToken }),
+    rootApiClient.post<AuthTokens>('/api/auth/refresh', { refreshToken }),
 
   logout: (refreshToken: string) =>
-    apiClient.post('/api/auth/logout', { refreshToken }),
+    rootApiClient.post('/api/auth/logout', { refreshToken }),
 
   getMe: () =>
-    apiClient.get<UserProfile>('/api/auth/me'),
+    rootApiClient.get<UserProfile>('/api/auth/me'),
 
   linkTelegram: (data: Record<string, unknown>) =>
-    apiClient.post('/api/auth/link-telegram', data),
+    rootApiClient.post('/api/auth/link-telegram', data),
 
   forgotPassword: (email: string) =>
-    apiClient.post('/api/auth/forgot-password', { email }),
+    rootApiClient.post('/api/auth/forgot-password', { email }),
 
   resetPassword: (token: string, password: string) =>
-    apiClient.post('/api/auth/reset-password', { token, password }),
+    rootApiClient.post('/api/auth/reset-password', { token, password }),
 };
