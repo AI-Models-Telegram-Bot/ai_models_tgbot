@@ -9,6 +9,9 @@ import enReferral from './locales/en/referral.json';
 import enSubscriptions from './locales/en/subscriptions.json';
 import enAudio from './locales/en/audio.json';
 import enImage from './locales/en/image.json';
+import enVideo from './locales/en/video.json';
+import enAuth from './locales/en/auth.json';
+import enChat from './locales/en/chat.json';
 
 import ruCommon from './locales/ru/common.json';
 import ruProfile from './locales/ru/profile.json';
@@ -17,6 +20,9 @@ import ruReferral from './locales/ru/referral.json';
 import ruSubscriptions from './locales/ru/subscriptions.json';
 import ruAudio from './locales/ru/audio.json';
 import ruImage from './locales/ru/image.json';
+import ruVideo from './locales/ru/video.json';
+import ruAuth from './locales/ru/auth.json';
+import ruChat from './locales/ru/chat.json';
 
 const resources = {
   en: {
@@ -27,6 +33,9 @@ const resources = {
     subscriptions: enSubscriptions,
     audio: enAudio,
     image: enImage,
+    video: enVideo,
+    auth: enAuth,
+    chat: enChat,
   },
   ru: {
     common: ruCommon,
@@ -36,6 +45,9 @@ const resources = {
     subscriptions: ruSubscriptions,
     audio: ruAudio,
     image: ruImage,
+    video: ruVideo,
+    auth: ruAuth,
+    chat: ruChat,
   },
 };
 
@@ -47,7 +59,7 @@ try {
       resources,
       fallbackLng: 'en',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat'],
       interpolation: {
         escapeValue: false,
       },
@@ -69,7 +81,7 @@ try {
       lng: 'en',
       fallbackLng: 'en',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat'],
       interpolation: {
         escapeValue: false,
       },

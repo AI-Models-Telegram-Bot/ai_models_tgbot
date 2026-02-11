@@ -55,6 +55,18 @@ export class UserService {
     });
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return prisma.user.findUnique({
+      where: { googleId },
+    });
+  }
+
   async updateBalance(userId: string, amount: number): Promise<User> {
     return prisma.user.update({
       where: { id: userId },

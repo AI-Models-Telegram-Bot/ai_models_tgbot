@@ -62,7 +62,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['*'],
       },
       video: {
-        allowed: [],
+        allowed: ['kling', 'wan'],
       },
       audio: {
         allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2'],
@@ -100,7 +100,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell'],
       },
       video: {
-        allowed: ['runway-gen2', 'pika-1.0'],
+        allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway'],
       },
       audio: {
         allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'whisper', 'tts-advanced'],
@@ -141,7 +141,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell'],
       },
       video: {
-        allowed: ['runway-gen3', 'pika-1.5', 'kling-1.5', 'luma-ai'],
+        allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'sora', 'veo-fast'],
       },
       audio: {
         allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'whisper', 'musicgen', 'tts-advanced'],
@@ -185,7 +185,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       video: {
         allowed: ['*'],
-        unlimited: ['runway-gen2', 'pika-1.0'],
+        unlimited: ['kling', 'wan'],
       },
       audio: {
         allowed: ['*'],
@@ -230,7 +230,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       video: {
         allowed: ['*'],
-        unlimited: ['runway-gen3', 'pika-1.5', 'kling-1.5'],
+        unlimited: ['kling', 'kling-pro', 'wan', 'luma', 'runway'],
       },
       audio: {
         allowed: ['*'],

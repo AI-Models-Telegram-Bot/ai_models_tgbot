@@ -9,3 +9,9 @@ export { audioSettingsService, AudioSettingsService } from './AudioSettingsServi
 export type { ElevenLabsSettings, SunoSettings, SoundGenSettings, VoiceCloningSettings } from './AudioSettingsService';
 export { imageSettingsService, ImageSettingsService } from './ImageSettingsService';
 export type { ImageModelSettings } from './ImageSettingsService';
+export { videoSettingsService, VideoSettingsService } from './VideoSettingsService';
+export type { VideoModelSettings } from './VideoSettingsService';
+export { authService, AuthService } from './AuthService';
+export type { AuthTokens, JwtPayload } from './AuthService';
+export { emailService } from './EmailService';
+export { chatService, ChatService } from './ChatService';

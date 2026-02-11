@@ -44,6 +44,19 @@ export const en = {
     imageDallE2: '🎨 DALL-E 2 (⚡10)',
     imageDallE3: '✨ DALL-E 3 (⚡25)',
     imageSettings: '🎛️ Image Settings',
+    // Video Families
+    videoKlingFamily: '🎥 Kling',
+    videoVeoFamily: '🌐 Google Veo',
+    videoSoraFamily: '🎬 Sora',
+    videoRunwayFamily: '✈️ Runway',
+    videoLumaFamily: '💫 Luma',
+    videoWanFamily: '🌊 WAN',
+    // Video Models
+    videoKling: '🎥 Kling (⚡50)',
+    videoKlingPro: '💎 Kling Pro (⚡100)',
+    videoVeoFast: '⚡ Veo Fast (⚡200)',
+    videoVeoQuality: '💎 Veo Quality (⚡500)',
+    videoSettings: '🎛️ Video Settings',
   },
 
   // Messages
@@ -290,6 +303,123 @@ Fee: ⚡20 credits per image`,
 
     imageAccessDenied: 'is not available on your current plan.',
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',
+
+    // Video Functions
+    videoFamilySelect: `🎬 <b>Video AI</b>
+
+Choose a model family:`,
+
+    videoKlingFamilyDesc: `🎥 <b>Kling</b>
+
+Professional video generation by Kuaishou — smooth motion, cinematic quality.
+
+Select a model:`,
+
+    videoVeoFamilyDesc: `🌐 <b>Google Veo</b>
+
+Google's next-gen video generation — photorealistic output with optional audio.
+
+Select a model:`,
+
+    videoSoraFamilyDesc: `🎬 <b>Sora</b>
+
+OpenAI's text-to-video model — creative, imaginative video generation.
+
+💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+
+Fee: ⚡250 credits per video`,
+
+    videoRunwayFamilyDesc: `✈️ <b>Runway</b>
+
+Runway Gen-4 Turbo — fast, high-quality video generation for professionals.
+
+💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+
+Fee: ⚡150 credits per video`,
+
+    videoLumaFamilyDesc: `💫 <b>Luma Dream Machine</b>
+
+Fast AI video generation with stunning visual quality.
+
+Send a text prompt to generate a video.
+
+Fee: ⚡50 credits per video`,
+
+    videoWanFamilyDesc: `🌊 <b>WAN</b>
+
+Open-source video generation model — affordable and versatile.
+
+Send a text prompt to generate a video.
+
+Fee: ⚡30 credits per video`,
+
+    videoKlingDesc: `🎥 <b>Kling Standard</b>
+
+Professional video generation with smooth motion and natural dynamics.
+
+💡 Adjust aspect ratio in Video Settings, then send a text prompt to generate.
+
+Fee: ⚡50 credits per video`,
+
+    videoKlingProDesc: `💎 <b>Kling Pro</b>
+
+Premium Kling model — higher quality, more detailed output.
+
+💡 Adjust aspect ratio in Video Settings, then send a text prompt to generate.
+
+Fee: ⚡100 credits per video`,
+
+    videoVeoFastDesc: `⚡ <b>Veo Fast</b>
+
+Google Veo 3.1 fast mode — quick video generation with great quality.
+
+💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
+
+Fee: ⚡200 credits per video`,
+
+    videoVeoDesc: `💎 <b>Veo Quality</b>
+
+Google Veo 3.1 quality mode — maximum fidelity and photorealism.
+
+💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
+
+Fee: ⚡500 credits per video`,
+
+    videoSoraDesc: `🎬 <b>Sora</b>
+
+OpenAI's text-to-video — creative and imaginative video generation.
+
+💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+
+Fee: ⚡250 credits per video`,
+
+    videoRunwayDesc: `✈️ <b>Runway Gen-4 Turbo</b>
+
+Professional video generation with cinematic output.
+
+💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
+
+Fee: ⚡150 credits per video`,
+
+    videoLumaDesc: `💫 <b>Luma Dream Machine</b>
+
+Fast AI video generation with stunning visual quality.
+
+Send a text prompt to generate a video.
+
+Fee: ⚡50 credits per video`,
+
+    videoWanDesc: `🌊 <b>WAN</b>
+
+Open-source video generation — affordable and versatile.
+
+Send a text prompt to generate a video.
+
+Fee: ⚡30 credits per video`,
+
+    videoAccessDenied: 'is not available on your current plan.',
+    videoUpgradeHint: 'Upgrade your subscription to access this feature.',
 
     // Model Selection
     modelSelected: `✅ <b>{modelName}</b> selected ({tokenCost})

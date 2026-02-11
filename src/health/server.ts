@@ -7,16 +7,21 @@ import { textQueue, imageQueue, videoQueue, audioQueue } from '../queues';
 import { checkDatabase, checkRedis, getMetrics } from './checks';
 import { logger } from '../utils/logger';
 import providerRoutes from '../routes/providers.routes';
+import authRoutes from '../routes/auth.routes';
+import chatRoutes from '../routes/chat.routes';
 import webappRoutes from '../webapp/routes';
-import { validateTelegramAuth } from '../webapp/middleware/auth.middleware';
+import { unifiedAuth } from '../webapp/middleware/auth.middleware';
+import { yookassaService } from '../services/YooKassaService';
 
 export function createHealthServer(port: number = 3000): express.Application {
   const app = express();
 
   // --- CORS & JSON parsing (MUST be before all routes) ---
   const allowedOrigins = [
+    'https://vseonix.com',
     'https://webapp.vseonix.com',
     'https://webapp-dev.vseonix.com',
+    'https://dev.webapp.vseonix.com',
     'https://web.telegram.org',
   ];
   if (process.env.WEBAPP_URL) {
@@ -68,8 +73,29 @@ export function createHealthServer(port: number = 3000): express.Application {
   app.use('/api', providerRoutes);
   logger.info('Provider monitoring routes mounted at /api/providers/*');
 
-  // --- WebApp API endpoints ---
-  app.use('/api/webapp', validateTelegramAuth, webappRoutes);
+  // --- Auth endpoints (unauthenticated) ---
+  app.use('/api/auth', authRoutes);
+  logger.info('Auth routes mounted at /api/auth/*');
+
+  // --- YooKassa webhook (no auth required) ---
+  app.post('/api/payment/yookassa/webhook', async (req, res) => {
+    try {
+      await yookassaService.handleWebhook(req.body);
+      return res.status(200).json({ status: 'ok' });
+    } catch (error: any) {
+      logger.error('YooKassa webhook processing error', { error: error.message });
+      // Always return 200 to YooKassa to prevent retries on application errors
+      return res.status(200).json({ status: 'ok' });
+    }
+  });
+  logger.info('YooKassa webhook mounted at /api/payment/yookassa/webhook');
+
+  // --- Web Chat API endpoints (authenticated) ---
+  app.use('/api/web/chat', unifiedAuth, chatRoutes);
+  logger.info('Web Chat API routes mounted at /api/web/chat/*');
+
+  // --- WebApp API endpoints (authenticated) ---
+  app.use('/api/webapp', unifiedAuth, webappRoutes);
   logger.info('WebApp API routes mounted at /api/webapp/*');
 
   // --- Bull Board Admin UI ---

@@ -6,6 +6,7 @@ import paymentRoutes from './payment.routes';
 import subscriptionRoutes from './subscription.routes';
 import audioRoutes from './audio.routes';
 import imageRoutes from './image.routes';
+import videoRoutes from './video.routes';
 
 const webappRouter = Router();
 
@@ -16,5 +17,6 @@ webappRouter.use(paymentRoutes);
 webappRouter.use(subscriptionRoutes);
 webappRouter.use(audioRoutes);
 webappRouter.use(imageRoutes);
+webappRouter.use(videoRoutes);
 
 export default webappRouter;

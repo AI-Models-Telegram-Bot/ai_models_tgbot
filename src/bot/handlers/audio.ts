@@ -65,8 +65,14 @@ export async function handleAudioFunctionMenu(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  // Clear any active audio state but mark that we're in the audio menu
+  // Clear all category state and mark audio menu
   if (ctx.session) {
+    ctx.session.inImageMenu = false;
+    ctx.session.imageFamily = undefined;
+    ctx.session.imageFunction = undefined;
+    ctx.session.inVideoMenu = false;
+    ctx.session.videoFamily = undefined;
+    ctx.session.videoFunction = undefined;
     ctx.session.audioFunction = undefined;
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;

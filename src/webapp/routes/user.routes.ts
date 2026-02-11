@@ -53,7 +53,7 @@ router.get('/user/:telegramId', async (req, res) => {
     return res.json({
       user: {
         id: user.id,
-        telegramId: user.telegramId.toString(),
+        telegramId: user.telegramId?.toString() ?? '',
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,

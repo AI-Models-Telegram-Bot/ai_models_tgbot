@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Button, Skeleton } from '@/shared/ui';
 import { paymentApi } from '@/services/api/payment.api';
-import { openTelegramInvoice } from '@/services/telegram/telegram';
+import { openTelegramInvoice, isTelegramEnvironment } from '@/services/telegram/telegram';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { PaymentMethodInfo, PaymentMethod } from '@/types/payment.types';
@@ -70,6 +70,9 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
         telegramId,
         tier: plan.tier,
         paymentMethod: selectedMethod,
+        returnUrl: isTelegramEnvironment()
+          ? undefined
+          : `${window.location.origin}/payment/success`,
       });
 
       if (response.method === 'telegram_stars' && 'invoiceUrl' in response) {
@@ -87,9 +90,10 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           }
           setIsProcessing(false);
         });
-      } else if ('status' in response && response.status === 'coming_soon') {
-        setError(t('subscriptions:payment.comingSoon'));
-        setIsProcessing(false);
+      } else if (response.method === 'yookassa' && 'confirmationUrl' in response) {
+        // Redirect to YooKassa payment page
+        window.location.href = response.confirmationUrl;
+        // Don't set isProcessing false — page is navigating away
       } else if (response.method === 'contact') {
         setError(t('subscriptions:payment.enterpriseContact'));
         setIsProcessing(false);

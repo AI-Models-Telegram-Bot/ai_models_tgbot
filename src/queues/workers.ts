@@ -7,6 +7,8 @@ import { textQueue, imageQueue, videoQueue, audioQueue } from './index';
 import { TextGenerationResult, ImageGenerationResult, VideoGenerationResult, AudioGenerationResult, GenerationResult } from '../providers/BaseProvider';
 import { getProviderManager } from '../config/providerFactory';
 import { modelService, requestService, walletService } from '../services';
+import { prisma } from '../config/database';
+import { getRedis } from '../config/redis';
 import { markdownToTelegramHtml, truncateText } from '../utils/helpers';
 import { logger } from '../utils/logger';
 import { t, getLocale } from '../locales';
@@ -86,7 +88,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input, job.data.imageOptions);
         break;
       case 'VIDEO':
-        generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input);
+        generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input, job.data.videoOptions);
         break;
       case 'AUDIO':
         generationResponse = await manager.generateWithModel('AUDIO', 'generateAudio', modelSlug, input, job.data.audioOptions);
@@ -101,50 +103,108 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     logger.info(`Request ${requestId} served by provider: ${actualProvider}`);
     await job.progress(80);
 
-    // Delete processing message
-    try {
-      await telegram.deleteMessage(chatId, processingMsgId);
-    } catch {
-      // Message may already be deleted
-    }
+    const isWeb = job.data.source === 'web';
 
-    // Send result to user
-    if ('text' in result) {
-      const textResult = result as TextGenerationResult;
-      await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
+    if (isWeb) {
+      // ── Web delivery: update ChatMessage + publish via Redis pub/sub ──
+      const webMessageId = job.data.webMessageId;
+      let contentValue: string | null = null;
+      let fileUrlValue: string | null = null;
 
-      const formattedText = markdownToTelegramHtml(textResult.text);
-      const maxLength = 4000;
-
-      if (formattedText.length > maxLength) {
-        const parts = splitMessage(formattedText, maxLength);
-        for (const part of parts) {
-          await telegram.sendMessage(chatId, part, { parse_mode: 'HTML' });
-        }
-      } else {
-        await telegram.sendMessage(chatId, formattedText, { parse_mode: 'HTML' });
+      if ('text' in result) {
+        const textResult = result as TextGenerationResult;
+        contentValue = textResult.text;
+        await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
+      } else if ('imageUrl' in result) {
+        const imageResult = result as ImageGenerationResult;
+        fileUrlValue = imageResult.imageUrl;
+        await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
+      } else if ('videoUrl' in result) {
+        const videoResult = result as VideoGenerationResult;
+        fileUrlValue = videoResult.videoUrl;
+        await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
+      } else if ('audioBuffer' in result && result.audioBuffer) {
+        // audioBuffer has no URL; mark completed without fileUrl
+        await requestService.markCompleted(requestId, { actualProvider });
+        contentValue = '[Audio generated - buffer only]';
+      } else if ('audioUrl' in result && result.audioUrl) {
+        const audioResult = result as AudioGenerationResult;
+        fileUrlValue = audioResult.audioUrl!;
+        await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl!, actualProvider });
       }
-    } else if ('imageUrl' in result) {
-      const imageResult = result as ImageGenerationResult;
-      await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
-      await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption: truncateText(input, 200) });
-    } else if ('videoUrl' in result) {
-      const videoResult = result as VideoGenerationResult;
-      await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
-      await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption: truncateText(input, 200) });
-    } else if ('audioBuffer' in result && result.audioBuffer) {
-      const audioResult = result as AudioGenerationResult;
-      await requestService.markCompleted(requestId, { actualProvider });
-      await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! });
-    } else if ('audioUrl' in result && result.audioUrl) {
-      const audioResult = result as AudioGenerationResult;
-      await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl, actualProvider });
-      await telegram.sendAudio(chatId, { url: audioResult.audioUrl! });
-    }
 
-    // Send "done" message with main keyboard so user can navigate
-    const l = getLocale(lang);
-    await telegram.sendMessage(chatId, l.messages.done, getMainKeyboardMarkup(lang));
+      // Update ChatMessage record
+      if (webMessageId) {
+        await prisma.chatMessage.update({
+          where: { id: webMessageId },
+          data: {
+            content: contentValue,
+            fileUrl: fileUrlValue,
+            status: 'COMPLETED',
+          },
+        });
+      }
+
+      // Publish result to Redis pub/sub for SSE clients
+      try {
+        const redis = getRedis();
+        await redis.publish('chat:updates', JSON.stringify({
+          messageId: webMessageId,
+          requestId,
+          content: contentValue,
+          fileUrl: fileUrlValue,
+          status: 'COMPLETED',
+        }));
+      } catch (pubErr) {
+        logger.error('Failed to publish web chat update to Redis', { pubErr });
+      }
+    } else {
+      // ── Telegram delivery: existing flow ──
+      // Delete processing message
+      try {
+        await telegram.deleteMessage(chatId, processingMsgId);
+      } catch {
+        // Message may already be deleted
+      }
+
+      // Send result to user
+      if ('text' in result) {
+        const textResult = result as TextGenerationResult;
+        await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
+
+        const formattedText = markdownToTelegramHtml(textResult.text);
+        const maxLength = 4000;
+
+        if (formattedText.length > maxLength) {
+          const parts = splitMessage(formattedText, maxLength);
+          for (const part of parts) {
+            await telegram.sendMessage(chatId, part, { parse_mode: 'HTML' });
+          }
+        } else {
+          await telegram.sendMessage(chatId, formattedText, { parse_mode: 'HTML' });
+        }
+      } else if ('imageUrl' in result) {
+        const imageResult = result as ImageGenerationResult;
+        await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
+        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption: truncateText(input, 200) });
+      } else if ('videoUrl' in result) {
+        const videoResult = result as VideoGenerationResult;
+        await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
+        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption: truncateText(input, 200) });
+      } else if ('audioBuffer' in result && result.audioBuffer) {
+        const audioResult = result as AudioGenerationResult;
+        await requestService.markCompleted(requestId, { actualProvider });
+        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! });
+      } else if ('audioUrl' in result && result.audioUrl) {
+        const audioResult = result as AudioGenerationResult;
+        await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl, actualProvider });
+        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! });
+      }
+
+      // Send "done" message with main keyboard so user can navigate
+      const l = getLocale(lang);
+      await telegram.sendMessage(chatId, l.messages.done, getMainKeyboardMarkup(lang));
+    }
 
     await job.progress(100);
     return { requestId, success: true };
@@ -154,12 +214,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       jobId: job.id, requestId, error: errorMsg,
     });
 
-    // Delete processing message on error too
-    try {
-      await telegram.deleteMessage(chatId, processingMsgId);
-    } catch {
-      // Ignore
-    }
+    const isWeb = job.data.source === 'web';
 
     // Mark request as failed
     try {
@@ -179,11 +234,50 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       logger.error('Failed to refund credits', { refundError });
     }
 
-    // Notify user with error message + main keyboard
-    const errorMessage = t(lang, 'messages.errorRefunded', {
-      error: errorMsg,
-    });
-    await telegram.sendMessage(chatId, errorMessage, getMainKeyboardMarkup(lang)).catch(() => {});
+    if (isWeb) {
+      // ── Web error delivery ──
+      const webMessageId = job.data.webMessageId;
+
+      // Update ChatMessage to FAILED
+      if (webMessageId) {
+        try {
+          await prisma.chatMessage.update({
+            where: { id: webMessageId },
+            data: { content: errorMsg, status: 'FAILED' },
+          });
+        } catch (dbErr) {
+          logger.error('Failed to update web ChatMessage to FAILED', { dbErr });
+        }
+      }
+
+      // Publish error to Redis pub/sub
+      try {
+        const redis = getRedis();
+        await redis.publish('chat:updates', JSON.stringify({
+          messageId: webMessageId,
+          requestId,
+          content: errorMsg,
+          fileUrl: null,
+          status: 'FAILED',
+        }));
+      } catch (pubErr) {
+        logger.error('Failed to publish web chat error to Redis', { pubErr });
+      }
+    } else {
+      // ── Telegram error delivery ──
+      // Delete processing message on error too
+      try {
+        await telegram.deleteMessage(chatId, processingMsgId);
+      } catch {
+        // Ignore
+      }
+
+      // Notify user with error message + main keyboard
+      const errorMessage = t(lang, 'messages.errorRefunded', {
+        error: errorMsg,
+      });
+      await telegram.sendMessage(chatId, errorMessage, getMainKeyboardMarkup(lang)).catch(() => {});
+    }
 
     // DO NOT re-throw: we already refunded and notified the user.
     // Re-throwing would cause Bull to retry, sending duplicate error messages.

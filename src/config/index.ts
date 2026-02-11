@@ -45,6 +45,26 @@ export const config = {
     freeOnRegistration: parseInt(process.env.FREE_TOKENS_ON_REGISTRATION || '5', 10),
     referralBonus: parseInt(process.env.REFERRAL_BONUS_TOKENS || '3', 10),
   },
+  jwt: {
+    accessSecret: process.env.JWT_ACCESS_SECRET || 'dev-access-secret-change-in-production',
+    refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production',
+    accessExpiresIn: '15m',
+    refreshExpiresIn: '7d',
+  },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+  },
+  yookassa: {
+    shopId: process.env.YOOKASSA_SHOP_ID || '',
+    secretKey: process.env.YOOKASSA_SECRET_KEY || '',
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.SMTP_FROM || 'noreply@vseonix.com',
+  },
 };
 
 export function validateConfig(): void {
