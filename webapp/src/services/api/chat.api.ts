@@ -1,4 +1,4 @@
-import apiClient from './client';
+import { rootApiClient } from './client';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -49,13 +49,13 @@ export interface SendMessageResponse {
 export const chatApi = {
   /** List available chat models */
   getModels: () =>
-    apiClient
+    rootApiClient
       .get<{ models: ChatModel[] }>('/api/web/chat/models')
       .then((r) => r.data),
 
   /** List conversations (paginated) */
   getConversations: (limit = 20, offset = 0) =>
-    apiClient
+    rootApiClient
       .get<{ conversations: Conversation[]; total: number }>(
         '/api/web/chat/conversations',
         { params: { limit, offset } },
@@ -64,23 +64,23 @@ export const chatApi = {
 
   /** Get a single conversation with its messages */
   getConversation: (id: string) =>
-    apiClient
+    rootApiClient
       .get<ConversationWithMessages>(`/api/web/chat/conversations/${id}`)
       .then((r) => r.data),
 
   /** Create a new conversation */
   createConversation: (modelSlug: string, title?: string) =>
-    apiClient
+    rootApiClient
       .post<Conversation>('/api/web/chat/conversations', { modelSlug, title })
       .then((r) => r.data),
 
   /** Delete a conversation */
   deleteConversation: (id: string) =>
-    apiClient.delete(`/api/web/chat/conversations/${id}`),
+    rootApiClient.delete(`/api/web/chat/conversations/${id}`),
 
   /** Send a message inside a conversation */
   sendMessage: (conversationId: string, content: string) =>
-    apiClient
+    rootApiClient
       .post<SendMessageResponse>(
         `/api/web/chat/conversations/${conversationId}/messages`,
         { content },
@@ -89,5 +89,5 @@ export const chatApi = {
 
   /** Build the SSE stream URL for a conversation */
   getStreamUrl: (conversationId: string) =>
-    `${import.meta.env.VITE_API_URL}/api/web/chat/conversations/${conversationId}/stream`,
+    `/api/web/chat/conversations/${conversationId}/stream`,
 };
