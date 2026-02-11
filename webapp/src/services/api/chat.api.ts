@@ -50,7 +50,7 @@ export const chatApi = {
   /** List available chat models */
   getModels: () =>
     rootApiClient
-      .get<{ models: ChatModel[] }>('/api/web/chat/models')
+      .get<ChatModel[]>('/api/web/chat/models')
       .then((r) => r.data),
 
   /** List conversations (paginated) */
