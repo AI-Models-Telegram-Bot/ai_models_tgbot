@@ -1,9 +1,10 @@
 export type PaymentMethod = 'telegram_stars' | 'yookassa' | 'sbp' | 'card_ru';
 
 export interface CreatePaymentRequest {
-  telegramId: string;
+  telegramId?: string;
   tier: string;
   paymentMethod: PaymentMethod;
+  returnUrl?: string;
 }
 
 export interface TelegramStarsPaymentResponse {
@@ -13,11 +14,11 @@ export interface TelegramStarsPaymentResponse {
   priceUSD: number;
 }
 
-export interface ComingSoonPaymentResponse {
-  method: 'yookassa' | 'sbp' | 'card_ru';
-  status: 'coming_soon';
+export interface YooKassaPaymentResponse {
+  method: 'yookassa';
+  confirmationUrl: string;
+  paymentId: string;
   priceRUB: number;
-  message: string;
 }
 
 export interface ContactPaymentResponse {
@@ -27,7 +28,7 @@ export interface ContactPaymentResponse {
 
 export type CreatePaymentResponse =
   | TelegramStarsPaymentResponse
-  | ComingSoonPaymentResponse
+  | YooKassaPaymentResponse
   | ContactPaymentResponse;
 
 export interface PaymentVerifyResponse {

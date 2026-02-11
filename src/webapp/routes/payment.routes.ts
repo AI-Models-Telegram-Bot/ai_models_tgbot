@@ -3,6 +3,7 @@ import { Telegram } from 'telegraf';
 import { prisma } from '../../config/database';
 import { config } from '../../config';
 import { subscriptionService } from '../../services/SubscriptionService';
+import { yookassaService } from '../../services/YooKassaService';
 import { logger } from '../../utils/logger';
 import { SubscriptionTier } from '@prisma/client';
 
@@ -86,29 +87,21 @@ router.post('/payment/create', async (req, res) => {
         starsAmount,
         priceUSD: planConfig.priceUSD,
       });
-    } else if (paymentMethod === 'yookassa') {
-      // YooKassa placeholder - would integrate with YooKassa API
+    } else if (paymentMethod === 'yookassa' || paymentMethod === 'sbp' || paymentMethod === 'card_ru') {
+      // All Russian payment methods go through YooKassa
+      const returnUrl = req.body.returnUrl || config.webapp.url || 'https://webapp.vseonix.com';
+
+      const { confirmationUrl, paymentId } = await yookassaService.createPayment(
+        user.id,
+        tier as SubscriptionTier,
+        returnUrl,
+      );
+
       return res.json({
         method: 'yookassa',
-        status: 'coming_soon',
+        confirmationUrl,
+        paymentId,
         priceRUB: planConfig.priceRUB,
-        message: 'YooKassa payments coming soon',
-      });
-    } else if (paymentMethod === 'sbp') {
-      // SBP (System of Fast Payments) placeholder
-      return res.json({
-        method: 'sbp',
-        status: 'coming_soon',
-        priceRUB: planConfig.priceRUB,
-        message: 'SBP payments coming soon',
-      });
-    } else if (paymentMethod === 'card_ru') {
-      // Russian card payment placeholder
-      return res.json({
-        method: 'card_ru',
-        status: 'coming_soon',
-        priceRUB: planConfig.priceRUB,
-        message: 'Russian card payments coming soon',
       });
     }
 
@@ -147,6 +140,26 @@ router.post('/payment/verify', async (req, res) => {
 });
 
 /**
+ * GET /api/webapp/payment/status/:paymentId
+ * Returns the current status of a payment from the database.
+ */
+router.get('/payment/status/:paymentId', async (req, res) => {
+  const { paymentId } = req.params;
+
+  if (!paymentId) {
+    return res.status(400).json({ message: 'paymentId is required' });
+  }
+
+  try {
+    const status = await yookassaService.getPaymentStatus(paymentId);
+    return res.json(status);
+  } catch (error: any) {
+    logger.error('Failed to get payment status', { error: error.message, paymentId });
+    return res.status(404).json({ message: error.message || 'Payment not found' });
+  }
+});
+
+/**
  * GET /api/webapp/payment/methods
  * Returns available payment methods.
  */
@@ -167,30 +180,27 @@ router.get('/payment/methods', (_req, res) => {
         name: 'YooKassa',
         nameRu: 'ЮKassa',
         icon: '💳',
-        available: false,
+        available: true,
         description: 'Russian cards & wallets',
         descriptionRu: 'Российские карты и кошельки',
-        comingSoon: true,
       },
       {
         id: 'sbp',
         name: 'SBP',
         nameRu: 'СБП',
         icon: '🏦',
-        available: false,
+        available: true,
         description: 'System of Fast Payments',
         descriptionRu: 'Система быстрых платежей',
-        comingSoon: true,
       },
       {
         id: 'card_ru',
         name: 'Bank Card',
         nameRu: 'Банковская карта',
         icon: '💳',
-        available: false,
+        available: true,
         description: 'Mir, Visa, Mastercard (RU)',
         descriptionRu: 'Мир, Visa, Mastercard (РФ)',
-        comingSoon: true,
       },
     ],
   });

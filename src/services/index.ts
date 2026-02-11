@@ -11,3 +11,7 @@ export { imageSettingsService, ImageSettingsService } from './ImageSettingsServi
 export type { ImageModelSettings } from './ImageSettingsService';
 export { videoSettingsService, VideoSettingsService } from './VideoSettingsService';
 export type { VideoModelSettings } from './VideoSettingsService';
+export { authService, AuthService } from './AuthService';
+export type { AuthTokens, JwtPayload } from './AuthService';
+export { emailService } from './EmailService';
+export { chatService, ChatService } from './ChatService';

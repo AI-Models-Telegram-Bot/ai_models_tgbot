@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Router } from './Router';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -42,11 +44,25 @@ class ErrorBoundary extends React.Component<
   }
 }
 
+function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const initAuth = useAuthStore((s) => s.initAuth);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  return <>{children}</>;
+}
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 export function App() {
-  return (
+  const appContent = (
     <ErrorBoundary>
       <BrowserRouter>
-        <Router />
+        <AuthInitializer>
+          <Router />
+        </AuthInitializer>
         <Toaster
           position="top-center"
           toastOptions={{
@@ -63,4 +79,15 @@ export function App() {
       </BrowserRouter>
     </ErrorBoundary>
   );
+
+  // Wrap with GoogleOAuthProvider only if client ID is configured
+  if (googleClientId) {
+    return (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        {appContent}
+      </GoogleOAuthProvider>
+    );
+  }
+
+  return appContent;
 }
