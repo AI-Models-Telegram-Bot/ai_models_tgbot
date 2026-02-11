@@ -34,7 +34,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onBack,
 }) => {
   const colors = CATEGORY_COLORS[category];
-  const filteredModels = models.filter((m) => m.category === category);
+  const filteredModels = (models || []).filter((m) => m.category === category);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
