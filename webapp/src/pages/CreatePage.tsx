@@ -58,7 +58,7 @@ export default function CreatePage() {
       <div className="absolute top-4 right-4 z-20">
         <button
           onClick={() => setHistoryOpen(true)}
-          className="flex items-center text-content-tertiary hover:text-content-primary transition-colors bg-surface-card/50 backdrop-blur-sm rounded-xl px-3 py-2 border border-white/5 hover:border-white/10"
+          className="flex items-center text-content-secondary hover:text-white transition-colors bg-surface-card/40 rounded-xl px-3 py-2 border border-white/[0.06] hover:border-white/[0.12]"
           style={{ columnGap: 6 }}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +69,7 @@ export default function CreatePage() {
       </div>
 
       {/* Main content area */}
-      <div className="flex items-start justify-center px-4 pt-8 pb-12 sm:pt-12">
+      <div className="flex items-start justify-center px-4 pt-8 pb-12 sm:pt-16">
         <AnimatePresence mode="wait">
           {/* Step 1: Category selection */}
           {step === 'category' && (

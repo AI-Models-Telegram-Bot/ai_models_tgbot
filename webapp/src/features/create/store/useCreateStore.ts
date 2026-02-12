@@ -167,8 +167,8 @@ export const useCreateStore = create<CreateState>((set, get) => ({
   fetchHistory: async () => {
     set({ isLoadingHistory: true });
     try {
-      const { conversations } = await chatApi.getConversations(50, 0);
-      set({ history: conversations, isLoadingHistory: false });
+      const conversations = await chatApi.getConversations(50, 0);
+      set({ history: Array.isArray(conversations) ? conversations : [], isLoadingHistory: false });
     } catch (err) {
       console.error('Failed to fetch history', err);
       set({ isLoadingHistory: false });

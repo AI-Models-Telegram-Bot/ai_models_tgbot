@@ -4,18 +4,18 @@ import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import type { Category } from '../store/useCreateStore';
 
-const CATEGORY_COLORS: Record<Category, string> = {
-  TEXT: 'text-cyan-400',
-  IMAGE: 'text-purple-400',
-  VIDEO: 'text-orange-400',
-  AUDIO: 'text-emerald-400',
+const CATEGORY_COLORS: Record<Category, { text: string; dot: string }> = {
+  TEXT: { text: 'text-cyan-400', dot: 'bg-cyan-400' },
+  IMAGE: { text: 'text-purple-400', dot: 'bg-purple-400' },
+  VIDEO: { text: 'text-orange-400', dot: 'bg-orange-400' },
+  AUDIO: { text: 'text-emerald-400', dot: 'bg-emerald-400' },
 };
 
 const CATEGORY_BG: Record<Category, string> = {
-  TEXT: 'from-cyan-500/10',
-  IMAGE: 'from-purple-500/10',
-  VIDEO: 'from-orange-500/10',
-  AUDIO: 'from-emerald-500/10',
+  TEXT: 'from-cyan-500/8',
+  IMAGE: 'from-purple-500/8',
+  VIDEO: 'from-orange-500/8',
+  AUDIO: 'from-emerald-500/8',
 };
 
 interface ResultDisplayProps {
@@ -35,7 +35,6 @@ function renderTextContent(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let key = 0;
 
-  // Handle code blocks
   const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -70,7 +69,7 @@ function renderTextContent(text: string): React.ReactNode {
           inlineParts.push(seg.content.slice(inlineLast, inlineMatch.index));
         }
         if (inlineMatch[2]) {
-          inlineParts.push(<strong key={key++} className="font-semibold">{inlineMatch[2]}</strong>);
+          inlineParts.push(<strong key={key++} className="font-semibold text-white">{inlineMatch[2]}</strong>);
         } else if (inlineMatch[3]) {
           inlineParts.push(<em key={key++}>{inlineMatch[3]}</em>);
         } else if (inlineMatch[4]) {
@@ -103,7 +102,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
   onNewCreation,
   onRetry,
 }) => {
-  const colorClass = CATEGORY_COLORS[category];
+  const colors = CATEGORY_COLORS[category];
   const bgGrad = CATEGORY_BG[category];
 
   /* ---- Generating state ---- */
@@ -115,19 +114,33 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
         className="w-full max-w-2xl mx-auto"
       >
         <div className={cn(
-          'rounded-2xl bg-surface-card border border-white/10 backdrop-blur-xl p-8',
+          'rounded-2xl bg-surface-card border border-white/[0.08] p-10',
           'relative overflow-hidden',
         )}>
           <div className={`absolute inset-0 bg-gradient-to-br ${bgGrad} to-transparent pointer-events-none`} />
-          <div className="relative z-10 flex flex-col items-center" style={{ rowGap: 16 }}>
-            {/* Animated spinner */}
-            <div className="relative w-16 h-16">
-              <div className={cn('absolute inset-0 rounded-full border-2 border-transparent animate-spin', `border-t-current ${colorClass}`)} />
-              <div className={cn('absolute inset-2 rounded-full border-2 border-transparent animate-spin', `border-b-current ${colorClass}`)} style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          <div className="relative z-10 flex flex-col items-center" style={{ rowGap: 20 }}>
+            {/* Animated dots */}
+            <div className="flex items-center" style={{ columnGap: 8 }}>
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className={cn('w-3 h-3 rounded-full', colors.dot)}
+                  animate={{
+                    y: [0, -12, 0],
+                    opacity: [0.4, 1, 0.4],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                    ease: 'easeInOut',
+                  }}
+                />
+              ))}
             </div>
             <div className="text-center">
-              <p className="text-content-primary font-medium">Generating...</p>
-              <p className="text-content-tertiary text-xs mt-1">
+              <p className="text-white font-medium">Generating...</p>
+              <p className="text-content-secondary text-xs mt-1">
                 {category === 'TEXT' ? 'Writing response' : category === 'IMAGE' ? 'Creating image' : category === 'VIDEO' ? 'Rendering video — this may take a moment' : 'Generating audio'}
               </p>
             </div>
@@ -145,8 +158,8 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
         animate={{ opacity: 1 }}
         className="w-full max-w-2xl mx-auto"
       >
-        <div className="rounded-2xl bg-surface-card border border-white/10 backdrop-blur-xl p-5">
-          <div className="whitespace-pre-wrap break-words text-sm text-content-primary leading-relaxed">
+        <div className="rounded-2xl bg-surface-card border border-white/[0.08] p-5">
+          <div className="whitespace-pre-wrap break-words text-sm text-content-secondary leading-relaxed">
             {renderTextContent(content)}
             <span className="inline-block w-2 h-4 bg-brand-primary/60 animate-pulse ml-0.5" />
           </div>
@@ -163,14 +176,14 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-2xl mx-auto"
       >
-        <div className="rounded-2xl bg-surface-card border border-red-500/20 backdrop-blur-xl p-6 text-center">
+        <div className="rounded-2xl bg-surface-card border border-red-500/20 p-6 text-center">
           <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
           <p className="text-red-400 text-sm font-medium mb-1">Generation Failed</p>
-          <p className="text-content-tertiary text-xs mb-5">{error || 'Something went wrong'}</p>
+          <p className="text-content-secondary text-xs mb-5">{error || 'Something went wrong'}</p>
           <div className="flex items-center justify-center" style={{ columnGap: 12 }}>
             <Button variant="secondary" size="sm" onClick={onRetry}>
               Try Again
@@ -193,11 +206,11 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
         transition={{ duration: 0.3 }}
         className="w-full max-w-2xl mx-auto"
       >
-        <div className="rounded-2xl bg-surface-card border border-white/10 backdrop-blur-xl overflow-hidden">
+        <div className="rounded-2xl bg-surface-card border border-white/[0.08] overflow-hidden">
           {/* Text result */}
           {category === 'TEXT' && content && (
             <div className="p-5">
-              <div className="whitespace-pre-wrap break-words text-sm text-content-primary leading-relaxed">
+              <div className="whitespace-pre-wrap break-words text-sm text-content-secondary leading-relaxed">
                 {renderTextContent(content)}
               </div>
             </div>
@@ -244,7 +257,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between p-4 border-t border-white/5">
+          <div className="flex items-center justify-between p-4 border-t border-white/[0.06]">
             <div className="flex items-center" style={{ columnGap: 8 }}>
               {fileUrl && (
                 <a
@@ -252,7 +265,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
                   download
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center text-xs text-content-tertiary hover:text-content-primary transition-colors"
+                  className="flex items-center text-xs text-content-secondary hover:text-white transition-colors"
                   style={{ columnGap: 4 }}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
