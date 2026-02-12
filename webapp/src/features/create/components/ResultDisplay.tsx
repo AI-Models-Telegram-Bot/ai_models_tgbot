@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
@@ -102,8 +103,16 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
   onNewCreation,
   onRetry,
 }) => {
+  const { t } = useTranslation(['create', 'common']);
   const colors = CATEGORY_COLORS[category];
   const bgGrad = CATEGORY_BG[category];
+
+  const generatingMessages: Record<Category, string> = {
+    TEXT: t('create:writingResponse'),
+    IMAGE: t('create:creatingImage'),
+    VIDEO: t('create:renderingVideo'),
+    AUDIO: t('create:generatingAudio'),
+  };
 
   /* ---- Generating state ---- */
   if (isGenerating && !content && !fileUrl) {
@@ -139,9 +148,9 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
               ))}
             </div>
             <div className="text-center">
-              <p className="text-white font-medium">Generating...</p>
+              <p className="text-white font-medium">{t('create:generating')}</p>
               <p className="text-content-secondary text-xs mt-1">
-                {category === 'TEXT' ? 'Writing response' : category === 'IMAGE' ? 'Creating image' : category === 'VIDEO' ? 'Rendering video — this may take a moment' : 'Generating audio'}
+                {generatingMessages[category]}
               </p>
             </div>
           </div>
@@ -182,14 +191,14 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <p className="text-red-400 text-sm font-medium mb-1">Generation Failed</p>
-          <p className="text-content-secondary text-xs mb-5">{error || 'Something went wrong'}</p>
+          <p className="text-red-400 text-sm font-medium mb-1">{t('create:generationFailed')}</p>
+          <p className="text-content-secondary text-xs mb-5">{error || t('common:somethingWentWrong')}</p>
           <div className="flex items-center justify-center" style={{ columnGap: 12 }}>
             <Button variant="secondary" size="sm" onClick={onRetry}>
-              Try Again
+              {t('common:tryAgain')}
             </Button>
             <Button variant="ghost" size="sm" onClick={onNewCreation}>
-              New Creation
+              {t('create:newCreation')}
             </Button>
           </div>
         </div>
@@ -221,7 +230,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
             <div className="p-4">
               <img
                 src={fileUrl}
-                alt="Generated image"
+                alt={t('create:generatedImage')}
                 className="w-full rounded-xl"
                 loading="lazy"
               />
@@ -271,16 +280,16 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  Download
+                  {t('common:download')}
                 </a>
               )}
             </div>
             <div className="flex items-center" style={{ columnGap: 8 }}>
               <Button variant="ghost" size="sm" onClick={onNewCreation}>
-                New
+                {t('create:new')}
               </Button>
               <Button variant="primary" size="sm" onClick={onCreateAnother}>
-                Create Another
+                {t('create:createAnother')}
               </Button>
             </div>
           </div>

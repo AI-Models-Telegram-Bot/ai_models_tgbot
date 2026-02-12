@@ -12,7 +12,7 @@ export const WebLayout: React.FC = () => {
 
   const navLinks = isAuthenticated
     ? [
-        { to: '/create', label: 'Create', icon: (
+        { to: '/create', label: t('common:create'), icon: (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>

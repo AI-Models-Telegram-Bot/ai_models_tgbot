@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import apiClient from '@/services/api/client';
 
 export default function PaymentSuccessPage() {
-  useTranslation(['subscriptions', 'common']);
+  const { t } = useTranslation(['auth', 'common']);
   const [searchParams] = useSearchParams();
   const paymentId = searchParams.get('paymentId');
   const [status, setStatus] = useState<'checking' | 'success' | 'pending'>('checking');
@@ -56,44 +56,44 @@ export default function PaymentSuccessPage() {
         {status === 'checking' ? (
           <>
             <h1 className="text-2xl font-display font-bold text-content-primary mb-3">
-              Processing payment...
+              {t('auth:paymentProcessing')}
             </h1>
             <p className="text-content-secondary mb-8">
-              Please wait while we confirm your payment.
+              {t('auth:paymentProcessingDesc')}
             </p>
           </>
         ) : status === 'success' ? (
           <>
             <h1 className="text-2xl font-display font-bold text-content-primary mb-3">
-              Payment successful!
+              {t('auth:paymentSuccessful')}
             </h1>
             <p className="text-content-secondary mb-8">
-              Your subscription has been activated. Enjoy your new plan!
+              {t('auth:paymentSuccessfulDesc')}
             </p>
           </>
         ) : (
           <>
             <h1 className="text-2xl font-display font-bold text-content-primary mb-3">
-              Payment received
+              {t('auth:paymentReceived')}
             </h1>
             <p className="text-content-secondary mb-8">
-              Your payment is being processed. Your subscription will be activated shortly.
+              {t('auth:paymentReceivedDesc')}
             </p>
           </>
         )}
 
         <div className="flex flex-col" style={{ rowGap: 12 }}>
           <Link
-            to="/chat"
+            to="/create"
             className="px-6 py-3 bg-brand-primary text-surface-bg font-medium rounded-xl hover:bg-brand-primary/90 transition-colors"
           >
-            Start Chatting
+            {t('auth:startChatting')}
           </Link>
           <Link
             to="/profile"
             className="text-brand-primary text-sm hover:underline"
           >
-            View Profile
+            {t('auth:viewProfile')}
           </Link>
         </div>
       </div>

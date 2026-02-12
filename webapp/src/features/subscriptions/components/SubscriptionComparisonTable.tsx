@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils/cn';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { SubscriptionTier } from '@/types/user.types';
@@ -19,15 +20,17 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
   plans,
   currentTier,
 }) => {
+  const { t } = useTranslation('common');
+
   const rows = [
-    { label: 'Price', getValue: (p: SubscriptionPlan) => p.priceUSD === null ? 'Custom' : p.priceUSD === 0 ? 'Free' : `$${p.priceUSD}` },
-    { label: 'Text Credits', getValue: (p: SubscriptionPlan) => formatValue(p.credits.text) },
-    { label: 'Image Credits', getValue: (p: SubscriptionPlan) => formatValue(p.credits.image) },
-    { label: 'Video Credits', getValue: (p: SubscriptionPlan) => formatValue(p.credits.video) },
-    { label: 'Audio Credits', getValue: (p: SubscriptionPlan) => formatValue(p.credits.audio) },
-    { label: 'Priority Support', getValue: (p: SubscriptionPlan) => formatValue(p.prioritySupport) },
-    { label: 'API Access', getValue: (p: SubscriptionPlan) => formatValue(p.apiAccess) },
-    { label: 'Referral Bonus', getValue: (p: SubscriptionPlan) => `${p.referralBonus}%` },
+    { label: t('price'), getValue: (p: SubscriptionPlan) => p.priceUSD === null ? t('custom') : p.priceUSD === 0 ? t('free') : `$${p.priceUSD}` },
+    { label: t('textCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.text) },
+    { label: t('imageCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.image) },
+    { label: t('videoCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.video) },
+    { label: t('audioCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.audio) },
+    { label: t('prioritySupport'), getValue: (p: SubscriptionPlan) => formatValue(p.prioritySupport) },
+    { label: t('apiAccess'), getValue: (p: SubscriptionPlan) => formatValue(p.apiAccess) },
+    { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => `${p.referralBonus}%` },
   ];
 
   return (
@@ -39,7 +42,7 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
         <thead>
           <tr>
             <th className="text-left text-xs font-medium text-content-tertiary uppercase tracking-wider py-3 px-3 sticky left-0 bg-surface-card/90 backdrop-blur-sm w-[100px] min-w-[100px]">
-              Feature
+              {t('feature')}
             </th>
             {plans.map((plan) => (
               <th

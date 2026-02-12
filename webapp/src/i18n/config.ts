@@ -12,6 +12,7 @@ import enImage from './locales/en/image.json';
 import enVideo from './locales/en/video.json';
 import enAuth from './locales/en/auth.json';
 import enChat from './locales/en/chat.json';
+import enCreate from './locales/en/create.json';
 
 import ruCommon from './locales/ru/common.json';
 import ruProfile from './locales/ru/profile.json';
@@ -23,6 +24,17 @@ import ruImage from './locales/ru/image.json';
 import ruVideo from './locales/ru/video.json';
 import ruAuth from './locales/ru/auth.json';
 import ruChat from './locales/ru/chat.json';
+import ruCreate from './locales/ru/create.json';
+
+// Ensure Russian is the default language when no explicit choice has been saved.
+// LanguageDetector would otherwise pick the browser's navigator language (often 'en').
+try {
+  if (!localStorage.getItem('i18nextLng')) {
+    localStorage.setItem('i18nextLng', 'ru');
+  }
+} catch {
+  // localStorage may throw in restrictive WebView environments — ignore
+}
 
 const resources = {
   en: {
@@ -36,6 +48,7 @@ const resources = {
     video: enVideo,
     auth: enAuth,
     chat: enChat,
+    create: enCreate,
   },
   ru: {
     common: ruCommon,
@@ -48,6 +61,7 @@ const resources = {
     video: ruVideo,
     auth: ruAuth,
     chat: ruChat,
+    create: ruCreate,
   },
 };
 
@@ -59,7 +73,7 @@ try {
       resources,
       fallbackLng: 'ru',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat', 'create'],
       interpolation: {
         escapeValue: false,
       },
@@ -80,7 +94,7 @@ try {
       lng: 'ru',
       fallbackLng: 'ru',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat', 'create'],
       interpolation: {
         escapeValue: false,
       },

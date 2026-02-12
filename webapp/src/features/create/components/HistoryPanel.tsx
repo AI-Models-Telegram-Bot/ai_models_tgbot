@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { useCreateStore } from '../store/useCreateStore';
@@ -34,19 +35,23 @@ const CATEGORY_COLORS: Record<string, string> = {
   AUDIO: 'text-emerald-400 bg-emerald-500/10',
 };
 
-function formatRelativeDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+function useFormatRelativeDate() {
+  const { t } = useTranslation('create');
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  return (dateStr: string): string => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t('time.justNow');
+    if (diffMins < 60) return t('time.minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('time.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('time.daysAgo', { count: diffDays });
+    return date.toLocaleDateString();
+  };
 }
 
 interface HistoryPanelProps {
@@ -55,7 +60,9 @@ interface HistoryPanelProps {
 }
 
 export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation(['create', 'common']);
   const { history, isLoadingHistory, fetchHistory } = useCreateStore();
+  const formatRelativeDate = useFormatRelativeDate();
 
   useEffect(() => {
     if (isOpen) {
@@ -89,7 +96,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
-              <h3 className="text-sm font-semibold text-white">History</h3>
+              <h3 className="text-sm font-semibold text-white">{t('common:history')}</h3>
               <button
                 onClick={onClose}
                 className="text-content-secondary hover:text-white transition-colors p-1"
@@ -124,14 +131,14 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
 
               {!isLoadingHistory && historyItems.length === 0 && (
                 <div className="p-8 text-center">
-                  <p className="text-content-secondary text-sm">No generations yet</p>
+                  <p className="text-content-secondary text-sm">{t('create:noGenerationsYet')}</p>
                 </div>
               )}
 
               {!isLoadingHistory && historyItems.length > 0 && (
                 <div className="p-3 space-y-1">
                   {historyItems.map((conv: Conversation) => (
-                    <HistoryItem key={conv.id} conversation={conv} />
+                    <HistoryItem key={conv.id} conversation={conv} formatDate={formatRelativeDate} />
                   ))}
                 </div>
               )}
@@ -143,7 +150,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
   );
 };
 
-const HistoryItem: React.FC<{ conversation: Conversation }> = ({ conversation }) => {
+const HistoryItem: React.FC<{ conversation: Conversation; formatDate: (d: string) => string }> = ({ conversation, formatDate }) => {
   const icon = CATEGORY_ICONS[conversation.category];
   const colorClass = CATEGORY_COLORS[conversation.category] || 'text-content-secondary bg-surface-elevated';
 
@@ -159,7 +166,7 @@ const HistoryItem: React.FC<{ conversation: Conversation }> = ({ conversation })
         <div className="flex items-center text-[11px] text-content-secondary" style={{ columnGap: 6 }}>
           <span>{conversation.modelSlug}</span>
           <span>·</span>
-          <span>{formatRelativeDate(conversation.createdAt)}</span>
+          <span>{formatDate(conversation.createdAt)}</span>
         </div>
       </div>
     </div>
