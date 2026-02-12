@@ -21,9 +21,9 @@ export default {
           elevated: '#2d2d5f',
         },
         content: {
-          primary: '#ffffff',
-          secondary: '#b8b8d4',
-          tertiary: '#8585a8',
+          primary: '#f0f0ff',
+          secondary: '#c8c8e4',
+          tertiary: '#9898be',
         },
         audio: {
           primary: '#10b981',
