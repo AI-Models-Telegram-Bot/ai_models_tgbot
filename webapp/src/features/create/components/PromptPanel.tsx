@@ -5,11 +5,11 @@ import { Button } from '@/shared/ui';
 import type { ChatModel } from '@/services/api/chat.api';
 import type { Category } from '../store/useCreateStore';
 
-const CATEGORY_COLORS: Record<Category, { ring: string; text: string }> = {
-  TEXT: { ring: 'focus-within:ring-cyan-400/40', text: 'text-cyan-400' },
-  IMAGE: { ring: 'focus-within:ring-purple-400/40', text: 'text-purple-400' },
-  VIDEO: { ring: 'focus-within:ring-orange-400/40', text: 'text-orange-400' },
-  AUDIO: { ring: 'focus-within:ring-emerald-400/40', text: 'text-emerald-400' },
+const CATEGORY_COLORS: Record<Category, { ring: string; text: string; bg: string }> = {
+  TEXT: { ring: 'focus-within:ring-cyan-400/30', text: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  IMAGE: { ring: 'focus-within:ring-purple-400/30', text: 'text-purple-400', bg: 'bg-purple-500/10' },
+  VIDEO: { ring: 'focus-within:ring-orange-400/30', text: 'text-orange-400', bg: 'bg-orange-500/10' },
+  AUDIO: { ring: 'focus-within:ring-emerald-400/30', text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
 };
 
 const PLACEHOLDERS: Record<Category, string> = {
@@ -74,7 +74,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
       >
         <button
           onClick={onBack}
-          className="flex items-center text-content-tertiary hover:text-content-primary transition-colors mb-4"
+          className="flex items-center text-content-secondary hover:text-white transition-colors mb-4"
           style={{ columnGap: 6 }}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,15 +84,15 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
         </button>
 
         <div className="flex items-center" style={{ columnGap: 10 }}>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-content-primary">
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-white">
             {model.name}
           </h2>
-          <span className={cn('text-xs font-medium px-2 py-0.5 rounded-md bg-surface-elevated', colors.text)}>
+          <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-md', colors.bg, colors.text)}>
             {category}
           </span>
         </div>
         {model.description && (
-          <p className="text-content-tertiary text-sm mt-1">{model.description}</p>
+          <p className="text-content-secondary text-sm mt-1">{model.description}</p>
         )}
       </motion.div>
 
@@ -104,7 +104,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
       >
         <div
           className={cn(
-            'rounded-2xl bg-surface-card border border-white/10 backdrop-blur-xl p-4 transition-all duration-200',
+            'rounded-2xl bg-surface-card border border-white/[0.08] p-4 transition-all duration-200',
             'ring-2 ring-transparent',
             colors.ring,
           )}
@@ -117,12 +117,12 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
             placeholder={PLACEHOLDERS[category]}
             disabled={isGenerating}
             rows={3}
-            className="w-full bg-transparent text-content-primary placeholder-content-tertiary text-sm resize-none outline-none"
+            className="w-full bg-transparent text-white placeholder-content-secondary text-sm resize-none outline-none"
             style={{ minHeight: 72 }}
           />
 
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-            <p className="text-[11px] text-content-tertiary">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
+            <p className="text-[11px] text-content-secondary">
               Shift+Enter for new line
             </p>
             <Button

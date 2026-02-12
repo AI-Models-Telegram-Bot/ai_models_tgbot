@@ -63,6 +63,8 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
     }
   }, [isOpen, fetchHistory]);
 
+  const historyItems = Array.isArray(history) ? history : [];
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -83,14 +85,14 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-surface-card border-l border-white/10 z-50 flex flex-col"
+            className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] bg-surface-card border-l border-white/[0.08] z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <h3 className="text-sm font-semibold text-content-primary">History</h3>
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
+              <h3 className="text-sm font-semibold text-white">History</h3>
               <button
                 onClick={onClose}
-                className="text-content-tertiary hover:text-content-primary transition-colors p-1"
+                className="text-content-secondary hover:text-white transition-colors p-1"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -103,20 +105,32 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
               {isLoadingHistory && (
                 <div className="p-4 space-y-3">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="h-14 rounded-lg bg-surface-elevated/50 animate-pulse" />
+                    <div key={i} className="flex items-center rounded-lg px-3 py-2.5" style={{ columnGap: 10 }}>
+                      <div className="w-8 h-8 rounded-lg bg-surface-elevated/50 relative overflow-hidden shrink-0">
+                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3.5 w-3/4 rounded bg-surface-elevated/50 relative overflow-hidden">
+                          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+                        </div>
+                        <div className="h-2.5 w-1/2 rounded bg-surface-elevated/30 relative overflow-hidden">
+                          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
 
-              {!isLoadingHistory && history.length === 0 && (
+              {!isLoadingHistory && historyItems.length === 0 && (
                 <div className="p-8 text-center">
-                  <p className="text-content-tertiary text-sm">No generations yet</p>
+                  <p className="text-content-secondary text-sm">No generations yet</p>
                 </div>
               )}
 
-              {!isLoadingHistory && history.length > 0 && (
+              {!isLoadingHistory && historyItems.length > 0 && (
                 <div className="p-3 space-y-1">
-                  {history.map((conv: Conversation) => (
+                  {historyItems.map((conv: Conversation) => (
                     <HistoryItem key={conv.id} conversation={conv} />
                   ))}
                 </div>
@@ -131,18 +145,18 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
 
 const HistoryItem: React.FC<{ conversation: Conversation }> = ({ conversation }) => {
   const icon = CATEGORY_ICONS[conversation.category];
-  const colorClass = CATEGORY_COLORS[conversation.category] || 'text-content-tertiary bg-surface-elevated';
+  const colorClass = CATEGORY_COLORS[conversation.category] || 'text-content-secondary bg-surface-elevated';
 
   return (
-    <div className="flex items-center rounded-lg px-3 py-2.5 hover:bg-surface-elevated/50 transition-colors cursor-default" style={{ columnGap: 10 }}>
+    <div className="flex items-center rounded-lg px-3 py-2.5 hover:bg-white/[0.03] transition-colors cursor-default" style={{ columnGap: 10 }}>
       <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0', colorClass)}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-content-primary truncate">
+        <p className="text-sm text-white truncate">
           {conversation.title || conversation.modelSlug}
         </p>
-        <div className="flex items-center text-[11px] text-content-tertiary" style={{ columnGap: 6 }}>
+        <div className="flex items-center text-[11px] text-content-secondary" style={{ columnGap: 6 }}>
           <span>{conversation.modelSlug}</span>
           <span>·</span>
           <span>{formatRelativeDate(conversation.createdAt)}</span>

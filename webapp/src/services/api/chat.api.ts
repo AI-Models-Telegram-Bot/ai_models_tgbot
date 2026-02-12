@@ -10,6 +10,8 @@ export interface ChatModel {
   slug: string;
   category: 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO';
   description: string | null;
+  hasAccess: boolean;
+  isUnlimited: boolean;
 }
 
 export interface Conversation {
@@ -56,7 +58,7 @@ export const chatApi = {
   /** List conversations (paginated) */
   getConversations: (limit = 20, offset = 0) =>
     rootApiClient
-      .get<{ conversations: Conversation[]; total: number }>(
+      .get<Conversation[]>(
         '/api/web/chat/conversations',
         { params: { limit, offset } },
       )
