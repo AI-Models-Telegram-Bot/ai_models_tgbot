@@ -56,7 +56,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     },
     modelAccess: {
       text: {
-        allowed: ['gpt-3.5-turbo', 'claude-haiku'],
+        allowed: ['gpt-4o-mini', 'grok'],
       },
       image: {
         allowed: ['*'],
@@ -65,7 +65,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['kling', 'wan'],
       },
       audio: {
-        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2'],
+        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'openai-tts'],
       },
     },
     features: [
@@ -92,8 +92,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     },
     modelAccess: {
       text: {
-        allowed: ['gpt-4', 'claude-sonnet', 'gpt-3.5-turbo'],
-        unlimited: ['gpt-3.5-turbo'],
+        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok'],
+        unlimited: ['gpt-4o-mini'],
       },
       image: {
         allowed: ['*'],
@@ -103,8 +103,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway'],
       },
       audio: {
-        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'whisper', 'tts-advanced'],
-        unlimited: ['whisper'],
+        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'openai-tts', 'deepgram-tts', 'fish-speech'],
+        unlimited: ['openai-tts'],
       },
     },
     features: [
@@ -133,8 +133,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     },
     modelAccess: {
       text: {
-        allowed: ['gpt-4-turbo', 'claude-opus', 'claude-sonnet', 'gpt-4'],
-        unlimited: ['gpt-4', 'claude-sonnet'],
+        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok'],
+        unlimited: ['gpt-4o-mini', 'grok'],
       },
       image: {
         allowed: ['*'],
@@ -144,8 +144,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'sora', 'veo-fast'],
       },
       audio: {
-        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'whisper', 'musicgen', 'tts-advanced'],
-        unlimited: ['whisper', 'tts-advanced'],
+        allowed: ['*'],
+        unlimited: ['openai-tts', 'deepgram-tts'],
       },
     },
     features: [
