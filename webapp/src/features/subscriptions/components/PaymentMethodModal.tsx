@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Modal, Button, Skeleton } from '@/shared/ui';
 import { paymentApi } from '@/services/api/payment.api';
 import { openTelegramInvoice, isTelegramEnvironment } from '@/services/telegram/telegram';
@@ -223,9 +224,38 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           )}
         </Button>
 
-        <p className="text-content-tertiary text-[10px] text-center">
-          {t('subscriptions:payment.terms')}
-        </p>
+        <div className="text-content-tertiary text-[10px] text-center leading-relaxed">
+          <p>
+            {lang === 'ru' ? (
+              <>
+                Нажимая «Оплатить», вы соглашаетесь с{' '}
+                <Link to="/public-offer" className="text-brand-primary hover:underline" onClick={onClose}>
+                  Публичной офертой
+                </Link>
+                {' '}и{' '}
+                <Link to="/privacy-policy" className="text-brand-primary hover:underline" onClick={onClose}>
+                  Политикой конфиденциальности
+                </Link>
+              </>
+            ) : (
+              <>
+                By clicking "Pay", you agree to the{' '}
+                <Link to="/public-offer" className="text-brand-primary hover:underline" onClick={onClose}>
+                  Public Offer
+                </Link>
+                {' '}and{' '}
+                <Link to="/privacy-policy" className="text-brand-primary hover:underline" onClick={onClose}>
+                  Privacy Policy
+                </Link>
+              </>
+            )}
+          </p>
+          <p className="mt-1">
+            {lang === 'ru'
+              ? 'Оплата через защищённую платёжную систему ЮКасса'
+              : 'Payment via secure YooKassa payment system'}
+          </p>
+        </div>
       </div>
     </Modal>
   );

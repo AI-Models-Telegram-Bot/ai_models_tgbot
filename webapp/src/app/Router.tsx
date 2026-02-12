@@ -35,6 +35,12 @@ const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const PaymentSuccessPage = lazy(() => import('@/pages/payment/PaymentSuccessPage'));
 const PaymentFailedPage = lazy(() => import('@/pages/payment/PaymentFailedPage'));
 
+// Legal pages
+const PublicOfferPage = lazy(() => import('@/pages/legal/PublicOfferPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/legal/PrivacyPolicyPage'));
+const TermsPage = lazy(() => import('@/pages/legal/TermsPage'));
+const ContactsPage = lazy(() => import('@/pages/legal/ContactsPage'));
+
 function LoadingFallback() {
   return (
     <div className="p-4 space-y-4 max-w-2xl mx-auto w-full">
@@ -134,6 +140,10 @@ export function Router() {
               {/* Public */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/pricing" element={<SubscriptionsPage />} />
+              <Route path="/public-offer" element={<PublicOfferPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/contacts" element={<ContactsPage />} />
 
               {/* Protected */}
               <Route path="/create" element={<RequireAuth><CreatePage /></RequireAuth>} />
