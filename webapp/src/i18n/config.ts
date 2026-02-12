@@ -57,7 +57,7 @@ try {
     .use(initReactI18next)
     .init({
       resources,
-      fallbackLng: 'en',
+      fallbackLng: 'ru',
       defaultNS: 'common',
       ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat'],
       interpolation: {
@@ -66,10 +66,9 @@ try {
       detection: {
         // Only use navigator — avoid localStorage/sessionStorage which can throw in
         // restricted WebView environments (Telegram mobile)
-        order: ['navigator'],
-        caches: [],
-        lookupLocalStorage: undefined,
-        lookupSessionStorage: undefined,
+        order: ['localStorage', 'navigator'],
+        caches: ['localStorage'],
+        lookupLocalStorage: 'i18nextLng',
       },
     });
 } catch {
@@ -78,8 +77,8 @@ try {
     .use(initReactI18next)
     .init({
       resources,
-      lng: 'en',
-      fallbackLng: 'en',
+      lng: 'ru',
+      fallbackLng: 'ru',
       defaultNS: 'common',
       ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat'],
       interpolation: {

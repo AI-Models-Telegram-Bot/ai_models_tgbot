@@ -44,8 +44,12 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
       paymentApi
         .getMethods()
         .then((data) => {
-          setMethods(data.methods);
-          const firstAvailable = data.methods.find((m) => m.available);
+          // Filter out Telegram Stars on web — only available inside Telegram app
+          const filtered = isTelegramEnvironment()
+            ? data.methods
+            : data.methods.filter((m) => m.id !== 'telegram_stars');
+          setMethods(filtered);
+          const firstAvailable = filtered.find((m) => m.available);
           if (firstAvailable) {
             setSelectedMethod(firstAvailable.id);
           }

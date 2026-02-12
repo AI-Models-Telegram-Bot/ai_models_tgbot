@@ -23,7 +23,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   index,
   onUpgradeSuccess,
 }) => {
-  const { t } = useTranslation(['subscriptions', 'common', 'profile']);
+  const { t, i18n } = useTranslation(['subscriptions', 'common', 'profile']);
 
   const [showFeatures, setShowFeatures] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
@@ -31,10 +31,16 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   const telegramUser = getTelegramUser();
   const telegramId = telegramUser?.id?.toString() ?? '';
 
-  const formatPrice = (priceUSD: number | null) => {
+  const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
+
+  const formatPrice = (priceUSD: number | null, priceRUB: number | null) => {
     if (priceUSD === null) return t('subscriptions:price.contactUs');
     if (priceUSD === 0) return t('subscriptions:price.free');
-    return `$${priceUSD}${t('subscriptions:price.perMonth')}`;
+    const perMonth = t('subscriptions:price.perMonth');
+    if (lang === 'ru' && priceRUB) {
+      return `${priceRUB.toLocaleString('ru-RU')} ₽${perMonth}`;
+    }
+    return `$${priceUSD}${perMonth}`;
   };
 
   const formatCredits = (credits: number | null) => {
@@ -89,7 +95,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         <h3 className="text-xl font-bold text-white font-display">{plan.name}</h3>
         <div className="mt-1 mb-4">
           <span className="text-2xl font-bold text-white font-display">
-            {formatPrice(plan.priceUSD)}
+            {formatPrice(plan.priceUSD, plan.priceRUB)}
           </span>
         </div>
 
