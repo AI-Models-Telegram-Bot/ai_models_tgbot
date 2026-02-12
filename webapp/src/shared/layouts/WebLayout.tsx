@@ -233,29 +233,97 @@ export const WebLayout: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] py-8 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between" style={{ rowGap: 16 }}>
-          <div className="flex items-center" style={{ columnGap: 8 }}>
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-[10px]">AI</span>
+      <footer className="border-t border-white/[0.06] py-10 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 0 }}>
+            {/* Company */}
+            <div className="p-3">
+              <div className="flex items-center mb-4" style={{ columnGap: 8 }}>
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-[10px]">AI</span>
+                </div>
+                <span className="text-white font-display font-bold text-sm">VseoNix</span>
+              </div>
+              <p className="text-xs text-content-tertiary leading-relaxed mb-3">
+                AI-сервис для генерации текста, изображений, видео и аудио
+              </p>
+              <a
+                href="https://t.me/Vseonix_bot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-xs text-content-tertiary hover:text-content-secondary transition-colors"
+                style={{ columnGap: 4 }}
+              >
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295l.213-3.053 5.56-5.023c.242-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/>
+                </svg>
+                Telegram Bot
+              </a>
             </div>
-            <span className="text-sm text-content-tertiary">
-              &copy; {new Date().getFullYear()} VseoNix AI
-            </span>
+
+            {/* Navigation */}
+            <div className="p-3">
+              <h4 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
+                Навигация
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
+                <Link to="/" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  Главная
+                </Link>
+                <Link to="/pricing" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  {t('common:subscriptions', 'Pricing')}
+                </Link>
+                <Link to="/contacts" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  Контакты
+                </Link>
+                <a href="mailto:support@vseonix.com" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  {t('common:support', 'Support')}
+                </a>
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div className="p-3">
+              <h4 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
+                Документы
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
+                <Link to="/public-offer" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  Публичная оферта
+                </Link>
+                <Link to="/privacy-policy" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  Политика конфиденциальности
+                </Link>
+                <Link to="/terms" className="text-xs text-content-tertiary hover:text-content-secondary transition-colors">
+                  Пользовательское соглашение
+                </Link>
+              </div>
+            </div>
+
+            {/* Requisites */}
+            <div className="p-3">
+              <h4 className="text-xs font-semibold text-content-secondary uppercase tracking-wider mb-3">
+                Реквизиты
+              </h4>
+              <div className="text-xs text-content-tertiary leading-relaxed" style={{ display: 'flex', flexDirection: 'column', rowGap: 4 }}>
+                <p>ИП Демченко Иосиф Юрьевич</p>
+                <p>ИНН: 010407932910</p>
+                <p>ОГРНИП: 322010000030074</p>
+                <a href="mailto:support@vseonix.com" className="mt-1 hover:text-content-secondary transition-colors">
+                  support@vseonix.com
+                </a>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center" style={{ columnGap: 20 }}>
-            <Link to="/pricing" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
-              {t('common:subscriptions', 'Pricing')}
-            </Link>
-            <a href="https://t.me/vseonix_support" target="_blank" rel="noopener noreferrer" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
-              {t('common:support', 'Support')}
-            </a>
-            <Link to="/terms" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
-              {t('common:terms', 'Terms')}
-            </Link>
-            <Link to="/privacy" className="text-sm text-content-tertiary hover:text-content-secondary transition-colors">
-              {t('common:privacy', 'Privacy')}
-            </Link>
+
+          {/* Bottom bar */}
+          <div className="border-t border-white/[0.06] mt-6 pt-6 flex flex-col sm:flex-row items-center justify-between px-3" style={{ rowGap: 8 }}>
+            <p className="text-[11px] text-content-tertiary">
+              &copy; {new Date().getFullYear()} VseoNix AI. Все права защищены.
+            </p>
+            <p className="text-[11px] text-content-tertiary">
+              Оплата через ЮКассу
+            </p>
           </div>
         </div>
       </footer>
