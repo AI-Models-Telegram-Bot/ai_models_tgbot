@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import { getModelIcon } from '../constants/modelIcons';
+import { ModelSettingsPanel } from './ModelSettingsPanel';
 import type { ChatModel } from '@/services/api/chat.api';
 import type { Category } from '../store/useCreateStore';
 
@@ -110,6 +111,9 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
           </div>
         </div>
       </motion.div>
+
+      {/* Model settings (image/video/audio only) */}
+      <ModelSettingsPanel category={category} model={model} />
 
       {/* Example prompts — shown when textarea is empty */}
       {!prompt && Array.isArray(examples) && examples.length > 0 && (

@@ -21,6 +21,7 @@
   "noGenerationsYet": "No generations yet",
   "tryExample": "Try an example:",
   "credits": "cr",
+  "modelSettings": "Model Settings",
   "categories": {
     "TEXT": "Text AI",
     "IMAGE": "Image AI",

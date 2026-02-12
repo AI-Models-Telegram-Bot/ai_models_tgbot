@@ -151,12 +151,14 @@ export function Router() {
               <Route path="/subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
               <Route path="/referral" element={<RequireAuth><ReferralPage /></RequireAuth>} />
 
-              {/* Settings (protected) */}
-              <Route path="/audio/elevenlabs-voice" element={<RequireAuth><ElevenLabsVoicePage /></RequireAuth>} />
-              <Route path="/audio/suno" element={<RequireAuth><SunoSettingsPage /></RequireAuth>} />
-              <Route path="/audio/sound-generator" element={<RequireAuth><SoundGeneratorPage /></RequireAuth>} />
-              <Route path="/image/settings" element={<RequireAuth><ImageSettingsPage /></RequireAuth>} />
-              <Route path="/video/settings" element={<RequireAuth><VideoSettingsPage /></RequireAuth>} />
+              {/* Settings — no auth guard; API layer handles auth via Telegram headers or JWT.
+                 Removing RequireAuth so Telegram WebApp can open these pages even if
+                 isTelegramEnvironment() detection fails (edge case fallback). */}
+              <Route path="/audio/elevenlabs-voice" element={<ElevenLabsVoicePage />} />
+              <Route path="/audio/suno" element={<SunoSettingsPage />} />
+              <Route path="/audio/sound-generator" element={<SoundGeneratorPage />} />
+              <Route path="/image/settings" element={<ImageSettingsPage />} />
+              <Route path="/video/settings" element={<VideoSettingsPage />} />
             </Route>
 
             {/* Fallback */}
