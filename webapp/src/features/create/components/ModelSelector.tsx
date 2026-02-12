@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
+import { getModelIcon } from '../constants/modelIcons';
 import type { ChatModel } from '@/services/api/chat.api';
 import type { Category } from '../store/useCreateStore';
 
@@ -109,26 +110,45 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
               transition={{ duration: 0.25, delay: index * 0.05 }}
               onClick={() => handleSelect(model)}
               className={cn(
-                'relative rounded-xl p-4 text-left transition-all duration-200 overflow-hidden',
+                'relative rounded-xl p-3.5 text-left transition-all duration-200 overflow-hidden',
                 'bg-surface-card border border-white/[0.08]',
                 'hover:scale-[1.02] active:scale-[0.98]',
                 colors.hoverCard,
               )}
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} pointer-events-none`} />
-              <div className="relative flex items-start justify-between">
+              <div className="relative flex items-start" style={{ columnGap: 10 }}>
+                {/* Icon */}
+                <div className={cn(
+                  'shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-lg',
+                  colors.bg,
+                )}>
+                  {getModelIcon(model.slug, model.category)}
+                </div>
+
+                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-white truncate">
-                    {model.name}
-                  </h3>
-                  {model.description && (
-                    <p className="text-xs text-content-secondary mt-1 line-clamp-2">
-                      {model.description}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-white truncate">
+                      {model.name}
+                    </h3>
+                    <span className={cn(
+                      'shrink-0 ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums',
+                      colors.bg, colors.text,
+                    )}>
+                      {model.isUnlimited ? '∞' : `${model.tokenCost} ${t('create:credits')}`}
+                    </span>
+                  </div>
+
+                  {t(`create:modelDescriptions.${model.slug}`, '') && (
+                    <p className="text-xs text-content-secondary mt-0.5 truncate">
+                      {t(`create:modelDescriptions.${model.slug}`, '')}
                     </p>
                   )}
-                </div>
-                <div className={cn('shrink-0 ml-3 px-2 py-0.5 rounded-md text-[10px] font-semibold', colors.bg, colors.text)}>
-                  {model.slug}
+
+                  <p className="text-[10px] text-content-tertiary mt-0.5 capitalize">
+                    {model.provider}
+                  </p>
                 </div>
               </div>
             </motion.button>
@@ -156,7 +176,8 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                   {t('create:moreModelsAvailable', { count: lockedModels.length })}
                 </p>
                 <p className="text-xs text-content-secondary">
-                  {lockedModels.slice(0, 3).map(m => m.name).join(', ')}{lockedModels.length > 3 ? ` ${t('create:andMore', { count: lockedModels.length - 3 })}` : ''}
+                  {lockedModels.slice(0, 3).map(m => `${getModelIcon(m.slug, m.category)} ${m.name}`).join(', ')}
+                  {lockedModels.length > 3 ? ` ${t('create:andMore', { count: lockedModels.length - 3 })}` : ''}
                 </p>
               </div>
             </div>

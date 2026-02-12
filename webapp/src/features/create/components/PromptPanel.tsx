@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
+import { getModelIcon } from '../constants/modelIcons';
 import type { ChatModel } from '@/services/api/chat.api';
 import type { Category } from '../store/useCreateStore';
 
@@ -58,6 +59,9 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
     }
   };
 
+  const examples = t(`create:promptExamples.${category}`, { returnObjects: true }) as string[];
+  const description = t(`create:modelDescriptions.${model.slug}`, '');
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       {/* Header */}
@@ -78,18 +82,63 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
           <span className="text-sm">{t('common:back')}</span>
         </button>
 
-        <div className="flex items-center" style={{ columnGap: 10 }}>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-white">
-            {model.name}
-          </h2>
-          <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-md', colors.bg, colors.text)}>
-            {category}
-          </span>
+        <div className="flex items-center" style={{ columnGap: 12 }}>
+          {/* Model icon */}
+          <div className={cn(
+            'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl',
+            colors.bg,
+          )}>
+            {getModelIcon(model.slug, model.category)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center" style={{ columnGap: 8 }}>
+              <h2 className="text-lg sm:text-xl font-display font-bold text-white truncate">
+                {model.name}
+              </h2>
+              <span className={cn(
+                'shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md tabular-nums',
+                colors.bg, colors.text,
+              )}>
+                {model.isUnlimited ? '∞' : `${model.tokenCost} ${t('create:credits')}`}
+              </span>
+            </div>
+            {description && (
+              <p className="text-content-secondary text-xs mt-0.5">
+                {description}
+              </p>
+            )}
+          </div>
         </div>
-        {model.description && (
-          <p className="text-content-secondary text-sm mt-1">{model.description}</p>
-        )}
       </motion.div>
+
+      {/* Example prompts — shown when textarea is empty */}
+      {!prompt && Array.isArray(examples) && examples.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="mb-3"
+        >
+          <p className="text-[11px] text-content-tertiary mb-2">
+            {t('create:tryExample')}
+          </p>
+          <div className="flex flex-wrap" style={{ rowGap: 6, columnGap: 6 }}>
+            {examples.slice(0, 3).map((example, i) => (
+              <button
+                key={i}
+                onClick={() => setPrompt(example)}
+                className={cn(
+                  'px-2.5 py-1.5 rounded-lg text-xs border transition-colors',
+                  'border-white/[0.08] bg-surface-card/50',
+                  'text-content-secondary hover:text-white hover:border-white/20',
+                )}
+              >
+                {example}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Prompt input */}
       <motion.div

@@ -19,6 +19,8 @@
   "new": "New",
   "generatedImage": "Generated image",
   "noGenerationsYet": "No generations yet",
+  "tryExample": "Try an example:",
+  "credits": "cr",
   "categories": {
     "TEXT": "Text AI",
     "IMAGE": "Image AI",
@@ -30,6 +32,65 @@
     "IMAGE": "DALL-E, Flux, Midjourney",
     "VIDEO": "Kling, Sora, Runway",
     "AUDIO": "ElevenLabs, Suno, Bark"
+  },
+  "modelDescriptions": {
+    "gpt-4o": "Fast and capable",
+    "gpt-4o-mini": "Efficient and quick",
+    "claude-sonnet": "Latest reasoning model",
+    "grok": "Uncensored AI chat",
+    "flux-schnell": "Fast affordable images",
+    "sdxl-lightning": "Ultra-fast generation",
+    "flux-kontext": "Context-aware editing",
+    "dall-e-2": "Classic image generation",
+    "sdxl": "Versatile high-quality",
+    "playground-v2-5": "Aesthetic fine art",
+    "nano-banana-pro": "Gemini-powered generation",
+    "flux-dev": "High-quality details",
+    "flux-pro": "Best Flux quality",
+    "dall-e-3": "Premium quality images",
+    "midjourney": "Artistic masterpieces",
+    "ideogram": "Best text in images",
+    "wan": "Affordable video clips",
+    "kling": "5s video generation",
+    "luma": "Dream machine videos",
+    "kling-pro": "Extended 10s video",
+    "runway": "Gen-4 Turbo video",
+    "veo-fast": "Google fast video",
+    "sora": "OpenAI cinematic video",
+    "veo": "Google premium video",
+    "deepgram-tts": "Ultra-cheap speech",
+    "fish-speech": "Fast voice cloning",
+    "xtts-v2": "Multilingual speech",
+    "bark": "Speech with emotion",
+    "openai-tts": "Natural voice synthesis",
+    "elevenlabs-tts": "Premium voice quality",
+    "suno": "AI music creation"
+  },
+  "promptExamples": {
+    "TEXT": [
+      "Explain quantum computing simply",
+      "Write a short story about a robot",
+      "Compare React vs Vue pros and cons",
+      "Create a workout plan for beginners"
+    ],
+    "IMAGE": [
+      "A cat astronaut floating in space",
+      "Cozy cabin in snowy mountains, sunset",
+      "Futuristic cyberpunk city at night",
+      "Watercolor painting of a Japanese garden"
+    ],
+    "VIDEO": [
+      "A dog running through autumn leaves",
+      "Timelapse of a blooming flower",
+      "Ocean waves crashing on rocks at sunset",
+      "Aerial view of a mountain landscape"
+    ],
+    "AUDIO": [
+      "Hello! Welcome to our podcast today.",
+      "Once upon a time in a land far away...",
+      "Breaking news: scientists discover...",
+      "Create an upbeat electronic music track"
+    ]
   },
   "placeholders": {
     "TEXT": "Ask anything...",
