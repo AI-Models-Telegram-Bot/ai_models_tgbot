@@ -21,9 +21,9 @@
   --color-bg-elevated: #2d2d5f;
 
   /* Text */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #b8b8d4;
-  --color-text-tertiary: #8585a8;
+  --color-text-primary: #f0f0ff;
+  --color-text-secondary: #c8c8e4;
+  --color-text-tertiary: #9898be;
 
   /* Status */
   --color-success: #10b981;
@@ -55,6 +55,7 @@ html, body, #root {
 
 body {
   font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;

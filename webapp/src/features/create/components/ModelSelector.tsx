@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import type { ChatModel } from '@/services/api/chat.api';
@@ -142,47 +143,40 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
 
       {/* Locked models */}
       {!isLoading && lockedModels.length > 0 && (
-        <>
-          <div className="flex items-center mt-6 mb-3" style={{ columnGap: 8 }}>
-            <div className="h-px flex-1 bg-white/[0.06]" />
-            <span className="text-xs text-content-secondary flex items-center" style={{ columnGap: 4 }}>
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Upgrade to unlock
-            </span>
-            <div className="h-px flex-1 bg-white/[0.06]" />
+        <motion.div
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.3, delay: accessibleModels.length * 0.05 + 0.1 }}
+          className="mt-6 rounded-xl bg-surface-card/40 border border-white/[0.06] p-5"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center" style={{ columnGap: 8 }}>
+              <div className="w-8 h-8 rounded-lg bg-brand-accent/10 flex items-center justify-center">
+                <svg className="w-4 h-4 text-brand-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">
+                  {lockedModels.length} more model{lockedModels.length > 1 ? 's' : ''} available
+                </p>
+                <p className="text-xs text-content-secondary">
+                  {lockedModels.slice(0, 3).map(m => m.name).join(', ')}{lockedModels.length > 3 ? ` and ${lockedModels.length - 3} more` : ''}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ rowGap: 10, columnGap: 10 }}>
-            {lockedModels.map((model, index) => (
-              <motion.div
-                key={model.id}
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 0.5 }}
-                transition={{ duration: 0.25, delay: (accessibleModels.length + index) * 0.04 }}
-                className="relative rounded-xl p-4 text-left bg-surface-card/50 border border-white/[0.04] cursor-not-allowed"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center" style={{ columnGap: 6 }}>
-                      <h3 className="text-sm font-medium text-content-secondary truncate">
-                        {model.name}
-                      </h3>
-                      <svg className="w-3.5 h-3.5 shrink-0 text-content-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </div>
-                    {model.description && (
-                      <p className="text-xs text-content-secondary mt-1 line-clamp-1" style={{ opacity: 0.6 }}>
-                        {model.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </>
+          <Link
+            to="/subscriptions"
+            className="flex items-center justify-center w-full py-2.5 rounded-lg bg-gradient-to-r from-brand-accent/20 to-brand-secondary/20 border border-brand-accent/20 text-brand-accent text-sm font-semibold hover:from-brand-accent/30 hover:to-brand-secondary/30 transition-all"
+            style={{ columnGap: 6 }}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            Upgrade Plan
+          </Link>
+        </motion.div>
       )}
 
       {/* Empty */}

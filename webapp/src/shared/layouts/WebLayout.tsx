@@ -12,12 +12,28 @@ export const WebLayout: React.FC = () => {
 
   const navLinks = isAuthenticated
     ? [
-        { to: '/create', label: 'Create' },
-        { to: '/subscriptions', label: t('common:subscriptions', 'Pricing') },
-        { to: '/profile', label: t('common:profile', 'Profile') },
+        { to: '/create', label: 'Create', icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        )},
+        { to: '/subscriptions', label: t('common:subscriptions', 'Pricing'), icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        )},
+        { to: '/profile', label: t('common:profile', 'Profile'), icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        )},
       ]
     : [
-        { to: '/pricing', label: t('common:subscriptions', 'Pricing') },
+        { to: '/pricing', label: t('common:subscriptions', 'Pricing'), icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        )},
       ];
 
   const handleLogout = async () => {
@@ -25,72 +41,89 @@ export const WebLayout: React.FC = () => {
     navigate('/');
   };
 
+  const userName = user?.firstName || user?.email?.split('@')[0] || 'User';
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-surface-bg to-surface-secondary flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-surface-bg/80 backdrop-blur-lg border-b border-white/5">
+      <header className="sticky top-0 z-50 border-b border-white/[0.06]" style={{ background: 'rgba(15,15,35,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center" style={{ columnGap: 8 }}>
-              <div className="w-8 h-8 rounded-lg bg-brand-primary/20 flex items-center justify-center">
-                <span className="text-brand-primary font-bold text-sm">AI</span>
+            <Link to="/" className="flex items-center shrink-0" style={{ columnGap: 10 }}>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center shadow-neon">
+                <span className="text-white font-bold text-sm">AI</span>
               </div>
-              <span className="text-content-primary font-display font-bold text-lg">VseoNix</span>
+              <span className="text-white font-display font-bold text-lg">VseoNix</span>
             </Link>
 
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center" style={{ columnGap: 24 }}>
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`text-sm font-medium transition-colors ${
-                    location.pathname === link.to
-                      ? 'text-brand-primary'
-                      : 'text-content-secondary hover:text-content-primary'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            {/* Desktop Nav — center */}
+            <nav className="hidden md:flex items-center bg-surface-card/60 rounded-xl border border-white/[0.06] p-1" style={{ columnGap: 2 }}>
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.to;
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-brand-primary/15 text-brand-primary shadow-sm'
+                        : 'text-content-secondary hover:text-white hover:bg-white/[0.04]'
+                    }`}
+                    style={{ columnGap: 6 }}
+                  >
+                    {link.icon}
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
 
-            {/* Auth Buttons */}
+            {/* Auth section — right */}
             <div className="hidden md:flex items-center" style={{ columnGap: 12 }}>
               {isAuthenticated ? (
-                <div className="flex items-center" style={{ columnGap: 12 }}>
-                  <span className="text-sm text-content-secondary">
-                    {user?.firstName || user?.email?.split('@')[0] || 'User'}
-                  </span>
+                <div className="flex items-center" style={{ columnGap: 10 }}>
+                  <div className="flex items-center bg-surface-card/60 rounded-xl px-3 py-1.5 border border-white/[0.06]" style={{ columnGap: 8 }}>
+                    <div className="w-7 h-7 rounded-lg bg-brand-primary/20 flex items-center justify-center">
+                      <span className="text-brand-primary text-xs font-bold">
+                        {userName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm text-content-secondary font-medium">
+                      {userName}
+                    </span>
+                  </div>
                   <button
                     onClick={handleLogout}
-                    className="text-sm text-content-secondary hover:text-content-primary transition-colors"
+                    className="text-content-tertiary hover:text-white transition-colors p-2 rounded-lg hover:bg-white/[0.04]"
+                    title={t('auth:logout', 'Log Out')}
                   >
-                    {t('auth:logout', 'Log Out')}
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
                   </button>
                 </div>
               ) : (
-                <>
+                <div className="flex items-center" style={{ columnGap: 8 }}>
                   <Link
                     to="/auth/login"
-                    className="text-sm font-medium text-content-secondary hover:text-content-primary transition-colors"
+                    className="text-sm font-medium text-content-secondary hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/[0.04]"
                   >
                     {t('auth:login', 'Log In')}
                   </Link>
                   <Link
                     to="/auth/register"
-                    className="text-sm font-medium bg-brand-primary text-surface-bg px-4 py-2 rounded-lg hover:bg-brand-primary/90 transition-colors"
+                    className="text-sm font-semibold bg-brand-primary text-surface-bg px-5 py-2 rounded-xl hover:bg-brand-primary-light transition-colors"
                   >
                     {t('auth:register', 'Sign Up')}
                   </Link>
-                </>
+                </div>
               )}
             </div>
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden text-content-secondary p-2"
+              className="md:hidden text-content-secondary p-2 rounded-lg hover:bg-white/[0.04]"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,44 +138,54 @@ export const WebLayout: React.FC = () => {
 
           {/* Mobile menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-white/5">
-              <div className="flex flex-col" style={{ rowGap: 12 }}>
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={`text-sm font-medium px-2 py-1 ${
-                      location.pathname === link.to
-                        ? 'text-brand-primary'
-                        : 'text-content-secondary'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+            <div className="md:hidden py-3 border-t border-white/[0.06]">
+              <div className="flex flex-col" style={{ rowGap: 2 }}>
+                {navLinks.map((link) => {
+                  const isActive = location.pathname === link.to;
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={`flex items-center text-sm font-medium px-3 py-2.5 rounded-lg transition-colors ${
+                        isActive
+                          ? 'text-brand-primary bg-brand-primary/10'
+                          : 'text-content-secondary hover:text-white hover:bg-white/[0.04]'
+                      }`}
+                      style={{ columnGap: 8 }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.icon}
+                      {link.label}
+                    </Link>
+                  );
+                })}
+                <div className="h-px bg-white/[0.06] my-2" />
                 {isAuthenticated ? (
                   <button
                     onClick={() => {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
-                    className="text-sm text-content-secondary text-left px-2 py-1"
+                    className="flex items-center text-sm text-content-tertiary hover:text-white text-left px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
+                    style={{ columnGap: 8 }}
                   >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
                     {t('auth:logout', 'Log Out')}
                   </button>
                 ) : (
                   <>
                     <Link
                       to="/auth/login"
-                      className="text-sm text-content-secondary px-2 py-1"
+                      className="text-sm text-content-secondary px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {t('auth:login', 'Log In')}
                     </Link>
                     <Link
                       to="/auth/register"
-                      className="text-sm text-brand-primary px-2 py-1"
+                      className="text-sm font-semibold text-brand-primary px-3 py-2.5 rounded-lg hover:bg-brand-primary/10 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {t('auth:register', 'Sign Up')}
@@ -161,11 +204,11 @@ export const WebLayout: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 px-4">
+      <footer className="border-t border-white/[0.06] py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between" style={{ rowGap: 16 }}>
           <div className="flex items-center" style={{ columnGap: 8 }}>
-            <div className="w-6 h-6 rounded-md bg-brand-primary/20 flex items-center justify-center">
-              <span className="text-brand-primary font-bold text-[10px]">AI</span>
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center">
+              <span className="text-white font-bold text-[10px]">AI</span>
             </div>
             <span className="text-sm text-content-tertiary">
               &copy; {new Date().getFullYear()} VseoNix AI

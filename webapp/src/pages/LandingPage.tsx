@@ -58,7 +58,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="px-4 pt-16 pb-20 text-center">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl font-display font-bold text-content-primary mb-6 leading-tight">
+          <h1 className="text-4xl sm:text-5xl font-display font-bold text-white mb-6 leading-tight">
             {t('auth:welcomeTitle', 'Welcome to VseoNix AI')}
           </h1>
           <p className="text-lg text-content-secondary mb-10 max-w-xl mx-auto">
@@ -103,8 +103,8 @@ export default function LandingPage() {
               <div className={`w-14 h-14 ${f.bg} rounded-xl flex items-center justify-center mb-4 ${f.color}`}>
                 {f.icon}
               </div>
-              <h3 className="text-content-primary font-semibold text-lg mb-2">{f.title}</h3>
-              <p className="text-content-secondary text-sm">{f.desc}</p>
+              <h3 className="text-white font-semibold text-lg mb-2">{f.title}</h3>
+              <p className="text-content-secondary">{f.desc}</p>
             </div>
           ))}
         </div>
