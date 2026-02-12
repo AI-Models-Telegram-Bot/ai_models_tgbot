@@ -42,6 +42,7 @@ interface CreateState {
   goBack: () => void;
   fetchHistory: () => Promise<void>;
   createAnother: () => void;
+  loadHistoryItem: (conversationId: string) => Promise<void>;
 
   /* Internal — called by SSE hook */
   _appendContent: (token: string) => void;
@@ -172,6 +173,30 @@ export const useCreateStore = create<CreateState>((set, get) => ({
     } catch (err) {
       console.error('Failed to fetch history', err);
       set({ isLoadingHistory: false });
+    }
+  },
+
+  loadHistoryItem: async (conversationId: string) => {
+    try {
+      const conv = await chatApi.getConversation(conversationId);
+      const category = (conv.category || 'TEXT') as Category;
+      const assistantMsg = conv.messages?.find((m) => m.role === 'ASSISTANT');
+      const userMsg = conv.messages?.find((m) => m.role === 'USER');
+
+      set({
+        step: 'result',
+        selectedCategory: category,
+        selectedModel: null,
+        conversationId: conv.id,
+        isGenerating: false,
+        resultContent: assistantMsg?.content || userMsg?.content || null,
+        resultFileUrl: assistantMsg?.fileUrl || null,
+        resultStatus: assistantMsg?.status === 'FAILED' ? 'FAILED' : 'COMPLETED',
+        resultError: assistantMsg?.error || null,
+        resultMessageId: assistantMsg?.id || null,
+      });
+    } catch (err) {
+      console.error('Failed to load history item', err);
     }
   },
 

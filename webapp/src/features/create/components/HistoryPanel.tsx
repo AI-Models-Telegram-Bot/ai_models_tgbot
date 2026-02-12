@@ -61,8 +61,13 @@ interface HistoryPanelProps {
 
 export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation(['create', 'common']);
-  const { history, isLoadingHistory, fetchHistory } = useCreateStore();
+  const { history, isLoadingHistory, fetchHistory, loadHistoryItem } = useCreateStore();
   const formatRelativeDate = useFormatRelativeDate();
+
+  const handleItemClick = async (conversationId: string) => {
+    await loadHistoryItem(conversationId);
+    onClose();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -138,7 +143,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
               {!isLoadingHistory && historyItems.length > 0 && (
                 <div className="p-3 space-y-1">
                   {historyItems.map((conv: Conversation) => (
-                    <HistoryItem key={conv.id} conversation={conv} formatDate={formatRelativeDate} />
+                    <HistoryItem key={conv.id} conversation={conv} formatDate={formatRelativeDate} onClick={() => handleItemClick(conv.id)} />
                   ))}
                 </div>
               )}
@@ -150,12 +155,16 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose }) =
   );
 };
 
-const HistoryItem: React.FC<{ conversation: Conversation; formatDate: (d: string) => string }> = ({ conversation, formatDate }) => {
+const HistoryItem: React.FC<{ conversation: Conversation; formatDate: (d: string) => string; onClick: () => void }> = ({ conversation, formatDate, onClick }) => {
   const icon = CATEGORY_ICONS[conversation.category];
   const colorClass = CATEGORY_COLORS[conversation.category] || 'text-content-secondary bg-surface-elevated';
 
   return (
-    <div className="flex items-center rounded-lg px-3 py-2.5 hover:bg-white/[0.03] transition-colors cursor-default" style={{ columnGap: 10 }}>
+    <button
+      onClick={onClick}
+      className="w-full flex items-center rounded-lg px-3 py-2.5 hover:bg-white/[0.06] transition-colors cursor-pointer text-left"
+      style={{ columnGap: 10 }}
+    >
       <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0', colorClass)}>
         {icon}
       </div>
@@ -169,6 +178,6 @@ const HistoryItem: React.FC<{ conversation: Conversation; formatDate: (d: string
           <span>{formatDate(conversation.createdAt)}</span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };

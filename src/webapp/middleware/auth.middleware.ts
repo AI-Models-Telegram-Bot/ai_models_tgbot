@@ -32,12 +32,15 @@ declare global {
  * 4. Dev mode bypass
  */
 export function unifiedAuth(req: Request, res: Response, next: NextFunction) {
-  // 1. Try JWT Bearer token
+  // 1. Try JWT Bearer token (header or query param for SSE/EventSource)
   const authHeader = req.headers['authorization'];
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const queryToken = (req.query.token as string) || null;
+  const jwtToken = headerToken || queryToken;
+
+  if (jwtToken) {
     try {
-      const payload = authService.verifyAccessToken(token);
+      const payload = authService.verifyAccessToken(jwtToken);
       req.user = {
         id: payload.userId,
         email: payload.email,
@@ -57,8 +60,8 @@ export function unifiedAuth(req: Request, res: Response, next: NextFunction) {
     }
   }
 
-  // 2. Try Telegram init data
-  const initData = req.headers['x-telegram-init-data'] as string | undefined;
+  // 2. Try Telegram init data (header or query param for SSE/EventSource)
+  const initData = (req.headers['x-telegram-init-data'] as string | undefined) || (req.query.initData as string) || undefined;
   if (initData) {
     try {
       const params = new URLSearchParams(initData);
