@@ -66,9 +66,8 @@ export class AuthService {
       },
     });
 
-    // Create wallet and subscription for new user
-    await walletService.getOrCreateWallet(user.id);
-    await subscriptionService.getUserSubscription(user.id);
+    // Create wallet, grant signup bonus, and init subscription
+    await this.initNewUserWallet(user.id);
 
     // Send welcome email (non-blocking)
     emailService.sendWelcomeEmail(email, firstName).catch(() => {});
@@ -141,8 +140,7 @@ export class AuthService {
         },
       });
 
-      await walletService.getOrCreateWallet(user.id);
-      await subscriptionService.getUserSubscription(user.id);
+      await this.initNewUserWallet(user.id);
     }
 
     if (user.isBlocked) {
@@ -179,8 +177,7 @@ export class AuthService {
         },
       });
 
-      await walletService.getOrCreateWallet(user.id);
-      await subscriptionService.getUserSubscription(user.id);
+      await this.initNewUserWallet(user.id);
     }
 
     if (user.isBlocked) {
@@ -304,6 +301,19 @@ export class AuthService {
 
   verifyAccessToken(token: string): JwtPayload {
     return jwt.verify(token, config.jwt.accessSecret) as JwtPayload;
+  }
+
+  // ── New User Wallet Init ───────────────────────────────
+
+  private async initNewUserWallet(userId: string): Promise<void> {
+    await walletService.getOrCreateWallet(userId);
+    await walletService.grantSignupBonus(userId, {
+      text: config.tokens.freeOnRegistration,
+      image: config.tokens.freeOnRegistration,
+      video: config.tokens.freeOnRegistration,
+      audio: config.tokens.freeOnRegistration,
+    });
+    await subscriptionService.getUserSubscription(userId);
   }
 
   // ── Telegram Login Widget Verification ──────────────────
