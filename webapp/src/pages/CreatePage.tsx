@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCreateStore } from '@/features/create/store/useCreateStore';
 import { useCreateSSE } from '@/features/create/hooks/useCreateSSE';
@@ -9,6 +10,7 @@ import { ResultDisplay } from '@/features/create/components/ResultDisplay';
 import { HistoryPanel } from '@/features/create/components/HistoryPanel';
 
 export default function CreatePage() {
+  const { t } = useTranslation('common');
   const {
     step,
     selectedCategory,
@@ -64,7 +66,7 @@ export default function CreatePage() {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span className="text-xs font-medium">History</span>
+          <span className="text-xs font-medium">{t('history')}</span>
         </button>
       </div>
 

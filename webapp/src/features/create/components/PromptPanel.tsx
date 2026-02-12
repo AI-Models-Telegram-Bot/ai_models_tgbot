@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
@@ -10,13 +11,6 @@ const CATEGORY_COLORS: Record<Category, { ring: string; text: string; bg: string
   IMAGE: { ring: 'focus-within:ring-purple-400/30', text: 'text-purple-400', bg: 'bg-purple-500/10' },
   VIDEO: { ring: 'focus-within:ring-orange-400/30', text: 'text-orange-400', bg: 'bg-orange-500/10' },
   AUDIO: { ring: 'focus-within:ring-emerald-400/30', text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-};
-
-const PLACEHOLDERS: Record<Category, string> = {
-  TEXT: 'Ask anything...',
-  IMAGE: 'Describe the image you want to create...',
-  VIDEO: 'Describe the video you want to generate...',
-  AUDIO: 'Enter text to convert to speech, or describe a sound...',
 };
 
 interface PromptPanelProps {
@@ -34,6 +28,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
   onGenerate,
   onBack,
 }) => {
+  const { t } = useTranslation(['create', 'common']);
   const [prompt, setPrompt] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const colors = CATEGORY_COLORS[category];
@@ -80,7 +75,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="text-sm">Back</span>
+          <span className="text-sm">{t('common:back')}</span>
         </button>
 
         <div className="flex items-center" style={{ columnGap: 10 }}>
@@ -114,7 +109,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={PLACEHOLDERS[category]}
+            placeholder={t(`create:placeholders.${category}`)}
             disabled={isGenerating}
             rows={3}
             className="w-full bg-transparent text-white placeholder-content-secondary text-sm resize-none outline-none"
@@ -123,7 +118,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
 
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
             <p className="text-[11px] text-content-secondary">
-              Shift+Enter for new line
+              {t('create:shiftEnterHint')}
             </p>
             <Button
               variant="primary"
@@ -132,7 +127,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
               isLoading={isGenerating}
               disabled={!prompt.trim() || isGenerating}
             >
-              Generate
+              {t('common:generate')}
             </Button>
           </div>
         </div>

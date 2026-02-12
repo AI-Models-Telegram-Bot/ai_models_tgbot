@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export default function PaymentFailedPage() {
-  useTranslation(['subscriptions', 'common']);
+  const { t } = useTranslation(['auth', 'common']);
 
   return (
     <div className="min-h-screen bg-surface-bg flex items-center justify-center p-6">
@@ -14,10 +14,10 @@ export default function PaymentFailedPage() {
         </div>
 
         <h1 className="text-2xl font-display font-bold text-content-primary mb-3">
-          Payment failed
+          {t('auth:paymentFailed')}
         </h1>
         <p className="text-content-secondary mb-8">
-          Something went wrong with your payment. You were not charged. Please try again.
+          {t('auth:paymentFailedDesc')}
         </p>
 
         <div className="flex flex-col" style={{ rowGap: 12 }}>
@@ -25,13 +25,13 @@ export default function PaymentFailedPage() {
             to="/subscriptions"
             className="px-6 py-3 bg-brand-primary text-surface-bg font-medium rounded-xl hover:bg-brand-primary/90 transition-colors"
           >
-            Try Again
+            {t('common:tryAgain')}
           </Link>
           <Link
             to="/"
             className="text-brand-primary text-sm hover:underline"
           >
-            Go Home
+            {t('auth:goHome')}
           </Link>
         </div>
       </div>

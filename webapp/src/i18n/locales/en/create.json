@@ -1,0 +1,46 @@
+{
+  "whatToCreate": "What do you want to create?",
+  "chooseCategory": "Choose a category to get started",
+  "chooseModel": "Choose a model",
+  "selectAiModel": "select an AI model",
+  "moreModelsAvailable": "{{count}} more models available",
+  "andMore": "and {{count}} more",
+  "upgradePlan": "Upgrade Plan",
+  "noModelsAvailable": "No models available for this category",
+  "shiftEnterHint": "Shift+Enter for new line",
+  "generating": "Generating...",
+  "writingResponse": "Writing response",
+  "creatingImage": "Creating image",
+  "renderingVideo": "Rendering video — this may take a moment",
+  "generatingAudio": "Generating audio",
+  "generationFailed": "Generation Failed",
+  "createAnother": "Create Another",
+  "newCreation": "New Creation",
+  "new": "New",
+  "generatedImage": "Generated image",
+  "noGenerationsYet": "No generations yet",
+  "categories": {
+    "TEXT": "Text AI",
+    "IMAGE": "Image AI",
+    "VIDEO": "Video AI",
+    "AUDIO": "Audio AI"
+  },
+  "categoryDescriptions": {
+    "TEXT": "GPT-4, Claude, Grok",
+    "IMAGE": "DALL-E, Flux, Midjourney",
+    "VIDEO": "Kling, Sora, Runway",
+    "AUDIO": "ElevenLabs, Suno, Bark"
+  },
+  "placeholders": {
+    "TEXT": "Ask anything...",
+    "IMAGE": "Describe the image you want to create...",
+    "VIDEO": "Describe the video you want to generate...",
+    "AUDIO": "Enter text to convert to speech, or describe a sound..."
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  }
+}

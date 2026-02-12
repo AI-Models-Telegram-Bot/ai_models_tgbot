@@ -1,11 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { Category } from '../store/useCreateStore';
 
 interface CategoryConfig {
   key: Category;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   icon: React.ReactNode;
   gradient: string;
   glow: string;
@@ -16,8 +17,8 @@ interface CategoryConfig {
 const CATEGORIES: CategoryConfig[] = [
   {
     key: 'TEXT',
-    label: 'Text AI',
-    description: 'GPT-4, Claude, Grok',
+    labelKey: 'categories.TEXT',
+    descKey: 'categoryDescriptions.TEXT',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -30,8 +31,8 @@ const CATEGORIES: CategoryConfig[] = [
   },
   {
     key: 'IMAGE',
-    label: 'Image AI',
-    description: 'DALL-E, Flux, Midjourney',
+    labelKey: 'categories.IMAGE',
+    descKey: 'categoryDescriptions.IMAGE',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -44,8 +45,8 @@ const CATEGORIES: CategoryConfig[] = [
   },
   {
     key: 'VIDEO',
-    label: 'Video AI',
-    description: 'Kling, Sora, Runway',
+    labelKey: 'categories.VIDEO',
+    descKey: 'categoryDescriptions.VIDEO',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -58,8 +59,8 @@ const CATEGORIES: CategoryConfig[] = [
   },
   {
     key: 'AUDIO',
-    label: 'Audio AI',
-    description: 'ElevenLabs, Suno, Bark',
+    labelKey: 'categories.AUDIO',
+    descKey: 'categoryDescriptions.AUDIO',
     icon: (
       <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
@@ -77,6 +78,8 @@ interface CategorySelectorProps {
 }
 
 export const CategorySelector: React.FC<CategorySelectorProps> = ({ onSelect }) => {
+  const { t } = useTranslation('create');
+
   return (
     <div className="w-full max-w-lg mx-auto">
       <motion.div
@@ -86,10 +89,10 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({ onSelect }) 
         className="text-center mb-10"
       >
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
-          What do you want to create?
+          {t('whatToCreate')}
         </h1>
         <p className="text-content-secondary text-sm">
-          Choose a category to get started
+          {t('chooseCategory')}
         </p>
       </motion.div>
 
@@ -118,10 +121,10 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({ onSelect }) 
                 {cat.icon}
               </div>
               <h3 className="text-base font-semibold text-white mb-0.5">
-                {cat.label}
+                {t(cat.labelKey)}
               </h3>
               <p className="text-xs text-content-secondary">
-                {cat.description}
+                {t(cat.descKey)}
               </p>
             </div>
           </motion.button>

@@ -1,0 +1,46 @@
+{
+  "whatToCreate": "Что вы хотите создать?",
+  "chooseCategory": "Выберите категорию для начала",
+  "chooseModel": "Выберите модель",
+  "selectAiModel": "выберите ИИ-модель",
+  "moreModelsAvailable": "Ещё {{count}} моделей доступно",
+  "andMore": "и ещё {{count}}",
+  "upgradePlan": "Улучшить тариф",
+  "noModelsAvailable": "Нет моделей для этой категории",
+  "shiftEnterHint": "Shift+Enter — новая строка",
+  "generating": "Генерация...",
+  "writingResponse": "Пишем ответ",
+  "creatingImage": "Создаём изображение",
+  "renderingVideo": "Рендерим видео — это может занять время",
+  "generatingAudio": "Генерируем аудио",
+  "generationFailed": "Ошибка генерации",
+  "createAnother": "Создать ещё",
+  "newCreation": "Новое создание",
+  "new": "Новое",
+  "generatedImage": "Сгенерированное изображение",
+  "noGenerationsYet": "Пока нет генераций",
+  "categories": {
+    "TEXT": "Текст ИИ",
+    "IMAGE": "Изображения ИИ",
+    "VIDEO": "Видео ИИ",
+    "AUDIO": "Аудио ИИ"
+  },
+  "categoryDescriptions": {
+    "TEXT": "GPT-4, Claude, Grok",
+    "IMAGE": "DALL-E, Flux, Midjourney",
+    "VIDEO": "Kling, Sora, Runway",
+    "AUDIO": "ElevenLabs, Suno, Bark"
+  },
+  "placeholders": {
+    "TEXT": "Спросите что угодно...",
+    "IMAGE": "Опишите изображение, которое хотите создать...",
+    "VIDEO": "Опишите видео, которое хотите сгенерировать...",
+    "AUDIO": "Введите текст для озвучки или опишите звук..."
+  },
+  "time": {
+    "justNow": "Только что",
+    "minutesAgo": "{{count}} мин назад",
+    "hoursAgo": "{{count}} ч назад",
+    "daysAgo": "{{count}} д назад"
+  }
+}

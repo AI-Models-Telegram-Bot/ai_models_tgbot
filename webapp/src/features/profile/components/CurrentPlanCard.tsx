@@ -13,7 +13,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   plan,
   onViewPlans,
 }) => {
-  const { t } = useTranslation('profile');
+  const { t } = useTranslation(['profile', 'common']);
   const planName = plan?.name || 'Free';
   const isFree = !plan || plan.tier === 'FREE';
 
@@ -27,15 +27,15 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-content-tertiary text-xs uppercase tracking-wider font-medium">
-              {t('currentPlan')}
+              {t('profile:currentPlan')}
             </p>
             <div className="flex items-center mt-1">
               <p className="text-white text-lg font-semibold">{planName}</p>
-              {!isFree && <Badge variant="cyan" className="ml-2">Active</Badge>}
+              {!isFree && <Badge variant="cyan" className="ml-2">{t('common:active')}</Badge>}
             </div>
             {plan?.expiresAt && (
               <p className="text-content-tertiary text-xs mt-1">
-                Expires: {new Date(plan.expiresAt).toLocaleDateString()}
+                {t('common:expires', { date: new Date(plan.expiresAt).toLocaleDateString() })}
               </p>
             )}
           </div>
@@ -52,7 +52,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
           className="mt-4"
           onClick={onViewPlans}
         >
-          {isFree ? t('viewPlans', 'View Plans') : t('managePlan', 'Manage Plan')}
+          {isFree ? t('profile:viewPlans') : t('profile:managePlan')}
         </Button>
       </Card>
     </motion.div>

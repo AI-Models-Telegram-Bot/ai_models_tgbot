@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils/cn';
 import { formatCredits } from '@/shared/utils/formatters';
 
@@ -17,6 +18,7 @@ export const CreditAllocationBar: React.FC<CreditAllocationBarProps> = ({
   total,
   color,
 }) => {
+  const { t } = useTranslation('common');
   const isUnlimited = total === null;
   const percentage = isUnlimited ? 0 : total > 0 ? Math.min((used / total) * 100, 100) : 0;
 
@@ -28,7 +30,7 @@ export const CreditAllocationBar: React.FC<CreditAllocationBarProps> = ({
           <span className="text-content-secondary text-xs">{label}</span>
           <span className="text-white text-sm font-semibold tabular-nums font-mono">
             {isUnlimited ? (
-              <span className="text-brand-accent">Unlimited</span>
+              <span className="text-brand-accent">{t('unlimited')}</span>
             ) : (
               <>{formatCredits(used)}&nbsp;/&nbsp;{formatCredits(total)}</>
             )}

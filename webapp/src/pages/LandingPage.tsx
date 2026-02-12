@@ -13,8 +13,8 @@ export default function LandingPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
         </svg>
       ),
-      title: 'Text AI',
-      desc: 'GPT-4, Claude, Gemini and more',
+      title: t('auth:landingTextAI'),
+      desc: t('auth:landingTextAIDesc'),
       color: 'text-brand-primary',
       bg: 'bg-brand-primary/10',
     },
@@ -24,8 +24,8 @@ export default function LandingPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       ),
-      title: 'Image AI',
-      desc: 'DALL-E, Flux, Midjourney',
+      title: t('auth:landingImageAI'),
+      desc: t('auth:landingImageAIDesc'),
       color: 'text-image-primary',
       bg: 'bg-image-primary/10',
     },
@@ -35,8 +35,8 @@ export default function LandingPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
       ),
-      title: 'Video AI',
-      desc: 'Kling, Sora, Runway, Luma',
+      title: t('auth:landingVideoAI'),
+      desc: t('auth:landingVideoAIDesc'),
       color: 'text-video-primary',
       bg: 'bg-video-primary/10',
     },
@@ -46,8 +46,8 @@ export default function LandingPage() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
         </svg>
       ),
-      title: 'Audio AI',
-      desc: 'ElevenLabs, Suno, voice cloning',
+      title: t('auth:landingAudioAI'),
+      desc: t('auth:landingAudioAIDesc'),
       color: 'text-audio-primary',
       bg: 'bg-audio-primary/10',
     },
@@ -59,10 +59,10 @@ export default function LandingPage() {
       <section className="px-4 pt-16 pb-20 text-center">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-display font-bold text-white mb-6 leading-tight">
-            {t('auth:welcomeTitle', 'Welcome to VseoNix AI')}
+            {t('auth:welcomeTitle')}
           </h1>
           <p className="text-lg text-content-secondary mb-10 max-w-xl mx-auto">
-            {t('auth:welcomeSubtitle', 'Access powerful AI models for text, image, video, and audio generation')}
+            {t('auth:welcomeSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center" style={{ rowGap: 16, columnGap: 16 }}>
             {isAuthenticated ? (
@@ -70,7 +70,7 @@ export default function LandingPage() {
                 to="/create"
                 className="px-8 py-3 bg-brand-primary text-surface-bg font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors text-lg"
               >
-                Start Creating
+                {t('auth:startCreating')}
               </Link>
             ) : (
               <>
@@ -78,13 +78,13 @@ export default function LandingPage() {
                   to="/auth/register"
                   className="px-8 py-3 bg-brand-primary text-surface-bg font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors text-lg"
                 >
-                  {t('auth:register', 'Get Started Free')}
+                  {t('auth:register')}
                 </Link>
                 <Link
                   to="/auth/login"
                   className="px-8 py-3 border border-white/10 text-content-primary font-medium rounded-xl hover:bg-white/5 transition-colors text-lg"
                 >
-                  {t('auth:login', 'Log In')}
+                  {t('auth:login')}
                 </Link>
               </>
             )}
@@ -114,16 +114,16 @@ export default function LandingPage() {
       <section className="px-4 pb-20 text-center">
         <div className="max-w-2xl mx-auto bg-surface-card rounded-2xl p-10 border border-white/5">
           <h2 className="text-2xl font-display font-bold text-content-primary mb-4">
-            Ready to start?
+            {t('auth:readyToStart')}
           </h2>
           <p className="text-content-secondary mb-8">
-            Get free credits on signup. Upgrade anytime for more.
+            {t('auth:freeCreditsOnSignup')}
           </p>
           <Link
             to="/pricing"
             className="inline-block px-6 py-3 border border-brand-primary text-brand-primary font-medium rounded-xl hover:bg-brand-primary/10 transition-colors"
           >
-            View Pricing
+            {t('auth:viewPricing')}
           </Link>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import type { ChatModel } from '@/services/api/chat.api';
@@ -32,13 +33,6 @@ const CATEGORY_COLORS: Record<Category, { bg: string; text: string; hoverCard: s
   },
 };
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  TEXT: 'Text AI',
-  IMAGE: 'Image AI',
-  VIDEO: 'Video AI',
-  AUDIO: 'Audio AI',
-};
-
 interface ModelSelectorProps {
   category: Category;
   models: ChatModel[];
@@ -54,6 +48,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   onSelect,
   onBack,
 }) => {
+  const { t } = useTranslation(['create', 'common']);
   const colors = CATEGORY_COLORS[category];
   const filteredModels = (models || []).filter((m) => m.category === category);
   const accessibleModels = filteredModels.filter((m) => m.hasAccess);
@@ -81,14 +76,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="text-sm">Back</span>
+          <span className="text-sm">{t('common:back')}</span>
         </button>
 
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-1">
-          Choose a model
+          {t('create:chooseModel')}
         </h2>
         <p className={cn('text-sm', colors.text)} style={{ opacity: 0.7 }}>
-          {CATEGORY_LABELS[category]} — select an AI model
+          {t(`create:categories.${category}`)} — {t('create:selectAiModel')}
         </p>
       </motion.div>
 
@@ -158,10 +153,10 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-white">
-                  {lockedModels.length} more model{lockedModels.length > 1 ? 's' : ''} available
+                  {t('create:moreModelsAvailable', { count: lockedModels.length })}
                 </p>
                 <p className="text-xs text-content-secondary">
-                  {lockedModels.slice(0, 3).map(m => m.name).join(', ')}{lockedModels.length > 3 ? ` and ${lockedModels.length - 3} more` : ''}
+                  {lockedModels.slice(0, 3).map(m => m.name).join(', ')}{lockedModels.length > 3 ? ` ${t('create:andMore', { count: lockedModels.length - 3 })}` : ''}
                 </p>
               </div>
             </div>
@@ -174,7 +169,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
-            Upgrade Plan
+            {t('create:upgradePlan')}
           </Link>
         </motion.div>
       )}
@@ -182,7 +177,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       {/* Empty */}
       {!isLoading && filteredModels.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-content-secondary text-sm">No models available for this category</p>
+          <p className="text-content-secondary text-sm">{t('create:noModelsAvailable')}</p>
         </div>
       )}
     </div>
