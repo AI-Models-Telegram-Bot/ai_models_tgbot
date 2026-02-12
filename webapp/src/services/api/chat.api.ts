@@ -9,7 +9,10 @@ export interface ChatModel {
   name: string;
   slug: string;
   category: 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO';
+  provider: string;
   description: string | null;
+  tokenCost: number;
+  isActive: boolean;
   hasAccess: boolean;
   isUnlimited: boolean;
 }
