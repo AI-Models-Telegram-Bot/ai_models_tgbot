@@ -21,6 +21,7 @@
   "noGenerationsYet": "Пока нет генераций",
   "tryExample": "Попробуйте пример:",
   "credits": "кр",
+  "modelSettings": "Настройки модели",
   "categories": {
     "TEXT": "Текст ИИ",
     "IMAGE": "Изображения ИИ",
