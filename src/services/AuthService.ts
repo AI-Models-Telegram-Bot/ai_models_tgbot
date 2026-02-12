@@ -7,6 +7,7 @@ import { config } from '../config';
 import { generateReferralCode } from '../utils/helpers';
 import { walletService } from './WalletService';
 import { subscriptionService } from './SubscriptionService';
+import { SUBSCRIPTION_PLANS, SubscriptionTier } from '../config/subscriptions';
 import { emailService } from './EmailService';
 import { logger } from '../utils/logger';
 
@@ -306,12 +307,15 @@ export class AuthService {
   // ── New User Wallet Init ───────────────────────────────
 
   private async initNewUserWallet(userId: string): Promise<void> {
+    const freePlan = SUBSCRIPTION_PLANS.find((p) => p.tier === SubscriptionTier.FREE);
+    const credits = freePlan?.credits ?? { text: 100, image: 50, video: 10, audio: 50 };
+
     await walletService.getOrCreateWallet(userId);
     await walletService.grantSignupBonus(userId, {
-      text: config.tokens.freeOnRegistration,
-      image: config.tokens.freeOnRegistration,
-      video: config.tokens.freeOnRegistration,
-      audio: config.tokens.freeOnRegistration,
+      text: credits.text ?? 100,
+      image: credits.image ?? 50,
+      video: credits.video ?? 10,
+      audio: credits.audio ?? 50,
     });
     await subscriptionService.getUserSubscription(userId);
   }
