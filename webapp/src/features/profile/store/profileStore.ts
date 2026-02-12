@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { userApi } from '@/services/api/user.api';
-import i18n from '@/i18n/config';
 import type { User, UserWallet, CurrentPlan, UserStats } from '@/types/user.types';
 
 interface ProfileState {
@@ -33,12 +32,6 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await userApi.getProfile(telegramId);
-      if (data.user.language) {
-        const lang = data.user.language.startsWith('ru') ? 'ru' : 'en';
-        if (i18n.language !== lang) {
-          i18n.changeLanguage(lang);
-        }
-      }
 
       set({
         user: data.user,
@@ -60,12 +53,6 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await userApi.getWebProfile();
-      if (data.user.language) {
-        const lang = data.user.language.startsWith('ru') ? 'ru' : 'en';
-        if (i18n.language !== lang) {
-          i18n.changeLanguage(lang);
-        }
-      }
 
       set({
         user: data.user,
