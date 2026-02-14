@@ -70,3 +70,66 @@ export function markdownToTelegramHtml(text: string): string {
 
   return result;
 }
+
+/**
+ * Sanitize raw provider error messages into user-friendly text.
+ * Strips internal provider names, model IDs, URLs, status codes, etc.
+ * Returns a simple, localized reason string.
+ */
+export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en'): string {
+  const lower = rawError.toLowerCase();
+
+  // Out of credits / billing
+  if (lower.includes('run out of credits') || lower.includes('billing') || lower.includes('status code 403')) {
+    return lang === 'ru'
+      ? 'Сервис временно недоступен. Попробуйте позже.'
+      : 'Service temporarily unavailable. Please try again later.';
+  }
+
+  // Polling timeout
+  if (lower.includes('polling timed out') || lower.includes('timed out')) {
+    return lang === 'ru'
+      ? 'Генерация заняла слишком много времени. Попробуйте снова или выберите другую модель.'
+      : 'Generation took too long. Please try again or choose a different model.';
+  }
+
+  // Rate limit
+  if (lower.includes('rate limit') || lower.includes('too many requests') || lower.includes('status code 429')) {
+    return lang === 'ru'
+      ? 'Слишком много запросов. Подождите немного и попробуйте снова.'
+      : 'Too many requests. Please wait a moment and try again.';
+  }
+
+  // Model not found / 404
+  if (lower.includes('status code 404') || lower.includes('not found') || lower.includes('could not be found')) {
+    return lang === 'ru'
+      ? 'Модель временно недоступна. Попробуйте позже.'
+      : 'Model temporarily unavailable. Please try again later.';
+  }
+
+  // Bad request / validation
+  if (lower.includes('status code 400') || lower.includes('bad request') || lower.includes('validation')) {
+    return lang === 'ru'
+      ? 'Некорректный запрос. Попробуйте изменить параметры или промпт.'
+      : 'Invalid request. Try adjusting your settings or prompt.';
+  }
+
+  // Too many pending jobs
+  if (lower.includes('too many pending')) {
+    return lang === 'ru'
+      ? 'У вас слишком много активных запросов. Дождитесь завершения текущих.'
+      : 'You have too many active requests. Please wait for current ones to finish.';
+  }
+
+  // Content moderation
+  if (lower.includes('content policy') || lower.includes('moderation') || lower.includes('safety') || lower.includes('nsfw')) {
+    return lang === 'ru'
+      ? 'Запрос отклонён из-за ограничений контента. Измените промпт.'
+      : 'Request rejected due to content restrictions. Please modify your prompt.';
+  }
+
+  // Generic fallback — strip provider details
+  return lang === 'ru'
+    ? 'Произошла ошибка при генерации. Попробуйте снова.'
+    : 'Generation failed. Please try again.';
+}
