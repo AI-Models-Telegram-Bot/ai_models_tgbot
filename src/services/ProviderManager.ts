@@ -4,12 +4,64 @@ import { ProviderStats } from '../providers/base/ProviderConfig';
 import { MODEL_ROUTES } from '../config/modelRouting';
 import { logger } from '../utils/logger';
 
+/** Circuit breaker: skip provider after N consecutive failures for COOLDOWN_MS */
+const CIRCUIT_BREAKER_THRESHOLD = 5;
+const CIRCUIT_BREAKER_COOLDOWN_MS = 60_000; // 60 seconds
+
+interface CircuitState {
+  failures: number;
+  openUntil: number;
+}
+
 /**
  * Provider Manager Service
- * Manages multiple providers per category with automatic fallback
+ * Manages multiple providers per category with automatic fallback and circuit breaker
  */
 export class ProviderManager {
   private providers: Map<ModelCategory, EnhancedProvider[]> = new Map();
+  private circuitBreaker: Map<string, CircuitState> = new Map();
+
+  // ── Circuit Breaker ──
+
+  /** Check if a provider's circuit is open (should be skipped) */
+  private isCircuitOpen(providerName: string): boolean {
+    const state = this.circuitBreaker.get(providerName);
+    if (!state) return false;
+
+    // Cooldown expired → half-open: allow one attempt
+    if (Date.now() > state.openUntil) {
+      this.circuitBreaker.delete(providerName);
+      logger.info(`Circuit breaker HALF-OPEN for ${providerName} — allowing retry`);
+      return false;
+    }
+
+    return state.failures >= CIRCUIT_BREAKER_THRESHOLD;
+  }
+
+  /** Record a provider failure; opens circuit after threshold */
+  private recordFailure(providerName: string): void {
+    const state = this.circuitBreaker.get(providerName) || { failures: 0, openUntil: 0 };
+    state.failures++;
+
+    if (state.failures >= CIRCUIT_BREAKER_THRESHOLD && state.openUntil === 0) {
+      state.openUntil = Date.now() + CIRCUIT_BREAKER_COOLDOWN_MS;
+      logger.warn(
+        `Circuit breaker OPEN for ${providerName} — skipping for ${CIRCUIT_BREAKER_COOLDOWN_MS / 1000}s ` +
+        `(${state.failures} consecutive failures)`
+      );
+    }
+
+    this.circuitBreaker.set(providerName, state);
+  }
+
+  /** Record a provider success; resets circuit breaker */
+  private recordSuccess(providerName: string): void {
+    if (this.circuitBreaker.has(providerName)) {
+      this.circuitBreaker.delete(providerName);
+    }
+  }
+
+  // ── Provider Registration ──
 
   /**
    * Register a provider for a specific category
@@ -40,14 +92,12 @@ export class ProviderManager {
     logger.info(`Registered ${config.name} for ${category} (priority: ${config.priority})`);
   }
 
+  // ── Generation with Fallback ──
+
   /**
    * Generate content using providers with automatic fallback
    * Tries providers in priority order until one succeeds
-   *
-   * @param category - Model category (TEXT, IMAGE, VIDEO, AUDIO)
-   * @param method - Method name to call (generateText, generateImage, etc.)
-   * @param args - Arguments to pass to the method
-   * @returns Object with result and provider name: { result, provider }
+   * Skips providers with open circuit breakers
    */
   async generate(
     category: ModelCategory,
@@ -66,18 +116,26 @@ export class ProviderManager {
     for (const provider of enabled) {
       const name = provider.getConfig().name;
 
+      // Circuit breaker: skip if provider is in cooldown
+      if (this.isCircuitOpen(name)) {
+        errors.push(`${name}: circuit breaker open (skipped)`);
+        logger.info(`⊘ Skipping ${name} for ${category} — circuit breaker open`);
+        continue;
+      }
+
       try {
         logger.info(`Trying ${name} for ${category}`);
 
         const result = await (provider as any)[method](...args);
 
         logger.info(`✓ ${name} succeeded for ${category}`);
+        this.recordSuccess(name);
         return { result, provider: name };
       } catch (error: any) {
         const errorMsg = error.message || String(error);
         errors.push(`${name}: ${errorMsg}`);
         logger.warn(`✗ ${name} failed for ${category}: ${errorMsg}`);
-        // Continue to next provider
+        this.recordFailure(name);
       }
     }
 
@@ -90,6 +148,7 @@ export class ProviderManager {
    * Looks up MODEL_ROUTES to find which providers support the model,
    * then tries them in order with the correct provider-specific model ID.
    * Falls back to generic generate() if slug has no routing entry.
+   * Skips providers with open circuit breakers.
    */
   async generateWithModel(
     category: ModelCategory,
@@ -126,6 +185,13 @@ export class ProviderManager {
     for (const { provider, modelId, extraOptions } of candidates) {
       const name = provider.getConfig().name;
 
+      // Circuit breaker: skip if provider is in cooldown
+      if (this.isCircuitOpen(name)) {
+        errors.push(`${name}: circuit breaker open (skipped)`);
+        logger.info(`⊘ Skipping ${name} for ${category}/${modelSlug} — circuit breaker open`);
+        continue;
+      }
+
       try {
         logger.info(`Trying ${name} for ${category}/${modelSlug} (modelId: ${modelId})`);
 
@@ -133,16 +199,20 @@ export class ProviderManager {
         const result = await (provider as any)[method](input, options);
 
         logger.info(`✓ ${name} succeeded for ${category}/${modelSlug}`);
+        this.recordSuccess(name);
         return { result, provider: name };
       } catch (error: any) {
         const errorMsg = error.message || String(error);
         errors.push(`${name}: ${errorMsg}`);
         logger.warn(`✗ ${name} failed for ${category}/${modelSlug}: ${errorMsg}`);
+        this.recordFailure(name);
       }
     }
 
     throw new Error(`All providers failed for ${category}/${modelSlug}: ${errors.join('; ')}`);
   }
+
+  // ── Stats & Monitoring ──
 
   /**
    * Get statistics for all or specific category providers
@@ -207,5 +277,23 @@ export class ProviderManager {
    */
   getCategories(): ModelCategory[] {
     return Array.from(this.providers.keys());
+  }
+
+  /**
+   * Get circuit breaker status for monitoring
+   */
+  getCircuitBreakerStatus(): Record<string, { failures: number; isOpen: boolean; cooldownRemaining: number }> {
+    const status: Record<string, { failures: number; isOpen: boolean; cooldownRemaining: number }> = {};
+
+    for (const [name, state] of this.circuitBreaker) {
+      const isOpen = state.failures >= CIRCUIT_BREAKER_THRESHOLD && Date.now() < state.openUntil;
+      status[name] = {
+        failures: state.failures,
+        isOpen,
+        cooldownRemaining: isOpen ? Math.max(0, state.openUntil - Date.now()) : 0,
+      };
+    }
+
+    return status;
   }
 }

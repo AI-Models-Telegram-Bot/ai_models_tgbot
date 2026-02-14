@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { createBullBoard } from '@bull-board/api';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { ExpressAdapter } from '@bull-board/express';
@@ -35,7 +36,41 @@ export function createHealthServer(port: number = 3000): express.Application {
   }));
   app.use(express.json());
 
-  // --- Health endpoints ---
+  // --- Rate limiting ---
+
+  // Global: 100 req/min per IP (covers all routes)
+  const globalLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later' },
+    skip: (req) => {
+      // Skip rate limiting for health probes and payment webhooks
+      const path = req.path;
+      return path === '/health' || path === '/ready' || path === '/metrics'
+        || path === '/api/payment/yookassa/webhook';
+    },
+  });
+  app.use(globalLimiter);
+
+  // Stricter limit for authenticated API endpoints: 30 req/min per user
+  const apiLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      // Identify user by Telegram ID, auth token suffix, or IP
+      return (req.headers['x-telegram-id'] as string)
+        || (req.headers['authorization'] as string)?.slice(-20)
+        || req.ip
+        || 'unknown';
+    },
+    message: { error: 'Rate limit exceeded. Please slow down.' },
+  });
+
+  // --- Health endpoints (not rate limited by apiLimiter) ---
 
   /** Liveness probe - is the process alive? */
   app.get('/health', async (_req, res) => {
@@ -90,12 +125,12 @@ export function createHealthServer(port: number = 3000): express.Application {
   });
   logger.info('YooKassa webhook mounted at /api/payment/yookassa/webhook');
 
-  // --- Web Chat API endpoints (authenticated) ---
-  app.use('/api/web/chat', unifiedAuth, chatRoutes);
+  // --- Web Chat API endpoints (authenticated + rate limited) ---
+  app.use('/api/web/chat', apiLimiter, unifiedAuth, chatRoutes);
   logger.info('Web Chat API routes mounted at /api/web/chat/*');
 
-  // --- WebApp API endpoints (authenticated) ---
-  app.use('/api/webapp', unifiedAuth, webappRoutes);
+  // --- WebApp API endpoints (authenticated + rate limited) ---
+  app.use('/api/webapp', apiLimiter, unifiedAuth, webappRoutes);
   logger.info('WebApp API routes mounted at /api/webapp/*');
 
   // --- Bull Board Admin UI ---

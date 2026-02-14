@@ -9,7 +9,7 @@ const redisUrl = config.redis.url;
 
 export const textQueue = new Queue<GenerationJobData>('text-generation', redisUrl, {
   defaultJobOptions: {
-    attempts: 1,
+    attempts: 3,
     backoff: { type: 'exponential', delay: 2000 },
     removeOnComplete: 100,
     removeOnFail: 500,
@@ -19,7 +19,7 @@ export const textQueue = new Queue<GenerationJobData>('text-generation', redisUr
 
 export const imageQueue = new Queue<GenerationJobData>('image-generation', redisUrl, {
   defaultJobOptions: {
-    attempts: 1,
+    attempts: 3,
     backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: 50,
     removeOnFail: 500,
@@ -29,7 +29,7 @@ export const imageQueue = new Queue<GenerationJobData>('image-generation', redis
 
 export const videoQueue = new Queue<GenerationJobData>('video-generation', redisUrl, {
   defaultJobOptions: {
-    attempts: 2,
+    attempts: 3,
     backoff: { type: 'fixed', delay: 10000 },
     removeOnComplete: 20,
     removeOnFail: 200,
@@ -39,7 +39,7 @@ export const videoQueue = new Queue<GenerationJobData>('video-generation', redis
 
 export const audioQueue = new Queue<GenerationJobData>('audio-generation', redisUrl, {
   defaultJobOptions: {
-    attempts: 1,
+    attempts: 3,
     backoff: { type: 'exponential', delay: 3000 },
     removeOnComplete: 50,
     removeOnFail: 500,

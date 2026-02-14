@@ -210,10 +210,24 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     return { requestId, success: true };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
+    const maxAttempts = job.opts.attempts ?? 1;
+    const isFinalAttempt = job.attemptsMade >= maxAttempts - 1;
+
     logger.error('Generation job failed', {
       jobId: job.id, requestId, error: errorMsg,
+      attempt: job.attemptsMade + 1, maxAttempts, isFinalAttempt,
     });
 
+    // If NOT the final attempt, re-throw so Bull retries with backoff.
+    // Don't refund or notify user yet — the next attempt may succeed.
+    if (!isFinalAttempt) {
+      logger.info(`Retrying job ${job.id} (attempt ${job.attemptsMade + 1}/${maxAttempts})`, {
+        requestId, modelSlug,
+      });
+      throw error;
+    }
+
+    // ── Final attempt failed: refund credits and notify user ──
     const isWeb = job.data.source === 'web';
 
     // Mark request as failed
@@ -228,7 +242,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       await walletService.refundCredits(userId, walletCategory as WalletCategory, creditsCost, {
         requestId,
         priceItemCode,
-        description: `Refund: generation failed`,
+        description: `Refund: generation failed after ${maxAttempts} attempts`,
       });
     } catch (refundError) {
       logger.error('Failed to refund credits', { refundError });
@@ -279,18 +293,17 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       await telegram.sendMessage(chatId, errorMessage, getMainKeyboardMarkup(lang)).catch(() => {});
     }
 
-    // DO NOT re-throw: we already refunded and notified the user.
-    // Re-throwing would cause Bull to retry, sending duplicate error messages.
+    // On final attempt: return failure (don't re-throw) to prevent further retries.
     return { requestId, success: false, error: errorMsg };
   }
 }
 
 /** Start processing on all queues */
 export function startWorkers(): void {
-  const textConcurrency = parseInt(process.env.TEXT_WORKERS || '5', 10);
-  const imageConcurrency = parseInt(process.env.IMAGE_WORKERS || '3', 10);
-  const videoConcurrency = parseInt(process.env.VIDEO_WORKERS || '2', 10);
-  const audioConcurrency = parseInt(process.env.AUDIO_WORKERS || '3', 10);
+  const textConcurrency = parseInt(process.env.TEXT_WORKERS || '10', 10);
+  const imageConcurrency = parseInt(process.env.IMAGE_WORKERS || '5', 10);
+  const videoConcurrency = parseInt(process.env.VIDEO_WORKERS || '3', 10);
+  const audioConcurrency = parseInt(process.env.AUDIO_WORKERS || '5', 10);
 
   textQueue.process(textConcurrency, processGenerationJob);
   imageQueue.process(imageConcurrency, processGenerationJob);
