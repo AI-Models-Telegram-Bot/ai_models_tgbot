@@ -35,7 +35,7 @@ export const en = {
     imageFluxFamily: '🔥 Flux Family',
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
-    imageGoogleAIFamily: '🤖 Google AI',
+    imageGoogleAIFamily: '🍌 Nano Banana Pro',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
     imageFluxKontext: '🎨 Flux Kontext (⚡5)',
@@ -231,9 +231,9 @@ Artistic image generation — stunning, creative, highly detailed.
 
 Select a model:`,
 
-    imageGoogleAIFamilyDesc: `🤖 <b>Google AI</b>
+    imageGoogleAIFamilyDesc: `🍌 <b>Nano Banana Pro</b>
 
-Cutting-edge image generation powered by Google.
+Cutting-edge image generation powered by Google Gemini.
 
 Select a model:`,
 
@@ -293,7 +293,7 @@ Artistic image generation with one of the most popular AI art tools.
 
 Fee: ⚡25 credits per image`,
 
-    imageNanoBananaProDesc: `🤖 <b>Google AI Image</b>
+    imageNanoBananaProDesc: `🍌 <b>Nano Banana Pro</b>
 
 Google Gemini image generation — powerful quality with excellent detail.
 
