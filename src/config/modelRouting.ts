@@ -55,9 +55,10 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'flux-schnell': {
     category: 'IMAGE',
     providers: [
-      { name: 'piapi', modelId: 'Qubico/flux1-schnell' },       // $0.0015
-      { name: 'aimlapi', modelId: 'flux/schnell' },              // $0.003
-      { name: 'replicate', modelId: 'flux-schnell' },            // $0.003
+      { name: 'runware', modelId: 'runware:100@1' },              // $0.0006
+      { name: 'piapi', modelId: 'Qubico/flux1-schnell' },         // $0.0015
+      { name: 'aimlapi', modelId: 'flux/schnell' },               // $0.003
+      { name: 'replicate', modelId: 'flux-schnell' },             // $0.003
     ],
   },
   'flux-pro': {
@@ -70,8 +71,9 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'flux-dev': {
     category: 'IMAGE',
     providers: [
-      { name: 'aimlapi', modelId: 'flux/dev' },                  // ~$0.025
-      { name: 'replicate', modelId: 'flux-dev' },                // $0.025
+      { name: 'runware', modelId: 'runware:101@1' },              // $0.004
+      { name: 'aimlapi', modelId: 'flux/dev' },                   // ~$0.025
+      { name: 'replicate', modelId: 'flux-dev' },                 // $0.025
     ],
   },
   'flux-kontext': {
@@ -96,7 +98,8 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'midjourney': {
     category: 'IMAGE',
     providers: [
-      { name: 'piapi', modelId: 'midjourney' },                    // PiAPI imagine endpoint
+      { name: 'piapi', modelId: 'midjourney' },                   // PiAPI imagine endpoint
+      { name: 'kieai', modelId: 'midjourney' },                   // KieAI market fallback
     ],
   },
   'nano-banana-pro': {

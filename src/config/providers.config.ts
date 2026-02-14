@@ -13,9 +13,9 @@ import { ProviderConfig } from '../providers/base/ProviderConfig';
  *   XAI grok-3-mini      ~$0.00080  |  Anthropic haiku-3    ~$0.0015
  *
  * IMAGE (per image):
- *   PiAPI Flux Schnell   $0.0015  |  AIMLAPI Flux Schnell  $0.003
- *   Replicate Flux       $0.003   |  KieAI Flux Kontext    ~$0.01
- *   OpenAI DALL-E 3      $0.04
+ *   Runware FLUX Schnell $0.0006  |  PiAPI Flux Schnell   $0.0015
+ *   AIMLAPI Flux Schnell  $0.003  |  Replicate Flux       $0.003
+ *   KieAI Flux Kontext    ~$0.01  |  OpenAI DALL-E 3      $0.04
  *
  * VIDEO (per 5s clip):
  *   PiAPI Kling   $0.13  |  KieAI Kling 2.6  $0.28
@@ -58,36 +58,42 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
   },
 
   // ============ IMAGE PROVIDERS ============
-  // PiAPI Flux $0.0015 (1) → AIMLAPI Flux $0.003 (2) → Replicate Flux $0.003 (3)
-  // → KieAI Kontext ~$0.01 (4) → OpenAI DALL-E $0.04 (5)
+  // Runware Flux $0.0006 (1) → PiAPI Flux $0.0015 (2) → AIMLAPI Flux $0.003 (3)
+  // → Replicate Flux $0.003 (4) → KieAI Kontext ~$0.01 (5) → OpenAI DALL-E $0.04 (6)
+  image_runware: {
+    name: 'runware',
+    enabled: true,
+    priority: 1,
+    apiKey: process.env.RUNWARE_KEY || '',
+  },
   image_piapi: {
     name: 'piapi',
     enabled: true,
-    priority: 1,
+    priority: 2,
     apiKey: process.env.PIAPI_KEY || '',
   },
   image_aimlapi: {
     name: 'aimlapi',
     enabled: true,
-    priority: 2,
+    priority: 3,
     apiKey: process.env.AIMLAPI_KEY || '',
   },
   image_replicate: {
     name: 'replicate',
     enabled: true,
-    priority: 3,
+    priority: 4,
     apiKey: REPLICATE_KEY,
   },
   image_kieai: {
     name: 'kieai',
     enabled: true,
-    priority: 4,
+    priority: 5,
     apiKey: process.env.KIEAI_KEY || '',
   },
   image_openai: {
     name: 'openai',
     enabled: true,
-    priority: 5,
+    priority: 6,
     apiKey: OPENAI_KEY,
   },
 

@@ -9,9 +9,20 @@ import {
 } from './BaseProvider';
 import { logger } from '../utils/logger';
 
+/** Cost map for Runware models (USD per image at 1024×1024) */
+const RUNWARE_COSTS: Record<string, number> = {
+  'runware:100@1': 0.0006, // FLUX.1 Schnell
+  'runware:101@1': 0.004,  // FLUX.1 Dev
+};
+
 /**
- * Runware AI Provider
- * Supports: Image, Video, Audio generation
+ * Runware AI Provider — Image generation only
+ * API: POST https://api.runware.ai/v1 with JSON array body
+ * Auth: Bearer token
+ * Docs: https://runware.ai/docs
+ *
+ * Cheapest image provider: FLUX.1 Schnell at $0.0006/image
+ * Synchronous response (no polling needed)
  */
 export class RunwareProvider extends EnhancedProvider {
   readonly name = 'runware';
@@ -25,7 +36,7 @@ export class RunwareProvider extends EnhancedProvider {
         Authorization: `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
       },
-      timeout: config.timeout || 180000, // 3 minutes default
+      timeout: config.timeout || 60000, // 1 min (synchronous API)
     });
   }
 
@@ -33,34 +44,57 @@ export class RunwareProvider extends EnhancedProvider {
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<TextGenerationResult> {
-    throw new Error('Runware does not support text generation');
+    throw new Error('Runware does not support text generation — use AIMLAPI or OpenAI');
   }
 
+  /**
+   * Image generation via Runware imageInference
+   * POST / with array body containing taskType: "imageInference"
+   * Response: { data: [{ imageURL, cost, ... }] }
+   */
   async generateImage(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<ImageGenerationResult> {
     const start = Date.now();
     try {
-      logger.info('Runware image: starting generation');
+      const model = (options?.model as string) || 'runware:100@1';
+      const width = (options?.width as number) || 1024;
+      const height = (options?.height as number) || 1024;
 
-      const response = await this.client.post('/image', {
-        prompt,
-        model: options?.model || 'runware:100@1',
-        width: (options?.width as number) || 1024,
-        height: (options?.height as number) || 1024,
-      });
+      logger.info(`Runware image: starting generation (model: ${model})`);
+
+      const taskUUID = crypto.randomUUID();
+
+      const response = await this.client.post('', [
+        {
+          taskUUID,
+          taskType: 'imageInference',
+          model,
+          positivePrompt: prompt,
+          width,
+          height,
+          numberResults: 1,
+          outputType: 'URL',
+          includeCost: true,
+        },
+      ]);
+
+      const result = response.data?.data?.[0];
+      if (!result?.imageURL) {
+        throw new Error('Runware image: no imageURL in response');
+      }
 
       const time = Date.now() - start;
-      const cost = 0.004; // $0.004 per image
+      const cost = result.cost ?? RUNWARE_COSTS[model] ?? 0.004;
       this.updateStats(true, cost, time);
 
       logger.info(`Runware image: success (${time}ms, $${cost})`);
-      return { imageUrl: response.data.imageURL };
+      return { imageUrl: result.imageURL };
     } catch (error: any) {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
-      logger.error('Runware image: failed', error.message);
+      logger.error('Runware image: failed', error.response?.data || error.message);
       throw error;
     }
   }
@@ -69,75 +103,13 @@ export class RunwareProvider extends EnhancedProvider {
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<VideoGenerationResult> {
-    const start = Date.now();
-    try {
-      const duration = (options?.duration as number) || 5;
-      logger.info(`Runware video: starting generation (${duration}s)`);
-
-      // Start video generation
-      const response = await this.client.post('/video', {
-        prompt,
-        duration,
-      });
-
-      const jobId = response.data.id;
-
-      // Poll for completion (max 60 attempts x 5s = 5 minutes)
-      let videoUrl = '';
-      for (let i = 0; i < 60; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        const status = await this.client.get(`/video/${jobId}`);
-        if (status.data.status === 'completed') {
-          videoUrl = status.data.url;
-          break;
-        } else if (status.data.status === 'failed') {
-          throw new Error('Video generation failed');
-        }
-      }
-
-      if (!videoUrl) {
-        throw new Error('Video generation timed out');
-      }
-
-      const time = Date.now() - start;
-      const cost = duration * 0.02; // $0.02 per second
-      this.updateStats(true, cost, time);
-
-      logger.info(`Runware video: success (${time}ms, $${cost})`);
-      return { videoUrl };
-    } catch (error: any) {
-      const time = Date.now() - start;
-      this.updateStats(false, 0, time);
-      logger.error('Runware video: failed', error.message);
-      throw error;
-    }
+    throw new Error('Runware does not support video generation — use PiAPI or KieAI');
   }
 
   async generateAudio(
     text: string,
     options?: Record<string, unknown>
   ): Promise<AudioGenerationResult> {
-    const start = Date.now();
-    try {
-      logger.info('Runware audio: starting generation');
-
-      const response = await this.client.post('/audio', {
-        text,
-        voice: (options?.voice as string) || 'en-US-1',
-      });
-
-      const time = Date.now() - start;
-      const cost = text.length * 0.000015; // $0.000015 per character
-      this.updateStats(true, cost, time);
-
-      logger.info(`Runware audio: success (${time}ms, $${cost})`);
-      return { audioUrl: response.data.url };
-    } catch (error: any) {
-      const time = Date.now() - start;
-      this.updateStats(false, 0, time);
-      logger.error('Runware audio: failed', error.message);
-      throw error;
-    }
+    throw new Error('Runware does not support audio generation — use AIMLAPI or ElevenLabs');
   }
 }
