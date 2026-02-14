@@ -9,7 +9,7 @@ import { getProviderManager } from '../config/providerFactory';
 import { modelService, requestService, walletService } from '../services';
 import { prisma } from '../config/database';
 import { getRedis } from '../config/redis';
-import { markdownToTelegramHtml, truncateText } from '../utils/helpers';
+import { markdownToTelegramHtml, truncateText, sanitizeErrorForUser } from '../utils/helpers';
 import { logger } from '../utils/logger';
 import { t, getLocale } from '../locales';
 import type { Language } from '../locales';
@@ -252,12 +252,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       // ── Web error delivery ──
       const webMessageId = job.data.webMessageId;
 
+      // Sanitize error for web users too
+      const webUserError = sanitizeErrorForUser(errorMsg, lang);
+
       // Update ChatMessage to FAILED
       if (webMessageId) {
         try {
           await prisma.chatMessage.update({
             where: { id: webMessageId },
-            data: { content: errorMsg, status: 'FAILED' },
+            data: { content: webUserError, status: 'FAILED' },
           });
         } catch (dbErr) {
           logger.error('Failed to update web ChatMessage to FAILED', { dbErr });
@@ -270,7 +273,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         await redis.publish('chat:updates', JSON.stringify({
           messageId: webMessageId,
           requestId,
-          content: errorMsg,
+          content: webUserError,
           fileUrl: null,
           status: 'FAILED',
         }));
@@ -286,11 +289,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         // Ignore
       }
 
-      // Notify user with error message + main keyboard
+      // Notify user with sanitized error message + main keyboard
+      const userFriendlyError = sanitizeErrorForUser(errorMsg, lang);
       const errorMessage = t(lang, 'messages.errorRefunded', {
-        error: errorMsg,
+        error: userFriendlyError,
       });
-      await telegram.sendMessage(chatId, errorMessage, getMainKeyboardMarkup(lang)).catch(() => {});
+      await telegram.sendMessage(chatId, errorMessage, {
+        parse_mode: 'HTML',
+        ...getMainKeyboardMarkup(lang),
+      }).catch(() => {});
     }
 
     // On final attempt: return failure (don't re-throw) to prevent further retries.

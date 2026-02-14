@@ -436,9 +436,11 @@ Send your prompt:
     errorGeneric: 'An error occurred. Please try again.',
     errorInsufficientBalance: 'Insufficient balance. You need {required} but have {current}.',
     errorModelNotFound: 'Model not found.',
-    errorRefunded: `❌ Error: {error}
+    errorRefunded: `❌ <b>Generation Failed</b>
 
-Your tokens have been refunded.`,
+{error}
+
+💰 Your credits have been refunded.`,
 
     // No models
     noModels: 'No models available in this category yet.',
