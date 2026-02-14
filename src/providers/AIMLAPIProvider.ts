@@ -190,10 +190,12 @@ export class AIMLAPIProvider extends EnhancedProvider {
 
       const body: Record<string, unknown> = { model, prompt };
 
-      // Veo parameters
+      // Veo parameters — duration must be 4, 6, or 8 seconds
       if (model.includes('veo')) {
         body.aspect_ratio = (options?.aspectRatio as string) || '16:9';
-        body.duration = (options?.duration as number) || 8;
+        const rawDur = Number(options?.duration) || 8;
+        // Snap to nearest valid value: 4, 6, or 8
+        body.duration = rawDur <= 4 ? 4 : rawDur <= 6 ? 6 : 8;
         body.resolution = (options?.resolution as string) || '1080p';
         if (options?.generateAudio !== undefined) {
           body.generate_audio = options.generateAudio;
@@ -205,6 +207,11 @@ export class AIMLAPIProvider extends EnhancedProvider {
         body.aspect_ratio = (options?.aspectRatio as string) || '16:9';
         body.duration = (options?.duration as number) || 4;
         body.resolution = (options?.resolution as string) || '720p';
+      }
+
+      // Wan parameters
+      if (model.includes('wan') || model.includes('alibaba')) {
+        body.aspect_ratio = (options?.aspectRatio as string) || '16:9';
       }
 
       const submitResponse = await this.v2Client.post('/video/generations', body);

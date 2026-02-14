@@ -60,12 +60,12 @@ export function createHealthServer(port: number = 3000): express.Application {
     max: 30,
     standardHeaders: true,
     legacyHeaders: false,
+    // Use Telegram ID or auth token to identify users; avoid req.ip fallback
+    // to prevent ERR_ERL_KEY_GEN_IPV6 validation error
     keyGenerator: (req) => {
-      // Identify user by Telegram ID, auth token suffix, or IP
       return (req.headers['x-telegram-id'] as string)
         || (req.headers['authorization'] as string)?.slice(-20)
-        || req.ip
-        || 'unknown';
+        || 'anonymous';
     },
     message: { error: 'Rate limit exceeded. Please slow down.' },
   });

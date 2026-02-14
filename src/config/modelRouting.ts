@@ -98,8 +98,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'midjourney': {
     category: 'IMAGE',
     providers: [
-      { name: 'piapi', modelId: 'midjourney' },                   // PiAPI imagine endpoint
-      { name: 'kieai', modelId: 'midjourney' },                   // KieAI market fallback
+      { name: 'kieai', modelId: 'midjourney' },                   // KieAI market endpoint (PiAPI discontinued MJ)
     ],
   },
   'nano-banana-pro': {
@@ -136,7 +135,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'wan': {
     category: 'VIDEO',
     providers: [
-      { name: 'aimlapi', modelId: 'wan-ai/wan2.1-t2v-14b' },    // ~$0.10
+      { name: 'aimlapi', modelId: 'alibaba/wan2.1-t2v-turbo' },  // ~$0.10
       { name: 'replicate', modelId: 'wan' },                     // ~$0.18
     ],
   },

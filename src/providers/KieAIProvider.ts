@@ -311,7 +311,8 @@ export class KieAIProvider extends EnhancedProvider {
 
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
-        throw new Error('KieAI Midjourney: no taskId in response');
+        const respData = JSON.stringify(createResponse.data).slice(0, 500);
+        throw new Error(`KieAI Midjourney: no taskId in response: ${respData}`);
       }
 
       logger.info(`KieAI Midjourney: task created, taskId=${taskId}`);

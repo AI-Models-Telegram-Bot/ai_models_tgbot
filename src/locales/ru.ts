@@ -37,7 +37,7 @@ export const ru: Locale = {
     imageFluxFamily: '🔥 Семейство Flux',
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
-    imageGoogleAIFamily: '🤖 Google AI',
+    imageGoogleAIFamily: '🍌 Nano Banana Pro',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
     imageFluxKontext: '🎨 Flux Kontext (⚡5)',
@@ -233,9 +233,9 @@ export const ru: Locale = {
 
 Выберите модель:`,
 
-    imageGoogleAIFamilyDesc: `🤖 <b>Google AI</b>
+    imageGoogleAIFamilyDesc: `🍌 <b>Nano Banana Pro</b>
 
-Передовая генерация изображений на базе технологий Google.
+Передовая генерация изображений на базе Google Gemini.
 
 Выберите модель:`,
 
@@ -295,7 +295,7 @@ export const ru: Locale = {
 
 Стоимость: ⚡25 кредитов за изображение`,
 
-    imageNanoBananaProDesc: `🤖 <b>Nano Banana Pro</b>
+    imageNanoBananaProDesc: `🍌 <b>Nano Banana Pro</b>
 
 Google Gemini 3 Pro Image — мощная генерация с отличным качеством.
 

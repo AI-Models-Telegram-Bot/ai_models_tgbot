@@ -77,8 +77,9 @@ export class ReplicateProvider extends BaseProvider {
     return { imageUrl };
   }
 
-  async generateVideo(prompt: string, options?: { model?: string }): Promise<VideoGenerationResult> {
-    const modelSlug = options?.model || 'kling';
+  async generateVideo(prompt: string, options?: Record<string, unknown>): Promise<VideoGenerationResult> {
+    const modelSlug = (options?.model as string) || 'kling';
+    const aspectRatio = (options?.aspectRatio as string) || '16:9';
 
     // Use actual model IDs from Replicate's catalog
     let modelId: string;
@@ -87,7 +88,7 @@ export class ReplicateProvider extends BaseProvider {
     switch (modelSlug) {
       case 'luma':
         modelId = 'luma/ray-2-720p';
-        input = { prompt };
+        input = { prompt, aspect_ratio: aspectRatio };
         break;
       case 'animatediff':
         modelId = 'lucataco/animate-diff';
@@ -98,13 +99,13 @@ export class ReplicateProvider extends BaseProvider {
         input = { prompt };
         break;
       case 'wan':
-        modelId = 'wan-video/wan2.1-t2v-720p';
-        input = { prompt };
+        modelId = 'wavespeedai/wan-2.1-t2v-720p';
+        input = { prompt, aspect_ratio: aspectRatio };
         break;
       case 'kling':
       default:
         modelId = 'kwaivgi/kling-v2.0';
-        input = { prompt, duration: 5 };
+        input = { prompt, duration: 5, aspect_ratio: aspectRatio };
         break;
     }
 
