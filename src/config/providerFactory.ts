@@ -12,6 +12,7 @@ import { ElevenLabsAdapter } from '../providers/adapters/ElevenLabsAdapter';
 import { AIMLAPIProvider } from '../providers/AIMLAPIProvider';
 import { KieAIProvider } from '../providers/KieAIProvider';
 import { PiAPIProvider } from '../providers/PiAPIProvider';
+import { RunwareProvider } from '../providers/RunwareProvider';
 
 import { logger } from '../utils/logger';
 
@@ -43,21 +44,24 @@ export function initProviders(): ProviderManager {
   }
 
   // ============ IMAGE PROVIDERS ============
-  // AIMLAPI/Flux (1) → KieAI/Flux Kontext (2) → PiAPI/Flux (3) → OpenAI/DALL-E (4) → Replicate (5)
-  if (PROVIDER_CONFIGS.image_aimlapi.apiKey) {
-    manager.register('IMAGE', new AIMLAPIProvider(PROVIDER_CONFIGS.image_aimlapi));
-  }
-  if (PROVIDER_CONFIGS.image_kieai.apiKey) {
-    manager.register('IMAGE', new KieAIProvider(PROVIDER_CONFIGS.image_kieai));
+  // Runware (1) → PiAPI (2) → AIMLAPI (3) → Replicate (4) → KieAI (5) → OpenAI (6)
+  if (PROVIDER_CONFIGS.image_runware.apiKey) {
+    manager.register('IMAGE', new RunwareProvider(PROVIDER_CONFIGS.image_runware));
   }
   if (PROVIDER_CONFIGS.image_piapi.apiKey) {
     manager.register('IMAGE', new PiAPIProvider(PROVIDER_CONFIGS.image_piapi));
   }
-  if (PROVIDER_CONFIGS.image_openai.apiKey) {
-    manager.register('IMAGE', new OpenAIAdapter(PROVIDER_CONFIGS.image_openai));
+  if (PROVIDER_CONFIGS.image_aimlapi.apiKey) {
+    manager.register('IMAGE', new AIMLAPIProvider(PROVIDER_CONFIGS.image_aimlapi));
   }
   if (PROVIDER_CONFIGS.image_replicate.apiKey) {
     manager.register('IMAGE', new ReplicateAdapter(PROVIDER_CONFIGS.image_replicate));
+  }
+  if (PROVIDER_CONFIGS.image_kieai.apiKey) {
+    manager.register('IMAGE', new KieAIProvider(PROVIDER_CONFIGS.image_kieai));
+  }
+  if (PROVIDER_CONFIGS.image_openai.apiKey) {
+    manager.register('IMAGE', new OpenAIAdapter(PROVIDER_CONFIGS.image_openai));
   }
 
   // ============ VIDEO PROVIDERS ============
