@@ -27,19 +27,17 @@ export async function handleCategorySelection(ctx: BotContext, category: ModelCa
   const models = await modelService.getByCategory(category);
 
   if (models.length === 0) {
-    await ctx.reply(l.messages.noModels);
+    await sendTrackedMessage(ctx, l.messages.noModels);
     return;
   }
 
   const messageKey = categoryMessageKeys[category] as keyof typeof l.messages;
   const message = l.messages[messageKey] || l.messages.categoryText;
 
-  const sent = await ctx.reply(message, {
+  await sendTrackedMessage(ctx, message, {
     parse_mode: 'HTML',
     ...createModelSelectionKeyboard(models, lang),
   });
-
-  if (ctx.session) ctx.session.lastBotMessageId = sent.message_id;
 }
 
 export async function handleTextCategory(ctx: BotContext): Promise<void> {
@@ -52,7 +50,7 @@ export async function handleTextCategory(ctx: BotContext): Promise<void> {
   const defaultModel = await modelService.getDefaultByCategory('TEXT');
 
   if (!defaultModel) {
-    await ctx.reply(l.messages.noModels);
+    await sendTrackedMessage(ctx, l.messages.noModels);
     return;
   }
 
@@ -65,7 +63,7 @@ export async function handleTextCategory(ctx: BotContext): Promise<void> {
       required: formatCredits(creditsCost),
       current: formatCredits(currentBalance),
     });
-    await ctx.reply(message);
+    await sendTrackedMessage(ctx, message);
     return;
   }
 

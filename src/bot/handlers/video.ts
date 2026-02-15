@@ -8,6 +8,7 @@ import {
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { modelService, walletService, modelAccessService, videoSettingsService } from '../../services';
 import { Language, getLocale } from '../../locales';
+import { sendTrackedMessage } from '../utils';
 import { logger } from '../../utils/logger';
 import { WalletCategory } from '@prisma/client';
 
@@ -153,7 +154,7 @@ export async function handleVideoFamilyMenu(ctx: BotContext): Promise<void> {
     ctx.session.inVideoMenu = true;
   }
 
-  await ctx.reply((l.messages as any).videoFamilySelect, {
+  await sendTrackedMessage(ctx, (l.messages as any).videoFamilySelect, {
     parse_mode: 'HTML',
     ...getVideoFamiliesKeyboard(lang),
   });
@@ -185,7 +186,7 @@ export async function handleVideoFamilySelection(ctx: BotContext, familyId: stri
   }
 
   const description = (l.messages as any)[family.descriptionKey] || '';
-  await ctx.reply(description, {
+  await sendTrackedMessage(ctx, description, {
     parse_mode: 'HTML',
     ...family.getKeyboard(lang),
   });
@@ -209,7 +210,7 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
   // Check if model exists in DB
   const model = await modelService.getBySlug(func.modelSlug);
   if (!model) {
-    await ctx.reply(l.messages.errorModelNotFound, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.errorModelNotFound, getMainKeyboard(lang));
     return;
   }
 
@@ -219,7 +220,7 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
     const funcName = FUNCTION_NAMES[functionId as VideoFunction]?.[lang] || functionId;
     const denied = (l.messages as any).videoAccessDenied || 'is not available on your current plan.';
     const hint = (l.messages as any).videoUpgradeHint || 'Upgrade your subscription to access this feature.';
-    await ctx.reply(`🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
+    await sendTrackedMessage(ctx, `🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
     return;
   }
 
@@ -229,7 +230,7 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
     if (!hasBalance) {
       const currentBalance = await walletService.getBalance(ctx.user.id, 'VIDEO' as WalletCategory);
       const message = `Insufficient balance. You need ${formatCredits(model.tokenCost)} but have ${formatCredits(currentBalance)}.`;
-      await ctx.reply(message);
+      await sendTrackedMessage(ctx, message);
       return;
     }
   }
@@ -242,7 +243,7 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
 
   // Send function description + reply keyboard
   const description = (l.messages as any)[func.descriptionKey] || '';
-  await ctx.reply(description, {
+  await sendTrackedMessage(ctx, description, {
     parse_mode: 'HTML',
     ...getVideoModelMenuKeyboard(lang, func.modelSlug, func.hasSettings, ctx.from?.id),
   });

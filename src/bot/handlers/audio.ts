@@ -79,7 +79,7 @@ export async function handleAudioFunctionMenu(ctx: BotContext): Promise<void> {
     ctx.session.inAudioMenu = true;
   }
 
-  await ctx.reply(l.messages.audioFunctionSelect, {
+  await sendTrackedMessage(ctx, l.messages.audioFunctionSelect, {
     parse_mode: 'HTML',
     ...getAudioFunctionsKeyboard(lang),
   });
@@ -105,7 +105,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
     const comingSoon = lang === 'ru'
       ? '🚧 <b>Клонирование голоса</b>\n\nЭта функция скоро будет доступна! Она требует загрузки аудио-файла с образцом голоса, что находится в разработке.'
       : '🚧 <b>Voice Cloning</b>\n\nThis feature is coming soon! It requires uploading a voice sample audio file, which is currently under development.';
-    await ctx.reply(comingSoon, {
+    await sendTrackedMessage(ctx, comingSoon, {
       parse_mode: 'HTML',
       ...getAudioFunctionsKeyboard(lang),
     });
@@ -115,7 +115,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
   // Check if model exists
   const model = await modelService.getBySlug(func.modelSlug);
   if (!model) {
-    await ctx.reply(l.messages.errorModelNotFound, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.errorModelNotFound, getMainKeyboard(lang));
     return;
   }
 
@@ -125,7 +125,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
     const funcName = FUNCTION_NAMES[functionId as AudioFunction]?.[lang] || functionId;
     const denied = (l.messages as any).audioAccessDenied || 'is not available on your current plan.';
     const hint = (l.messages as any).audioUpgradeHint || 'Upgrade your subscription to access this feature.';
-    await ctx.reply(`🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
+    await sendTrackedMessage(ctx, `🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
     return;
   }
 
@@ -138,7 +138,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
         required: formatCredits(model.tokenCost),
         current: formatCredits(currentBalance),
       });
-      await ctx.reply(message);
+      await sendTrackedMessage(ctx, message);
       return;
     }
   }
@@ -150,7 +150,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
 
   // Send function description + reply keyboard
   const description = (l.messages as any)[func.descriptionKey] || '';
-  await ctx.reply(description, {
+  await sendTrackedMessage(ctx, description, {
     parse_mode: 'HTML',
     ...func.getKeyboard(lang, ctx.from?.id),
   });

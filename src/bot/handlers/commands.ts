@@ -5,6 +5,7 @@ import { formatTokens } from '../../utils/helpers';
 import { userService, walletService } from '../../services';
 import { Language, t, getLocale } from '../../locales';
 import { config } from '../../config';
+import { sendTrackedMessage } from '../utils';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -17,11 +18,11 @@ export async function handleStart(ctx: BotContext): Promise<void> {
 
   // Web QR auth confirmation
   if (ctx.webAuthConfirmed) {
-    await ctx.reply(l.messages.webAuthSuccess, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.webAuthSuccess, getMainKeyboard(lang));
     return;
   }
 
-  await ctx.reply(l.messages.welcome, getMainKeyboard(lang));
+  await sendTrackedMessage(ctx, l.messages.welcome, getMainKeyboard(lang));
 }
 
 export async function handleHelp(ctx: BotContext): Promise<void> {
@@ -29,7 +30,7 @@ export async function handleHelp(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await ctx.reply(l.messages.help, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.help, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
 }
 
 export async function handleInstructions(ctx: BotContext): Promise<void> {
@@ -40,7 +41,7 @@ export async function handleInstructions(ctx: BotContext): Promise<void> {
     referralBonus: config.tokens.referralBonus,
   });
 
-  await ctx.reply(message, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, message, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
 }
 
 export async function handleSupport(ctx: BotContext): Promise<void> {
@@ -48,7 +49,7 @@ export async function handleSupport(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await ctx.reply(l.messages.support, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.support, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
 }
 
 export async function handleCommunity(ctx: BotContext): Promise<void> {
@@ -56,7 +57,7 @@ export async function handleCommunity(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await ctx.reply(l.messages.community, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.community, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
 }
 
 export async function handlePrivacy(ctx: BotContext): Promise<void> {
@@ -64,7 +65,7 @@ export async function handlePrivacy(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await ctx.reply(l.messages.privacy, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.privacy, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
 }
 
 export async function handleLanguageMenu(ctx: BotContext): Promise<void> {
@@ -72,7 +73,7 @@ export async function handleLanguageMenu(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await ctx.reply(l.messages.selectLanguage, { parse_mode: 'HTML', ...getLanguageKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.selectLanguage, { parse_mode: 'HTML', ...getLanguageKeyboard(lang) });
 }
 
 export async function handleLanguageChange(ctx: BotContext, newLang: Language): Promise<void> {
@@ -82,7 +83,7 @@ export async function handleLanguageChange(ctx: BotContext, newLang: Language): 
   ctx.user = await userService.updateLanguage(ctx.user.id, newLang);
 
   const l = getLocale(newLang);
-  await ctx.reply(l.messages.languageChanged, { ...getHelpKeyboard(newLang) });
+  await sendTrackedMessage(ctx, l.messages.languageChanged, { ...getHelpKeyboard(newLang) });
 }
 
 export async function handleProfile(ctx: BotContext): Promise<void> {
@@ -107,14 +108,14 @@ export async function handleProfile(ctx: BotContext): Promise<void> {
   });
 
   if (config.webapp.url) {
-    await ctx.reply(message, {
+    await sendTrackedMessage(ctx, message, {
       parse_mode: 'HTML',
       ...Markup.inlineKeyboard([
         Markup.button.webApp('Open Full Profile', config.webapp.url),
       ]),
     });
   } else {
-    await ctx.reply(message, { parse_mode: 'HTML', ...getProfileKeyboard(lang) });
+    await sendTrackedMessage(ctx, message, { parse_mode: 'HTML', ...getProfileKeyboard(lang) });
   }
 }
 
@@ -137,7 +138,7 @@ export async function handleMainMenu(ctx: BotContext): Promise<void> {
     ctx.session.selectedModel = undefined;
   }
 
-  await ctx.reply(l.messages.chooseOption, getMainKeyboard(lang));
+  await sendTrackedMessage(ctx, l.messages.chooseOption, getMainKeyboard(lang));
 }
 
 export async function handleBack(ctx: BotContext): Promise<void> {
