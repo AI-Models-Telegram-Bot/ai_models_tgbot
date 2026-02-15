@@ -28,8 +28,6 @@ const CreatePage = lazy(() => import('@/pages/CreatePage'));
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
-const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 
 // Payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/payment/PaymentSuccessPage'));
@@ -125,11 +123,11 @@ export function Router() {
         ) : (
           // ── Web browser routes ──
           <>
-            {/* Public auth routes */}
+            {/* Auth routes */}
             <Route path="/auth/login" element={<RedirectIfAuth><LoginPage /></RedirectIfAuth>} />
-            <Route path="/auth/register" element={<RedirectIfAuth><RegisterPage /></RedirectIfAuth>} />
-            <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
+            <Route path="/auth/forgot-password" element={<Navigate to="/auth/login" replace />} />
+            <Route path="/auth/reset-password" element={<Navigate to="/auth/login" replace />} />
 
             {/* Payment callback pages (public) */}
             <Route path="/payment/success" element={<PaymentSuccessPage />} />

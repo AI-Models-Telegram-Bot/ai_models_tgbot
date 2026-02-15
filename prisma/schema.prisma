@@ -43,6 +43,7 @@ model User {
   imageSettings       UserImageSettings?
   videoSettings       UserVideoSettings?
   refreshTokens       RefreshToken[]
+  webAuthTokens       WebAuthToken[]
   conversations       Conversation[]
   payments            Payment[]
 
@@ -381,6 +382,27 @@ model SubscriptionPlan {
 }
 
 // ── Auth System ─────────────────────────────────────────
+
+model WebAuthToken {
+  id              String             @id @default(cuid())
+  token           String             @unique
+  status          WebAuthTokenStatus @default(PENDING)
+  confirmedByUser String?            @map("confirmed_by_user")
+  user            User?              @relation(fields: [confirmedByUser], references: [id])
+  accessToken     String?            @map("access_token")
+  refreshToken    String?            @map("refresh_token")
+  expiresAt       DateTime           @map("expires_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+
+  @@index([token])
+  @@map("web_auth_tokens")
+}
+
+enum WebAuthTokenStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+}
 
 model RefreshToken {
   id        String   @id @default(cuid())

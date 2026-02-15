@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
@@ -87,13 +87,12 @@ const SUNO_STYLE_PRESETS = ['pop', 'rock', 'jazz', 'electronic', 'hip-hop', 'cla
 const CATEGORY_STYLES: Record<Category, {
   activeBg: string;
   activeText: string;
-  inactiveBg: string;
   sectionBg: string;
 }> = {
-  TEXT: { activeBg: 'bg-cyan-500', activeText: 'text-white', inactiveBg: 'bg-cyan-500/10 text-cyan-400', sectionBg: 'bg-cyan-500/5' },
-  IMAGE: { activeBg: 'bg-purple-500', activeText: 'text-white', inactiveBg: 'bg-purple-500/10 text-purple-400', sectionBg: 'bg-purple-500/5' },
-  VIDEO: { activeBg: 'bg-orange-500', activeText: 'text-white', inactiveBg: 'bg-orange-500/10 text-orange-400', sectionBg: 'bg-orange-500/5' },
-  AUDIO: { activeBg: 'bg-emerald-500', activeText: 'text-white', inactiveBg: 'bg-emerald-500/10 text-emerald-400', sectionBg: 'bg-emerald-500/5' },
+  TEXT: { activeBg: 'bg-cyan-500', activeText: 'text-white', sectionBg: 'bg-cyan-500/5' },
+  IMAGE: { activeBg: 'bg-purple-500', activeText: 'text-white', sectionBg: 'bg-purple-500/5' },
+  VIDEO: { activeBg: 'bg-orange-500', activeText: 'text-white', sectionBg: 'bg-orange-500/5' },
+  AUDIO: { activeBg: 'bg-emerald-500', activeText: 'text-white', sectionBg: 'bg-emerald-500/5' },
 };
 
 // ── Props ────────────────────────────────────────────────
@@ -101,6 +100,17 @@ const CATEGORY_STYLES: Record<Category, {
 interface ModelSettingsPanelProps {
   category: Category;
   model: ChatModel;
+}
+
+// ── Debounced save hook ──────────────────────────────────
+
+function useDebouncedSave(saveFn: () => void, delay = 800) {
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  return () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(saveFn, delay);
+  };
 }
 
 // ── Aspect Preview ───────────────────────────────────────
@@ -138,7 +148,6 @@ export const ModelSettingsPanel: React.FC<ModelSettingsPanelProps> = ({ category
   const slug = model.slug;
   const colors = CATEGORY_STYLES[category];
 
-  // Don't show for TEXT models
   const hasSettings = category !== 'TEXT' && (
     category === 'IMAGE' ||
     category === 'VIDEO' ||
@@ -149,7 +158,6 @@ export const ModelSettingsPanel: React.FC<ModelSettingsPanelProps> = ({ category
 
   return (
     <div className="mb-3">
-      {/* Toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
@@ -174,7 +182,6 @@ export const ModelSettingsPanel: React.FC<ModelSettingsPanelProps> = ({ category
         </svg>
       </button>
 
-      {/* Settings content */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -196,13 +203,10 @@ export const ModelSettingsPanel: React.FC<ModelSettingsPanelProps> = ({ category
   );
 };
 
-// ── Shared button component ──────────────────────────────
+// ── Shared UI ────────────────────────────────────────────
 
 function OptionButton({
-  active,
-  onClick,
-  children,
-  category,
+  active, onClick, children, category,
 }: {
   active: boolean;
   onClick: () => void;
@@ -233,12 +237,12 @@ function SettingLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── IMAGE Settings Inline ────────────────────────────────
+// ── IMAGE Settings ───────────────────────────────────────
 
 function ImageSettingsInline({ slug, category }: { slug: string; category: Category }) {
   const { t } = useTranslation('image');
   const { settings, fetchModelSettings, updateModelSettings } = useImageSettingsStore();
-  const modelSettings = settings[slug];
+  const serverSettings = settings[slug];
 
   const isDalle3 = slug === 'dall-e-3';
   const isMidjourney = slug === 'midjourney';
@@ -249,26 +253,55 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
     [slug]
   );
 
+  // Local state for instant UI
+  const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [quality, setQuality] = useState('standard');
+  const [style, setStyle] = useState('vivid');
+  const [version, setVersion] = useState('v6.1');
+  const [stylize, setStylize] = useState(100);
+  const [resolution, setResolution] = useState('1K');
+
+  // Fetch settings once
   useEffect(() => {
     if (!settings[slug]) fetchModelSettings(slug);
   }, [slug]);
 
-  const aspectRatio = modelSettings?.aspectRatio || '1:1';
-  const quality = modelSettings?.quality || 'standard';
-  const style = modelSettings?.style || 'vivid';
-  const version = modelSettings?.version || 'v6.1';
-  const stylize = modelSettings?.stylize ?? 100;
-  const resolution = modelSettings?.resolution || '1K';
+  // Sync local state from server when loaded
+  useEffect(() => {
+    if (serverSettings) {
+      setAspectRatio(serverSettings.aspectRatio || '1:1');
+      if (isDalle3) {
+        setQuality(serverSettings.quality || 'standard');
+        setStyle(serverSettings.style || 'vivid');
+      }
+      if (isMidjourney) {
+        setVersion(serverSettings.version || 'v6.1');
+        setStylize(serverSettings.stylize ?? 100);
+      }
+      if (isNanoBanana) {
+        setResolution(serverSettings.resolution || '1K');
+      }
+    }
+  }, [serverSettings, isDalle3, isMidjourney, isNanoBanana]);
+
+  // Debounced save to API
+  const pendingUpdates = useRef<Record<string, unknown>>({});
+  const save = useDebouncedSave(() => {
+    if (Object.keys(pendingUpdates.current).length > 0) {
+      updateModelSettings(slug, pendingUpdates.current).catch(() => {});
+      pendingUpdates.current = {};
+    }
+  });
+
+  const update = (key: string, value: unknown) => {
+    pendingUpdates.current[key] = value;
+    save();
+  };
 
   const selectedAspect = ALL_ASPECTS.find(a => a.value === aspectRatio) || ALL_ASPECTS[0];
 
-  const update = useCallback((updates: Record<string, unknown>) => {
-    updateModelSettings(slug, updates);
-  }, [slug, updateModelSettings]);
-
   return (
     <div className="space-y-4">
-      {/* Aspect Ratio */}
       {availableAspects.length > 1 && (
         <div>
           <SettingLabel>{t('aspectRatio')}</SettingLabel>
@@ -276,12 +309,7 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
             <AspectPreview w={selectedAspect.w} h={selectedAspect.h} category={category} />
             <div className="flex-1 flex flex-wrap" style={{ rowGap: 6, columnGap: 6 }}>
               {availableAspects.map(({ value, label }) => (
-                <OptionButton
-                  key={value}
-                  active={aspectRatio === value}
-                  onClick={() => update({ aspectRatio: value })}
-                  category={category}
-                >
+                <OptionButton key={value} active={aspectRatio === value} onClick={() => { setAspectRatio(value); update('aspectRatio', value); }} category={category}>
                   {label}
                 </OptionButton>
               ))}
@@ -290,43 +318,40 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
         </div>
       )}
 
-      {/* DALL-E 3: Quality */}
       {isDalle3 && (
         <div>
           <SettingLabel>{t('quality')}</SettingLabel>
           <div className="flex" style={{ columnGap: 6 }}>
-            <OptionButton active={quality === 'standard'} onClick={() => update({ quality: 'standard' })} category={category}>
+            <OptionButton active={quality === 'standard'} onClick={() => { setQuality('standard'); update('quality', 'standard'); }} category={category}>
               ⚡ {t('qualityStandard')}
             </OptionButton>
-            <OptionButton active={quality === 'hd'} onClick={() => update({ quality: 'hd' })} category={category}>
+            <OptionButton active={quality === 'hd'} onClick={() => { setQuality('hd'); update('quality', 'hd'); }} category={category}>
               ✨ {t('qualityHD')}
             </OptionButton>
           </div>
         </div>
       )}
 
-      {/* DALL-E 3: Style */}
       {isDalle3 && (
         <div>
           <SettingLabel>{t('style')}</SettingLabel>
           <div className="flex" style={{ columnGap: 6 }}>
-            <OptionButton active={style === 'vivid'} onClick={() => update({ style: 'vivid' })} category={category}>
+            <OptionButton active={style === 'vivid'} onClick={() => { setStyle('vivid'); update('style', 'vivid'); }} category={category}>
               🎨 {t('styleVivid')}
             </OptionButton>
-            <OptionButton active={style === 'natural'} onClick={() => update({ style: 'natural' })} category={category}>
+            <OptionButton active={style === 'natural'} onClick={() => { setStyle('natural'); update('style', 'natural'); }} category={category}>
               🍃 {t('styleNatural')}
             </OptionButton>
           </div>
         </div>
       )}
 
-      {/* Midjourney: Version */}
       {isMidjourney && (
         <div>
           <SettingLabel>{t('version')}</SettingLabel>
           <div className="flex" style={{ columnGap: 6 }}>
             {['v5.2', 'v6.1', 'v7'].map(v => (
-              <OptionButton key={v} active={version === v} onClick={() => update({ version: v })} category={category}>
+              <OptionButton key={v} active={version === v} onClick={() => { setVersion(v); update('version', v); }} category={category}>
                 {v}
               </OptionButton>
             ))}
@@ -334,7 +359,6 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
         </div>
       )}
 
-      {/* Midjourney: Stylize */}
       {isMidjourney && (
         <div>
           <SettingLabel>{t('stylize')}</SettingLabel>
@@ -345,7 +369,7 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
               { v: 250, k: 'stylizeHigh', icon: '✨' },
               { v: 750, k: 'stylizeMax', icon: '💎' },
             ] as const).map(({ v, k, icon }) => (
-              <OptionButton key={v} active={stylize === v} onClick={() => update({ stylize: v })} category={category}>
+              <OptionButton key={v} active={stylize === v} onClick={() => { setStylize(v); update('stylize', v); }} category={category}>
                 {icon} {t(k)}
               </OptionButton>
             ))}
@@ -353,7 +377,6 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
         </div>
       )}
 
-      {/* Nano Banana Pro: Resolution */}
       {isNanoBanana && (
         <div>
           <SettingLabel>{t('resolution')}</SettingLabel>
@@ -363,7 +386,7 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
               { v: '2K', icon: '🖥️' },
               { v: '4K', icon: '🎬' },
             ] as const).map(({ v, icon }) => (
-              <OptionButton key={v} active={resolution === v} onClick={() => update({ resolution: v })} category={category}>
+              <OptionButton key={v} active={resolution === v} onClick={() => { setResolution(v); update('resolution', v); }} category={category}>
                 {icon} {v}
               </OptionButton>
             ))}
@@ -374,12 +397,12 @@ function ImageSettingsInline({ slug, category }: { slug: string; category: Categ
   );
 }
 
-// ── VIDEO Settings Inline ────────────────────────────────
+// ── VIDEO Settings ───────────────────────────────────────
 
 function VideoSettingsInline({ slug, category }: { slug: string; category: Category }) {
   const { t } = useTranslation('video');
   const { settings, fetchModelSettings, updateModelSettings } = useVideoSettingsStore();
-  const modelSettings = settings[slug];
+  const serverSettings = settings[slug];
 
   const availableAspects = useMemo(
     () => ALL_ASPECTS.filter(a => (VIDEO_MODEL_ASPECTS[slug] || ['16:9']).includes(a.value)),
@@ -390,24 +413,42 @@ function VideoSettingsInline({ slug, category }: { slug: string; category: Categ
   const resolutions = MODEL_RESOLUTIONS[slug];
   const hasAudio = VEO_MODELS.has(slug);
 
+  // Local state
+  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [duration, setDuration] = useState<number | undefined>(durations?.[0]?.value);
+  const [resolution, setResolution] = useState<string | undefined>(resolutions?.[0]?.value);
+  const [generateAudio, setGenerateAudio] = useState(false);
+
   useEffect(() => {
     if (!settings[slug]) fetchModelSettings(slug);
   }, [slug]);
 
-  const aspectRatio = modelSettings?.aspectRatio || '16:9';
-  const duration = modelSettings?.duration || (durations?.[0]?.value ?? undefined);
-  const resolution = modelSettings?.resolution || (resolutions?.[0]?.value ?? undefined);
-  const generateAudio = modelSettings?.generateAudio ?? false;
+  useEffect(() => {
+    if (serverSettings) {
+      setAspectRatio(serverSettings.aspectRatio || '16:9');
+      if (serverSettings.duration !== undefined) setDuration(serverSettings.duration);
+      if (serverSettings.resolution !== undefined) setResolution(serverSettings.resolution);
+      setGenerateAudio(serverSettings.generateAudio ?? false);
+    }
+  }, [serverSettings]);
+
+  const pendingUpdates = useRef<Record<string, unknown>>({});
+  const save = useDebouncedSave(() => {
+    if (Object.keys(pendingUpdates.current).length > 0) {
+      updateModelSettings(slug, pendingUpdates.current).catch(() => {});
+      pendingUpdates.current = {};
+    }
+  });
+
+  const update = (key: string, value: unknown) => {
+    pendingUpdates.current[key] = value;
+    save();
+  };
 
   const selectedAspect = ALL_ASPECTS.find(a => a.value === aspectRatio) || ALL_ASPECTS.find(a => a.value === '16:9')!;
 
-  const update = useCallback((updates: Record<string, unknown>) => {
-    updateModelSettings(slug, updates);
-  }, [slug, updateModelSettings]);
-
   return (
     <div className="space-y-4">
-      {/* Aspect Ratio */}
       {availableAspects.length > 1 && (
         <div>
           <SettingLabel>{t('aspectRatio')}</SettingLabel>
@@ -415,7 +456,7 @@ function VideoSettingsInline({ slug, category }: { slug: string; category: Categ
             <AspectPreview w={selectedAspect.w} h={selectedAspect.h} category={category} />
             <div className="flex flex-wrap" style={{ rowGap: 6, columnGap: 6 }}>
               {availableAspects.map(({ value, label }) => (
-                <OptionButton key={value} active={aspectRatio === value} onClick={() => update({ aspectRatio: value })} category={category}>
+                <OptionButton key={value} active={aspectRatio === value} onClick={() => { setAspectRatio(value); update('aspectRatio', value); }} category={category}>
                   {label}
                 </OptionButton>
               ))}
@@ -424,13 +465,12 @@ function VideoSettingsInline({ slug, category }: { slug: string; category: Categ
         </div>
       )}
 
-      {/* Duration */}
       {durations && (
         <div>
           <SettingLabel>{t('duration')}</SettingLabel>
           <div className="flex" style={{ columnGap: 6 }}>
             {durations.map(({ value: v, labelKey }) => (
-              <OptionButton key={v} active={duration === v} onClick={() => update({ duration: v })} category={category}>
+              <OptionButton key={v} active={duration === v} onClick={() => { setDuration(v); update('duration', v); }} category={category}>
                 {t(labelKey as any)}
               </OptionButton>
             ))}
@@ -438,13 +478,12 @@ function VideoSettingsInline({ slug, category }: { slug: string; category: Categ
         </div>
       )}
 
-      {/* Resolution */}
       {resolutions && (
         <div>
           <SettingLabel>{t('resolution')}</SettingLabel>
           <div className="flex" style={{ columnGap: 6 }}>
             {resolutions.map(({ value: v, labelKey }) => (
-              <OptionButton key={v} active={resolution === v} onClick={() => update({ resolution: v })} category={category}>
+              <OptionButton key={v} active={resolution === v} onClick={() => { setResolution(v); update('resolution', v); }} category={category}>
                 {t(labelKey as any)}
               </OptionButton>
             ))}
@@ -452,15 +491,14 @@ function VideoSettingsInline({ slug, category }: { slug: string; category: Categ
         </div>
       )}
 
-      {/* Generate Audio (Veo models) */}
       {hasAudio && (
         <div>
           <SettingLabel>{t('generateAudio')}</SettingLabel>
           <div className="flex" style={{ columnGap: 6 }}>
-            <OptionButton active={generateAudio === true} onClick={() => update({ generateAudio: true })} category={category}>
+            <OptionButton active={generateAudio === true} onClick={() => { setGenerateAudio(true); update('generateAudio', true); }} category={category}>
               🔊 {t('audioOn')}
             </OptionButton>
-            <OptionButton active={generateAudio === false} onClick={() => update({ generateAudio: false })} category={category}>
+            <OptionButton active={generateAudio === false} onClick={() => { setGenerateAudio(false); update('generateAudio', false); }} category={category}>
               🔇 {t('audioOff')}
             </OptionButton>
           </div>
@@ -470,7 +508,7 @@ function VideoSettingsInline({ slug, category }: { slug: string; category: Categ
   );
 }
 
-// ── AUDIO Settings Inline ────────────────────────────────
+// ── AUDIO Settings ───────────────────────────────────────
 
 function AudioSettingsInline({ slug, category }: { slug: string; category: Category }) {
   const settingsType = AUDIO_SETTINGS_TYPE[slug];
@@ -485,31 +523,40 @@ function AudioSettingsInline({ slug, category }: { slug: string; category: Categ
 function ElevenLabsInline({ category }: { category: Category }) {
   const { t } = useTranslation('audio');
   const { elevenLabsSettings, voices, voicesLoading, fetchSettings, fetchVoices, updateElevenLabs } = useAudioSettingsStore();
+  const [selectedVoice, setSelectedVoice] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (!elevenLabsSettings) fetchSettings();
     if (voices.length === 0) fetchVoices();
   }, []);
 
-  const currentVoice = elevenLabsSettings?.voiceName || t('noVoiceSelected');
+  useEffect(() => {
+    if (elevenLabsSettings) {
+      setSelectedVoice({ id: elevenLabsSettings.voiceId, name: elevenLabsSettings.voiceName });
+    }
+  }, [elevenLabsSettings]);
+
   const displayVoices = voices.slice(0, 8);
+
+  const handleSelect = (voiceId: string, voiceName: string) => {
+    setSelectedVoice({ id: voiceId, name: voiceName });
+    updateElevenLabs({ voiceId, voiceName }).catch(() => {});
+  };
 
   return (
     <div className="space-y-3">
-      {/* Current voice indicator */}
       <div>
         <SettingLabel>{t('currentVoice')}</SettingLabel>
-        <div className="text-sm text-white font-medium">{currentVoice}</div>
+        <div className="text-sm text-white font-medium">{selectedVoice?.name || t('noVoiceSelected')}</div>
       </div>
 
-      {/* Voice quick-select */}
       {!voicesLoading && displayVoices.length > 0 && (
         <div className="flex flex-wrap" style={{ rowGap: 6, columnGap: 6 }}>
           {displayVoices.map((voice) => (
             <OptionButton
               key={voice.voiceId}
-              active={elevenLabsSettings?.voiceId === voice.voiceId}
-              onClick={() => updateElevenLabs({ voiceId: voice.voiceId, voiceName: voice.name })}
+              active={selectedVoice?.id === voice.voiceId}
+              onClick={() => handleSelect(voice.voiceId, voice.name)}
               category={category}
             >
               {voice.name}
@@ -532,6 +579,7 @@ function ElevenLabsInline({ category }: { category: Category }) {
 function SunoInline({ category }: { category: Category }) {
   const { t } = useTranslation('audio');
   const { sunoSettings, fetchSettings, updateSuno } = useAudioSettingsStore();
+  const [mode, setMode] = useState<string>('standard');
   const [styleInput, setStyleInput] = useState('');
 
   useEffect(() => {
@@ -539,35 +587,37 @@ function SunoInline({ category }: { category: Category }) {
   }, []);
 
   useEffect(() => {
-    if (sunoSettings?.style !== undefined) setStyleInput(sunoSettings.style);
-  }, [sunoSettings?.style]);
+    if (sunoSettings) {
+      setMode(sunoSettings.mode || 'standard');
+      setStyleInput(sunoSettings.style || '');
+    }
+  }, [sunoSettings]);
 
-  const mode = sunoSettings?.mode || 'standard';
+  const handleModeChange = (m: string) => {
+    setMode(m);
+    updateSuno({ mode: m as 'custom' | 'standard' | 'instrumental' }).catch(() => {});
+  };
 
   const handleStyleBlur = () => {
     if (styleInput !== sunoSettings?.style) {
-      updateSuno({ style: styleInput });
+      updateSuno({ style: styleInput }).catch(() => {});
     }
   };
 
   const togglePreset = (preset: string) => {
     const current = styleInput ? styleInput.split(',').map(s => s.trim()).filter(Boolean) : [];
     const idx = current.indexOf(preset);
-    if (idx >= 0) {
-      current.splice(idx, 1);
-    } else {
-      current.push(preset);
-    }
+    if (idx >= 0) current.splice(idx, 1);
+    else current.push(preset);
     const newStyle = current.join(', ');
     setStyleInput(newStyle);
-    updateSuno({ style: newStyle });
+    updateSuno({ style: newStyle }).catch(() => {});
   };
 
   const styleList = styleInput ? styleInput.split(',').map(s => s.trim()).filter(Boolean) : [];
 
   return (
     <div className="space-y-4">
-      {/* Mode */}
       <div>
         <SettingLabel>{t('mode')}</SettingLabel>
         <div className="flex flex-wrap" style={{ rowGap: 6, columnGap: 6 }}>
@@ -576,14 +626,13 @@ function SunoInline({ category }: { category: Category }) {
             { v: 'standard', icon: '🎵' },
             { v: 'instrumental', icon: '🎹' },
           ] as const).map(({ v, icon }) => (
-            <OptionButton key={v} active={mode === v} onClick={() => updateSuno({ mode: v })} category={category}>
+            <OptionButton key={v} active={mode === v} onClick={() => handleModeChange(v)} category={category}>
               {icon} {t(`mode${v.charAt(0).toUpperCase() + v.slice(1)}` as any)}
             </OptionButton>
           ))}
         </div>
       </div>
 
-      {/* Style */}
       <div>
         <SettingLabel>{t('style')}</SettingLabel>
         <input
@@ -618,17 +667,32 @@ function SunoInline({ category }: { category: Category }) {
 function SoundGenInline() {
   const { t } = useTranslation('audio');
   const { soundGenSettings, fetchSettings, updateSoundGen } = useAudioSettingsStore();
+  const [textTemp, setTextTemp] = useState(0.7);
+  const [waveformTemp, setWaveformTemp] = useState(0.7);
 
   useEffect(() => {
     if (!soundGenSettings) fetchSettings();
   }, []);
 
-  const textTemp = soundGenSettings?.textTemp ?? 0.7;
-  const waveformTemp = soundGenSettings?.waveformTemp ?? 0.7;
+  useEffect(() => {
+    if (soundGenSettings) {
+      setTextTemp(soundGenSettings.textTemp ?? 0.7);
+      setWaveformTemp(soundGenSettings.waveformTemp ?? 0.7);
+    }
+  }, [soundGenSettings]);
+
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>();
+  const debouncedSave = (updates: Record<string, number>) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      updateSoundGen(updates).catch(() => {});
+    }, 500);
+  };
+
+  useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
 
   return (
     <div className="space-y-4">
-      {/* Text Temperature */}
       <div>
         <div className="flex items-center justify-between mb-1">
           <SettingLabel>{t('textTemp')}</SettingLabel>
@@ -640,12 +704,11 @@ function SoundGenInline() {
           max="1"
           step="0.1"
           value={textTemp}
-          onChange={(e) => updateSoundGen({ textTemp: parseFloat(e.target.value) })}
+          onChange={(e) => { const v = parseFloat(e.target.value); setTextTemp(v); debouncedSave({ textTemp: v, waveformTemp }); }}
           className="w-full h-1.5 rounded-full bg-surface-card appearance-none cursor-pointer accent-emerald-500"
         />
       </div>
 
-      {/* Waveform Temperature */}
       <div>
         <div className="flex items-center justify-between mb-1">
           <SettingLabel>{t('waveformTemp')}</SettingLabel>
@@ -657,7 +720,7 @@ function SoundGenInline() {
           max="1"
           step="0.1"
           value={waveformTemp}
-          onChange={(e) => updateSoundGen({ waveformTemp: parseFloat(e.target.value) })}
+          onChange={(e) => { const v = parseFloat(e.target.value); setWaveformTemp(v); debouncedSave({ textTemp, waveformTemp: v }); }}
           className="w-full h-1.5 rounded-full bg-surface-card appearance-none cursor-pointer accent-emerald-500"
         />
       </div>

@@ -74,6 +74,9 @@ export const ru: Locale = {
 
 Используйте меню ниже для навигации.`,
 
+    // Web Auth
+    webAuthSuccess: '✅ Вы успешно авторизовались в веб-версии VseoNix. Пожалуйста, вернитесь на сайт, чтобы продолжить.',
+
     // Main Menu
     chooseOption: 'Выберите опцию:',
     chooseCategoryOrAction: 'Выберите категорию или действие:',

@@ -273,6 +273,40 @@ router.post('/link-telegram', unifiedAuth, async (req: Request, res: Response) =
 });
 
 /**
+ * POST /api/auth/telegram-qr/create
+ * Create a web auth token for QR code login.
+ */
+router.post('/telegram-qr/create', async (_req: Request, res: Response) => {
+  try {
+    const result = await authService.createWebAuthToken();
+    return res.json(result);
+  } catch (error: any) {
+    logger.error('Create web auth token failed', { error: error.message });
+    return res.status(500).json({ message: 'Failed to create auth token' });
+  }
+});
+
+/**
+ * GET /api/auth/telegram-qr/check
+ * Check web auth token status (polled by frontend).
+ */
+router.get('/telegram-qr/check', async (req: Request, res: Response) => {
+  const { token } = req.query;
+
+  if (!token || typeof token !== 'string') {
+    return res.status(400).json({ message: 'Token is required' });
+  }
+
+  try {
+    const result = await authService.checkWebAuthToken(token);
+    return res.json(result);
+  } catch (error: any) {
+    logger.error('Check web auth token failed', { error: error.message });
+    return res.status(500).json({ message: 'Failed to check auth token' });
+  }
+});
+
+/**
  * POST /api/auth/forgot-password
  * Send password reset email.
  */
