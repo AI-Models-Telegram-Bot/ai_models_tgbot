@@ -89,12 +89,12 @@ router.post('/payment/create', async (req, res) => {
       });
     } else if (paymentMethod === 'yookassa' || paymentMethod === 'sbp' || paymentMethod === 'card_ru') {
       // All Russian payment methods go through YooKassa
-      const returnUrl = req.body.returnUrl || config.webapp.url || 'https://webapp.vseonix.com';
+      const baseReturnUrl = req.body.returnUrl || `${config.webapp.url || 'https://webapp.vseonix.com'}/payment/success`;
 
       const { confirmationUrl, paymentId } = await yookassaService.createPayment(
         user.id,
         tier as SubscriptionTier,
-        returnUrl,
+        baseReturnUrl,
       );
 
       return res.json({
@@ -125,13 +125,40 @@ router.post('/payment/verify', async (req, res) => {
   }
 
   try {
-    // For Telegram Stars, the payment is handled by the bot's successful_payment handler
-    // This endpoint can be used to check payment status from stored records
+    const user = await prisma.user.findUnique({
+      where: { telegramId: BigInt(telegramId) },
+    });
 
-    // TODO: Implement payment record lookup
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+    });
+
+    if (!payment) {
+      return res.status(404).json({ message: 'Payment not found' });
+    }
+
+    if (payment.userId !== user.id) {
+      return res.status(403).json({ message: 'Payment does not belong to this user' });
+    }
+
+    const statusMap: Record<string, string> = {
+      SUCCEEDED: 'succeeded',
+      CANCELED: 'failed',
+      PENDING: 'pending',
+      WAITING_FOR_CAPTURE: 'pending',
+    };
+
     return res.json({
-      status: 'pending',
-      message: 'Payment verification in progress. You will receive a notification when complete.',
+      status: statusMap[payment.status] || 'pending',
+      message: payment.status === 'SUCCEEDED'
+        ? 'Payment completed successfully'
+        : payment.status === 'CANCELED'
+        ? 'Payment was canceled'
+        : 'Payment is being processed',
     });
   } catch (error: any) {
     logger.error('Failed to verify payment', { error, paymentId, telegramId });

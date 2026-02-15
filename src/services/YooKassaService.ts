@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import axios, { AxiosInstance } from 'axios';
+import { Telegram } from 'telegraf';
 import { SubscriptionTier, PaymentStatus } from '@prisma/client';
 import { prisma } from '../config/database';
 import { config } from '../config';
@@ -87,6 +88,10 @@ export class YooKassaService {
 
     const idempotencyKey = crypto.randomUUID();
 
+    // Append paymentId to return URL so the success page can poll status
+    const separator = returnUrl.includes('?') ? '&' : '?';
+    const returnUrlWithPayment = `${returnUrl}${separator}paymentId=${payment.id}`;
+
     try {
       const response = await this.client.post<YooKassaPaymentResponse>(
         '/payments',
@@ -98,7 +103,7 @@ export class YooKassaService {
           capture: true,
           confirmation: {
             type: 'redirect',
-            return_url: returnUrl,
+            return_url: returnUrlWithPayment,
           },
           description: `${planConfig.name} plan subscription`,
           metadata: {
@@ -251,6 +256,9 @@ export class YooKassaService {
           userId,
           tier,
         });
+
+        // Send Telegram notification to the user
+        await this.sendPaymentNotification(userId, tier);
       } catch (err: any) {
         logger.error('Failed to upgrade subscription after payment', {
           paymentId,
@@ -259,6 +267,27 @@ export class YooKassaService {
           error: err.message,
         });
       }
+    }
+  }
+
+  private async sendPaymentNotification(userId: string, tier: SubscriptionTier): Promise<void> {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user?.telegramId) return;
+
+      const planConfig = getPlanByTier(tier as any);
+      const planName = planConfig?.name || tier;
+      const lang = user.languageCode?.startsWith('ru') ? 'ru' : 'en';
+
+      const messages = {
+        en: `🎉 *Payment Successful!*\n\nYou've been upgraded to *${planName}*!\n\nYour new subscription is now active. Enjoy your enhanced AI capabilities!`,
+        ru: `🎉 *Оплата прошла успешно!*\n\nВы перешли на тариф *${planName}*!\n\nВаша подписка активирована. Наслаждайтесь расширенными возможностями ИИ!`,
+      };
+
+      const telegram = new Telegram(config.bot.token);
+      await telegram.sendMessage(user.telegramId.toString(), messages[lang], { parse_mode: 'Markdown' });
+    } catch (err: any) {
+      logger.warn('Failed to send YooKassa payment notification via Telegram', { userId, error: err.message });
     }
   }
 

@@ -13,6 +13,31 @@ import chatRoutes from '../routes/chat.routes';
 import webappRoutes from '../webapp/routes';
 import { unifiedAuth } from '../webapp/middleware/auth.middleware';
 import { yookassaService } from '../services/YooKassaService';
+import net from 'net';
+
+// YooKassa webhook source IP ranges (from official docs)
+const YOOKASSA_IP_RANGES = [
+  { subnet: '185.71.76.0', mask: 27 },
+  { subnet: '185.71.77.0', mask: 27 },
+  { subnet: '77.75.153.0', mask: 25 },
+  { subnet: '77.75.154.128', mask: 25 },
+];
+const YOOKASSA_SINGLE_IPS = ['77.75.156.11', '77.75.156.35'];
+
+function ipToLong(ip: string): number {
+  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+}
+
+function isYooKassaIP(ip: string): boolean {
+  if (!net.isIPv4(ip)) return false;
+  if (YOOKASSA_SINGLE_IPS.includes(ip)) return true;
+  const ipLong = ipToLong(ip);
+  return YOOKASSA_IP_RANGES.some(({ subnet, mask }) => {
+    const subnetLong = ipToLong(subnet);
+    const maskBits = (~0 << (32 - mask)) >>> 0;
+    return (ipLong & maskBits) === (subnetLong & maskBits);
+  });
+}
 
 export function createHealthServer(port: number = 3000): express.Application {
   const app = express();
@@ -112,8 +137,21 @@ export function createHealthServer(port: number = 3000): express.Application {
   app.use('/api/auth', authRoutes);
   logger.info('Auth routes mounted at /api/auth/*');
 
-  // --- YooKassa webhook (no auth required) ---
+  // --- YooKassa webhook (no auth required, IP-whitelisted) ---
   app.post('/api/payment/yookassa/webhook', async (req, res) => {
+    // Validate source IP against YooKassa's known ranges
+    const forwarded = req.headers['x-forwarded-for'];
+    const clientIp = typeof forwarded === 'string'
+      ? forwarded.split(',')[0].trim()
+      : req.socket.remoteAddress || '';
+    // Normalize IPv6-mapped IPv4 (::ffff:1.2.3.4 → 1.2.3.4)
+    const normalizedIp = clientIp.replace(/^::ffff:/, '');
+
+    if (process.env.NODE_ENV === 'production' && !isYooKassaIP(normalizedIp)) {
+      logger.warn('YooKassa webhook: rejected request from non-whitelisted IP', { ip: normalizedIp });
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     try {
       await yookassaService.handleWebhook(req.body);
       return res.status(200).json({ status: 'ok' });
