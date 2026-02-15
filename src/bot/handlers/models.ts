@@ -38,7 +38,7 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
 
   const model = await modelService.getBySlug(modelSlug);
   if (!model) {
-    await ctx.reply(l.messages.errorModelNotFound);
+    await sendTrackedMessage(ctx, l.messages.errorModelNotFound);
     return;
   }
 
@@ -48,7 +48,7 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
   // Check subscription-based model access
   const access = await modelAccessService.canUseModel(ctx.user.id, model.slug, walletCat);
   if (!access.allowed) {
-    await ctx.reply(
+    await sendTrackedMessage(ctx,
       `🔒 ${access.reason}\n\nUpgrade your subscription to access this model.`,
       { parse_mode: 'HTML' }
     );
@@ -64,7 +64,7 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
         required: formatCredits(creditsCost),
         current: formatCredits(currentBalance),
       });
-      await ctx.reply(message);
+      await sendTrackedMessage(ctx, message);
       return;
     }
   }
@@ -102,13 +102,13 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   if (cancelButtons.some(btn => input === btn)) {
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
-    await ctx.reply(l.messages.cancelled, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.cancelled, getMainKeyboard(lang));
     return;
   }
 
   const model = await modelService.getBySlug(ctx.session.selectedModel);
   if (!model) {
-    await ctx.reply(l.messages.errorModelNotFound, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.errorModelNotFound, getMainKeyboard(lang));
     ctx.session.awaitingInput = false;
     return;
   }
@@ -125,7 +125,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       required: formatCredits(creditsCost),
       current: formatCredits(currentBalance),
     });
-    await ctx.reply(message, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, message, getMainKeyboard(lang));
     ctx.session.awaitingInput = false;
     return;
   }
@@ -141,7 +141,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
     });
   } catch (error) {
     logger.error('Failed to create request:', error);
-    await ctx.reply(l.messages.errorGeneric, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.errorGeneric, getMainKeyboard(lang));
     return;
   }
 
@@ -154,7 +154,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
     });
   } catch (error) {
     logger.error('Failed to deduct credits:', error);
-    await ctx.reply(l.messages.errorGeneric, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.errorGeneric, getMainKeyboard(lang));
     return;
   }
 
@@ -240,7 +240,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       logger.error('Failed to refund credits:', refundError);
     }
 
-    await ctx.reply(l.messages.errorGeneric, getMainKeyboard(lang));
+    await sendTrackedMessage(ctx, l.messages.errorGeneric, getMainKeyboard(lang));
   }
 
   ctx.session.awaitingInput = false;

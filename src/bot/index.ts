@@ -33,9 +33,16 @@ import {
   handleVideoFunctionSelection,
   isSingleVideoFamily,
 } from './handlers';
+import { deleteMessage } from './utils';
 import { logger } from '../utils/logger';
 import { en } from '../locales/en';
 import { ru } from '../locales/ru';
+
+// All known reply-keyboard button texts (EN + RU) for identifying navigation presses
+const allButtonTexts = new Set([
+  ...Object.values(en.buttons),
+  ...Object.values(ru.buttons),
+]);
 
 export function createBot(): Telegraf<BotContext> {
   const bot = new Telegraf<BotContext>(config.bot.token);
@@ -44,10 +51,22 @@ export function createBot(): Telegraf<BotContext> {
   bot.use(sessionMiddleware);
   bot.use(authMiddleware);
 
-  // Clean chat: silently delete incoming user messages (commands, button presses, prompts)
+  // Clean chat middleware:
+  // 1) Delete user button presses and commands (but keep prompts)
+  // 2) Delete previous bot navigation message when user takes a new action
   bot.use(async (ctx, next) => {
     if (ctx.message && 'text' in ctx.message) {
-      ctx.deleteMessage().catch(() => {});
+      const text = ctx.message.text;
+      const isButtonOrCommand = text.startsWith('/') || allButtonTexts.has(text);
+      if (isButtonOrCommand) {
+        ctx.deleteMessage().catch(() => {});
+      }
+
+      // Delete previous bot navigation message
+      if (ctx.session?.lastBotMessageId) {
+        await deleteMessage(ctx, ctx.session.lastBotMessageId);
+        ctx.session.lastBotMessageId = undefined;
+      }
     }
     return next();
   });
