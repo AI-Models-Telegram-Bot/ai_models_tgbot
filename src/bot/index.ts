@@ -44,6 +44,14 @@ export function createBot(): Telegraf<BotContext> {
   bot.use(sessionMiddleware);
   bot.use(authMiddleware);
 
+  // Clean chat: silently delete incoming user messages (commands, button presses, prompts)
+  bot.use(async (ctx, next) => {
+    if (ctx.message && 'text' in ctx.message) {
+      ctx.deleteMessage().catch(() => {});
+    }
+    return next();
+  });
+
   // Commands
   bot.command('start', handleStart);
   bot.command('help', handleHelp);

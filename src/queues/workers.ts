@@ -11,7 +11,7 @@ import { prisma } from '../config/database';
 import { getRedis } from '../config/redis';
 import { markdownToTelegramHtml, truncateText, sanitizeErrorForUser } from '../utils/helpers';
 import { logger } from '../utils/logger';
-import { t, getLocale } from '../locales';
+import { t } from '../locales';
 import type { Language } from '../locales';
 
 // Create Telegram API instance per job using the originating bot's token.
@@ -167,7 +167,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         // Message may already be deleted
       }
 
-      // Send result to user
+      // Send result to user (attach main keyboard to the last message)
+      const kb = getMainKeyboardMarkup(lang);
+
       if ('text' in result) {
         const textResult = result as TextGenerationResult;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
@@ -177,33 +179,33 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
         if (formattedText.length > maxLength) {
           const parts = splitMessage(formattedText, maxLength);
-          for (const part of parts) {
-            await telegram.sendMessage(chatId, part, { parse_mode: 'HTML' });
+          for (let i = 0; i < parts.length; i++) {
+            const isLast = i === parts.length - 1;
+            await telegram.sendMessage(chatId, parts[i], {
+              parse_mode: 'HTML',
+              ...(isLast ? kb : {}),
+            });
           }
         } else {
-          await telegram.sendMessage(chatId, formattedText, { parse_mode: 'HTML' });
+          await telegram.sendMessage(chatId, formattedText, { parse_mode: 'HTML', ...kb });
         }
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
-        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption: truncateText(input, 200) });
+        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption: truncateText(input, 200), ...kb });
       } else if ('videoUrl' in result) {
         const videoResult = result as VideoGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
-        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption: truncateText(input, 200) });
+        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption: truncateText(input, 200), ...kb });
       } else if ('audioBuffer' in result && result.audioBuffer) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { actualProvider });
-        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! });
+        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, kb);
       } else if ('audioUrl' in result && result.audioUrl) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl, actualProvider });
-        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! });
+        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, kb);
       }
-
-      // Send "done" message with main keyboard so user can navigate
-      const l = getLocale(lang);
-      await telegram.sendMessage(chatId, l.messages.done, getMainKeyboardMarkup(lang));
     }
 
     await job.progress(100);
