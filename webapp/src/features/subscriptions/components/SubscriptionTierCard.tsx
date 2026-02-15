@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui';
 import { FeaturesModal } from './FeaturesModal';
 import { PaymentMethodModal } from './PaymentMethodModal';
 import { getTelegramUser, openTelegramLink } from '@/services/telegram/telegram';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
 interface SubscriptionTierCardProps {
@@ -29,7 +30,8 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   const [showPayment, setShowPayment] = useState(false);
 
   const telegramUser = getTelegramUser();
-  const telegramId = telegramUser?.id?.toString() ?? '';
+  const authUser = useAuthStore((s) => s.user);
+  const telegramId = telegramUser?.id?.toString() || authUser?.telegramId || '';
 
   const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
 
