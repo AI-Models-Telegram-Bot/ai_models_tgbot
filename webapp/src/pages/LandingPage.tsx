@@ -65,29 +65,12 @@ export default function LandingPage() {
             {t('auth:welcomeSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center" style={{ rowGap: 16, columnGap: 16 }}>
-            {isAuthenticated ? (
-              <Link
-                to="/create"
-                className="px-8 py-3 bg-brand-primary text-surface-bg font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors text-lg"
-              >
-                {t('auth:startCreating')}
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/auth/register"
-                  className="px-8 py-3 bg-brand-primary text-surface-bg font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors text-lg"
-                >
-                  {t('auth:register')}
-                </Link>
-                <Link
-                  to="/auth/login"
-                  className="px-8 py-3 border border-white/10 text-content-primary font-medium rounded-xl hover:bg-white/5 transition-colors text-lg"
-                >
-                  {t('auth:login')}
-                </Link>
-              </>
-            )}
+            <Link
+              to={isAuthenticated ? '/create' : '/auth/login'}
+              className="px-8 py-3 bg-brand-primary text-surface-bg font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors text-lg"
+            >
+              {isAuthenticated ? t('auth:startCreating') : t('auth:getStarted', 'Get Started')}
+            </Link>
           </div>
         </div>
       </section>

@@ -122,20 +122,12 @@ export const WebLayout: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center" style={{ columnGap: 8 }}>
-                  <Link
-                    to="/auth/login"
-                    className="text-sm font-medium text-content-secondary hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/[0.04]"
-                  >
-                    {t('auth:login', 'Log In')}
-                  </Link>
-                  <Link
-                    to="/auth/register"
-                    className="text-sm font-semibold bg-brand-primary text-surface-bg px-5 py-2 rounded-xl hover:bg-brand-primary-light transition-colors"
-                  >
-                    {t('auth:register', 'Sign Up')}
-                  </Link>
-                </div>
+                <Link
+                  to="/auth/login"
+                  className="text-sm font-semibold bg-brand-primary text-surface-bg px-5 py-2 rounded-xl hover:bg-brand-primary-light transition-colors"
+                >
+                  {t('auth:signIn', 'Sign In')}
+                </Link>
               )}
             </div>
 
@@ -204,22 +196,13 @@ export const WebLayout: React.FC = () => {
                     {t('auth:logout', 'Log Out')}
                   </button>
                 ) : (
-                  <>
-                    <Link
-                      to="/auth/login"
-                      className="text-sm text-content-secondary px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {t('auth:login', 'Log In')}
-                    </Link>
-                    <Link
-                      to="/auth/register"
-                      className="text-sm font-semibold text-brand-primary px-3 py-2.5 rounded-lg hover:bg-brand-primary/10 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {t('auth:register', 'Sign Up')}
-                    </Link>
-                  </>
+                  <Link
+                    to="/auth/login"
+                    className="text-sm font-semibold text-brand-primary px-3 py-2.5 rounded-lg hover:bg-brand-primary/10 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {t('auth:signIn', 'Sign In')}
+                  </Link>
                 )}
               </div>
             </div>
