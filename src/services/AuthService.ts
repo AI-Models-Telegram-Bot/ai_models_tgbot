@@ -354,14 +354,76 @@ export class AuthService {
     }
   }
 
+  // ── Web Auth Token (QR Code Login) ─────────────────────
+
+  async createWebAuthToken(): Promise<{ token: string; deepLink: string; expiresAt: Date }> {
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await prisma.webAuthToken.create({
+      data: { token, expiresAt },
+    });
+
+    const deepLink = `https://t.me/${config.bot.username}?start=auth_${token}`;
+    return { token, deepLink, expiresAt };
+  }
+
+  async confirmWebAuthToken(token: string, userId: string): Promise<void> {
+    const record = await prisma.webAuthToken.findUnique({ where: { token } });
+    if (!record || record.status !== 'PENDING' || record.expiresAt < new Date()) {
+      throw new Error('Invalid or expired auth token');
+    }
+
+    const tokens = await this.generateTokens(userId);
+
+    await prisma.webAuthToken.update({
+      where: { id: record.id },
+      data: {
+        status: 'CONFIRMED',
+        confirmedByUser: userId,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
+    });
+  }
+
+  async checkWebAuthToken(token: string): Promise<{ status: string; accessToken?: string; refreshToken?: string }> {
+    const record = await prisma.webAuthToken.findUnique({ where: { token } });
+    if (!record) {
+      return { status: 'expired' };
+    }
+
+    if (record.status === 'CONFIRMED' && record.accessToken && record.refreshToken) {
+      return {
+        status: 'confirmed',
+        accessToken: record.accessToken,
+        refreshToken: record.refreshToken,
+      };
+    }
+
+    if (record.expiresAt < new Date()) {
+      return { status: 'expired' };
+    }
+
+    return { status: 'pending' };
+  }
+
   // ── Cleanup ─────────────────────────────────────────────
 
   async cleanupExpiredTokens(): Promise<void> {
-    const deleted = await prisma.refreshToken.deleteMany({
-      where: { expiresAt: { lt: new Date() } },
-    });
-    if (deleted.count > 0) {
-      logger.info(`Cleaned up ${deleted.count} expired refresh tokens`);
+    const [refreshDeleted, webAuthDeleted] = await Promise.all([
+      prisma.refreshToken.deleteMany({
+        where: { expiresAt: { lt: new Date() } },
+      }),
+      prisma.webAuthToken.deleteMany({
+        where: { expiresAt: { lt: new Date() } },
+      }),
+    ]);
+    if (refreshDeleted.count > 0) {
+      logger.info(`Cleaned up ${refreshDeleted.count} expired refresh tokens`);
+    }
+    if (webAuthDeleted.count > 0) {
+      logger.info(`Cleaned up ${webAuthDeleted.count} expired web auth tokens`);
     }
   }
 }

@@ -49,4 +49,14 @@ export const authApi = {
 
   resetPassword: (token: string, password: string) =>
     rootApiClient.post('/api/auth/reset-password', { token, password }),
+
+  // Telegram QR auth
+  createTelegramQR: () =>
+    rootApiClient.post<{ token: string; deepLink: string; expiresAt: string }>('/api/auth/telegram-qr/create'),
+
+  checkTelegramQR: (token: string) =>
+    rootApiClient.get<{ status: 'pending' | 'confirmed' | 'expired'; accessToken?: string; refreshToken?: string }>(
+      '/api/auth/telegram-qr/check',
+      { params: { token } },
+    ),
 };

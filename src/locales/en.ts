@@ -72,6 +72,9 @@ Choose a category to start:
 
 Use the menu below to navigate.`,
 
+    // Web Auth
+    webAuthSuccess: '✅ You have successfully logged in to the web version of VseoNix. Please return to the website to continue.',
+
     // Main Menu
     chooseOption: 'Choose an option:',
     chooseCategoryOrAction: 'Choose a category or action:',

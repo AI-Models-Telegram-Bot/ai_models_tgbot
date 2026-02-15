@@ -11,6 +11,7 @@ export type VideoFunction = 'kling' | 'kling-pro' | 'veo-fast' | 'veo' | 'sora' 
 
 export interface BotContext extends Context {
   user?: User;
+  webAuthConfirmed?: boolean;
   session?: {
     selectedModel?: string;
     awaitingInput?: boolean;

@@ -15,6 +15,12 @@ export async function handleStart(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
+  // Web QR auth confirmation
+  if (ctx.webAuthConfirmed) {
+    await ctx.reply(l.messages.webAuthSuccess, getMainKeyboard(lang));
+    return;
+  }
+
   await ctx.reply(l.messages.welcome, getMainKeyboard(lang));
 }
 
