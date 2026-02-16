@@ -57,6 +57,7 @@ export const config = {
   yookassa: {
     shopId: process.env.YOOKASSA_SHOP_ID || '',
     secretKey: process.env.YOOKASSA_SECRET_KEY || '',
+    defaultEmail: process.env.YOOKASSA_DEFAULT_EMAIL || 'support@vseonix.com',
   },
   smtp: {
     host: process.env.SMTP_HOST || '',
