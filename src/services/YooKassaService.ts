@@ -73,6 +73,13 @@ export class YooKassaService {
       throw new Error(`Tier ${tier} does not have a RUB price`);
     }
 
+    // Fetch user email for the fiscal receipt (54-FZ)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    const customerEmail = user?.email || config.yookassa.defaultEmail;
+
     // Create a PENDING payment record in the database
     const payment = await prisma.payment.create({
       data: {
@@ -107,6 +114,22 @@ export class YooKassaService {
             return_url: returnUrlWithPayment,
           },
           description: `${planConfig.name} plan subscription`,
+          receipt: {
+            customer: { email: customerEmail },
+            items: [
+              {
+                description: `Подписка ${planConfig.name}`,
+                quantity: '1.00',
+                amount: {
+                  value: planConfig.priceRUB.toFixed(2),
+                  currency: 'RUB',
+                },
+                vat_code: 1,
+                payment_subject: 'service',
+                payment_mode: 'full_payment',
+              },
+            ],
+          },
           ...(paymentMethodType && {
             payment_method_data: { type: paymentMethodType },
           }),
