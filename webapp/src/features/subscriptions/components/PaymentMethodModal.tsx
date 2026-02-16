@@ -8,6 +8,11 @@ import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { PaymentMethodInfo, PaymentMethod } from '@/types/payment.types';
 
+// Payment method icon assets
+import sbpIcon from '@/assets/icons/sbp.svg';
+import sberpayIcon from '@/assets/icons/sberpay.svg';
+import telegramStarsIcon from '@/assets/icons/telegram-stars.svg';
+
 // ── Brand styles per payment method ──────────────────────────────
 
 const METHOD_STYLES: Record<string, {
@@ -37,88 +42,32 @@ const METHOD_STYLES: Record<string, {
   },
 };
 
-// ── Inline SVG icons ─────────────────────────────────────────────
+// ── Payment method icons ─────────────────────────────────────────
+
+const ICON_MAP: Record<string, string> = {
+  sbp: sbpIcon,
+  sberpay: sberpayIcon,
+  stars: telegramStarsIcon,
+};
 
 const PaymentIcon: React.FC<{ type: string }> = ({ type }) => {
-  switch (type) {
-    case 'sbp':
-      // СБП (Система быстрых платежей) — official logo: multi-colored diamond rhombuses
-      return (
-        <svg viewBox="0 0 40 40" width="28" height="28">
-          <rect width="40" height="40" rx="8" fill="white" />
-          {/* SBP logo — 4 colored triangles forming the distinctive diamond pattern */}
-          <g transform="translate(8, 5) scale(0.6)">
-            {/* Top-left — blue */}
-            <polygon points="20,0 0,12 0,20 20,8" fill="#5B57A2" />
-            {/* Top-right — green */}
-            <polygon points="20,0 40,12 40,20 20,8" fill="#21A038" />
-            {/* Middle-left — orange/red */}
-            <polygon points="0,20 0,30 20,42 20,32" fill="#F26126" />
-            {/* Middle-right — blue */}
-            <polygon points="40,20 40,30 20,42 20,32" fill="#1D71B8" />
-            {/* Center-left — yellow */}
-            <polygon points="0,20 20,8 20,32" fill="#FBB034" />
-            {/* Center-right — teal */}
-            <polygon points="40,20 20,8 20,32" fill="#00AEEF" />
-          </g>
-        </svg>
-      );
-    case 'sberpay':
-      // Sber — official logo: gradient circle with checkmark-like swoosh
-      return (
-        <svg viewBox="0 0 40 40" width="28" height="28">
-          <defs>
-            <linearGradient id="sber_grad" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0%" stopColor="#21A038" />
-              <stop offset="100%" stopColor="#68D44F" />
-            </linearGradient>
-          </defs>
-          <rect width="40" height="40" rx="8" fill="url(#sber_grad)" />
-          {/* Sber circle mark with gradient arc */}
-          <circle cx="20" cy="20" r="10" fill="none" stroke="white" strokeWidth="2.5" strokeOpacity="0.3" />
-          <path
-            d="M20 10 A10 10 0 0 1 29.5 16"
-            fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
-          />
-          <path
-            d="M20 30 A10 10 0 0 1 10.5 24"
-            fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
-          />
-          {/* Horizontal bar through center */}
-          <line x1="12" y1="20" x2="28" y2="20" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
-      );
-    case 'card':
-      return (
-        <svg viewBox="0 0 40 40" width="28" height="28">
-          <rect width="40" height="40" rx="8" fill="#3B3B5C" />
-          <rect x="6" y="10" width="28" height="20" rx="3" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.9" />
-          <rect x="6" y="15" width="28" height="4" fill="white" fillOpacity="0.25" />
-          <rect x="10" y="23" width="8" height="2" rx="1" fill="white" fillOpacity="0.6" />
-          <rect x="22" y="23" width="4" height="2" rx="1" fill="white" fillOpacity="0.3" />
-        </svg>
-      );
-    case 'stars':
-      // Telegram Stars — official Telegram star icon (6-pointed star)
-      return (
-        <svg viewBox="0 0 40 40" width="28" height="28">
-          <defs>
-            <linearGradient id="tg_star_grad" x1="0.5" y1="0" x2="0.5" y2="1">
-              <stop offset="0%" stopColor="#FFD700" />
-              <stop offset="100%" stopColor="#F5A623" />
-            </linearGradient>
-          </defs>
-          <rect width="40" height="40" rx="8" fill="url(#tg_star_grad)" />
-          {/* Telegram Star — 6-pointed star */}
-          <path
-            d="M20 6 L22.8 15.2 L32 15.2 L24.6 21 L27.4 30.2 L20 24.4 L12.6 30.2 L15.4 21 L8 15.2 L17.2 15.2 Z"
-            fill="white"
-          />
-        </svg>
-      );
-    default:
-      return <span className="text-2xl">💳</span>;
+  const iconSrc = ICON_MAP[type];
+  if (iconSrc) {
+    return <img src={iconSrc} alt={type} className="w-7 h-7 object-contain" />;
   }
+  // Bank card — inline SVG (no brand asset needed)
+  if (type === 'card') {
+    return (
+      <svg viewBox="0 0 40 40" width="28" height="28">
+        <rect width="40" height="40" rx="8" fill="#3B3B5C" />
+        <rect x="6" y="10" width="28" height="20" rx="3" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.9" />
+        <rect x="6" y="15" width="28" height="4" fill="white" fillOpacity="0.25" />
+        <rect x="10" y="23" width="8" height="2" rx="1" fill="white" fillOpacity="0.6" />
+        <rect x="22" y="23" width="4" height="2" rx="1" fill="white" fillOpacity="0.3" />
+      </svg>
+    );
+  }
+  return <span className="text-2xl">💳</span>;
 };
 
 // ── Component ────────────────────────────────────────────────────
