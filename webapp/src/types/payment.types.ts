@@ -1,4 +1,4 @@
-export type PaymentMethod = 'telegram_stars' | 'yookassa' | 'sbp' | 'card_ru';
+export type PaymentMethod = 'telegram_stars' | 'yookassa' | 'sbp' | 'sberpay' | 'card_ru';
 
 export interface CreatePaymentRequest {
   telegramId?: string;

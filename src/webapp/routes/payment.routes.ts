@@ -87,14 +87,22 @@ router.post('/payment/create', async (req, res) => {
         starsAmount,
         priceUSD: planConfig.priceUSD,
       });
-    } else if (paymentMethod === 'yookassa' || paymentMethod === 'sbp' || paymentMethod === 'card_ru') {
-      // All Russian payment methods go through YooKassa
+    } else if (['yookassa', 'sbp', 'sberpay', 'card_ru'].includes(paymentMethod)) {
+      // All Russian payment methods go through YooKassa with specific payment_method_data.type
+      const yookassaMethodMap: Record<string, 'sbp' | 'sberbank' | 'bank_card' | undefined> = {
+        sbp: 'sbp',
+        sberpay: 'sberbank',
+        card_ru: 'bank_card',
+        yookassa: undefined,
+      };
+      const yookassaType = yookassaMethodMap[paymentMethod];
       const baseReturnUrl = req.body.returnUrl || `${config.webapp.url || 'https://webapp.vseonix.com'}/payment/success`;
 
       const { confirmationUrl, paymentId } = await yookassaService.createPayment(
         user.id,
         tier as SubscriptionTier,
         baseReturnUrl,
+        yookassaType,
       );
 
       return res.json({
@@ -194,40 +202,40 @@ router.get('/payment/methods', (_req, res) => {
   return res.json({
     methods: [
       {
-        id: 'telegram_stars',
-        name: 'Telegram Stars',
-        nameRu: 'Telegram Stars',
-        icon: '⭐',
-        available: true,
-        description: 'Pay with Telegram Stars',
-        descriptionRu: 'Оплата звёздами Telegram',
-      },
-      {
-        id: 'yookassa',
-        name: 'YooKassa',
-        nameRu: 'ЮKassa',
-        icon: '💳',
-        available: true,
-        description: 'Russian cards & wallets',
-        descriptionRu: 'Российские карты и кошельки',
-      },
-      {
         id: 'sbp',
-        name: 'SBP',
+        name: 'SBP (Fast Payments)',
         nameRu: 'СБП',
-        icon: '🏦',
+        icon: 'sbp',
         available: true,
         description: 'System of Fast Payments',
         descriptionRu: 'Система быстрых платежей',
       },
       {
+        id: 'sberpay',
+        name: 'SberPay',
+        nameRu: 'SberPay',
+        icon: 'sberpay',
+        available: true,
+        description: 'Pay with SberPay',
+        descriptionRu: 'Оплата через SberPay',
+      },
+      {
         id: 'card_ru',
         name: 'Bank Card',
         nameRu: 'Банковская карта',
-        icon: '💳',
+        icon: 'card',
         available: true,
-        description: 'Mir, Visa, Mastercard (RU)',
-        descriptionRu: 'Мир, Visa, Mastercard (РФ)',
+        description: 'Mir, Visa, Mastercard',
+        descriptionRu: 'Мир, Visa, Mastercard',
+      },
+      {
+        id: 'telegram_stars',
+        name: 'Telegram Stars',
+        nameRu: 'Telegram Stars',
+        icon: 'stars',
+        available: true,
+        description: 'Pay with Telegram Stars',
+        descriptionRu: 'Оплата звёздами Telegram',
       },
     ],
   });

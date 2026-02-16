@@ -62,6 +62,7 @@ export class YooKassaService {
     userId: string,
     tier: SubscriptionTier,
     returnUrl: string,
+    paymentMethodType?: 'sbp' | 'sberbank' | 'bank_card',
   ): Promise<{ confirmationUrl: string; paymentId: string }> {
     const planConfig = getPlanByTier(tier as any);
     if (!planConfig) {
@@ -106,6 +107,9 @@ export class YooKassaService {
             return_url: returnUrlWithPayment,
           },
           description: `${planConfig.name} plan subscription`,
+          ...(paymentMethodType && {
+            payment_method_data: { type: paymentMethodType },
+          }),
           metadata: {
             userId,
             tier,
