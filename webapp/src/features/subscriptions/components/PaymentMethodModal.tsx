@@ -183,9 +183,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
         telegramId,
         tier: plan.tier,
         paymentMethod: selectedMethod,
-        returnUrl: isTelegramEnvironment()
-          ? undefined
-          : `${window.location.origin}/payment/success`,
+        returnUrl: `${window.location.origin}/payment/success`,
       });
 
       if (response.method === 'telegram_stars' && 'invoiceUrl' in response) {
