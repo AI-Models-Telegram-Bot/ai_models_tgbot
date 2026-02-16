@@ -19,6 +19,7 @@ interface TelegramWebApp {
   setBackgroundColor: (color: string) => void;
   openInvoice: (url: string, callback: (status: string) => void) => void;
   openTelegramLink: (url: string) => void;
+  openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
   initData: string;
   initDataUnsafe: {
     user?: {
@@ -93,6 +94,19 @@ export function openTelegramLink(url: string): void {
   const webapp = getWebApp();
   if (webapp) {
     webapp.openTelegramLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+/**
+ * Open an external URL in the in-app browser (Telegram) or new tab (web).
+ * Unlike window.location.href, this keeps the webapp alive underneath.
+ */
+export function openExternalLink(url: string): void {
+  const webapp = getWebApp();
+  if (webapp?.openLink) {
+    webapp.openLink(url);
   } else {
     window.open(url, '_blank');
   }
