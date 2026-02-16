@@ -151,6 +151,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           setIsProcessing(false);
         });
       } else if (response.method === 'yookassa' && 'confirmationUrl' in response) {
+        // Open in Telegram's in-app browser — mini-app stays alive underneath
         openExternalLink(response.confirmationUrl);
         setIsProcessing(false);
         onClose();
