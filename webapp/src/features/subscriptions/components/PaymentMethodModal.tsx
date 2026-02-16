@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Modal, Button, Skeleton } from '@/shared/ui';
 import { paymentApi } from '@/services/api/payment.api';
-import { openTelegramInvoice, openExternalLink, isTelegramEnvironment } from '@/services/telegram/telegram';
+import { openTelegramInvoice, isTelegramEnvironment } from '@/services/telegram/telegram';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { PaymentMethodInfo, PaymentMethod } from '@/types/payment.types';
@@ -151,10 +151,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           setIsProcessing(false);
         });
       } else if (response.method === 'yookassa' && 'confirmationUrl' in response) {
-        // Open in Telegram's in-app browser — mini-app stays alive underneath
-        openExternalLink(response.confirmationUrl);
-        setIsProcessing(false);
-        onClose();
+        window.location.href = response.confirmationUrl;
       } else if (response.method === 'contact') {
         setError(t('subscriptions:payment.enterpriseContact'));
         setIsProcessing(false);

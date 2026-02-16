@@ -8,6 +8,14 @@ import './styles/index.css';
 // Signal to the timeout detector in index.html that the JS bundle loaded
 (window as any).__appLoaded = true;
 
+// When the user navigates back from an external page (e.g. YooKassa payment),
+// the browser may restore a cached blank page. Force a reload to re-init the SPA.
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
+
 try {
   initTelegramWebApp();
 
