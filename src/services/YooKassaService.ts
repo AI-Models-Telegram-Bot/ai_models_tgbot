@@ -100,12 +100,16 @@ export class YooKassaService {
     const separator = returnUrl.includes('?') ? '&' : '?';
     const returnUrlWithPayment = `${returnUrl}${separator}paymentId=${payment.id}`;
 
+    // Optional test price override (e.g. YOOKASSA_TEST_AMOUNT=1.00)
+    const testAmount = process.env.YOOKASSA_TEST_AMOUNT;
+    const chargeAmount = testAmount ? parseFloat(testAmount) : planConfig.priceRUB;
+
     try {
       const response = await this.client.post<YooKassaPaymentResponse>(
         '/payments',
         {
           amount: {
-            value: planConfig.priceRUB.toFixed(2),
+            value: chargeAmount.toFixed(2),
             currency: 'RUB',
           },
           capture: true,
@@ -121,7 +125,7 @@ export class YooKassaService {
                 description: `Подписка ${planConfig.name}`,
                 quantity: '1.00',
                 amount: {
-                  value: planConfig.priceRUB.toFixed(2),
+                  value: chargeAmount.toFixed(2),
                   currency: 'RUB',
                 },
                 vat_code: 1,
