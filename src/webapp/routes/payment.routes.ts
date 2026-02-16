@@ -199,6 +199,9 @@ router.get('/payment/status/:paymentId', async (req, res) => {
  * Returns available payment methods.
  */
 router.get('/payment/methods', (_req, res) => {
+  // YooKassa test shops only support bank_card — disable SBP/SberPay in test mode
+  const isTestMode = config.yookassa.secretKey.startsWith('test_');
+
   return res.json({
     methods: [
       {
@@ -206,7 +209,7 @@ router.get('/payment/methods', (_req, res) => {
         name: 'SBP (Fast Payments)',
         nameRu: 'СБП',
         icon: 'sbp',
-        available: true,
+        available: !isTestMode,
         description: 'System of Fast Payments',
         descriptionRu: 'Система быстрых платежей',
       },
@@ -215,7 +218,7 @@ router.get('/payment/methods', (_req, res) => {
         name: 'SberPay',
         nameRu: 'SberPay',
         icon: 'sberpay',
-        available: true,
+        available: !isTestMode,
         description: 'Pay with SberPay',
         descriptionRu: 'Оплата через SberPay',
       },
