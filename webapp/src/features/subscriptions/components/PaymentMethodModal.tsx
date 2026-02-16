@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Modal, Button, Skeleton } from '@/shared/ui';
 import { paymentApi } from '@/services/api/payment.api';
-import { openTelegramInvoice, isTelegramEnvironment } from '@/services/telegram/telegram';
+import { openTelegramInvoice, openExternalLink, isTelegramEnvironment } from '@/services/telegram/telegram';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { PaymentMethodInfo, PaymentMethod } from '@/types/payment.types';
