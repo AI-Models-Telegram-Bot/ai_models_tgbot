@@ -8,6 +8,90 @@ import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { PaymentMethodInfo, PaymentMethod } from '@/types/payment.types';
 
+// ── Brand styles per payment method ──────────────────────────────
+
+const METHOD_STYLES: Record<string, {
+  selectedBorder: string;
+  selectedBg: string;
+  accentColor: string;
+}> = {
+  sbp: {
+    selectedBorder: 'border-[#5B2D8E]',
+    selectedBg: 'bg-[#5B2D8E]/10',
+    accentColor: 'text-[#00AEEF]',
+  },
+  sberpay: {
+    selectedBorder: 'border-[#21A038]',
+    selectedBg: 'bg-[#21A038]/10',
+    accentColor: 'text-[#21A038]',
+  },
+  card_ru: {
+    selectedBorder: 'border-brand-primary',
+    selectedBg: 'bg-brand-primary/10',
+    accentColor: 'text-brand-primary',
+  },
+  telegram_stars: {
+    selectedBorder: 'border-[#E5A100]',
+    selectedBg: 'bg-[#E5A100]/10',
+    accentColor: 'text-[#FFD700]',
+  },
+};
+
+// ── Inline SVG icons ─────────────────────────────────────────────
+
+const PaymentIcon: React.FC<{ type: string }> = ({ type }) => {
+  switch (type) {
+    case 'sbp':
+      return (
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <defs>
+            <linearGradient id="sbpg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#5B2D8E" />
+              <stop offset="50%" stopColor="#1D71B8" />
+              <stop offset="100%" stopColor="#00AEEF" />
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#sbpg)" />
+          <path d="M9 11h4l3 5-3 5H9l3-5-3-5zm10 0h4l-3 5 3 5h-4l-3-5 3-5z" fill="white" fillOpacity="0.95" />
+        </svg>
+      );
+    case 'sberpay':
+      return (
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <rect x="2" y="2" width="28" height="28" rx="6" fill="#21A038" />
+          <circle cx="16" cy="16" r="8" fill="none" stroke="white" strokeWidth="2" strokeOpacity="0.9" />
+          <path d="M12 16l3 3 5-6" stroke="white" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'card':
+      return (
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <rect x="2" y="2" width="28" height="28" rx="6" fill="#3B3B5C" />
+          <rect x="6" y="9" width="20" height="14" rx="2.5" fill="none" stroke="white" strokeWidth="1.5" strokeOpacity="0.85" />
+          <rect x="6" y="13" width="20" height="3" fill="white" fillOpacity="0.25" />
+          <rect x="9" y="19" width="6" height="1.5" rx="0.75" fill="white" fillOpacity="0.5" />
+        </svg>
+      );
+    case 'stars':
+      return (
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <defs>
+            <linearGradient id="starg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FFD700" />
+              <stop offset="100%" stopColor="#F59E0B" />
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#starg)" />
+          <path d="M16 7l2.47 5.01L24 12.76l-4 3.9.94 5.5L16 19.71l-4.94 2.45.94-5.5-4-3.9 5.53-.75Z" fill="white" />
+        </svg>
+      );
+    default:
+      return <span className="text-2xl">💳</span>;
+  }
+};
+
+// ── Component ────────────────────────────────────────────────────
+
 interface PaymentMethodModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,13 +99,6 @@ interface PaymentMethodModalProps {
   telegramId: string;
   onSuccess?: () => void;
 }
-
-const formatPriceDisplay = (priceUSD: number | null, priceRUB: number | null, lang: string) => {
-  if (priceUSD === null || priceUSD === 0) return '';
-  const rub = priceRUB ? `${priceRUB.toLocaleString()} ₽` : '';
-  const usd = `$${priceUSD}`;
-  return lang === 'ru' && rub ? `${rub} / ${usd}` : usd;
-};
 
 export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   isOpen,
@@ -96,9 +173,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           setIsProcessing(false);
         });
       } else if (response.method === 'yookassa' && 'confirmationUrl' in response) {
-        // Redirect to YooKassa payment page
         window.location.href = response.confirmationUrl;
-        // Don't set isProcessing false — page is navigating away
       } else if (response.method === 'contact') {
         setError(t('subscriptions:payment.enterpriseContact'));
         setIsProcessing(false);
@@ -118,6 +193,12 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     }
   }, [isOpen, methods]);
 
+  // Show RUB for Russian methods, USD for Telegram Stars
+  const isRubMethod = selectedMethod && selectedMethod !== 'telegram_stars';
+  const buttonPrice = isRubMethod
+    ? plan.priceRUB ? `${plan.priceRUB.toLocaleString()} ₽` : ''
+    : plan.priceUSD ? `$${plan.priceUSD}` : '';
+
   return (
     <Modal
       isOpen={isOpen}
@@ -125,7 +206,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
       title={t('subscriptions:payment.selectMethod')}
       size="md"
     >
-      <div className="p-5 space-y-5">
+      <div className="p-5 space-y-4">
         {/* Plan summary */}
         <div className="rounded-xl bg-white/5 border border-white/10 p-4">
           <div className="flex items-center justify-between">
@@ -135,61 +216,78 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                 {t('subscriptions:payment.monthlySubscription')}
               </p>
             </div>
-            <p className="text-xl font-bold text-white font-mono">
-              {formatPriceDisplay(plan.priceUSD, plan.priceRUB, lang)}
-            </p>
+            <div className="text-right">
+              {plan.priceRUB ? (
+                <p className="text-lg font-bold text-white font-mono">
+                  {plan.priceRUB.toLocaleString()} ₽
+                </p>
+              ) : null}
+              {plan.priceUSD ? (
+                <p className={`font-mono ${plan.priceRUB ? 'text-xs text-content-tertiary' : 'text-lg font-bold text-white'}`}>
+                  ${plan.priceUSD}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
 
         {/* Payment methods */}
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton variant="rectangular" height={64} className="rounded-xl" />
-            <Skeleton variant="rectangular" height={64} className="rounded-xl" />
+          <div className="space-y-2">
+            <Skeleton variant="rectangular" height={60} className="rounded-xl" />
+            <Skeleton variant="rectangular" height={60} className="rounded-xl" />
+            <Skeleton variant="rectangular" height={60} className="rounded-xl" />
           </div>
         ) : (
           <div className="space-y-2">
-            {methods.map((method) => (
-              <button
-                key={method.id}
-                onClick={() => {
-                  if (method.available) {
-                    hapticImpact('light');
-                    setSelectedMethod(method.id);
-                  }
-                }}
-                disabled={!method.available || isProcessing}
-                className={`w-full flex items-center p-4 rounded-xl border transition-all ${
-                  selectedMethod === method.id
-                    ? 'border-brand-primary bg-brand-primary/10'
-                    : method.available
-                    ? 'border-white/10 bg-white/5 hover:border-white/20'
-                    : 'border-white/5 bg-white/[0.02] opacity-50 cursor-not-allowed'
-                }`}
-              >
-                <span className="text-2xl mr-3">{method.icon}</span>
-                <div className="flex-1 text-left">
-                  <p className="text-white text-sm font-medium">
-                    {lang === 'ru' ? method.nameRu : method.name}
-                  </p>
-                  <p className="text-content-tertiary text-xs">
-                    {lang === 'ru' ? method.descriptionRu : method.description}
-                  </p>
-                </div>
-                {method.comingSoon && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-content-tertiary/20 text-content-tertiary">
-                    {t('subscriptions:payment.soon')}
-                  </span>
-                )}
-                {selectedMethod === method.id && method.available && (
-                  <span className="text-brand-primary ml-2">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </span>
-                )}
-              </button>
-            ))}
+            {methods.map((method) => {
+              const style = METHOD_STYLES[method.id];
+              const isSelected = selectedMethod === method.id;
+
+              return (
+                <button
+                  key={method.id}
+                  onClick={() => {
+                    if (method.available) {
+                      hapticImpact('light');
+                      setSelectedMethod(method.id);
+                    }
+                  }}
+                  disabled={!method.available || isProcessing}
+                  className={`w-full flex items-center p-3 rounded-xl border transition-all ${
+                    isSelected
+                      ? `${style?.selectedBorder || 'border-brand-primary'} ${style?.selectedBg || 'bg-brand-primary/10'}`
+                      : method.available
+                      ? 'border-white/10 bg-white/5 hover:border-white/20'
+                      : 'border-white/5 bg-white/[0.02] opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3 shrink-0">
+                    <PaymentIcon type={method.icon} />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="text-white text-sm font-medium">
+                      {lang === 'ru' ? method.nameRu : method.name}
+                    </p>
+                    <p className="text-content-tertiary text-xs truncate">
+                      {lang === 'ru' ? method.descriptionRu : method.description}
+                    </p>
+                  </div>
+                  {method.comingSoon && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-content-tertiary/20 text-content-tertiary ml-2">
+                      {t('subscriptions:payment.soon')}
+                    </span>
+                  )}
+                  {isSelected && method.available && (
+                    <span className={`${style?.accentColor || 'text-brand-primary'} ml-2 shrink-0`}>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -218,8 +316,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
             </span>
           ) : (
             <>
-              {selectedMethod === 'telegram_stars' && '⭐ '}
-              {t('subscriptions:payment.pay')} {formatPriceDisplay(plan.priceUSD, plan.priceRUB, lang)}
+              {t('subscriptions:payment.pay')}{buttonPrice ? ` ${buttonPrice}` : ''}
             </>
           )}
         </Button>
