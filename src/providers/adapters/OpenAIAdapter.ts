@@ -70,6 +70,17 @@ export class OpenAIAdapter extends EnhancedProvider {
     text: string,
     options?: Record<string, unknown>
   ): Promise<AudioGenerationResult> {
-    throw new Error('OpenAI does not support audio generation');
+    const start = Date.now();
+    try {
+      const result = await this.provider.generateAudio(text, options);
+      const time = Date.now() - start;
+      const cost = text.length * 0.000015; // ~$0.015 per 1K chars
+      this.updateStats(true, cost, time);
+      return result;
+    } catch (error) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      throw error;
+    }
   }
 }

@@ -44,7 +44,7 @@ export class RunwareProvider extends EnhancedProvider {
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<TextGenerationResult> {
-    throw new Error('Runware does not support text generation — use AIMLAPI or OpenAI');
+    throw new Error('Runware does not support text generation — use OpenAI or Anthropic');
   }
 
   /**
@@ -110,6 +110,6 @@ export class RunwareProvider extends EnhancedProvider {
     text: string,
     options?: Record<string, unknown>
   ): Promise<AudioGenerationResult> {
-    throw new Error('Runware does not support audio generation — use AIMLAPI or ElevenLabs');
+    throw new Error('Runware does not support audio generation — use OpenAI or ElevenLabs');
   }
 }

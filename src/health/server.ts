@@ -42,6 +42,9 @@ function isYooKassaIP(ip: string): boolean {
 export function createHealthServer(port: number = 3000): express.Application {
   const app = express();
 
+  // Trust proxy: 1 hop (nginx reverse proxy)
+  app.set('trust proxy', 1);
+
   // --- CORS & JSON parsing (MUST be before all routes) ---
   const allowedOrigins = [
     'https://vseonix.com',

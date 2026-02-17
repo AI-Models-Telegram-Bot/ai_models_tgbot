@@ -232,17 +232,6 @@ export async function handleImageFunctionSelection(ctx: BotContext, functionId: 
 
 // ── Aspect ratio → provider option mapping ──────────────
 
-const ASPECT_TO_AIMLAPI_SIZE: Record<string, string> = {
-  '1:1': 'square',
-  '16:9': 'landscape_16_9',
-  '9:16': 'portrait_9_16',
-  '4:3': 'landscape_4_3',
-  '3:4': 'portrait_3_4',
-  '3:2': 'landscape_4_3',  // closest match
-  '2:3': 'portrait_3_4',   // closest match
-  '21:9': 'landscape_16_9', // closest match
-};
-
 const ASPECT_TO_PIAPI_DIMS: Record<string, { width: number; height: number }> = {
   '1:1': { width: 1024, height: 1024 },
   '16:9': { width: 1344, height: 768 },
@@ -274,8 +263,6 @@ export async function getImageOptionsForFunction(
 
     const options: Record<string, unknown> = {
       aspectRatio,
-      // AIMLAPI format
-      size: ASPECT_TO_AIMLAPI_SIZE[aspectRatio] || 'square',
       // PiAPI format
       ...(ASPECT_TO_PIAPI_DIMS[aspectRatio] || { width: 1024, height: 1024 }),
       // DALL-E format

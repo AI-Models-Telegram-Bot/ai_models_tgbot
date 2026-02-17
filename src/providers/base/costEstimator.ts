@@ -30,26 +30,26 @@ const IMAGE_PRICING: Record<string, number> = {
   'sdxl': 0.01, // Replicate ~$0.01
   'playground-v2-5': 0.01, // Replicate ~$0.01
   'dall-e-2': 0.02, // OpenAI $0.02
-  'flux-dev': 0.025, // AIMLAPI ~$0.025
-  'flux-pro': 0.04, // AIMLAPI/Replicate $0.04
+  'flux-dev': 0.025, // Runware/Replicate ~$0.025
+  'flux-pro': 0.04, // Replicate $0.04
   'dall-e-3': 0.04, // OpenAI $0.04
-  'ideogram': 0.08, // AIMLAPI ~$0.08
+  'nano-banana-pro': 0.09, // KieAI ~$0.09
   // Provider-specific model IDs (for backward compatibility)
   'Qubico/flux1-schnell': 0.0015,
   'flux/schnell': 0.003,
   'flux-kontext-pro': 0.01,
   'flux/dev': 0.025,
   'flux-pro/v1.1': 0.04,
-  'ideogram/v2': 0.08,
 };
 
 // Video pricing (per second) — keyed by user-facing slug
 const VIDEO_PRICING: Record<string, number> = {
   animatediff: 0.012, // Replicate ~$0.06/5s
   'zeroscope-v2': 0.012, // Replicate ~$0.06/5s
-  wan: 0.02, // AIMLAPI ~$0.10/5s
+  wan: 0.02, // Replicate ~$0.10/5s
   kling: 0.026, // PiAPI $0.13/5s
   'kling-pro': 0.026, // PiAPI $0.26/10s
+  seedance: 0.09, // KieAI ~$0.45/5s
   luma: 0.08, // Replicate ~$0.40/5s
   // Provider-specific model IDs
   'klingai/v2-master-text-to-video': 0.074,
@@ -59,7 +59,7 @@ const VIDEO_PRICING: Record<string, number> = {
 
 // Audio pricing — keyed by user-facing slug
 const AUDIO_PRICING: Record<string, { perChar?: number; perRequest?: number }> = {
-  'deepgram-tts': { perChar: 0.000005 }, // AIMLAPI ~$0.001/200 chars
+  'deepgram-tts': { perChar: 0.000015 }, // OpenAI TTS (~$0.015/1K chars)
   'fish-speech': { perRequest: 0.03 }, // Replicate ~$0.03/run
   'xtts-v2': { perRequest: 0.05 }, // Replicate ~$0.05/run
   bark: { perRequest: 0.07 }, // Replicate ~$0.07/run
@@ -68,7 +68,7 @@ const AUDIO_PRICING: Record<string, { perChar?: number; perRequest?: number }> =
   suno: { perRequest: 0.10 }, // Replicate ~$0.10/run
   // Provider-level keys (for backward compatibility)
   elevenlabs: { perChar: 0.0003 },
-  aimlapi: { perChar: 0.000005 },
+  openai: { perChar: 0.000015 },
 };
 
 /**

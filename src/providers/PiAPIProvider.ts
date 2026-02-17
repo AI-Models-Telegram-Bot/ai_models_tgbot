@@ -41,7 +41,7 @@ export class PiAPIProvider extends EnhancedProvider {
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<TextGenerationResult> {
-    throw new Error('PiAPI text generation not supported — use AIMLAPI or OpenAI');
+    throw new Error('PiAPI text generation not supported — use OpenAI or Anthropic');
   }
 
   /**
@@ -147,7 +147,7 @@ export class PiAPIProvider extends EnhancedProvider {
     text: string,
     options?: Record<string, unknown>
   ): Promise<AudioGenerationResult> {
-    throw new Error('PiAPI audio generation not supported — use AIMLAPI or ElevenLabs');
+    throw new Error('PiAPI audio generation not supported — use OpenAI or ElevenLabs');
   }
 
   /**

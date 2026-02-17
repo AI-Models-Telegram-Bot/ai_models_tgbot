@@ -6,8 +6,8 @@ export type AudioFunction = 'elevenlabs_voice' | 'voice_cloning' | 'suno' | 'sou
 export type ImageFamily = 'flux' | 'dall-e' | 'midjourney' | 'google-ai';
 export type ImageFunction = 'flux-schnell' | 'flux-kontext' | 'flux-dev' | 'flux-pro' | 'dall-e-2' | 'dall-e-3' | 'midjourney' | 'nano-banana-pro';
 
-export type VideoFamily = 'kling' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan';
-export type VideoFunction = 'kling' | 'kling-pro' | 'veo-fast' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan';
+export type VideoFamily = 'kling' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance';
+export type VideoFunction = 'kling' | 'kling-pro' | 'veo-fast' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance';
 
 export interface BotContext extends Context {
   user?: User;

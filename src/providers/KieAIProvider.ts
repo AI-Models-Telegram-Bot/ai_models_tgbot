@@ -49,7 +49,7 @@ export class KieAIProvider extends EnhancedProvider {
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<TextGenerationResult> {
-    throw new Error('Kie.ai text generation not supported — use AIMLAPI or OpenAI');
+    throw new Error('Kie.ai text generation not supported — use OpenAI or Anthropic');
   }
 
   /**
@@ -64,6 +64,10 @@ export class KieAIProvider extends EnhancedProvider {
 
     if (model === 'midjourney') {
       return this.generateMidjourneyImage(prompt, options);
+    }
+
+    if (model === 'nano-banana-pro') {
+      return this.generateNanoBananaImage(prompt, options);
     }
 
     const start = Date.now();
@@ -153,6 +157,12 @@ export class KieAIProvider extends EnhancedProvider {
         input.aspect_ratio = ar === '9:16' ? 'portrait' : 'landscape';
       }
 
+      // Seedance-specific
+      if (model.includes('seedance')) {
+        input.aspect_ratio = (options?.aspectRatio as string) || '16:9';
+        input.duration = (options?.duration as string) || '5';
+      }
+
       const createResponse = await this.client.post('/jobs/createTask', {
         model,
         input,
@@ -168,7 +178,9 @@ export class KieAIProvider extends EnhancedProvider {
       const videoUrl = await this.pollMarketTaskResult(taskId);
 
       const time = Date.now() - start;
-      const cost = 0.28;
+      let cost = 0.28; // default for Kling
+      if (model.includes('seedance')) cost = 0.45;
+      if (model.startsWith('sora-')) cost = 0.50;
       this.updateStats(true, cost, time);
 
       logger.info(`KieAI video: success (${time}ms, $${cost})`);
@@ -278,7 +290,7 @@ export class KieAIProvider extends EnhancedProvider {
     text: string,
     options?: Record<string, unknown>
   ): Promise<AudioGenerationResult> {
-    throw new Error('Kie.ai audio generation not supported — use AIMLAPI or ElevenLabs');
+    throw new Error('Kie.ai audio generation not supported — use OpenAI or ElevenLabs');
   }
 
   /**
@@ -329,6 +341,50 @@ export class KieAIProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('KieAI Midjourney: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Nano Banana Pro (Google Gemini Image) via Market endpoint
+   * POST /jobs/createTask → poll /jobs/recordInfo
+   */
+  private async generateNanoBananaImage(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<ImageGenerationResult> {
+    const start = Date.now();
+    try {
+      logger.info('KieAI image: starting Nano Banana Pro generation');
+
+      const createResponse = await this.client.post('/jobs/createTask', {
+        model: 'nano-banana-pro',
+        input: {
+          prompt,
+          aspect_ratio: (options?.aspectRatio as string) || '1:1',
+        },
+      });
+
+      const taskId = createResponse.data?.data?.taskId;
+      if (!taskId) {
+        const respData = JSON.stringify(createResponse.data).slice(0, 500);
+        throw new Error(`KieAI Nano Banana: no taskId in response: ${respData}`);
+      }
+
+      logger.info(`KieAI Nano Banana: task created, taskId=${taskId}`);
+
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+
+      const time = Date.now() - start;
+      const cost = 0.09;
+      this.updateStats(true, cost, time);
+
+      logger.info(`KieAI Nano Banana: success (${time}ms, $${cost})`);
+      return { imageUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Nano Banana: failed', error.response?.data || error.message);
       throw error;
     }
   }

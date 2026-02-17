@@ -23,7 +23,7 @@ export const imageQueue = new Queue<GenerationJobData>('image-generation', redis
     backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: 50,
     removeOnFail: 500,
-    timeout: 300000, // 5 min (async polling for AIMLAPI/PiAPI image gen)
+    timeout: 300000, // 5 min (async polling for KieAI/PiAPI image gen)
   },
 });
 

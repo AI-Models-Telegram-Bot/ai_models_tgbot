@@ -51,6 +51,7 @@ export const en = {
     videoRunwayFamily: '✈️ Runway',
     videoLumaFamily: '💫 Luma',
     videoWanFamily: '🌊 WAN',
+    videoSeedanceFamily: '🌱 Seedance',
     // Video Models
     videoKling: '🎥 Kling (⚡50)',
     videoKlingPro: '💎 Kling Pro (⚡100)',
@@ -356,6 +357,14 @@ Send a text prompt to generate a video.
 
 Fee: ⚡30 credits per video`,
 
+    videoSeedanceFamilyDesc: `🌱 <b>Seedance 2.0</b>
+
+ByteDance's latest video generation model — excellent motion quality and prompt adherence.
+
+💡 Adjust aspect ratio and duration in Video Settings, then send a text prompt.
+
+Fee: ⚡100 credits per video`,
+
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
 Professional video generation with smooth motion and natural dynamics.
@@ -420,6 +429,14 @@ Open-source video generation — affordable and versatile.
 Send a text prompt to generate a video.
 
 Fee: ⚡30 credits per video`,
+
+    videoSeedanceDesc: `🌱 <b>Seedance 2.0</b>
+
+ByteDance's latest video generation — excellent motion quality and prompt adherence.
+
+💡 Adjust aspect ratio and duration in Video Settings, then send a text prompt.
+
+Fee: ⚡100 credits per video`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',
