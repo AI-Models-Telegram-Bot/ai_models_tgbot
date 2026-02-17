@@ -157,14 +157,14 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           </Button>
         ) : (
           <Button
-            variant={isPopular ? 'primary' : 'secondary'}
+            variant={plan.priceUSD === 0 ? 'secondary' : 'primary'}
             fullWidth
             size="sm"
             onClick={handleUpgradeClick}
           >
             {plan.priceUSD === 0
               ? t('subscriptions:getStarted', 'Get Started')
-              : t('subscriptions:upgrade', 'Upgrade')}
+              : t('subscriptions:upgrade', 'Subscribe')}
           </Button>
         )}
       </div>

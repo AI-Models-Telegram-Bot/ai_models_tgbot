@@ -128,11 +128,15 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     hapticImpact('medium');
 
     try {
+      const successUrl = isTelegramEnvironment()
+        ? `${window.location.origin}/payment/success?source=bot`
+        : `${window.location.origin}/payment/success`;
+
       const response = await paymentApi.create({
         telegramId,
         tier: plan.tier,
         paymentMethod: selectedMethod,
-        returnUrl: `${window.location.origin}/payment/success`,
+        returnUrl: successUrl,
       });
 
       if (response.method === 'telegram_stars' && 'invoiceUrl' in response) {
