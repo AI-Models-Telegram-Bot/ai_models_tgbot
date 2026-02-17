@@ -18,9 +18,9 @@ const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes for video
  * Supports: Image (Flux Kontext, Midjourney), Video (Kling, Veo, Sora, Runway)
  * Docs: https://docs.kie.ai
  *
- * Image flow:
- *   POST /api/v1/flux/kontext/generate → taskId
- *   Poll GET /api/v1/flux/kontext/record-info?taskId=... → successFlag=1 → resultImageUrl
+ * Image flows:
+ *   Flux Kontext: POST /api/v1/flux/kontext/generate → poll /flux/kontext/record-info
+ *   Midjourney:   POST /api/v1/mj/generate → poll /mj/record-info
  *
  * Video flows:
  *   Kling/Sora: POST /api/v1/jobs/createTask → poll /jobs/recordInfo
@@ -294,8 +294,8 @@ export class KieAIProvider extends EnhancedProvider {
   }
 
   /**
-   * Midjourney image generation via Market endpoint
-   * POST /jobs/createTask → poll /jobs/recordInfo
+   * Midjourney image generation via dedicated MJ endpoint
+   * POST /mj/generate → poll /mj/record-info
    */
   private async generateMidjourneyImage(
     prompt: string,
@@ -309,16 +309,14 @@ export class KieAIProvider extends EnhancedProvider {
       const versionStr = (options?.version as string) || 'v6.1';
       const versionNum = versionStr.replace('v', '');
 
-      const createResponse = await this.client.post('/jobs/createTask', {
+      const createResponse = await this.client.post('/mj/generate', {
         taskType: 'mj_txt2img',
-        params: {
-          prompt,
-          aspectRatio: (options?.aspectRatio as string) || '1:1',
-          version: versionNum,
-          stylization: (options?.stylize as number) || 100,
-          speed: 'fast',
-          waterMark: false,
-        },
+        prompt,
+        aspectRatio: (options?.aspectRatio as string) || '1:1',
+        version: versionNum,
+        stylization: (options?.stylize as number) || 100,
+        speed: 'fast',
+        waterMark: false,
       });
 
       const taskId = createResponse.data?.data?.taskId;
@@ -329,7 +327,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Midjourney: task created, taskId=${taskId}`);
 
-      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+      const imageUrl = await this.pollMjTaskResult(taskId);
 
       const time = Date.now() - start;
       const cost = 0.04;
@@ -424,6 +422,43 @@ export class KieAIProvider extends EnhancedProvider {
     }
 
     throw new Error('KieAI image: polling timed out after 3 minutes');
+  }
+
+  /**
+   * Poll Midjourney task via dedicated MJ endpoint
+   * GET /mj/record-info?taskId=...
+   * successFlag: 0=processing, 1=success
+   * resultInfoJson.resultUrls[].resultUrl
+   */
+  private async pollMjTaskResult(taskId: string): Promise<string> {
+    const deadline = Date.now() + IMAGE_POLL_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      await this.sleep(POLL_INTERVAL_MS);
+
+      const response = await this.client.get('/mj/record-info', {
+        params: { taskId },
+      });
+
+      const data = response.data?.data;
+      const successFlag = data?.successFlag;
+
+      logger.debug(`KieAI MJ poll: successFlag=${successFlag}, taskId=${taskId}`);
+
+      if (successFlag === 1) {
+        const resultUrl = data?.resultInfoJson?.resultUrls?.[0]?.resultUrl;
+        if (!resultUrl) {
+          throw new Error('KieAI Midjourney: success but no result URL');
+        }
+        return resultUrl;
+      }
+
+      if (data?.errorCode || data?.errorMessage) {
+        throw new Error(`KieAI Midjourney task failed: ${data.errorMessage || data.errorCode}`);
+      }
+    }
+
+    throw new Error('KieAI Midjourney: polling timed out');
   }
 
   /**
