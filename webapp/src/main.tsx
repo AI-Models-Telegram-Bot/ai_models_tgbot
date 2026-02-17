@@ -13,6 +13,26 @@ import './styles/index.css';
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) {
     window.location.reload();
+    return;
+  }
+  // Some WebViews (e.g. Telegram) don't set event.persisted on bfcache restore.
+  // Check if the React root is empty after a short delay and reload if so.
+  setTimeout(() => {
+    const root = document.getElementById('root');
+    if (root && root.childElementCount === 0) {
+      window.location.reload();
+    }
+  }, 200);
+});
+
+// Also detect visibility changes — when the WebView becomes visible again
+// after being in the background (e.g. returning from in-app browser).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    const root = document.getElementById('root');
+    if (root && root.childElementCount === 0) {
+      window.location.reload();
+    }
   }
 });
 

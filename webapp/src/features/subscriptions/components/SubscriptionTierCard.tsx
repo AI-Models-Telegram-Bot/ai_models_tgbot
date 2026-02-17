@@ -71,7 +71,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
       className={cn(
-        'relative flex-shrink-0 w-[280px] rounded-2xl backdrop-blur-xl bg-surface-card/90 border transition-all duration-300',
+        'relative flex-shrink-0 w-[280px] h-[420px] rounded-2xl backdrop-blur-xl bg-surface-card/90 border transition-all duration-300 flex flex-col',
         isCurrent
           ? 'border-brand-primary/50 shadow-neon'
           : 'border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-4px]',
@@ -92,7 +92,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         </div>
       )}
 
-      <div className="p-5 pt-6">
+      <div className="p-5 pt-6 flex flex-col flex-1">
         {/* Header — name + price */}
         <h3 className="text-xl font-bold text-white font-display">{plan.name}</h3>
         <div className="mt-1 mb-4">
@@ -127,7 +127,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         </div>
 
         {/* Features preview */}
-        <div className="space-y-1.5 mb-3">
+        <div className="space-y-1.5 mb-3 flex-1">
           {plan.features.slice(0, 3).map((feature, i) => (
             <div key={i} className="flex items-start text-sm" style={{ columnGap: 8 }}>
               <span className="text-brand-primary mt-0.5 text-xs">✓</span>
