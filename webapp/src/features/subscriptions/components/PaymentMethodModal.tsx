@@ -155,16 +155,15 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           setIsProcessing(false);
         });
       } else if (response.method === 'yookassa' && 'confirmationUrl' in response) {
-        // SBP & SberPay need deep links to banking apps — Telegram's mini-app
-        // WebView blocks custom URL schemes, so open these in Telegram's in-app
-        // browser where deep links work. Bank card only needs a web form, so it
-        // can stay in the WebView.
-        const needsDeepLink = selectedMethod === 'sbp' || selectedMethod === 'sberpay';
-        if (needsDeepLink && isTelegramEnvironment()) {
+        if (isTelegramEnvironment()) {
+          // In Telegram: open ALL YooKassa payments in the in-app browser.
+          // window.location.href breaks return flow (blank page on "Вернуться на сайт").
+          // The in-app browser keeps the webapp alive and handles deep links for SBP.
           openExternalLink(response.confirmationUrl);
           setIsProcessing(false);
           onClose();
         } else {
+          // On web: navigate directly (standard browser handles return properly)
           window.location.href = response.confirmationUrl;
         }
       } else if (response.method === 'contact') {
