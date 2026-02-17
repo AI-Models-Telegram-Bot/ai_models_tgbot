@@ -170,6 +170,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       // Send result to user (attach main keyboard to the last message)
       const kb = getMainKeyboardMarkup(lang);
 
+      // Build caption with model attribution
+      const modelTag = `Generated with ${model.name}`;
+
       if ('text' in result) {
         const textResult = result as TextGenerationResult;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
@@ -181,30 +184,33 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
           const parts = splitMessage(formattedText, maxLength);
           for (let i = 0; i < parts.length; i++) {
             const isLast = i === parts.length - 1;
-            await telegram.sendMessage(chatId, parts[i], {
+            const partText = isLast ? `${parts[i]}\n\n<i>${modelTag}</i>` : parts[i];
+            await telegram.sendMessage(chatId, partText, {
               parse_mode: 'HTML',
               ...(isLast ? kb : {}),
             });
           }
         } else {
-          await telegram.sendMessage(chatId, formattedText, { parse_mode: 'HTML', ...kb });
+          await telegram.sendMessage(chatId, `${formattedText}\n\n<i>${modelTag}</i>`, { parse_mode: 'HTML', ...kb });
         }
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
-        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption: truncateText(input, 200), ...kb });
+        const caption = `${truncateText(input, 180)}\n\n${modelTag}`;
+        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption, ...kb });
       } else if ('videoUrl' in result) {
         const videoResult = result as VideoGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
-        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption: truncateText(input, 200), ...kb });
+        const caption = `${truncateText(input, 180)}\n\n${modelTag}`;
+        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption, ...kb });
       } else if ('audioBuffer' in result && result.audioBuffer) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { actualProvider });
-        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, kb);
+        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, { caption: modelTag, ...kb });
       } else if ('audioUrl' in result && result.audioUrl) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl, actualProvider });
-        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, kb);
+        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, { caption: modelTag, ...kb });
       }
     }
 
