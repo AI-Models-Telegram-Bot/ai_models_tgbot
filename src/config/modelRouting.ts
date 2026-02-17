@@ -27,14 +27,12 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'gpt-4o': {
     category: 'TEXT',
     providers: [
-      { name: 'aimlapi', modelId: 'gpt-4o' },
       { name: 'openai', modelId: 'gpt-4o' },
     ],
   },
   'gpt-4o-mini': {
     category: 'TEXT',
     providers: [
-      { name: 'aimlapi', modelId: 'gpt-4o-mini' },
       { name: 'openai', modelId: 'gpt-4o-mini' },
     ],
   },
@@ -57,14 +55,12 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'runware', modelId: 'runware:100@1' },              // $0.0006
       { name: 'piapi', modelId: 'Qubico/flux1-schnell' },         // $0.0015
-      { name: 'aimlapi', modelId: 'flux/schnell' },               // $0.003
       { name: 'replicate', modelId: 'flux-schnell' },             // $0.003
     ],
   },
   'flux-pro': {
     category: 'IMAGE',
     providers: [
-      { name: 'aimlapi', modelId: 'flux-pro/v1.1' },            // ~$0.04
       { name: 'replicate', modelId: 'flux-pro' },                // $0.04
     ],
   },
@@ -72,7 +68,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'IMAGE',
     providers: [
       { name: 'runware', modelId: 'runware:101@1' },              // $0.004
-      { name: 'aimlapi', modelId: 'flux/dev' },                   // ~$0.025
       { name: 'replicate', modelId: 'flux-dev' },                 // $0.025
     ],
   },
@@ -80,7 +75,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'IMAGE',
     providers: [
       { name: 'kieai', modelId: 'flux-kontext-pro' },            // ~$0.01
-      { name: 'aimlapi', modelId: 'flux-kontext/pro' },          // ~$0.04
     ],
   },
   'dall-e-3': {
@@ -98,13 +92,14 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'midjourney': {
     category: 'IMAGE',
     providers: [
-      { name: 'kieai', modelId: 'midjourney' },                   // KieAI market endpoint (PiAPI discontinued MJ)
+      { name: 'kieai', modelId: 'midjourney' },                   // KieAI market endpoint
     ],
   },
   'nano-banana-pro': {
     category: 'IMAGE',
     providers: [
-      { name: 'aimlapi', modelId: 'google/gemini-3-pro-image-preview' }, // ~$0.04
+      { name: 'kieai', modelId: 'nano-banana-pro' },             // ~$0.09
+      { name: 'replicate', modelId: 'nano-banana-pro' },          // ~$0.14
     ],
   },
 
@@ -114,7 +109,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'piapi', modelId: 'kling' },                       // $0.13/5s
       { name: 'kieai', modelId: 'kling-2.6/text-to-video' },     // $0.28/5s
-      { name: 'aimlapi', modelId: 'klingai/v2-master-text-to-video' }, // $0.37/5s
       { name: 'replicate', modelId: 'kling' },                   // $1.40/5s
     ],
   },
@@ -123,7 +117,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'piapi', modelId: 'kling', extraOptions: { duration: 10 } },       // $0.26/10s
       { name: 'kieai', modelId: 'kling-2.6/text-to-video', extraOptions: { duration: '10' } }, // $0.56/10s
-      { name: 'aimlapi', modelId: 'klingai/v2-master-text-to-video', extraOptions: { duration: '10' } }, // $0.74/10s
     ],
   },
   'luma': {
@@ -135,7 +128,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'wan': {
     category: 'VIDEO',
     providers: [
-      { name: 'aimlapi', modelId: 'alibaba/wan2.1-t2v-turbo' },  // ~$0.10
       { name: 'replicate', modelId: 'wan' },                     // ~$0.18
     ],
   },
@@ -143,21 +135,18 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'veo3_fast' },                   // ~$0.40
-      { name: 'aimlapi', modelId: 'google/veo-3.1-t2v-fast' },   // ~$0.40
     ],
   },
   'veo': {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'veo3' },                        // ~$2.00
-      { name: 'aimlapi', modelId: 'google/veo-3.1-t2v' },        // ~$2.00
     ],
   },
   'sora': {
     category: 'VIDEO',
     providers: [
-      { name: 'aimlapi', modelId: 'openai/sora-2-t2v' },         // ~$0.50
-      { name: 'kieai', modelId: 'sora-2-text-to-video' },         // ~$0.50
+      { name: 'kieai', modelId: 'sora-2-text-to-video' },        // ~$0.50
     ],
   },
   'runway': {
@@ -166,18 +155,24 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'kieai', modelId: 'runway' },                       // ~$0.30
     ],
   },
+  'seedance': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'seedance-2.0/text-to-video' },  // ~$0.45
+    ],
+  },
 
   // ===================== AUDIO =====================
   'deepgram-tts': {
     category: 'AUDIO',
     providers: [
-      { name: 'aimlapi', modelId: '#g1_aura-asteria-en' },       // ~$0.001/200 chars
+      { name: 'openai', modelId: 'tts-1' },                      // ~$0.015/1K chars
     ],
   },
   'openai-tts': {
     category: 'AUDIO',
     providers: [
-      { name: 'aimlapi', modelId: 'tts-1' },                     // ~$0.015/1K chars via AIMLAPI
+      { name: 'openai', modelId: 'tts-1' },                      // ~$0.015/1K chars
     ],
   },
   'elevenlabs-tts': {

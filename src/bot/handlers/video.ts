@@ -57,6 +57,11 @@ const VIDEO_FAMILIES: Record<VideoFamily, VideoFamilyConfig> = {
     getKeyboard: () => null,
     singleModel: 'wan',
   },
+  seedance: {
+    descriptionKey: 'videoSeedanceFamilyDesc',
+    getKeyboard: () => null,
+    singleModel: 'seedance',
+  },
 };
 
 // ── Model configs ───────────────────────────────────────
@@ -117,6 +122,12 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'wan',
     hasSettings: false,
   },
+  'seedance': {
+    modelSlug: 'seedance',
+    descriptionKey: 'videoSeedanceDesc',
+    family: 'seedance',
+    hasSettings: true,
+  },
 };
 
 const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
@@ -128,6 +139,7 @@ const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'runway': { en: 'Runway', ru: 'Runway' },
   'luma': { en: 'Luma', ru: 'Luma' },
   'wan': { en: 'WAN', ru: 'WAN' },
+  'seedance': { en: 'Seedance', ru: 'Seedance' },
 };
 
 // ── Handlers ────────────────────────────────────────────

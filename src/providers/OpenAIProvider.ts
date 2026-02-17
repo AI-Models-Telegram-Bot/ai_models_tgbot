@@ -53,8 +53,21 @@ export class OpenAIProvider extends BaseProvider {
     throw new Error('OpenAI does not support video generation');
   }
 
-  async generateAudio(): Promise<AudioGenerationResult> {
-    throw new Error('Use ElevenLabs for audio generation');
+  async generateAudio(
+    text: string,
+    options?: Record<string, unknown>
+  ): Promise<AudioGenerationResult> {
+    const model = (options?.model as string) || 'tts-1';
+    const voice = (options?.voice as string) || 'alloy';
+
+    const response = await this.client.audio.speech.create({
+      model,
+      voice: voice as 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer',
+      input: text,
+    });
+
+    const arrayBuffer = await response.arrayBuffer();
+    return { audioBuffer: Buffer.from(arrayBuffer) };
   }
 }
 

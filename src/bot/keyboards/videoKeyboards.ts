@@ -11,6 +11,7 @@ export function getVideoFamiliesKeyboard(lang: Language) {
     [l.buttons.videoKlingFamily, l.buttons.videoVeoFamily],
     [l.buttons.videoSoraFamily, l.buttons.videoRunwayFamily],
     [l.buttons.videoLumaFamily, l.buttons.videoWanFamily],
+    [l.buttons.videoSeedanceFamily],
     [l.buttons.mainMenu],
   ]).resize();
 }

@@ -114,7 +114,7 @@ async function seedPrices() {
       description: 'High-quality Flux generation (~$0.025)',
       creditsPerUnit: 12,
       unitType: '1_image',
-      metadata: { provider: 'aimlapi', model: 'flux-dev' },
+      metadata: { provider: 'runware', model: 'flux-dev' },
     },
     {
       itemCode: 'IMAGE_FLUX_PRO',
@@ -123,7 +123,7 @@ async function seedPrices() {
       description: 'Best quality Flux generation (~$0.04)',
       creditsPerUnit: 20,
       unitType: '1_image',
-      metadata: { provider: 'aimlapi', model: 'flux-pro' },
+      metadata: { provider: 'replicate', model: 'flux-pro' },
     },
     {
       itemCode: 'IMAGE_NANO_BANANA_PRO',
@@ -132,7 +132,7 @@ async function seedPrices() {
       description: 'Google Gemini 3 Pro Image (~$0.04)',
       creditsPerUnit: 20,
       unitType: '1_image',
-      metadata: { provider: 'aimlapi', model: 'nano-banana-pro' },
+      metadata: { provider: 'kieai', model: 'nano-banana-pro' },
     },
     {
       itemCode: 'IMAGE_DALLE3',
@@ -152,16 +152,6 @@ async function seedPrices() {
       unitType: '1_image',
       metadata: { provider: 'kieai', model: 'midjourney' },
     },
-    {
-      itemCode: 'IMAGE_IDEOGRAM',
-      category: 'IMAGE',
-      name: 'Ideogram v2',
-      description: 'Best for text in images (~$0.08)',
-      creditsPerUnit: 30,
-      unitType: '1_image',
-      metadata: { provider: 'aimlapi', model: 'ideogram' },
-    },
-
     // VIDEO MODELS (sorted by cost)
     {
       itemCode: 'VIDEO_ANIMATEDIFF',
@@ -194,7 +184,7 @@ async function seedPrices() {
       unitType: '1_video',
       minCredits: 80,
       maxCredits: 120,
-      metadata: { provider: 'aimlapi', model: 'wan' },
+      metadata: { provider: 'replicate', model: 'wan' },
     },
     {
       itemCode: 'VIDEO_KLING',
@@ -229,6 +219,17 @@ async function seedPrices() {
       maxCredits: 200,
       metadata: { provider: 'replicate', model: 'luma' },
     },
+    {
+      itemCode: 'VIDEO_SEEDANCE',
+      category: 'VIDEO',
+      name: 'Seedance 2.0',
+      description: 'ByteDance Seedance 2.0 text-to-video (~$0.45)',
+      creditsPerUnit: 100,
+      unitType: '1_video',
+      minCredits: 100,
+      maxCredits: 150,
+      metadata: { provider: 'kieai', model: 'seedance' },
+    },
 
     // AUDIO MODELS (sorted by cost)
     {
@@ -238,7 +239,7 @@ async function seedPrices() {
       description: 'Ultra-cheap text-to-speech (~$0.001)',
       creditsPerUnit: 2,
       unitType: '1_request',
-      metadata: { provider: 'aimlapi', model: 'deepgram-tts' },
+      metadata: { provider: 'openai', model: 'deepgram-tts' },
     },
     {
       itemCode: 'AUDIO_FISH_SPEECH',
@@ -274,7 +275,7 @@ async function seedPrices() {
       description: 'OpenAI text-to-speech ($0.015/1K chars)',
       creditsPerUnit: 10,
       unitType: '1_request',
-      metadata: { provider: 'aimlapi', model: 'openai-tts' },
+      metadata: { provider: 'openai', model: 'openai-tts' },
     },
     {
       itemCode: 'AUDIO_ELEVENLABS',
