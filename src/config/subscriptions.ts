@@ -116,7 +116,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
-        allowed: ['kling', 'wan', 'seedance'],
+        allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance'],
       },
       audio: {
         allowed: ['openai-tts', 'bark', 'deepgram-tts', 'elevenlabs-tts', 'fish-speech', 'xtts-v2'],
@@ -164,7 +164,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell', 'sdxl-lightning', 'sdxl'],
       },
       video: {
-        allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance', 'veo-fast'],
+        allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance', 'sora', 'veo-fast'],
       },
       audio: {
         allowed: ['*'],

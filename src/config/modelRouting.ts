@@ -154,6 +154,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'IMAGE',
     providers: [
       { name: 'fal', modelId: 'fal-ai/flux-2/turbo' },             // $0.008
+      { name: 'runware', modelId: 'runware:101@1' },                // $0.004 fallback
     ],
   },
 
