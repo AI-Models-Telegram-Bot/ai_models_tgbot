@@ -20,9 +20,10 @@ import { ProviderConfig } from '../providers/base/ProviderConfig';
  *   KieAI Kontext        ~$0.01  |  OpenAI DALL-E 3       $0.04
  *
  * VIDEO (per 5s clip):
- *   Kie.ai Seedance  ~$0.20  |  PiAPI Kling Std   $0.26
- *   Fal.ai Wan 2.5   ~$0.25  |  Kie.ai Veo Fast   ~$0.40
- *   Replicate Kling  ~$1.40
+ *   PiAPI Kling 2.6 Std $0.20  |  Kie.ai Seedance  ~$0.20
+ *   Fal.ai Wan 2.5     ~$0.25  |  Kie.ai Kling 2.6  $0.28
+ *   Fal.ai Kling 2.5    $0.35  |  Kie.ai Veo Fast  ~$0.40
+ *   Replicate Kling    ~$1.40
  *
  * AUDIO (per ~200 chars):
  *   Groq Whisper    ~$0.003  |  OpenAI TTS   ~$0.003

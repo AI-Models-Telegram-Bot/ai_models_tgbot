@@ -11,15 +11,21 @@ import { logger } from '../utils/logger';
 
 const POLL_INTERVAL_MS = 3000;
 const IMAGE_POLL_TIMEOUT_MS = 120000; // 2 minutes for images
-const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes for video
+const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes for video (leaves room for fallback)
 
 /**
  * PiAPI Provider — Task-based async API
- * Supports: Image (Flux), Video (Kling)
+ * Supports: Image (Flux Schnell/Dev), Video (Kling 2.6)
  * Docs: https://piapi.ai/docs/unified-api-schema
  *
  * Flow: POST /api/v1/task -> get task_id -> poll GET /api/v1/task/{task_id}
  * Auth: X-API-Key header
+ *
+ * Pricing (Feb 2026):
+ *   Kling 2.6 Std 5s: $0.20  |  Kling 2.6 Pro 5s: $0.33
+ *   Kling 2.6 Std 10s: $0.40 |  Kling 2.6 Pro 10s: $0.66
+ *   Kling 2.1-Master 5s: $0.96
+ *   Flux Schnell: $0.002/image | Flux Dev: $0.015/image
  */
 export class PiAPIProvider extends EnhancedProvider {
   readonly name = 'piapi';
@@ -47,19 +53,14 @@ export class PiAPIProvider extends EnhancedProvider {
   /**
    * Image generation via PiAPI Flux models
    * POST /api/v1/task with model "Qubico/flux1-schnell", task_type "txt2img"
-   * Poll until completed, output: data.output.image_url
    */
   async generateImage(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<ImageGenerationResult> {
     const model = (options?.model as string) || 'Qubico/flux1-schnell';
-
-    if (model === 'midjourney') {
-      return this.generateMidjourneyImage(prompt, options);
-    }
-
     const start = Date.now();
+
     try {
       logger.info(`PiAPI image: creating task with ${model}`);
 
@@ -80,11 +81,10 @@ export class PiAPIProvider extends EnhancedProvider {
 
       logger.info(`PiAPI image: task created, task_id=${taskId}`);
 
-      // Poll for completion
       const imageUrl = await this.pollImageResult(taskId);
 
       const time = Date.now() - start;
-      const cost = model.includes('schnell') ? 0.0015 : 0.02;
+      const cost = model.includes('schnell') ? 0.002 : 0.015;
       this.updateStats(true, cost, time);
 
       logger.info(`PiAPI image: success (${time}ms, $${cost})`);
@@ -100,7 +100,14 @@ export class PiAPIProvider extends EnhancedProvider {
   /**
    * Video generation via PiAPI Kling
    * POST /api/v1/task with model "kling", task_type "video_generation"
-   * Poll until completed, output: data.output.works[0].video.resource_without_watermark
+   *
+   * Supports:
+   * - mode: 'std' (standard) or 'pro' (professional)
+   * - duration: 5 or 10 seconds
+   * - version: '2.6' (default), '2.5', '2.1', '2.1-master'
+   * - aspect_ratio: '16:9', '9:16', '1:1'
+   * - image_url: start frame for image-to-video
+   * - image_tail_url: end frame (optional, requires image_url)
    */
   async generateVideo(
     prompt: string,
@@ -109,20 +116,47 @@ export class PiAPIProvider extends EnhancedProvider {
     const start = Date.now();
     try {
       const model = (options?.model as string) || 'kling';
-      logger.info(`PiAPI video: creating task with ${model}`);
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImages = inputImageUrls && inputImageUrls.length > 0;
+
+      const mode = (options?.mode as string) || 'std';
+      const duration = (options?.duration as number) || 5;
+      const version = (options?.version as string) || '2.6';
+      const aspectRatio = (options?.aspectRatio as string) || '16:9';
+
+      logger.info(`PiAPI video: creating task (model=${model}, mode=${mode}, v=${version}, dur=${duration}s, images=${hasImages ? inputImageUrls!.length : 0})`);
+
+      const input: Record<string, unknown> = {
+        prompt,
+        duration,
+        mode,
+        version,
+        aspect_ratio: aspectRatio,
+      };
+
+      // Image-to-video: pass start frame
+      if (hasImages) {
+        input.image_url = inputImageUrls![0];
+        // If 2 images provided, use second as end frame
+        if (inputImageUrls!.length >= 2) {
+          input.image_tail_url = inputImageUrls![1];
+        }
+      }
+
+      // Negative prompt
+      if (options?.negativePrompt) {
+        input.negative_prompt = options.negativePrompt;
+      }
 
       const createResponse = await this.client.post('/task', {
         model,
         task_type: 'video_generation',
-        input: {
-          prompt,
-          duration: (options?.duration as number) || 5,
-        },
+        input,
       });
 
       const taskId = createResponse.data?.data?.task_id;
       if (!taskId) {
-        throw new Error('PiAPI video: no task_id in response');
+        throw new Error(`PiAPI video: no task_id in response: ${JSON.stringify(createResponse.data).slice(0, 300)}`);
       }
 
       logger.info(`PiAPI video: task created, task_id=${taskId}`);
@@ -130,7 +164,7 @@ export class PiAPIProvider extends EnhancedProvider {
       const videoUrl = await this.pollVideoResult(taskId);
 
       const time = Date.now() - start;
-      const cost = 0.13; // PiAPI Kling ~$0.13 per 5s video
+      const cost = this.estimateVideoCost(mode, duration, version);
       this.updateStats(true, cost, time);
 
       logger.info(`PiAPI video: success (${time}ms, $${cost})`);
@@ -150,99 +184,15 @@ export class PiAPIProvider extends EnhancedProvider {
     throw new Error('PiAPI audio generation not supported — use OpenAI or ElevenLabs');
   }
 
-  /**
-   * Midjourney image generation via PiAPI
-   * POST /api/v1/task with model "midjourney", task_type "imagine"
-   * Docs: https://piapi.ai/docs/midjourney-api/imagine
-   */
-  private async generateMidjourneyImage(
-    prompt: string,
-    options?: Record<string, unknown>
-  ): Promise<ImageGenerationResult> {
-    const start = Date.now();
-    try {
-      logger.info('PiAPI Midjourney: creating imagine task');
-
-      // Build MJ prompt with parameters
-      let mjPrompt = prompt;
-      const aspectRatio = (options?.aspectRatio as string) || '1:1';
-      const version = (options?.version as string) || 'v6.1';
-      const stylize = (options?.stylize as number) ?? 100;
-
-      // Append MJ params to prompt if not already present
-      if (!mjPrompt.includes('--ar')) mjPrompt += ` --ar ${aspectRatio}`;
-      if (!mjPrompt.includes('--v')) mjPrompt += ` --v ${version.replace('v', '')}`;
-      if (!mjPrompt.includes('--s')) mjPrompt += ` --s ${stylize}`;
-
-      const createResponse = await this.client.post('/task', {
-        model: 'midjourney',
-        task_type: 'imagine',
-        input: {
-          prompt: mjPrompt,
-          aspect_ratio: aspectRatio,
-          process_mode: 'fast',
-          skip_prompt_check: false,
-        },
-      });
-
-      const taskId = createResponse.data?.data?.task_id;
-      if (!taskId) {
-        throw new Error('PiAPI Midjourney: no task_id in response');
-      }
-
-      logger.info(`PiAPI Midjourney: task created, task_id=${taskId}`);
-
-      const imageUrl = await this.pollMidjourneyResult(taskId);
-
-      const time = Date.now() - start;
-      const cost = 0.04;
-      this.updateStats(true, cost, time);
-
-      logger.info(`PiAPI Midjourney: success (${time}ms, $${cost})`);
-      return { imageUrl };
-    } catch (error: any) {
-      const time = Date.now() - start;
-      this.updateStats(false, 0, time);
-      logger.error('PiAPI Midjourney: failed', error.response?.data || error.message);
-      throw error;
+  private estimateVideoCost(mode: string, duration: number, version: string): number {
+    if (version === '2.1-master') {
+      return duration <= 5 ? 0.96 : 1.92;
     }
-  }
-
-  /**
-   * Poll Midjourney task — longer timeout (5 min) since MJ is slower
-   * MJ output has 4 images in a grid, returned as single image_url
-   */
-  private async pollMidjourneyResult(taskId: string): Promise<string> {
-    const MJ_POLL_TIMEOUT_MS = 300000; // 5 minutes
-    const deadline = Date.now() + MJ_POLL_TIMEOUT_MS;
-
-    while (Date.now() < deadline) {
-      await this.sleep(POLL_INTERVAL_MS);
-
-      const response = await this.client.get(`/task/${taskId}`);
-      const data = response.data?.data;
-      const status = data?.status;
-
-      logger.debug(`PiAPI MJ poll: status=${status}, task_id=${taskId}`);
-
-      if (status === 'Completed' || status === 'completed') {
-        const imageUrl =
-          data?.output?.image_url ||
-          data?.output?.image_urls?.[0] ||
-          data?.output?.temporary_image_urls?.[0];
-        if (!imageUrl) {
-          throw new Error('PiAPI Midjourney: completed but no image URL in output');
-        }
-        return imageUrl;
-      }
-
-      if (status === 'Failed' || status === 'failed') {
-        const errorMsg = data?.error?.message || 'Unknown error';
-        throw new Error(`PiAPI Midjourney task failed: ${errorMsg}`);
-      }
+    // Kling 2.6 pricing
+    if (mode === 'pro') {
+      return duration <= 5 ? 0.33 : 0.66;
     }
-
-    throw new Error('PiAPI Midjourney: polling timed out after 5 minutes');
+    return duration <= 5 ? 0.20 : 0.40;
   }
 
   private async pollImageResult(taskId: string): Promise<string> {
@@ -287,14 +237,15 @@ export class PiAPIProvider extends EnhancedProvider {
       logger.debug(`PiAPI video poll: status=${status}, task_id=${taskId}`);
 
       if (status === 'Completed' || status === 'completed') {
-        // Kling output: works[0].video.resource_without_watermark or resource
+        // Try multiple output paths — Kling API format varies
         const works = data?.output?.works;
         const videoUrl =
+          data?.output?.video ||
           works?.[0]?.video?.resource_without_watermark ||
           works?.[0]?.video?.resource ||
           data?.output?.video_url;
         if (!videoUrl) {
-          throw new Error('PiAPI video: completed but no video URL in output');
+          throw new Error(`PiAPI video: completed but no video URL in output: ${JSON.stringify(data?.output).slice(0, 300)}`);
         }
         return videoUrl;
       }
@@ -305,7 +256,7 @@ export class PiAPIProvider extends EnhancedProvider {
       }
     }
 
-    throw new Error('PiAPI video: polling timed out after 10 minutes');
+    throw new Error('PiAPI video: polling timed out after 5 minutes');
   }
 
   private sleep(ms: number): Promise<void> {
