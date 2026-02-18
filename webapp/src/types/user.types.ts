@@ -19,7 +19,7 @@ export interface UserWallet {
   currency: string;
 }
 
-export type SubscriptionTier = 'FREE' | 'BASIC' | 'PRO' | 'VIP' | 'ELITE' | 'ENTERPRISE';
+export type SubscriptionTier = 'FREE' | 'STARTER' | 'PRO' | 'PREMIUM' | 'BUSINESS' | 'ENTERPRISE';
 
 export type SubscriptionStatus = 'ACTIVE' | 'CANCELED' | 'EXPIRED' | 'PAST_DUE' | 'TRIALING';
 

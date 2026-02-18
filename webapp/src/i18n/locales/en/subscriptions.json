@@ -30,10 +30,10 @@
   },
   "tiers": {
     "free": "Free",
-    "basic": "Basic",
+    "starter": "Starter",
     "pro": "Pro",
-    "vip": "VIP",
-    "elite": "Elite",
+    "premium": "Premium",
+    "business": "Business",
     "enterprise": "Enterprise"
   },
   "price": {
@@ -56,45 +56,43 @@
   },
   "features": {
     "free": {
-      "basicModels": "Basic AI models",
+      "basicModels": "Basic AI models (Fast AI, Gemini Flash)",
       "communitySupport": "Community support",
       "referralBonus": "5% referral bonus"
     },
-    "basic": {
-      "gpt4Claude": "Access to GPT-4 & Claude",
-      "advancedImage": "Advanced image generation",
-      "basicVideo": "Basic video generation",
+    "starter": {
+      "gpt4Claude": "Access to GPT-4o & Claude Sonnet",
+      "allImageModels": "All image generation models",
+      "basicVideo": "Basic video generation (Kling, Wan)",
       "referralBonus": "10% referral bonus",
       "emailSupport": "Email support"
     },
     "pro": {
-      "allBasic": "All Basic features",
-      "gpt4TurboClaude": "GPT-4 Turbo & Claude Opus",
+      "allStarter": "All Starter features",
+      "geminiDeepseek": "Gemini Pro & DeepSeek R1",
       "proImage": "Professional image generation",
-      "advancedVideo": "Advanced video generation",
+      "advancedVideo": "Advanced video (Veo, Runway, Sora)",
       "referralBonus": "15% referral bonus",
       "priorityEmail": "Priority email support",
       "earlyAccess": "Early access to new models"
     },
-    "vip": {
+    "premium": {
       "unlimitedText": "Unlimited text generation",
       "unlimitedAudio": "Unlimited audio generation",
-      "allImageVideo": "All image & video models",
-      "unlimitedBasicVideo": "Unlimited basic video models",
+      "allModels": "All AI models available",
+      "unlimitedBasicVideo": "Unlimited basic video (Wan)",
       "referralBonus": "20% referral bonus",
       "priorityChat": "Priority chat support",
-      "limitedApi": "API access (limited)",
-      "customTraining": "Custom model training (beta)"
+      "limitedApi": "API access (limited)"
     },
-    "elite": {
+    "business": {
       "unlimitedTextImageAudio": "Unlimited text, image & audio",
       "unlimitedMostVideo": "Unlimited most video models",
       "referralBonus": "25% referral bonus",
       "support247": "24/7 priority support",
       "fullApi": "Full API access",
       "fineTuning": "Custom model fine-tuning",
-      "accountManager": "Dedicated account manager",
-      "whiteLabel": "White-label options"
+      "accountManager": "Dedicated account manager"
     },
     "enterprise": {
       "unlimitedEverything": "Unlimited everything",

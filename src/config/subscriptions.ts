@@ -1,9 +1,9 @@
 export enum SubscriptionTier {
   FREE = 'FREE',
-  BASIC = 'BASIC',
+  STARTER = 'STARTER',
   PRO = 'PRO',
-  VIP = 'VIP',
-  ELITE = 'ELITE',
+  PREMIUM = 'PREMIUM',
+  BUSINESS = 'BUSINESS',
   ENTERPRISE = 'ENTERPRISE',
 }
 
@@ -17,6 +17,13 @@ export interface ModelAccessConfig {
   image: ModelAccessCategory;
   video: ModelAccessCategory;
   audio: ModelAccessCategory;
+}
+
+export interface TierRateLimits {
+  requestsPerHour: number;
+  requestsPerDay: number;
+  videoPerHour: number;
+  videoPerDay: number;
 }
 
 export interface SubscriptionPlanConfig {
@@ -34,6 +41,7 @@ export interface SubscriptionPlanConfig {
   };
 
   modelAccess: ModelAccessConfig;
+  rateLimits: TierRateLimits;
 
   features: string[];
   referralBonus: number;
@@ -42,6 +50,7 @@ export interface SubscriptionPlanConfig {
 }
 
 export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
+  // ── FREE ── $0/mo ──────────────────────────────────────
   {
     tier: SubscriptionTier.FREE,
     name: 'Free',
@@ -56,17 +65,23 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     },
     modelAccess: {
       text: {
-        allowed: ['gpt-4o-mini', 'grok'],
+        allowed: ['gpt-4o-mini', 'gemini-flash', 'fast-text'],
       },
       image: {
-        allowed: ['*'],
+        allowed: ['flux-schnell', 'sdxl', 'sdxl-lightning', 'dall-e-2'],
       },
       video: {
-        allowed: ['kling', 'wan'],
+        allowed: ['wan'],
       },
       audio: {
-        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'openai-tts'],
+        allowed: ['openai-tts', 'bark', 'deepgram-tts'],
       },
+    },
+    rateLimits: {
+      requestsPerHour: 30,
+      requestsPerDay: 100,
+      videoPerHour: 2,
+      videoPerDay: 5,
     },
     features: [
       'features.free.basicModels',
@@ -78,67 +93,75 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     apiAccess: false,
   },
 
+  // ── STARTER ── $5.99/mo ────────────────────────────────
   {
-    tier: SubscriptionTier.BASIC,
-    name: 'Basic',
-    priceUSD: 9.99,
-    priceRUB: 899,
+    tier: SubscriptionTier.STARTER,
+    name: 'Starter',
+    priceUSD: 5.99,
+    priceRUB: 549,
     duration: 'monthly',
     credits: {
-      text: 1000,
-      image: 500,
-      video: 100,
-      audio: 500,
+      text: 500,
+      image: 300,
+      video: 50,
+      audio: 300,
     },
     modelAccess: {
       text: {
-        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok'],
-        unlimited: ['gpt-4o-mini'],
+        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok', 'gemini-flash', 'fast-text'],
+        unlimited: ['fast-text', 'gemini-flash'],
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell'],
+        unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
         allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance'],
       },
       audio: {
-        allowed: ['elevenlabs-tts', 'bark', 'suno', 'xtts-v2', 'openai-tts', 'deepgram-tts', 'fish-speech'],
-        unlimited: ['openai-tts'],
+        allowed: ['openai-tts', 'bark', 'deepgram-tts', 'elevenlabs-tts', 'fish-speech', 'xtts-v2'],
+        unlimited: ['deepgram-tts'],
       },
     },
+    rateLimits: {
+      requestsPerHour: 60,
+      requestsPerDay: 300,
+      videoPerHour: 5,
+      videoPerDay: 20,
+    },
     features: [
-      'features.basic.gpt4Claude',
-      'features.basic.advancedImage',
-      'features.basic.basicVideo',
-      'features.basic.referralBonus',
-      'features.basic.emailSupport',
+      'features.starter.gpt4Claude',
+      'features.starter.allImageModels',
+      'features.starter.basicVideo',
+      'features.starter.referralBonus',
+      'features.starter.emailSupport',
     ],
     referralBonus: 10,
     prioritySupport: false,
     apiAccess: false,
   },
 
+  // ── PRO ── $14.99/mo ───────────────────────────────────
   {
     tier: SubscriptionTier.PRO,
     name: 'Pro',
-    priceUSD: 29.99,
-    priceRUB: 2699,
+    priceUSD: 14.99,
+    priceRUB: 1399,
     duration: 'monthly',
     credits: {
-      text: 5000,
-      image: 2000,
-      video: 500,
-      audio: 2000,
+      text: 3000,
+      image: 1500,
+      video: 200,
+      audio: 1500,
     },
     modelAccess: {
       text: {
-        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok'],
-        unlimited: ['gpt-4o-mini', 'grok'],
+        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok', 'gemini-flash', 'gemini-pro', 'fast-text', 'deepseek-r1'],
+        unlimited: ['fast-text', 'gemini-flash', 'gpt-4o-mini'],
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell'],
+        unlimited: ['flux-schnell', 'sdxl-lightning', 'sdxl'],
       },
       video: {
         allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance', 'sora', 'veo-fast'],
@@ -148,9 +171,15 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['openai-tts', 'deepgram-tts'],
       },
     },
+    rateLimits: {
+      requestsPerHour: 120,
+      requestsPerDay: 800,
+      videoPerHour: 10,
+      videoPerDay: 60,
+    },
     features: [
-      'features.pro.allBasic',
-      'features.pro.gpt4TurboClaude',
+      'features.pro.allStarter',
+      'features.pro.geminiDeepseek',
       'features.pro.proImage',
       'features.pro.advancedVideo',
       'features.pro.referralBonus',
@@ -162,16 +191,17 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     apiAccess: false,
   },
 
+  // ── PREMIUM ── $34.99/mo ───────────────────────────────
   {
-    tier: SubscriptionTier.VIP,
-    name: 'VIP',
-    priceUSD: 79.99,
-    priceRUB: 7199,
+    tier: SubscriptionTier.PREMIUM,
+    name: 'Premium',
+    priceUSD: 34.99,
+    priceRUB: 3199,
     duration: 'monthly',
     credits: {
       text: null, // unlimited
-      image: 10000,
-      video: 2000,
+      image: 5000,
+      video: 800,
       audio: null, // unlimited
     },
     modelAccess: {
@@ -181,42 +211,48 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell'],
+        unlimited: ['flux-schnell', 'sdxl-lightning', 'sdxl', 'flux-dev'],
       },
       video: {
         allowed: ['*'],
-        unlimited: ['kling', 'wan'],
+        unlimited: ['wan'],
       },
       audio: {
         allowed: ['*'],
         unlimited: ['*'],
       },
     },
+    rateLimits: {
+      requestsPerHour: 200,
+      requestsPerDay: 2000,
+      videoPerHour: 15,
+      videoPerDay: 100,
+    },
     features: [
-      'features.vip.unlimitedText',
-      'features.vip.unlimitedAudio',
-      'features.vip.allImageVideo',
-      'features.vip.unlimitedBasicVideo',
-      'features.vip.referralBonus',
-      'features.vip.priorityChat',
-      'features.vip.limitedApi',
-      'features.vip.customTraining',
+      'features.premium.unlimitedText',
+      'features.premium.unlimitedAudio',
+      'features.premium.allModels',
+      'features.premium.unlimitedBasicVideo',
+      'features.premium.referralBonus',
+      'features.premium.priorityChat',
+      'features.premium.limitedApi',
     ],
     referralBonus: 20,
     prioritySupport: true,
     apiAccess: true,
   },
 
+  // ── BUSINESS ── $79.99/mo ──────────────────────────────
   {
-    tier: SubscriptionTier.ELITE,
-    name: 'Elite',
-    priceUSD: 199.99,
-    priceRUB: 17999,
+    tier: SubscriptionTier.BUSINESS,
+    name: 'Business',
+    priceUSD: 79.99,
+    priceRUB: 7299,
     duration: 'monthly',
     credits: {
       text: null,
       image: null,
-      video: 10000,
+      video: 3000,
       audio: null,
     },
     modelAccess: {
@@ -230,32 +266,38 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       video: {
         allowed: ['*'],
-        unlimited: ['kling', 'kling-pro', 'wan', 'luma', 'runway'],
+        unlimited: ['kling', 'wan', 'seedance', 'luma'],
       },
       audio: {
         allowed: ['*'],
         unlimited: ['*'],
       },
     },
+    rateLimits: {
+      requestsPerHour: 500,
+      requestsPerDay: 5000,
+      videoPerHour: 30,
+      videoPerDay: 200,
+    },
     features: [
-      'features.elite.unlimitedTextImageAudio',
-      'features.elite.unlimitedMostVideo',
-      'features.elite.referralBonus',
-      'features.elite.support247',
-      'features.elite.fullApi',
-      'features.elite.fineTuning',
-      'features.elite.accountManager',
-      'features.elite.whiteLabel',
+      'features.business.unlimitedTextImageAudio',
+      'features.business.unlimitedMostVideo',
+      'features.business.referralBonus',
+      'features.business.support247',
+      'features.business.fullApi',
+      'features.business.fineTuning',
+      'features.business.accountManager',
     ],
     referralBonus: 25,
     prioritySupport: true,
     apiAccess: true,
   },
 
+  // ── ENTERPRISE ── Custom ───────────────────────────────
   {
     tier: SubscriptionTier.ENTERPRISE,
     name: 'Enterprise',
-    priceUSD: null, // "Contact Us"
+    priceUSD: null,
     priceRUB: null,
     duration: 'monthly',
     credits: {
@@ -281,6 +323,12 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['*'],
         unlimited: ['*'],
       },
+    },
+    rateLimits: {
+      requestsPerHour: 2000,
+      requestsPerDay: 20000,
+      videoPerHour: 100,
+      videoPerDay: 1000,
     },
     features: [
       'features.enterprise.unlimitedEverything',
