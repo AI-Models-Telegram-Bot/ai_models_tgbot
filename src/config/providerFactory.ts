@@ -12,6 +12,7 @@ import { ElevenLabsAdapter } from '../providers/adapters/ElevenLabsAdapter';
 import { KieAIProvider } from '../providers/KieAIProvider';
 import { PiAPIProvider } from '../providers/PiAPIProvider';
 import { RunwareProvider } from '../providers/RunwareProvider';
+import { FalProvider } from '../providers/FalProvider';
 
 import { logger } from '../utils/logger';
 
@@ -58,12 +59,15 @@ export function initProviders(): ProviderManager {
   }
 
   // ============ VIDEO PROVIDERS ============
-  // PiAPI (1) → KieAI (2) → Replicate (3)
+  // KieAI (1) → PiAPI (2) → Fal.ai (3) → Replicate (4)
+  if (PROVIDER_CONFIGS.video_kieai.apiKey) {
+    manager.register('VIDEO', new KieAIProvider(PROVIDER_CONFIGS.video_kieai));
+  }
   if (PROVIDER_CONFIGS.video_piapi.apiKey) {
     manager.register('VIDEO', new PiAPIProvider(PROVIDER_CONFIGS.video_piapi));
   }
-  if (PROVIDER_CONFIGS.video_kieai.apiKey) {
-    manager.register('VIDEO', new KieAIProvider(PROVIDER_CONFIGS.video_kieai));
+  if (PROVIDER_CONFIGS.video_fal.apiKey) {
+    manager.register('VIDEO', new FalProvider(PROVIDER_CONFIGS.video_fal));
   }
   if (PROVIDER_CONFIGS.video_replicate.apiKey) {
     manager.register('VIDEO', new ReplicateAdapter(PROVIDER_CONFIGS.video_replicate));

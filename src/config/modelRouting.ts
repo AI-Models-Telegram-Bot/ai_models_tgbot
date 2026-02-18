@@ -266,12 +266,12 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Seedance — ByteDance video
+  // Seedance — ByteDance video (fal.ai primary, kieai has issues)
   'seedance': {
     category: 'VIDEO',
     providers: [
-      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },      // ~$0.20
-      { name: 'fal', modelId: 'fal-ai/seedance' },                  // fallback
+      { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1.5/pro/text-to-video' },  // ~$0.26
+      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },                       // ~$0.20 (currently broken)
     ],
   },
 
