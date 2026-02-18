@@ -237,32 +237,32 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
 
   // ===================== VIDEO =====================
 
-  // Kling Standard — 5s
+  // Kling Standard — 5s (Kling 2.6)
   'kling': {
     category: 'VIDEO',
     providers: [
-      { name: 'piapi', modelId: 'kling' },                          // $0.26/5s
-      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/standard' }, // $0.07/s ($0.35/5s)
-      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },        // $0.28/5s
-      { name: 'replicate', modelId: 'kling' },                      // $1.40/5s
+      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'std', version: '2.6' } },  // $0.20/5s (cheapest)
+      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/standard' },                        // $0.07/s ($0.35/5s)
+      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },                                // $0.28/5s
+      { name: 'replicate', modelId: 'kling' },                                              // $1.40/5s
     ],
   },
 
-  // Kling Pro — 10s extended
+  // Kling Pro — 10s extended (Kling 2.6 Pro mode)
   'kling-pro': {
     category: 'VIDEO',
     providers: [
-      { name: 'piapi', modelId: 'kling', extraOptions: { duration: 10 } },        // $0.46/10s
-      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/pro' },                    // ~$0.70/10s
+      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'pro', duration: 10, version: '2.6' } },  // $0.66/10s
+      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/pro' },                                           // ~$0.70/10s
       { name: 'kieai', modelId: 'kling-2.6/text-to-video', extraOptions: { duration: '10' } },
     ],
   },
 
-  // Kling Master — best quality
+  // Kling Master — best quality (Kling 2.1-master Pro mode)
   'kling-master': {
     category: 'VIDEO',
     providers: [
-      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'master' } },      // $0.96/5s
+      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'pro', version: '2.1-master' } },  // $0.96/5s
     ],
   },
 
