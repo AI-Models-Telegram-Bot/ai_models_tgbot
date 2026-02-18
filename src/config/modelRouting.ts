@@ -270,7 +270,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'seedance': {
     category: 'VIDEO',
     providers: [
-      { name: 'kieai', modelId: 'seedance-2.0/text-to-video' },     // ~$0.20
+      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },      // ~$0.20
       { name: 'fal', modelId: 'fal-ai/seedance' },                  // fallback
     ],
   },

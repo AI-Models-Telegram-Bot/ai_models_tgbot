@@ -157,10 +157,12 @@ export class KieAIProvider extends EnhancedProvider {
         input.aspect_ratio = ar === '9:16' ? 'portrait' : 'landscape';
       }
 
-      // Seedance-specific
+      // Seedance-specific: duration must be 4, 8, or 12 (default 8)
       if (model.includes('seedance')) {
         input.aspect_ratio = (options?.aspectRatio as string) || '16:9';
-        input.duration = (options?.duration as string) || '5';
+        const dur = parseInt(String(options?.duration || '8'), 10);
+        input.duration = String([4, 8, 12].includes(dur) ? dur : 8);
+        input.resolution = (options?.resolution as string) || '720p';
       }
 
       const createResponse = await this.client.post('/jobs/createTask', {

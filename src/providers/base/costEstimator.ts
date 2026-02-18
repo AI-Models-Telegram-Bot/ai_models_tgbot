@@ -100,7 +100,7 @@ const VIDEO_PRICING: Record<string, number> = {
   veo: 0.40,                          // KieAI ~$2.00/5s
   // Provider-specific model IDs
   'kling-2.6/text-to-video': 0.056,
-  'seedance-2.0/text-to-video': 0.04,
+  'bytedance/seedance-1.5-pro': 0.04,
   'sora-2-text-to-video': 0.10,
   veo3_fast: 0.08,
   veo3: 0.40,
