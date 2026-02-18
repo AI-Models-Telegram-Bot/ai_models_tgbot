@@ -10,7 +10,7 @@ import {
 import { logger } from '../utils/logger';
 
 const POLL_INTERVAL_MS = 5000;
-const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes
+const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes (leaves room for fallback providers)
 
 /**
  * Fal.ai Provider — Queue-based async API
@@ -182,11 +182,16 @@ export class FalProvider extends EnhancedProvider {
         if (error.message?.includes('Fal.ai video')) {
           throw error;
         }
+        // Fail immediately on 4xx client errors — retrying won't help
+        const status = error.response?.status;
+        if (status && status >= 400 && status < 500) {
+          throw new Error(`Fal.ai video: HTTP ${status} from polling endpoint (model may be unavailable)`);
+        }
         logger.warn(`Fal.ai video poll error (will retry): ${error.message}`);
       }
     }
 
-    throw new Error('Fal.ai video: polling timed out after 10 minutes');
+    throw new Error('Fal.ai video: polling timed out after 5 minutes');
   }
 
   private sleep(ms: number): Promise<void> {
