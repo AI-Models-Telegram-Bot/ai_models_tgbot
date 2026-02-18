@@ -225,7 +225,7 @@ export class KieAIProvider extends EnhancedProvider {
 
   /**
    * Google Veo 3.1 via dedicated endpoint
-   * POST /veo/generate → poll /jobs/recordInfo
+   * POST /veo/generate → poll /veo/record-info (NOT /jobs/recordInfo)
    */
   private async generateVeoVideo(
     prompt: string,
@@ -250,7 +250,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Veo: task created, taskId=${taskId}`);
 
-      const videoUrl = await this.pollMarketTaskResult(taskId);
+      const videoUrl = await this.pollVeoResult(taskId);
 
       const time = Date.now() - start;
       const cost = model === 'veo3' ? 2.0 : 0.4;
@@ -268,7 +268,7 @@ export class KieAIProvider extends EnhancedProvider {
 
   /**
    * Runway Gen-3 via dedicated endpoint
-   * POST /runway/generate → poll /jobs/recordInfo
+   * POST /runway/generate → poll /runway/record-detail
    */
   private async generateRunwayVideo(
     prompt: string,
@@ -308,7 +308,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Runway: task created, taskId=${taskId}`);
 
-      const videoUrl = await this.pollMarketTaskResult(taskId);
+      const videoUrl = await this.pollRunwayResult(taskId);
 
       const time = Date.now() - start;
       const cost = 0.3;
@@ -497,6 +497,82 @@ export class KieAIProvider extends EnhancedProvider {
     }
 
     throw new Error('KieAI Midjourney: polling timed out');
+  }
+
+  /**
+   * Poll Veo task via dedicated endpoint
+   * GET /veo/record-info?taskId=...
+   * successFlag: 0=processing, 1=success, 2=create failed, 3=gen failed
+   * response.resultUrls[0] for video URL
+   */
+  private async pollVeoResult(taskId: string): Promise<string> {
+    const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      await this.sleep(POLL_INTERVAL_MS);
+
+      const response = await this.client.get('/veo/record-info', {
+        params: { taskId },
+      });
+
+      const data = response.data?.data;
+      const successFlag = data?.successFlag;
+
+      logger.debug(`KieAI Veo poll: successFlag=${successFlag}, taskId=${taskId}`);
+
+      if (successFlag === 1) {
+        const videoUrl = data?.response?.resultUrls?.[0];
+        if (!videoUrl) {
+          throw new Error('KieAI Veo: success but no resultUrl');
+        }
+        return videoUrl;
+      }
+
+      if (successFlag === 2 || successFlag === 3) {
+        const errorMsg = data?.errorMessage || 'Generation failed';
+        throw new Error(`KieAI Veo task failed: ${errorMsg}`);
+      }
+    }
+
+    throw new Error('KieAI Veo: polling timed out after 5 minutes');
+  }
+
+  /**
+   * Poll Runway task via dedicated endpoint
+   * GET /runway/record-detail?taskId=...
+   * state: wait, queueing, generating, success, fail
+   * videoInfo.videoUrl for result
+   */
+  private async pollRunwayResult(taskId: string): Promise<string> {
+    const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      await this.sleep(POLL_INTERVAL_MS);
+
+      const response = await this.client.get('/runway/record-detail', {
+        params: { taskId },
+      });
+
+      const data = response.data?.data;
+      const state = data?.state;
+
+      logger.debug(`KieAI Runway poll: state=${state}, taskId=${taskId}`);
+
+      if (state === 'success') {
+        const videoUrl = data?.videoInfo?.videoUrl;
+        if (!videoUrl) {
+          throw new Error('KieAI Runway: success but no videoUrl');
+        }
+        return videoUrl;
+      }
+
+      if (state === 'fail') {
+        const errorMsg = data?.failMsg || 'Generation failed';
+        throw new Error(`KieAI Runway task failed: ${errorMsg}`);
+      }
+    }
+
+    throw new Error('KieAI Runway: polling timed out after 5 minutes');
   }
 
   /**
