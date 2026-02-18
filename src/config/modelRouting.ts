@@ -289,7 +289,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'veo3_fast' },                      // $0.40
-      { name: 'fal', modelId: 'fal-ai/veo3' },                     // $0.40/s (expensive)
+      { name: 'fal', modelId: 'fal-ai/veo3/fast' },                 // $0.10-0.15/s (fast variant)
     ],
   },
 
@@ -309,12 +309,11 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Runway — video gen (fal primary — kieai runway tends to time out)
+  // Runway — video gen (KieAI only — fal.ai doesn't offer Runway models)
   'runway': {
     category: 'VIDEO',
     providers: [
-      { name: 'fal', modelId: 'fal-ai/runway-gen3/turbo' },         // ~$0.35
-      { name: 'kieai', modelId: 'runway' },                          // ~$0.30 fallback
+      { name: 'kieai', modelId: 'runway' },                          // ~$0.30
     ],
   },
 
