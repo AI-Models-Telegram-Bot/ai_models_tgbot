@@ -18,7 +18,7 @@ const categoryIcons: Record<ModelCategory, string> = {
   TEXT: '🤖',
 };
 
-const categoryOrder: ModelCategory[] = ['VIDEO', 'IMAGE', 'AUDIO', 'TEXT'];
+const categoryOrder: ModelCategory[] = ['VIDEO', 'IMAGE', 'TEXT'];
 
 export const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
   isOpen,

@@ -61,7 +61,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       text: 100,
       image: 50,
       video: 10,
-      audio: 50,
+      audio: 0,
     },
     modelAccess: {
       text: {
@@ -74,7 +74,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['wan'],
       },
       audio: {
-        allowed: ['openai-tts', 'bark', 'deepgram-tts'],
+        allowed: [],
       },
     },
     rateLimits: {
@@ -104,7 +104,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       text: 500,
       image: 300,
       video: 50,
-      audio: 300,
+      audio: 0,
     },
     modelAccess: {
       text: {
@@ -119,8 +119,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance'],
       },
       audio: {
-        allowed: ['openai-tts', 'bark', 'deepgram-tts', 'elevenlabs-tts', 'fish-speech', 'xtts-v2'],
-        unlimited: ['deepgram-tts'],
+        allowed: [],
       },
     },
     rateLimits: {
@@ -132,6 +131,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     features: [
       'features.starter.gpt4Claude',
       'features.starter.allImageModels',
+      'features.starter.unlimitedBasicText',
       'features.starter.basicVideo',
       'features.starter.referralBonus',
       'features.starter.emailSupport',
@@ -152,7 +152,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       text: 3000,
       image: 1500,
       video: 200,
-      audio: 1500,
+      audio: 0,
     },
     modelAccess: {
       text: {
@@ -161,14 +161,13 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell', 'sdxl-lightning', 'sdxl'],
+        unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
         allowed: ['kling', 'kling-pro', 'luma', 'wan', 'runway', 'seedance', 'sora', 'veo-fast'],
       },
       audio: {
-        allowed: ['*'],
-        unlimited: ['openai-tts', 'deepgram-tts'],
+        allowed: [],
       },
     },
     rateLimits: {
@@ -179,6 +178,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     },
     features: [
       'features.pro.allStarter',
+      'features.pro.unlimitedGptMini',
       'features.pro.geminiDeepseek',
       'features.pro.proImage',
       'features.pro.advancedVideo',
@@ -199,27 +199,25 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceRUB: 3199,
     duration: 'monthly',
     credits: {
-      text: null, // unlimited
+      text: 5000,
       image: 5000,
       video: 800,
-      audio: null, // unlimited
+      audio: 0,
     },
     modelAccess: {
       text: {
         allowed: ['*'],
-        unlimited: ['*'],
+        unlimited: ['fast-text', 'gpt-4o-mini', 'gemini-flash', 'grok', 'llama-4-maverick'],
       },
       image: {
         allowed: ['*'],
-        unlimited: ['flux-schnell', 'sdxl-lightning', 'sdxl', 'flux-dev'],
+        unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
         allowed: ['*'],
-        unlimited: ['wan'],
       },
       audio: {
-        allowed: ['*'],
-        unlimited: ['*'],
+        allowed: [],
       },
     },
     rateLimits: {
@@ -229,10 +227,9 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerDay: 100,
     },
     features: [
-      'features.premium.unlimitedText',
-      'features.premium.unlimitedAudio',
+      'features.premium.unlimitedCheapText',
       'features.premium.allModels',
-      'features.premium.unlimitedBasicVideo',
+      'features.premium.largeCredits',
       'features.premium.referralBonus',
       'features.premium.priorityChat',
       'features.premium.limitedApi',
@@ -250,27 +247,25 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceRUB: 7299,
     duration: 'monthly',
     credits: {
-      text: null,
-      image: null,
-      video: 3000,
-      audio: null,
+      text: 15000,
+      image: 10000,
+      video: 2000,
+      audio: 0,
     },
     modelAccess: {
       text: {
         allowed: ['*'],
-        unlimited: ['*'],
+        unlimited: ['fast-text', 'gpt-4o-mini', 'gemini-flash', 'grok', 'llama-4-maverick'],
       },
       image: {
         allowed: ['*'],
-        unlimited: ['*'],
+        unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
         allowed: ['*'],
-        unlimited: ['kling', 'wan', 'seedance', 'luma'],
       },
       audio: {
-        allowed: ['*'],
-        unlimited: ['*'],
+        allowed: [],
       },
     },
     rateLimits: {
@@ -280,8 +275,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerDay: 200,
     },
     features: [
-      'features.business.unlimitedTextImageAudio',
-      'features.business.unlimitedMostVideo',
+      'features.business.unlimitedTextImage',
+      'features.business.massiveCredits',
       'features.business.referralBonus',
       'features.business.support247',
       'features.business.fullApi',
@@ -304,7 +299,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       text: null,
       image: null,
       video: null,
-      audio: null,
+      audio: 0,
     },
     modelAccess: {
       text: {
@@ -320,8 +315,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['*'],
       },
       audio: {
-        allowed: ['*'],
-        unlimited: ['*'],
+        allowed: [],
       },
     },
     rateLimits: {

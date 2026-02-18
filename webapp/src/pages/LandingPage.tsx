@@ -40,17 +40,6 @@ export default function LandingPage() {
       color: 'text-video-primary',
       bg: 'bg-video-primary/10',
     },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-        </svg>
-      ),
-      title: t('auth:landingAudioAI'),
-      desc: t('auth:landingAudioAIDesc'),
-      color: 'text-audio-primary',
-      bg: 'bg-audio-primary/10',
-    },
   ];
 
   return (
@@ -77,7 +66,7 @@ export default function LandingPage() {
 
       {/* Features */}
       <section className="px-4 pb-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ rowGap: 20, columnGap: 20 }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3" style={{ rowGap: 20, columnGap: 20 }}>
           {features.map((f) => (
             <div
               key={f.title}

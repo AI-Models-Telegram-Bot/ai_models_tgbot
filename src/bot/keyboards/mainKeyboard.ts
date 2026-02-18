@@ -9,11 +9,15 @@ export function getMainKeyboard(lang: Language) {
     ? Markup.button.webApp(l.buttons.profile, config.webapp.url)
     : l.buttons.profile;
 
-  return Markup.keyboard([
+  const rows = [
     [l.buttons.textAi, l.buttons.imageAi],
-    [l.buttons.videoAi, l.buttons.audioAi],
+    config.features.audioEnabled
+      ? [l.buttons.videoAi, l.buttons.audioAi]
+      : [l.buttons.videoAi],
     [profileButton, l.buttons.help],
-  ]).resize();
+  ];
+
+  return Markup.keyboard(rows).resize();
 }
 
 export function getHelpKeyboard(lang: Language) {

@@ -153,12 +153,11 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
           <h4 className="text-xs font-medium text-content-tertiary uppercase tracking-wider mb-3">
             {t('subscriptions:creditsPerMonth', 'Monthly Credits')}
           </h4>
-          <div className="grid grid-cols-4" style={{ rowGap: 8, columnGap: 8 }}>
+          <div className="grid grid-cols-3" style={{ rowGap: 8, columnGap: 8 }}>
             {[
               { key: 'text' as const, label: t('profile:balances.text', 'Text'), value: plan.credits.text, color: 'bg-cyan-500' },
               { key: 'image' as const, label: t('profile:balances.image', 'Image'), value: plan.credits.image, color: 'bg-pink-500' },
               { key: 'video' as const, label: t('profile:balances.video', 'Video'), value: plan.credits.video, color: 'bg-purple-500' },
-              { key: 'audio' as const, label: t('profile:balances.audio', 'Audio'), value: plan.credits.audio, color: 'bg-emerald-500' },
             ].map((item) => (
               <div
                 key={item.key}
@@ -203,12 +202,10 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
               <ModelList category="text" models={modelsData.models.text} credits={plan.credits.text} />
               <ModelList category="image" models={modelsData.models.image} credits={plan.credits.image} />
               <ModelList category="video" models={modelsData.models.video} credits={plan.credits.video} />
-              <ModelList category="audio" models={modelsData.models.audio} credits={plan.credits.audio} />
 
               {modelsData.models.text.length === 0 &&
                 modelsData.models.image.length === 0 &&
-                modelsData.models.video.length === 0 &&
-                modelsData.models.audio.length === 0 && (
+                modelsData.models.video.length === 0 && (
                   <p className="text-content-tertiary text-sm text-center py-4">
                     {t('subscriptions:noModelsAvailable', 'No models available for this tier')}
                   </p>

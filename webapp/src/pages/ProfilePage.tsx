@@ -126,13 +126,6 @@ const ProfilePage: React.FC = () => {
                   total={currentPlan.credits.video}
                   color="bg-purple-500"
                 />
-                <CreditAllocationBar
-                  label="Audio"
-                  icon="🎵"
-                  used={wallet.audioBalance}
-                  total={currentPlan.credits.audio}
-                  color="bg-emerald-500"
-                />
               </div>
             </Card>
           </motion.div>

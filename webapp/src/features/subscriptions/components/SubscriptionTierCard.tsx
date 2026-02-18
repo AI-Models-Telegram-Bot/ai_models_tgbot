@@ -111,7 +111,6 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
               { label: t('profile:balances.text', 'Text'), value: plan.credits.text, icon: '💬' },
               { label: t('profile:balances.image', 'Image'), value: plan.credits.image, icon: '🖼' },
               { label: t('profile:balances.video', 'Video'), value: plan.credits.video, icon: '🎬' },
-              { label: t('profile:balances.audio', 'Audio'), value: plan.credits.audio, icon: '🎵' },
             ].map((item) => (
               <div key={item.label} className="flex items-center text-sm" style={{ columnGap: 6 }}>
                 <span className="text-xs">{item.icon}</span>

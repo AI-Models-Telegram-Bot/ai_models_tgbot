@@ -63,12 +63,14 @@
     "starter": {
       "gpt4Claude": "Access to GPT-4o & Claude Sonnet",
       "allImageModels": "All image generation models",
+      "unlimitedBasicText": "Unlimited Fast Text & Gemini Flash",
       "basicVideo": "Basic video generation (Kling, Wan)",
       "referralBonus": "10% referral bonus",
       "emailSupport": "Email support"
     },
     "pro": {
       "allStarter": "All Starter features",
+      "unlimitedGptMini": "Unlimited GPT-4o Mini",
       "geminiDeepseek": "Gemini Pro & DeepSeek R1",
       "proImage": "Professional image generation",
       "advancedVideo": "Advanced video (Veo, Runway, Sora)",
@@ -77,17 +79,16 @@
       "earlyAccess": "Early access to new models"
     },
     "premium": {
-      "unlimitedText": "Unlimited text generation",
-      "unlimitedAudio": "Unlimited audio generation",
+      "unlimitedCheapText": "Unlimited basic text models",
       "allModels": "All AI models available",
-      "unlimitedBasicVideo": "Unlimited basic video (Wan)",
+      "largeCredits": "5,000 text + 5,000 image credits",
       "referralBonus": "20% referral bonus",
       "priorityChat": "Priority chat support",
       "limitedApi": "API access (limited)"
     },
     "business": {
-      "unlimitedTextImageAudio": "Unlimited text, image & audio",
-      "unlimitedMostVideo": "Unlimited most video models",
+      "unlimitedTextImage": "Unlimited basic text & image models",
+      "massiveCredits": "15,000 text + 10,000 image credits",
       "referralBonus": "25% referral bonus",
       "support247": "24/7 priority support",
       "fullApi": "Full API access",

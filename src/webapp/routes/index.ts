@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { config } from '../../config';
 import userRoutes from './user.routes';
 import packagesRoutes from './packages.routes';
 import referralRoutes from './referral.routes';
@@ -15,7 +16,9 @@ webappRouter.use(packagesRoutes);
 webappRouter.use(referralRoutes);
 webappRouter.use(paymentRoutes);
 webappRouter.use(subscriptionRoutes);
-webappRouter.use(audioRoutes);
+if (config.features.audioEnabled) {
+  webappRouter.use(audioRoutes);
+}
 webappRouter.use(imageRoutes);
 webappRouter.use(videoRoutes);
 
