@@ -23,6 +23,7 @@ import {
   handleImageFamilySelection,
   handleImageFunctionSelection,
   handleUserInput,
+  handlePhotoInput,
   handleCallbackQuery,
   handleWebAppData,
   handlePreCheckoutQuery,
@@ -68,6 +69,15 @@ export function createBot(): Telegraf<BotContext> {
         ctx.session.lastBotMessageId = undefined;
       }
     }
+
+    // Also delete previous nav message when photo is received (image-to-video flow)
+    if (ctx.message && 'photo' in ctx.message) {
+      if (ctx.session?.lastBotMessageId) {
+        await deleteMessage(ctx, ctx.session.lastBotMessageId);
+        ctx.session.lastBotMessageId = undefined;
+      }
+    }
+
     return next();
   });
 
@@ -175,6 +185,7 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.videoFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
+      ctx.session.uploadedImageUrls = undefined;
       if (family && isSingleVideoFamily(family)) {
         ctx.session.videoFamily = undefined;
         return handleVideoFamilyMenu(ctx);
@@ -216,6 +227,9 @@ export function createBot(): Telegraf<BotContext> {
     }
     return next();
   });
+
+  // Photo messages (image upload for video models)
+  bot.on('photo', handlePhotoInput);
 
   // Text messages (user input for models)
   bot.on('text', handleUserInput);

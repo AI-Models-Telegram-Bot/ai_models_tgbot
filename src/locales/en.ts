@@ -53,10 +53,10 @@ export const en = {
     videoWanFamily: '🌊 WAN',
     videoSeedanceFamily: '🌱 Seedance',
     // Video Models
-    videoKling: '🎥 Kling (⚡50)',
-    videoKlingPro: '💎 Kling Pro (⚡100)',
-    videoVeoFast: '⚡ Veo Fast (⚡200)',
-    videoVeoQuality: '💎 Veo Quality (⚡500)',
+    videoKling: '🎥 Kling (⚡12)',
+    videoKlingPro: '💎 Kling Pro (⚡20)',
+    videoVeoFast: '⚡ Veo Fast (⚡20)',
+    videoVeoQuality: '💎 Veo Quality (⚡80)',
     videoSettings: '🎛️ Video Settings',
   },
 
@@ -315,7 +315,7 @@ Choose a model family:`,
 
     videoKlingFamilyDesc: `🎥 <b>Kling</b>
 
-Professional video generation by Kuaishou — smooth motion, cinematic quality.
+Professional video generation by Kuaishou. Smooth motion, cinematic quality, and excellent prompt adherence.
 
 Select a model:`,
 
@@ -327,116 +327,121 @@ Select a model:`,
 
     videoSoraFamilyDesc: `🎬 <b>Sora</b>
 
-OpenAI's text-to-video model — creative, imaginative video generation.
+An advanced AI model by OpenAI capable of transforming text descriptions or images into dynamic videos with resolutions up to 1080p.
 
-💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
-Fee: ⚡250 credits per video`,
+Fee: ⚡25 credits`,
 
-    videoRunwayFamilyDesc: `✈️ <b>Runway</b>
+    videoRunwayFamilyDesc: `✈️ <b>Runway Gen-4 Turbo</b>
 
-Runway Gen-4 Turbo — fast, high-quality video generation for professionals.
+Professional-grade video generation with cinematic output. Send a text prompt or upload up to 3 images to generate a video.
 
-💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+Send ✍️ a text prompt or 🌄 upload images to get started 👇
+⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
-Fee: ⚡150 credits per video`,
+Fee: ⚡15 credits`,
 
     videoLumaFamilyDesc: `💫 <b>Luma Dream Machine</b>
 
-Fast AI video generation with stunning visual quality.
+Fast AI video generation with stunning visual quality. Supports text prompts and image-to-video.
 
-Send a text prompt to generate a video.
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡50 credits per video`,
+Fee: ⚡18 credits`,
 
-    videoWanFamilyDesc: `🌊 <b>WAN</b>
+    videoWanFamilyDesc: `🌊 <b>WAN 2.5</b>
 
-Open-source video generation model — affordable and versatile.
+Open-source video generation model — affordable and versatile. Great for quick iterations and creative experiments.
 
-Send a text prompt to generate a video.
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡30 credits per video`,
+Fee: ⚡10 credits`,
 
-    videoSeedanceFamilyDesc: `🌱 <b>Seedance 2.0</b>
+    videoSeedanceFamilyDesc: `🌱 <b>Seedance 1.5</b>
 
-ByteDance's latest video generation model — excellent motion quality and prompt adherence.
+An advanced video generation model from ByteDance. Known for multi-scene storytelling, high-quality animation, and impressive motion quality — especially useful for content creators and visual artists.
 
-💡 Adjust aspect ratio and duration in Video Settings, then send a text prompt.
+Upload up to 2 images and/or send a text prompt to get started 👇
 
-Fee: ⚡100 credits per video`,
+Fee: ⚡10 credits`,
 
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
-Professional video generation with smooth motion and natural dynamics.
+Professional video generation with smooth motion and natural dynamics. Animate images or send a text prompt to create cinematic videos.
 
-💡 Adjust aspect ratio in Video Settings, then send a text prompt to generate.
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡50 credits per video`,
+Fee: ⚡12 credits`,
 
     videoKlingProDesc: `💎 <b>Kling Pro</b>
 
-Premium Kling model — higher quality, more detailed output.
+Premium Kling model — higher quality, 10-second extended videos with detailed output.
 
-💡 Adjust aspect ratio in Video Settings, then send a text prompt to generate.
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡100 credits per video`,
+Fee: ⚡20 credits`,
 
-    videoVeoFastDesc: `⚡ <b>Veo Fast</b>
+    videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 
-Google Veo 3.1 fast mode — quick video generation with great quality.
-
-💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
-
-Fee: ⚡200 credits per video`,
-
-    videoVeoDesc: `💎 <b>Veo Quality</b>
-
-Google Veo 3.1 quality mode — maximum fidelity and photorealism.
+Google Veo fast mode — quick video generation with great quality and optional audio.
 
 💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
 
-Fee: ⚡500 credits per video`,
+Send ✍️ a text prompt to get started 👇
+
+Fee: ⚡20 credits`,
+
+    videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
+
+Google Veo quality mode — maximum fidelity, photorealism, and optional audio generation.
+
+💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
+
+Send ✍️ a text prompt to get started 👇
+
+Fee: ⚡80 credits`,
 
     videoSoraDesc: `🎬 <b>Sora</b>
 
-OpenAI's text-to-video — creative and imaginative video generation.
+An advanced AI model by OpenAI capable of transforming text descriptions or images into dynamic videos with resolutions up to 1080p.
 
-💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
-Fee: ⚡250 credits per video`,
+Fee: ⚡25 credits`,
 
     videoRunwayDesc: `✈️ <b>Runway Gen-4 Turbo</b>
 
-Professional video generation with cinematic output.
+Professional-grade video generation with cinematic output. Send a text prompt or upload up to 3 images.
 
-💡 Adjust aspect ratio, duration, and resolution in Video Settings.
+Send ✍️ a text prompt or 🌄 upload images to get started 👇
 ⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
-Fee: ⚡150 credits per video`,
+Fee: ⚡15 credits`,
 
     videoLumaDesc: `💫 <b>Luma Dream Machine</b>
 
-Fast AI video generation with stunning visual quality.
+Fast AI video generation with stunning visual quality. Supports text-to-video and image-to-video.
 
-Send a text prompt to generate a video.
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡50 credits per video`,
+Fee: ⚡18 credits`,
 
-    videoWanDesc: `🌊 <b>WAN</b>
+    videoWanDesc: `🌊 <b>WAN 2.5</b>
 
-Open-source video generation — affordable and versatile.
+Open-source video generation — affordable and versatile. Great for quick iterations.
 
-Send a text prompt to generate a video.
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡30 credits per video`,
+Fee: ⚡10 credits`,
 
-    videoSeedanceDesc: `🌱 <b>Seedance 2.0</b>
+    videoSeedanceDesc: `🌱 <b>Seedance 1.5</b>
 
-ByteDance's latest video generation — excellent motion quality and prompt adherence.
+An advanced video generation model from ByteDance. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
-💡 Adjust aspect ratio and duration in Video Settings, then send a text prompt.
+Upload up to 2 images and/or send a text prompt to get started 👇
 
-Fee: ⚡100 credits per video`,
+Fee: ⚡10 credits`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',

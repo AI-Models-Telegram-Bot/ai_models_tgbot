@@ -56,6 +56,69 @@ function getMainKeyboardMarkup(lang: Language) {
   };
 }
 
+/** Settings label translations */
+const SETTINGS_LABELS: Record<string, Record<string, string>> = {
+  en: {
+    aspectRatio: 'Aspect Ratio', duration: 'Duration', resolution: 'Resolution',
+    quality: 'Quality', style: 'Style', version: 'Version', generateAudio: 'Audio',
+    stylize: 'Stylize', voiceId: 'Voice',
+  },
+  ru: {
+    aspectRatio: 'Формат', duration: 'Длительность', resolution: 'Разрешение',
+    quality: 'Качество', style: 'Стиль', version: 'Версия', generateAudio: 'Аудио',
+    stylize: 'Стилизация', voiceId: 'Голос',
+  },
+};
+
+/** Format a rich caption for generation results */
+function formatResultCaption(opts: {
+  input: string;
+  modelName: string;
+  category: string;
+  settingsApplied?: Record<string, unknown>;
+  creditsCost: number;
+  remainingBalance: number;
+  lang: Language;
+}): string {
+  const { input, modelName, category, settingsApplied, creditsCost, remainingBalance, lang } = opts;
+  const labels = SETTINGS_LABELS[lang] || SETTINGS_LABELS.en;
+  const lines: string[] = [];
+
+  // Prompt
+  const promptLabel = lang === 'ru' ? 'Ваш запрос' : 'Your request';
+  lines.push(`🎯 ${promptLabel}: ${truncateText(input, 200)}`);
+
+  // Settings
+  if (settingsApplied && Object.keys(settingsApplied).length > 0) {
+    lines.push('');
+    const settingsHeader = lang === 'ru' ? 'Настройки' : 'Settings';
+    const settingParts: string[] = [];
+    for (const [key, value] of Object.entries(settingsApplied)) {
+      if (value === undefined || value === null || key === 'model') continue;
+      const label = labels[key] || key;
+      let displayVal = String(value);
+      if (key === 'duration') displayVal = `${value} ${lang === 'ru' ? 'сек.' : 'sec.'}`;
+      if (key === 'generateAudio') displayVal = value ? (lang === 'ru' ? 'Да' : 'Yes') : (lang === 'ru' ? 'Нет' : 'No');
+      settingParts.push(`${label}: ${displayVal}`);
+    }
+    if (settingParts.length > 0) {
+      lines.push(`⚙️ ${settingsHeader}: ${settingParts.join(' | ')}`);
+    }
+  }
+
+  // Model + cost
+  lines.push('');
+  const categoryLabel = lang === 'ru'
+    ? { TEXT: 'Текст', IMAGE: 'Изображ.', VIDEO: 'Видео', AUDIO: 'Аудио' }[category] || category
+    : category.charAt(0) + category.slice(1).toLowerCase();
+  const balanceLabel = lang === 'ru' ? 'Баланс' : 'Balance';
+  const deductedLabel = lang === 'ru' ? 'Списано' : 'Deducted';
+  lines.push(`📊 ${modelName}`);
+  lines.push(`💰 ${deductedLabel}: ⚡-${creditsCost}. ${balanceLabel}: ⚡${remainingBalance} (${categoryLabel})`);
+
+  return lines.join('\n');
+}
+
 /** Process a generation job */
 async function processGenerationJob(job: Job<GenerationJobData>): Promise<GenerationJobResult> {
   const {
@@ -87,9 +150,14 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       case 'IMAGE':
         generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input, job.data.imageOptions);
         break;
-      case 'VIDEO':
-        generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input, job.data.videoOptions);
+      case 'VIDEO': {
+        const videoOpts = { ...job.data.videoOptions };
+        if (job.data.inputImageUrls?.length) {
+          videoOpts.inputImageUrls = job.data.inputImageUrls;
+        }
+        generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input, videoOpts);
         break;
+      }
       case 'AUDIO':
         generationResponse = await manager.generateWithModel('AUDIO', 'generateAudio', modelSlug, input, job.data.audioOptions);
         break;
@@ -170,47 +238,62 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       // Send result to user (attach main keyboard to the last message)
       const kb = getMainKeyboardMarkup(lang);
 
-      // Build caption with model attribution
-      const modelTag = `Generated with ${model.name}`;
+      // Fetch remaining balance for the result message
+      let remainingBalance = 0;
+      try {
+        remainingBalance = await walletService.getBalance(userId, walletCategory as WalletCategory);
+      } catch {
+        // Non-critical; balance will show as 0
+      }
+
+      const displayName = job.data.modelName || model.name;
+      const caption = formatResultCaption({
+        input,
+        modelName: displayName,
+        category: job.data.modelCategory,
+        settingsApplied: job.data.settingsApplied,
+        creditsCost,
+        remainingBalance,
+        lang,
+      });
 
       if ('text' in result) {
         const textResult = result as TextGenerationResult;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
 
         const formattedText = markdownToTelegramHtml(textResult.text);
-        const maxLength = 4000;
+        const footer = `\n\n📊 <i>${displayName}</i>\n💰 <i>${lang === 'ru' ? 'Списано' : 'Deducted'}: ⚡-${creditsCost}. ${lang === 'ru' ? 'Баланс' : 'Balance'}: ⚡${remainingBalance}</i>`;
+        const maxLength = 4000 - footer.length;
 
         if (formattedText.length > maxLength) {
           const parts = splitMessage(formattedText, maxLength);
           for (let i = 0; i < parts.length; i++) {
             const isLast = i === parts.length - 1;
-            const partText = isLast ? `${parts[i]}\n\n<i>${modelTag}</i>` : parts[i];
+            const partText = isLast ? `${parts[i]}${footer}` : parts[i];
             await telegram.sendMessage(chatId, partText, {
               parse_mode: 'HTML',
               ...(isLast ? kb : {}),
             });
           }
         } else {
-          await telegram.sendMessage(chatId, `${formattedText}\n\n<i>${modelTag}</i>`, { parse_mode: 'HTML', ...kb });
+          await telegram.sendMessage(chatId, `${formattedText}${footer}`, { parse_mode: 'HTML', ...kb });
         }
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
-        const caption = `${truncateText(input, 180)}\n\n${modelTag}`;
         await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption, ...kb });
       } else if ('videoUrl' in result) {
         const videoResult = result as VideoGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
-        const caption = `${truncateText(input, 180)}\n\n${modelTag}`;
         await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption, ...kb });
       } else if ('audioBuffer' in result && result.audioBuffer) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { actualProvider });
-        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, { caption: modelTag, ...kb });
+        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, { caption, ...kb });
       } else if ('audioUrl' in result && result.audioUrl) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl, actualProvider });
-        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, { caption: modelTag, ...kb });
+        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, { caption, ...kb });
       }
     }
 

@@ -56,15 +56,35 @@ export class FalProvider extends EnhancedProvider {
    * Video generation via fal.ai queue API
    * Submits to queue, polls for completion, returns video URL
    */
+  /**
+   * Switch model ID from text-to-video to image-to-video variant when images are provided.
+   */
+  private getImageToVideoModel(textModel: string): string {
+    const modelMap: Record<string, string> = {
+      'fal-ai/bytedance/seedance/v1.5/pro/text-to-video': 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video',
+      'fal-ai/kling-video/v2.5/standard': 'fal-ai/kling-video/v2.5/standard/image-to-video',
+      'fal-ai/kling-video/v2.5/pro': 'fal-ai/kling-video/v2.5/pro/image-to-video',
+      'fal-ai/wan/v2.5/text-to-video': 'fal-ai/wan/v2.5/image-to-video',
+    };
+    return modelMap[textModel] || textModel;
+  }
+
   async generateVideo(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<VideoGenerationResult> {
-    const model = (options?.model as string) || 'fal-ai/bytedance/seedance/v1.5/pro/text-to-video';
+    let model = (options?.model as string) || 'fal-ai/bytedance/seedance/v1.5/pro/text-to-video';
+    const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+    const hasImages = inputImageUrls && inputImageUrls.length > 0;
     const start = Date.now();
 
+    // Switch to image-to-video model variant if images are provided
+    if (hasImages) {
+      model = this.getImageToVideoModel(model);
+    }
+
     try {
-      logger.info(`Fal.ai video: starting generation (${model})`);
+      logger.info(`Fal.ai video: starting generation (${model}, images: ${hasImages ? inputImageUrls.length : 0})`);
 
       const input: Record<string, unknown> = {
         prompt,
@@ -76,6 +96,11 @@ export class FalProvider extends EnhancedProvider {
       // Duration handling
       if (options?.duration !== undefined) {
         input.duration = String(options.duration);
+      }
+
+      // Add image URL for image-to-video
+      if (hasImages) {
+        input.image_url = inputImageUrls[0];
       }
 
       // Submit to queue
