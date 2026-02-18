@@ -243,11 +243,6 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
               {t('subscriptions:prioritySupport', 'Priority Support')}
             </span>
           )}
-          {plan.apiAccess && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-medium">
-              {t('subscriptions:apiAccess', 'API Access')}
-            </span>
-          )}
           {plan.referralBonus > 0 && (
             <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-secondary/10 text-brand-secondary text-xs font-medium">
               {plan.referralBonus}% {t('subscriptions:referralBonus', 'Referral Bonus')}

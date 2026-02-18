@@ -232,11 +232,10 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       'features.premium.largeCredits',
       'features.premium.referralBonus',
       'features.premium.priorityChat',
-      'features.premium.limitedApi',
     ],
     referralBonus: 20,
     prioritySupport: true,
-    apiAccess: true,
+    apiAccess: false,
   },
 
   // ── BUSINESS ── $79.99/mo ──────────────────────────────
@@ -279,13 +278,12 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       'features.business.massiveCredits',
       'features.business.referralBonus',
       'features.business.support247',
-      'features.business.fullApi',
       'features.business.fineTuning',
       'features.business.accountManager',
     ],
     referralBonus: 25,
     prioritySupport: true,
-    apiAccess: true,
+    apiAccess: false,
   },
 
   // ── ENTERPRISE ── Custom ───────────────────────────────
@@ -329,7 +327,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       'features.enterprise.allModelsUnlimited',
       'features.enterprise.referralBonus',
       'features.enterprise.dedicatedSupport',
-      'features.enterprise.highLimitApi',
       'features.enterprise.customDevelopment',
       'features.enterprise.teamCollaboration',
       'features.enterprise.customIntegrations',
@@ -338,7 +335,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     ],
     referralBonus: 30,
     prioritySupport: true,
-    apiAccess: true,
+    apiAccess: false,
   },
 ];
 
