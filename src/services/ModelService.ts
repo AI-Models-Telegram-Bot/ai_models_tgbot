@@ -110,15 +110,15 @@ export class ModelService {
       { name: 'Midjourney', slug: 'midjourney', provider: 'kieai', category: 'IMAGE', tokenCost: 25, priceItemCode: 'IMAGE_MIDJOURNEY', description: 'Midjourney artistic image generation via KieAI' },
 
       // Video models
-      { name: 'Wan 2.1', slug: 'wan', provider: 'replicate', category: 'VIDEO', tokenCost: 30, priceItemCode: 'VIDEO_WAN', description: 'Wan AI video generation (~$0.10)' },
-      { name: 'Kling', slug: 'kling', provider: 'piapi', category: 'VIDEO', tokenCost: 50, priceItemCode: 'VIDEO_KLING', description: 'Kling 5s video ($0.13)' },
-      { name: 'Luma Dream Machine', slug: 'luma', provider: 'replicate', category: 'VIDEO', tokenCost: 50, priceItemCode: 'VIDEO_LUMA', description: 'Luma AI Dream Machine (~$0.40)' },
-      { name: 'Kling Pro', slug: 'kling-pro', provider: 'piapi', category: 'VIDEO', tokenCost: 100, priceItemCode: 'VIDEO_KLING_PRO', description: 'Kling 10s extended video ($0.26)' },
-      { name: 'Runway', slug: 'runway', provider: 'kieai', category: 'VIDEO', tokenCost: 150, priceItemCode: 'VIDEO_RUNWAY', description: 'Runway Gen-4 Turbo text-to-video (~$0.30)' },
-      { name: 'Veo Fast', slug: 'veo-fast', provider: 'kieai', category: 'VIDEO', tokenCost: 200, priceItemCode: 'VIDEO_VEO_FAST', description: 'Google Veo 3.1 Fast (~$0.40)' },
-      { name: 'Seedance 2.0', slug: 'seedance', provider: 'kieai', category: 'VIDEO', tokenCost: 100, priceItemCode: 'VIDEO_SEEDANCE', description: 'ByteDance Seedance 2.0 text-to-video (~$0.45)' },
-      { name: 'Sora', slug: 'sora', provider: 'kieai', category: 'VIDEO', tokenCost: 250, priceItemCode: 'VIDEO_SORA', description: 'OpenAI Sora 2 text-to-video (~$0.50)' },
-      { name: 'Veo Quality', slug: 'veo', provider: 'kieai', category: 'VIDEO', tokenCost: 500, priceItemCode: 'VIDEO_VEO', description: 'Google Veo 3.1 Quality (~$2.00)' },
+      { name: 'Wan 2.1', slug: 'wan', provider: 'replicate', category: 'VIDEO', tokenCost: 10, priceItemCode: 'VIDEO_WAN', description: 'Wan AI video generation (~$0.25)' },
+      { name: 'Seedance 1.5', slug: 'seedance', provider: 'kieai', category: 'VIDEO', tokenCost: 10, priceItemCode: 'VIDEO_SEEDANCE', description: 'ByteDance Seedance 1.5 Pro text-to-video (~$0.20)' },
+      { name: 'Kling', slug: 'kling', provider: 'piapi', category: 'VIDEO', tokenCost: 12, priceItemCode: 'VIDEO_KLING', description: 'Kling 5s video (~$0.26)' },
+      { name: 'Runway', slug: 'runway', provider: 'kieai', category: 'VIDEO', tokenCost: 15, priceItemCode: 'VIDEO_RUNWAY', description: 'Runway Gen-4 Turbo text-to-video (~$0.30)' },
+      { name: 'Luma Dream Machine', slug: 'luma', provider: 'replicate', category: 'VIDEO', tokenCost: 18, priceItemCode: 'VIDEO_LUMA', description: 'Luma AI Dream Machine (~$0.40)' },
+      { name: 'Kling Pro', slug: 'kling-pro', provider: 'piapi', category: 'VIDEO', tokenCost: 20, priceItemCode: 'VIDEO_KLING_PRO', description: 'Kling 10s extended video (~$0.46)' },
+      { name: 'Veo Fast', slug: 'veo-fast', provider: 'kieai', category: 'VIDEO', tokenCost: 20, priceItemCode: 'VIDEO_VEO_FAST', description: 'Google Veo 3.1 Fast (~$0.40)' },
+      { name: 'Sora', slug: 'sora', provider: 'kieai', category: 'VIDEO', tokenCost: 25, priceItemCode: 'VIDEO_SORA', description: 'OpenAI Sora 2 text-to-video (~$0.50)' },
+      { name: 'Veo Quality', slug: 'veo', provider: 'kieai', category: 'VIDEO', tokenCost: 80, priceItemCode: 'VIDEO_VEO', description: 'Google Veo 3.1 Quality (~$2.00)' },
 
       // Audio models
       { name: 'Deepgram TTS', slug: 'deepgram-tts', provider: 'openai', category: 'AUDIO', tokenCost: 2, priceItemCode: 'AUDIO_DEEPGRAM', description: 'Text-to-speech via OpenAI TTS (~$0.015/1K chars)' },

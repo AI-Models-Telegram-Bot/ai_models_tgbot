@@ -169,7 +169,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
 
   // Send processing message
   const processingMessage = t(lang, 'messages.processing', { modelName: model.name });
-  const processingMsg = await ctx.reply(processingMessage);
+  const processingMsg = await ctx.reply(processingMessage, getMainKeyboard(lang));
 
   // Load audio settings if this is an audio function
   let audioOptions: Record<string, unknown> | undefined;
