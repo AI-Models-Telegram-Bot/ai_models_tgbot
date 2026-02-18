@@ -1,3 +1,4 @@
+import { Markup } from 'telegraf';
 import { BotContext, AudioFunction } from '../types';
 import {
   getAudioFunctionsKeyboard,
@@ -13,6 +14,7 @@ import { sendTrackedMessage, deleteMessage } from '../utils';
 import { enqueueGeneration } from '../../queues/producer';
 import { logger } from '../../utils/logger';
 import { WalletCategory } from '@prisma/client';
+import { config } from '../../config';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -124,8 +126,18 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
   if (!access.allowed) {
     const funcName = FUNCTION_NAMES[functionId as AudioFunction]?.[lang] || functionId;
     const denied = (l.messages as any).audioAccessDenied || 'is not available on your current plan.';
-    const hint = (l.messages as any).audioUpgradeHint || 'Upgrade your subscription to access this feature.';
-    await sendTrackedMessage(ctx, `🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
+    await sendTrackedMessage(ctx, `🔒 "${funcName}" ${denied}`, {
+      parse_mode: 'HTML',
+      ...getMainKeyboard(lang),
+    });
+    if (config.webapp.url) {
+      const upgradeText = lang === 'ru' ? '⬆️ Улучшить тариф' : '⬆️ Upgrade Plan';
+      await ctx.reply(lang === 'ru' ? 'Обновите подписку для доступа к этой модели.' : 'Upgrade your subscription to access this model.', {
+        ...Markup.inlineKeyboard([
+          Markup.button.webApp(upgradeText, config.webapp.url),
+        ]),
+      });
+    }
     return;
   }
 
@@ -138,7 +150,7 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
         required: formatCredits(model.tokenCost),
         current: formatCredits(currentBalance),
       });
-      await sendTrackedMessage(ctx, message);
+      await sendTrackedMessage(ctx, message, getMainKeyboard(lang));
       return;
     }
   }

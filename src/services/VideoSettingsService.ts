@@ -17,7 +17,7 @@ const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'runway': { aspectRatio: '16:9', duration: 5, resolution: '720p' },
   'luma': {},
   'wan': {},
-  'seedance': { aspectRatio: '16:9', duration: 5 },
+  'seedance': { aspectRatio: '16:9', duration: 8, resolution: '720p' },
 };
 
 export class VideoSettingsService {

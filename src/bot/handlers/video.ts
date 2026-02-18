@@ -1,3 +1,4 @@
+import { Markup } from 'telegraf';
 import { BotContext, VideoFamily, VideoFunction } from '../types';
 import {
   getVideoFamiliesKeyboard,
@@ -11,6 +12,7 @@ import { Language, getLocale } from '../../locales';
 import { sendTrackedMessage } from '../utils';
 import { logger } from '../../utils/logger';
 import { WalletCategory } from '@prisma/client';
+import { config } from '../../config';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -231,8 +233,19 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
   if (!access.allowed) {
     const funcName = FUNCTION_NAMES[functionId as VideoFunction]?.[lang] || functionId;
     const denied = (l.messages as any).videoAccessDenied || 'is not available on your current plan.';
-    const hint = (l.messages as any).videoUpgradeHint || 'Upgrade your subscription to access this feature.';
-    await sendTrackedMessage(ctx, `🔒 "${funcName}" ${denied}\n\n${hint}`, { parse_mode: 'HTML' });
+    await sendTrackedMessage(ctx, `🔒 "${funcName}" ${denied}`, {
+      parse_mode: 'HTML',
+      ...getMainKeyboard(lang),
+    });
+    // Send upgrade button as separate inline message
+    if (config.webapp.url) {
+      const upgradeText = lang === 'ru' ? '⬆️ Улучшить тариф' : '⬆️ Upgrade Plan';
+      await ctx.reply(lang === 'ru' ? 'Обновите подписку для доступа к этой модели.' : 'Upgrade your subscription to access this model.', {
+        ...Markup.inlineKeyboard([
+          Markup.button.webApp(upgradeText, config.webapp.url),
+        ]),
+      });
+    }
     return;
   }
 
@@ -242,7 +255,7 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
     if (!hasBalance) {
       const currentBalance = await walletService.getBalance(ctx.user.id, 'VIDEO' as WalletCategory);
       const message = `Insufficient balance. You need ${formatCredits(model.tokenCost)} but have ${formatCredits(currentBalance)}.`;
-      await sendTrackedMessage(ctx, message);
+      await sendTrackedMessage(ctx, message, getMainKeyboard(lang));
       return;
     }
   }
