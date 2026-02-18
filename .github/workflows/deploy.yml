@@ -104,15 +104,18 @@ jobs:
                 updated_at = now();
             " || echo "Price item seeding failed (non-fatal)"
 
-            # Rebuild dev-bot container
-            docker compose -f docker-compose.prod.yml build dev-bot
+            # Rebuild dev-bot container (no cache to ensure fresh code)
+            docker compose -f docker-compose.prod.yml build --no-cache dev-bot
+
+            # Run database migrations
+            docker compose -f docker-compose.prod.yml run --rm dev-bot npx prisma migrate deploy || echo "Migration failed (non-fatal)"
 
             # Restart only dev services
             docker compose -f docker-compose.prod.yml up -d dev-bot
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
-            sleep 20
+            sleep 30
             if ! curl -sf http://localhost:3003/health > /dev/null; then
               echo "Dev health check failed!"
               exit 1
@@ -183,11 +186,11 @@ jobs:
             chmod -R 755 webapp-dist
             echo "Webapp built successfully"
 
-            # Build images on server
-            docker compose -f docker-compose.prod.yml build
+            # Build images on server (no cache to ensure fresh code)
+            docker compose -f docker-compose.prod.yml build --no-cache
 
             # Run database migrations
-            docker compose -f docker-compose.prod.yml run --rm bot1 npx prisma db push --accept-data-loss=false
+            docker compose -f docker-compose.prod.yml run --rm bot1 npx prisma migrate deploy
 
             # Restart services
             docker compose -f docker-compose.prod.yml up -d
@@ -196,7 +199,7 @@ jobs:
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
-            sleep 15
+            sleep 30
             if ! curl -sf http://localhost:3001/health > /dev/null; then
               echo "Health check failed, rolling back to $PREV_COMMIT"
               git checkout $PREV_COMMIT
