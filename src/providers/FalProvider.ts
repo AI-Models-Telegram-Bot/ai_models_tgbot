@@ -114,10 +114,16 @@ export class FalProvider extends EnhancedProvider {
         throw new Error(`Fal.ai video: no request_id in response: ${JSON.stringify(submitResponse.data).slice(0, 300)}`);
       }
 
+      // Use URLs returned by fal — model aliases (e.g. veo3/fast → veo3) change the base path
+      const statusUrl = submitResponse.data?.status_url
+        || `https://queue.fal.run/${model}/requests/${requestId}/status`;
+      const responseUrl = submitResponse.data?.response_url
+        || `https://queue.fal.run/${model}/requests/${requestId}`;
+
       logger.info(`Fal.ai video: queued, request_id=${requestId}`);
 
       // Poll for completion
-      const videoUrl = await this.pollQueueResult(model, requestId);
+      const videoUrl = await this.pollQueueResult(statusUrl, responseUrl);
 
       const time = Date.now() - start;
       const cost = 0.26; // ~$0.26 for seedance
@@ -141,29 +147,25 @@ export class FalProvider extends EnhancedProvider {
   }
 
   /**
-   * Poll fal.ai queue for result
-   * GET /requests/{request_id}/status → { status: "IN_QUEUE" | "IN_PROGRESS" | "COMPLETED" }
-   * GET /requests/{request_id} → full result with video URL
+   * Poll fal.ai queue for result using URLs returned by submission
+   * GET {statusUrl} → { status: "IN_QUEUE" | "IN_PROGRESS" | "COMPLETED" }
+   * GET {responseUrl} → full result with video URL
    */
-  private async pollQueueResult(model: string, requestId: string): Promise<string> {
+  private async pollQueueResult(statusUrl: string, responseUrl: string): Promise<string> {
     const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
 
     while (Date.now() < deadline) {
       await this.sleep(POLL_INTERVAL_MS);
 
       try {
-        const statusResponse = await this.client.get(
-          `https://queue.fal.run/${model}/requests/${requestId}/status`
-        );
+        const statusResponse = await this.client.get(statusUrl);
 
         const status = statusResponse.data?.status;
-        logger.debug(`Fal.ai video poll: status=${status}, requestId=${requestId}`);
+        logger.debug(`Fal.ai video poll: status=${status}`);
 
         if (status === 'COMPLETED') {
           // Fetch the full result
-          const resultResponse = await this.client.get(
-            `https://queue.fal.run/${model}/requests/${requestId}`
-          );
+          const resultResponse = await this.client.get(responseUrl);
 
           const data = resultResponse.data;
           const videoUrl = data?.video?.url;
