@@ -92,6 +92,59 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
   await sendTrackedMessage(ctx, message, { parse_mode: 'HTML', ...getCancelKeyboard(lang) });
 }
 
+/**
+ * Handle photo uploads for image-to-video generation.
+ * Stores the image URL in session and either enqueues immediately (if caption provided)
+ * or waits for a text prompt.
+ */
+export async function handlePhotoInput(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+  if (!ctx.message || !('photo' in ctx.message) || !ctx.message.photo) return;
+
+  const lang = getLang(ctx);
+
+  // Only allow photo uploads for video models
+  if (!ctx.session.videoFunction) {
+    const msg = lang === 'ru'
+      ? 'Загрузка изображений поддерживается только для видео моделей. Отправьте текстовый запрос.'
+      : 'Image uploads are only supported for video models. Please send a text prompt.';
+    await ctx.reply(msg);
+    return;
+  }
+
+  // Get the largest photo (last element in the array)
+  const photo = ctx.message.photo[ctx.message.photo.length - 1];
+  try {
+    const fileLink = await ctx.telegram.getFileLink(photo.file_id);
+    const imageUrl = fileLink.href;
+
+    if (!ctx.session.uploadedImageUrls) {
+      ctx.session.uploadedImageUrls = [];
+    }
+    ctx.session.uploadedImageUrls.push(imageUrl);
+
+    const count = ctx.session.uploadedImageUrls.length;
+
+    // If caption is provided, treat it as the prompt and enqueue immediately
+    if (ctx.message.caption) {
+      return processGeneration(ctx, ctx.message.caption);
+    }
+
+    // Otherwise acknowledge and wait for text prompt
+    const msg = lang === 'ru'
+      ? `✅ Изображение загружено (${count}). Отправьте ✍️ текстовый запрос для генерации или 🌄 ещё одно изображение.`
+      : `✅ Image uploaded (${count}). Send ✍️ a text prompt to generate or 🌄 another image.`;
+    await ctx.reply(msg);
+  } catch (error) {
+    logger.error('Failed to get file link for photo:', error);
+    const msg = lang === 'ru'
+      ? 'Не удалось загрузить изображение. Попробуйте снова.'
+      : 'Failed to upload image. Please try again.';
+    await ctx.reply(msg);
+  }
+}
+
 export async function handleUserInput(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session) return;
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
@@ -111,11 +164,25 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   if (cancelButtons.some(btn => input === btn)) {
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
+    ctx.session.uploadedImageUrls = undefined;
     await sendTrackedMessage(ctx, l.messages.cancelled, getMainKeyboard(lang));
     return;
   }
 
-  const model = await modelService.getBySlug(ctx.session.selectedModel);
+  return processGeneration(ctx, input);
+}
+
+/**
+ * Shared generation logic used by both text and photo (with caption) handlers.
+ * Validates balance, creates request, deducts credits, enqueues job.
+ */
+async function processGeneration(ctx: BotContext, input: string): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+
+  const lang = getLang(ctx);
+  const l = getLocale(lang);
+
+  const model = await modelService.getBySlug(ctx.session.selectedModel!);
   if (!model) {
     await sendTrackedMessage(ctx, l.messages.errorModelNotFound, getMainKeyboard(lang));
     ctx.session.awaitingInput = false;
@@ -213,6 +280,11 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
     }
   }
 
+  // Collect uploaded image URLs for image-to-video generation
+  const inputImageUrls = ctx.session.uploadedImageUrls?.length
+    ? [...ctx.session.uploadedImageUrls]
+    : undefined;
+
   // Enqueue the job - worker will handle execution and result delivery
   try {
     await enqueueGeneration({
@@ -229,12 +301,15 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
       priceItemCode,
       walletCategory: walletCat,
       botToken: config.bot.token,
+      modelName: model.name,
+      settingsApplied: videoOptions || imageOptions || audioOptions || undefined,
+      ...(inputImageUrls && { inputImageUrls }),
       ...(audioOptions && { audioOptions }),
       ...(imageOptions && { imageOptions }),
       ...(videoOptions && { videoOptions }),
     });
 
-    logger.info('Job enqueued', { requestId: request.id, model: model.slug });
+    logger.info('Job enqueued', { requestId: request.id, model: model.slug, hasImages: !!inputImageUrls });
   } catch (error) {
     logger.error('Failed to enqueue job:', error);
 
@@ -259,4 +334,5 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   ctx.session.imageFamily = undefined;
   ctx.session.videoFunction = undefined;
   ctx.session.videoFamily = undefined;
+  ctx.session.uploadedImageUrls = undefined;
 }

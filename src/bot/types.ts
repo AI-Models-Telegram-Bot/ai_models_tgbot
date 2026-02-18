@@ -24,5 +24,6 @@ export interface BotContext extends Context {
     videoFunction?: VideoFunction;
     videoFamily?: VideoFamily;
     inVideoMenu?: boolean;
+    uploadedImageUrls?: string[]; // Stored image URLs for image-to-video generation
   };
 }

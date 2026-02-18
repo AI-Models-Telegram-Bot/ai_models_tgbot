@@ -15,6 +15,9 @@ export interface GenerationJobData {
   audioOptions?: Record<string, unknown>; // User audio settings (voiceId, textTemp, etc.)
   imageOptions?: Record<string, unknown>; // User image settings (aspectRatio, quality, style, etc.)
   videoOptions?: Record<string, unknown>; // User video settings (aspectRatio, duration, resolution, etc.)
+  inputImageUrls?: string[]; // Image URLs for image-to-video generation
+  modelName?: string; // Display name (e.g. "Seedance 1.5", "Kling")
+  settingsApplied?: Record<string, unknown>; // Snapshot of settings at enqueue time
   source?: 'telegram' | 'web'; // Origin of the request (default: telegram for backward compat)
   webMessageId?: string; // ChatMessage ID for web delivery (only when source='web')
 }

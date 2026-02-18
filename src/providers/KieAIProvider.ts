@@ -120,8 +120,21 @@ export class KieAIProvider extends EnhancedProvider {
       return this.generateRunwayVideo(prompt, options);
     }
 
-    // Default: Kling / Sora via market endpoint
+    // Default: Kling / Sora / Seedance via market endpoint
     return this.generateMarketVideo(prompt, options);
+  }
+
+  /**
+   * Switch model ID to image-to-video variant when images are provided.
+   * KieAI uses different model IDs for text-to-video vs image-to-video.
+   */
+  private getImageToVideoModelId(textModel: string): string {
+    const modelMap: Record<string, string> = {
+      'kling-2.6/text-to-video': 'kling-2.6/image-to-video',
+      'sora-2-text-to-video': 'sora-2-image-to-video',
+      // Seedance uses the same model ID for both text and image-to-video
+    };
+    return modelMap[textModel] || textModel;
   }
 
   /**
@@ -134,14 +147,27 @@ export class KieAIProvider extends EnhancedProvider {
   ): Promise<VideoGenerationResult> {
     const start = Date.now();
     try {
-      const model = (options?.model as string) || 'kling-2.6/text-to-video';
-      logger.info(`KieAI video: starting market generation (${model})`);
+      let model = (options?.model as string) || 'kling-2.6/text-to-video';
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImages = inputImageUrls && inputImageUrls.length > 0;
+
+      // Switch to image-to-video model variant if images are provided
+      if (hasImages) {
+        model = this.getImageToVideoModelId(model);
+      }
+
+      logger.info(`KieAI video: starting market generation (${model}, images: ${hasImages ? inputImageUrls.length : 0})`);
 
       const input: Record<string, unknown> = {
         prompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         duration: (options?.duration as string) || '5',
       };
+
+      // Add image URLs for image-to-video
+      if (hasImages) {
+        input.input_urls = inputImageUrls;
+      }
 
       // Kling-specific: sound off
       if (model.includes('kling')) {
@@ -260,12 +286,20 @@ export class KieAIProvider extends EnhancedProvider {
         quality = '720p';
       }
 
-      const createResponse = await this.client.post('/runway/generate', {
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const body: Record<string, unknown> = {
         prompt,
         duration,
         quality,
         aspectRatio: (options?.aspectRatio as string) || '16:9',
-      });
+      };
+
+      // Runway supports up to 3 init images
+      if (inputImageUrls?.length) {
+        body.promptImage = inputImageUrls.slice(0, 3);
+      }
+
+      const createResponse = await this.client.post('/runway/generate', body);
 
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
