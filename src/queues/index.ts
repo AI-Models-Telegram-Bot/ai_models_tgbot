@@ -29,11 +29,11 @@ export const imageQueue = new Queue<GenerationJobData>('image-generation', redis
 
 export const videoQueue = new Queue<GenerationJobData>('video-generation', redisUrl, {
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 2,
     backoff: { type: 'fixed', delay: 10000 },
     removeOnComplete: 20,
     removeOnFail: 200,
-    timeout: 1200000, // 20 min
+    timeout: 900000, // 15 min (provider fallback handles retries within each attempt)
   },
 });
 

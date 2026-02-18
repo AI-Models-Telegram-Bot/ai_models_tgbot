@@ -20,7 +20,6 @@
   "noModelsAvailable": "No models available for this tier",
   "getStarted": "Get Started",
   "prioritySupport": "Priority Support",
-  "apiAccess": "API Access",
   "referralBonus": "Referral Bonus",
   "categories": {
     "text": "Text Models",
@@ -83,15 +82,13 @@
       "allModels": "All AI models available",
       "largeCredits": "5,000 text + 5,000 image credits",
       "referralBonus": "20% referral bonus",
-      "priorityChat": "Priority chat support",
-      "limitedApi": "API access (limited)"
+      "priorityChat": "Priority chat support"
     },
     "business": {
       "unlimitedTextImage": "Unlimited basic text & image models",
       "massiveCredits": "15,000 text + 10,000 image credits",
       "referralBonus": "25% referral bonus",
       "support247": "24/7 priority support",
-      "fullApi": "Full API access",
       "fineTuning": "Custom model fine-tuning",
       "accountManager": "Dedicated account manager"
     },
@@ -100,7 +97,6 @@
       "allModelsUnlimited": "All models unlimited",
       "referralBonus": "30% referral bonus",
       "dedicatedSupport": "Dedicated 24/7 support team",
-      "highLimitApi": "Full API access with high limits",
       "customDevelopment": "Custom model development",
       "teamCollaboration": "Team collaboration features",
       "customIntegrations": "Custom integrations",

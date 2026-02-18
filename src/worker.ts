@@ -7,6 +7,10 @@ import { logger } from './utils/logger';
 
 async function main(): Promise<void> {
   try {
+    // Use console.log for startup messages — winston's Console transport
+    // doesn't flush reliably to Docker's log driver when running as PID 1
+    console.log('[worker] Starting up...');
+
     validateConfig();
     logger.info('Worker: configuration validated');
 
@@ -19,6 +23,7 @@ async function main(): Promise<void> {
     setupQueueEvents();
     startWorkers();
 
+    console.log('[worker] All queue workers started — ready to process jobs');
     logger.info('Worker process is running');
 
     // Graceful shutdown
@@ -36,6 +41,7 @@ async function main(): Promise<void> {
     process.once('SIGINT', () => shutdown('SIGINT'));
     process.once('SIGTERM', () => shutdown('SIGTERM'));
   } catch (error) {
+    console.error('[worker] FATAL: Failed to start:', error);
     logger.error('Worker failed to start:', error);
     process.exit(1);
   }
