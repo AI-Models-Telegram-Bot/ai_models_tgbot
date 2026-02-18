@@ -11,7 +11,7 @@ import { logger } from '../utils/logger';
 
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_TIMEOUT_MS = 180000; // 3 minutes for images
-const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes for video
+const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes for video (leaves room for fallback providers)
 
 /**
  * Kie.ai Provider — Async task-based API
@@ -543,7 +543,7 @@ export class KieAIProvider extends EnhancedProvider {
       }
     }
 
-    throw new Error('KieAI video: polling timed out after 10 minutes');
+    throw new Error('KieAI video: polling timed out after 5 minutes');
   }
 
   private sleep(ms: number): Promise<void> {

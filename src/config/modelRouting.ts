@@ -309,12 +309,12 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Runway — video gen
+  // Runway — video gen (fal primary — kieai runway tends to time out)
   'runway': {
     category: 'VIDEO',
     providers: [
-      { name: 'kieai', modelId: 'runway' },                          // ~$0.30
-      { name: 'fal', modelId: 'fal-ai/runway-gen3/turbo' },         // fallback
+      { name: 'fal', modelId: 'fal-ai/runway-gen3/turbo' },         // ~$0.35
+      { name: 'kieai', modelId: 'runway' },                          // ~$0.30 fallback
     ],
   },
 
