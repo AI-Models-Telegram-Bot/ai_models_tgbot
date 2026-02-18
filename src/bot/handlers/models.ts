@@ -1,3 +1,4 @@
+import { Markup } from 'telegraf';
 import { WalletCategory } from '@prisma/client';
 import { BotContext } from '../types';
 import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -49,9 +50,17 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
   const access = await modelAccessService.canUseModel(ctx.user.id, model.slug, walletCat);
   if (!access.allowed) {
     await sendTrackedMessage(ctx,
-      `🔒 ${access.reason}\n\nUpgrade your subscription to access this model.`,
-      { parse_mode: 'HTML' }
+      `🔒 ${access.reason}`,
+      { parse_mode: 'HTML', ...getMainKeyboard(lang) }
     );
+    if (config.webapp.url) {
+      const upgradeText = lang === 'ru' ? '⬆️ Улучшить тариф' : '⬆️ Upgrade Plan';
+      await ctx.reply(lang === 'ru' ? 'Обновите подписку для доступа к этой модели.' : 'Upgrade your subscription to access this model.', {
+        ...Markup.inlineKeyboard([
+          Markup.button.webApp(upgradeText, config.webapp.url),
+        ]),
+      });
+    }
     return;
   }
 
@@ -64,7 +73,7 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
         required: formatCredits(creditsCost),
         current: formatCredits(currentBalance),
       });
-      await sendTrackedMessage(ctx, message);
+      await sendTrackedMessage(ctx, message, getMainKeyboard(lang));
       return;
     }
   }

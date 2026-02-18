@@ -168,9 +168,11 @@ export class KieAIProvider extends EnhancedProvider {
         input,
       });
 
-      const taskId = createResponse.data?.data?.taskId;
+      const respData = createResponse.data;
+      const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
       if (!taskId) {
-        throw new Error('KieAI video: no taskId in response');
+        const respStr = JSON.stringify(respData).slice(0, 500);
+        throw new Error(`KieAI video: no taskId in response: ${respStr}`);
       }
 
       logger.info(`KieAI video: task created, taskId=${taskId}`);
