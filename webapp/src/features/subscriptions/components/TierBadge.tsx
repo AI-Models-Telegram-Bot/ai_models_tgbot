@@ -9,19 +9,19 @@ interface TierBadgeProps {
 
 const tierStyles: Record<SubscriptionTier, string> = {
   FREE: 'bg-content-tertiary/20 text-content-tertiary',
-  BASIC: 'bg-brand-primary/20 text-brand-primary',
+  STARTER: 'bg-brand-primary/20 text-brand-primary',
   PRO: 'bg-blue-500/20 text-blue-400',
-  VIP: 'bg-purple-500/20 text-purple-400',
-  ELITE: 'bg-brand-accent/20 text-brand-accent',
+  PREMIUM: 'bg-purple-500/20 text-purple-400',
+  BUSINESS: 'bg-brand-accent/20 text-brand-accent',
   ENTERPRISE: 'bg-gradient-to-r from-brand-accent/20 to-brand-secondary/20 text-brand-accent',
 };
 
 const tierLabels: Record<SubscriptionTier, string> = {
   FREE: 'Free',
-  BASIC: 'Basic',
+  STARTER: 'Starter',
   PRO: 'Pro',
-  VIP: 'VIP',
-  ELITE: 'Elite',
+  PREMIUM: 'Premium',
+  BUSINESS: 'Business',
   ENTERPRISE: 'Enterprise',
 };
 

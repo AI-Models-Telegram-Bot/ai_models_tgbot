@@ -30,10 +30,10 @@
   },
   "tiers": {
     "free": "Бесплатный",
-    "basic": "Базовый",
+    "starter": "Стартовый",
     "pro": "Про",
-    "vip": "VIP",
-    "elite": "Элит",
+    "premium": "Премиум",
+    "business": "Бизнес",
     "enterprise": "Корпоративный"
   },
   "price": {
@@ -56,45 +56,43 @@
   },
   "features": {
     "free": {
-      "basicModels": "Базовые модели ИИ",
+      "basicModels": "Базовые модели ИИ (Fast AI, Gemini Flash)",
       "communitySupport": "Поддержка сообщества",
       "referralBonus": "5% реферальный бонус"
     },
-    "basic": {
-      "gpt4Claude": "Доступ к GPT-4 и Claude",
-      "advancedImage": "Продвинутая генерация изображений",
-      "basicVideo": "Базовая генерация видео",
+    "starter": {
+      "gpt4Claude": "Доступ к GPT-4o и Claude Sonnet",
+      "allImageModels": "Все модели генерации изображений",
+      "basicVideo": "Базовая генерация видео (Kling, Wan)",
       "referralBonus": "10% реферальный бонус",
       "emailSupport": "Поддержка по email"
     },
     "pro": {
-      "allBasic": "Все функции Basic",
-      "gpt4TurboClaude": "GPT-4 Turbo и Claude Opus",
+      "allStarter": "Все функции Starter",
+      "geminiDeepseek": "Gemini Pro и DeepSeek R1",
       "proImage": "Профессиональная генерация изображений",
-      "advancedVideo": "Продвинутая генерация видео",
+      "advancedVideo": "Продвинутое видео (Veo, Runway, Sora)",
       "referralBonus": "15% реферальный бонус",
       "priorityEmail": "Приоритетная поддержка по email",
       "earlyAccess": "Ранний доступ к новым моделям"
     },
-    "vip": {
+    "premium": {
       "unlimitedText": "Безлимитная генерация текста",
       "unlimitedAudio": "Безлимитная генерация аудио",
-      "allImageVideo": "Все модели изображений и видео",
-      "unlimitedBasicVideo": "Безлимитные базовые модели видео",
+      "allModels": "Все ИИ-модели доступны",
+      "unlimitedBasicVideo": "Безлимитное базовое видео (Wan)",
       "referralBonus": "20% реферальный бонус",
       "priorityChat": "Приоритетный чат-саппорт",
-      "limitedApi": "Доступ к API (ограниченный)",
-      "customTraining": "Обучение моделей (бета)"
+      "limitedApi": "Доступ к API (ограниченный)"
     },
-    "elite": {
+    "business": {
       "unlimitedTextImageAudio": "Безлимитный текст, изображения и аудио",
       "unlimitedMostVideo": "Безлимит большинства видеомоделей",
       "referralBonus": "25% реферальный бонус",
       "support247": "Приоритетная поддержка 24/7",
       "fullApi": "Полный доступ к API",
       "fineTuning": "Дообучение моделей",
-      "accountManager": "Персональный менеджер",
-      "whiteLabel": "White-label решения"
+      "accountManager": "Персональный менеджер"
     },
     "enterprise": {
       "unlimitedEverything": "Безлимит на всё",

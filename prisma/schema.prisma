@@ -152,20 +152,22 @@ enum WalletTransactionType {
 // ── Existing Models (kept for compatibility) ─────────────
 
 model AIModel {
-  id              String    @id @default(cuid())
-  name            String
-  slug            String    @unique
-  provider        String
-  category        ModelCategory
-  description     String?
-  tokenCost       Int       @map("token_cost")
-  priceItemCode   String?   @map("price_item_code")
-  isActive        Boolean   @default(true) @map("is_active")
-  config          Json?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  name              String
+  slug              String    @unique
+  provider          String
+  category          ModelCategory
+  description       String?
+  tokenCost         Int       @map("token_cost")
+  priceItemCode     String?   @map("price_item_code")
+  isActive          Boolean   @default(true) @map("is_active")
+  config            Json?
+  providerPriority  Json?     @map("provider_priority")  // [{provider, model, costPer1k, priority}]
+  baseCost          Float?    @map("base_cost")           // Our actual API cost per request
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  requests        Request[]
+  requests          Request[]
 
   @@map("ai_models")
 }
@@ -320,10 +322,10 @@ model UserVideoSettings {
 
 enum SubscriptionTier {
   FREE
-  BASIC
+  STARTER   // was BASIC
   PRO
-  VIP
-  ELITE
+  PREMIUM   // was VIP
+  BUSINESS  // was ELITE
   ENTERPRISE
 }
 

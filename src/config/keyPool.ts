@@ -2,7 +2,9 @@ import { getRedis } from './redis';
 import { config } from './index';
 import { logger } from '../utils/logger';
 
-export type ProviderName = 'openai' | 'anthropic' | 'xai' | 'replicate' | 'elevenlabs';
+export type ProviderName =
+  | 'openai' | 'anthropic' | 'xai' | 'replicate' | 'elevenlabs'
+  | 'groq' | 'together' | 'fal' | 'google' | 'runware' | 'kieai' | 'piapi' | 'openrouter';
 
 const RATE_LIMIT_PREFIX = 'ratelimit:';
 const RATE_LIMIT_WINDOW = 60; // seconds
@@ -14,6 +16,14 @@ const RATE_LIMITS: Record<ProviderName, number> = {
   xai: 200,
   replicate: 100,
   elevenlabs: 100,
+  groq: 30,       // Free tier: 30 req/min, paid tier higher
+  together: 100,
+  fal: 100,
+  google: 360,    // Gemini: 360 RPM on paid tier
+  runware: 200,
+  kieai: 100,
+  piapi: 100,
+  openrouter: 200,
 };
 
 /** Pool of keys per provider, lazily initialized */
@@ -38,6 +48,14 @@ function initPools(): Map<ProviderName, string[]> {
     ['xai', parseKeyList(process.env.XAI_API_KEYS, config.ai.xai.apiKey)],
     ['replicate', parseKeyList(process.env.REPLICATE_API_KEYS, config.ai.replicate.apiToken)],
     ['elevenlabs', parseKeyList(process.env.ELEVENLABS_API_KEYS, config.ai.elevenlabs.apiKey)],
+    ['groq', parseKeyList(process.env.GROQ_API_KEYS, config.ai.groq.apiKey)],
+    ['together', parseKeyList(process.env.TOGETHER_API_KEYS, config.ai.together.apiKey)],
+    ['fal', parseKeyList(process.env.FAL_API_KEYS, config.ai.fal.apiKey)],
+    ['google', parseKeyList(process.env.GOOGLE_AI_API_KEYS, config.ai.google.apiKey)],
+    ['runware', parseKeyList(process.env.RUNWARE_API_KEYS, config.ai.runware.apiKey)],
+    ['kieai', parseKeyList(process.env.KIEAI_API_KEYS, config.ai.kieai.apiKey)],
+    ['piapi', parseKeyList(process.env.PIAPI_API_KEYS, config.ai.piapi.apiKey)],
+    ['openrouter', parseKeyList(process.env.OPENROUTER_API_KEYS, config.ai.openrouter.apiKey)],
   ]);
 
   for (const [provider, keys] of pools.entries()) {

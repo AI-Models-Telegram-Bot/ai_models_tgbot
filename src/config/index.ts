@@ -33,6 +33,30 @@ export const config = {
     elevenlabs: {
       apiKey: process.env.ELEVENLABS_API_KEY || '',
     },
+    groq: {
+      apiKey: process.env.GROQ_API_KEY || '',
+    },
+    together: {
+      apiKey: process.env.TOGETHER_API_KEY || '',
+    },
+    fal: {
+      apiKey: process.env.FAL_API_KEY || '',
+    },
+    google: {
+      apiKey: process.env.GOOGLE_AI_API_KEY || '',
+    },
+    runware: {
+      apiKey: process.env.RUNWARE_API_KEY || '',
+    },
+    kieai: {
+      apiKey: process.env.KIEAI_API_KEY || '',
+    },
+    piapi: {
+      apiKey: process.env.PIAPI_API_KEY || '',
+    },
+    openrouter: {
+      apiKey: process.env.OPENROUTER_API_KEY || '',
+    },
   },
   app: {
     nodeEnv: process.env.NODE_ENV || 'development',
