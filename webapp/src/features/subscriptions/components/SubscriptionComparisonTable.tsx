@@ -27,7 +27,6 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
     { label: t('textCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.text) },
     { label: t('imageCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.image) },
     { label: t('videoCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.video) },
-    { label: t('audioCredits'), getValue: (p: SubscriptionPlan) => formatValue(p.credits.audio) },
     { label: t('prioritySupport'), getValue: (p: SubscriptionPlan) => formatValue(p.prioritySupport) },
     { label: t('apiAccess'), getValue: (p: SubscriptionPlan) => formatValue(p.apiAccess) },
     { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => `${p.referralBonus}%` },

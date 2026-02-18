@@ -90,13 +90,14 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.textAi, ru.buttons.textAi], handleTextCategory);
   bot.hears([en.buttons.imageAi, ru.buttons.imageAi], handleImageCategory);
   bot.hears([en.buttons.videoAi, ru.buttons.videoAi], handleVideoCategory);
-  bot.hears([en.buttons.audioAi, ru.buttons.audioAi], handleAudioCategory);
-
-  // Audio function buttons (EN & RU)
-  bot.hears([en.buttons.audioElevenLabs, ru.buttons.audioElevenLabs], (ctx) => handleAudioFunctionSelection(ctx, 'elevenlabs_voice'));
-  bot.hears([en.buttons.audioVoiceCloning, ru.buttons.audioVoiceCloning], (ctx) => handleAudioFunctionSelection(ctx, 'voice_cloning'));
-  bot.hears([en.buttons.audioSuno, ru.buttons.audioSuno], (ctx) => handleAudioFunctionSelection(ctx, 'suno'));
-  bot.hears([en.buttons.audioSoundGen, ru.buttons.audioSoundGen], (ctx) => handleAudioFunctionSelection(ctx, 'sound_generator'));
+  // Audio (gated behind ENABLE_AUDIO env var)
+  if (config.features.audioEnabled) {
+    bot.hears([en.buttons.audioAi, ru.buttons.audioAi], handleAudioCategory);
+    bot.hears([en.buttons.audioElevenLabs, ru.buttons.audioElevenLabs], (ctx) => handleAudioFunctionSelection(ctx, 'elevenlabs_voice'));
+    bot.hears([en.buttons.audioVoiceCloning, ru.buttons.audioVoiceCloning], (ctx) => handleAudioFunctionSelection(ctx, 'voice_cloning'));
+    bot.hears([en.buttons.audioSuno, ru.buttons.audioSuno], (ctx) => handleAudioFunctionSelection(ctx, 'suno'));
+    bot.hears([en.buttons.audioSoundGen, ru.buttons.audioSoundGen], (ctx) => handleAudioFunctionSelection(ctx, 'sound_generator'));
+  }
 
   // Image family buttons (EN & RU)
   bot.hears([en.buttons.imageFluxFamily, ru.buttons.imageFluxFamily], (ctx) => handleImageFamilySelection(ctx, 'flux'));
@@ -147,8 +148,8 @@ export function createBot(): Telegraf<BotContext> {
 
   // Back button - context-aware navigation
   bot.hears([en.buttons.back, ru.buttons.back], async (ctx) => {
-    // Audio: function → audio menu
-    if (ctx.session?.audioFunction) {
+    // Audio: function → audio menu (only if audio enabled)
+    if (config.features.audioEnabled && ctx.session?.audioFunction) {
       ctx.session.audioFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;

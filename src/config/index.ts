@@ -83,6 +83,9 @@ export const config = {
     secretKey: process.env.YOOKASSA_SECRET_KEY || '',
     defaultEmail: process.env.YOOKASSA_DEFAULT_EMAIL || 'support@vseonix.com',
   },
+  features: {
+    audioEnabled: process.env.ENABLE_AUDIO === 'true',
+  },
   smtp: {
     host: process.env.SMTP_HOST || '',
     port: parseInt(process.env.SMTP_PORT || '587', 10),

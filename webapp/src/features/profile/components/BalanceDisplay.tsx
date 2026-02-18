@@ -26,14 +26,12 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ wallet }) => {
   const totalCredits =
     wallet.textBalance +
     wallet.imageBalance +
-    wallet.videoBalance +
-    wallet.audioBalance;
+    wallet.videoBalance;
 
   const balances: BalanceItem[] = [
     { key: 'text', icon: '🤖', labelKey: 'balances.text', value: wallet.textBalance, color: 'bg-blue-500' },
     { key: 'image', icon: '🖼', labelKey: 'balances.image', value: wallet.imageBalance, color: 'bg-green-500' },
     { key: 'video', icon: '🎬', labelKey: 'balances.video', value: wallet.videoBalance, color: 'bg-orange-500' },
-    { key: 'audio', icon: '🎵', labelKey: 'balances.audio', value: wallet.audioBalance, color: 'bg-pink-500' },
   ];
 
   const maxBalance = Math.max(...balances.map((b) => b.value), 1);
