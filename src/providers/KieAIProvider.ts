@@ -381,7 +381,6 @@ export class KieAIProvider extends EnhancedProvider {
         version: versionNum,
         stylization: (options?.stylize as number) || 100,
         speed: 'fast',
-        waterMark: false,
       });
 
       const taskId = createResponse.data?.data?.taskId;
