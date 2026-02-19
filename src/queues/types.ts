@@ -17,6 +17,7 @@ export interface GenerationJobData {
   videoOptions?: Record<string, unknown>; // User video settings (aspectRatio, duration, resolution, etc.)
   inputImageUrls?: string[]; // Image URLs for image-to-video generation
   modelName?: string; // Display name (e.g. "Seedance 1.5", "Kling")
+  telegramId?: number; // User's Telegram ID (for webapp settings URL)
   settingsApplied?: Record<string, unknown>; // Snapshot of settings at enqueue time
   source?: 'telegram' | 'web'; // Origin of the request (default: telegram for backward compat)
   webMessageId?: string; // ChatMessage ID for web delivery (only when source='web')
