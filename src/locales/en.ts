@@ -251,9 +251,12 @@ Fee: ⚡2 credits per image`,
 
     imageFluxKontextDesc: `🎨 <b>Flux Kontext</b>
 
-Context-aware image generation with Flux Kontext Pro. Excellent for coherent, detailed scenes.
+Context-aware image generation and editing with Flux Kontext Pro.
 
-💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
+🌄 Send a reference image + ✍️ text prompt to edit an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio in Image Settings.
 
 Fee: ⚡5 credits per image`,
 

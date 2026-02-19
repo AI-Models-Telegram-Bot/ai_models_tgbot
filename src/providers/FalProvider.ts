@@ -10,7 +10,8 @@ import {
 import { logger } from '../utils/logger';
 
 const POLL_INTERVAL_MS = 5000;
-const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes (leaves room for fallback providers)
+const IMAGE_POLL_TIMEOUT_MS = 180000; // 3 minutes for images
+const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes for video (leaves room for fallback providers)
 
 /**
  * Fal.ai Provider — Queue-based async API
@@ -45,11 +46,68 @@ export class FalProvider extends EnhancedProvider {
     throw new Error('Fal.ai text generation not supported');
   }
 
+  /**
+   * Image generation via fal.ai queue API
+   * Supports text-to-image and image editing (Flux Kontext)
+   */
   async generateImage(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<ImageGenerationResult> {
-    throw new Error('Fal.ai image generation not yet implemented');
+    const model = (options?.model as string) || 'fal-ai/flux-kontext/pro';
+    const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+    const hasImage = inputImageUrls && inputImageUrls.length > 0;
+    const start = Date.now();
+
+    try {
+      logger.info(`Fal.ai image: starting generation (${model}, editing: ${!!hasImage})`);
+
+      const input: Record<string, unknown> = { prompt };
+
+      // Add reference image for editing mode
+      if (hasImage) {
+        input.image_url = inputImageUrls[0];
+      }
+
+      // Submit to queue
+      const submitResponse = await this.client.post(
+        `https://queue.fal.run/${model}`,
+        input
+      );
+
+      const requestId = submitResponse.data?.request_id;
+      if (!requestId) {
+        throw new Error(`Fal.ai image: no request_id in response: ${JSON.stringify(submitResponse.data).slice(0, 300)}`);
+      }
+
+      const statusUrl = submitResponse.data?.status_url
+        || `https://queue.fal.run/${model}/requests/${requestId}/status`;
+      const responseUrl = submitResponse.data?.response_url
+        || `https://queue.fal.run/${model}/requests/${requestId}`;
+
+      logger.info(`Fal.ai image: queued, request_id=${requestId}`);
+
+      // Poll for completion
+      const resultData = await this.pollQueueRawResult(statusUrl, responseUrl, IMAGE_POLL_TIMEOUT_MS);
+
+      // Extract image URL from result
+      const imageUrl = resultData?.images?.[0]?.url;
+      if (!imageUrl) {
+        throw new Error(`Fal.ai image: completed but no image URL: ${JSON.stringify(resultData).slice(0, 300)}`);
+      }
+
+      const time = Date.now() - start;
+      const cost = 0.04;
+      this.updateStats(true, cost, time);
+
+      logger.info(`Fal.ai image: success (${time}ms, $${cost})`);
+      return { imageUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('Fal.ai image: failed', error.response?.data || error.message);
+      throw error;
+    }
   }
 
   /**
@@ -124,7 +182,11 @@ export class FalProvider extends EnhancedProvider {
       logger.info(`Fal.ai video: queued, request_id=${requestId}`);
 
       // Poll for completion
-      const videoUrl = await this.pollQueueResult(statusUrl, responseUrl);
+      const resultData = await this.pollQueueRawResult(statusUrl, responseUrl);
+      const videoUrl = resultData?.video?.url;
+      if (!videoUrl) {
+        throw new Error(`Fal.ai video: completed but no video URL: ${JSON.stringify(resultData).slice(0, 300)}`);
+      }
 
       const time = Date.now() - start;
       const cost = 0.26; // ~$0.26 for seedance
@@ -148,12 +210,16 @@ export class FalProvider extends EnhancedProvider {
   }
 
   /**
-   * Poll fal.ai queue for result using URLs returned by submission
+   * Generic fal.ai queue poller — returns raw result data
    * GET {statusUrl} → { status: "IN_QUEUE" | "IN_PROGRESS" | "COMPLETED" }
-   * GET {responseUrl} → full result with video URL
+   * GET {responseUrl} → full result object
    */
-  private async pollQueueResult(statusUrl: string, responseUrl: string): Promise<string> {
-    const deadline = Date.now() + VIDEO_POLL_TIMEOUT_MS;
+  private async pollQueueRawResult(
+    statusUrl: string,
+    responseUrl: string,
+    timeoutMs: number = VIDEO_POLL_TIMEOUT_MS,
+  ): Promise<any> {
+    const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {
       await this.sleep(POLL_INTERVAL_MS);
@@ -162,39 +228,30 @@ export class FalProvider extends EnhancedProvider {
         const statusResponse = await this.client.get(statusUrl);
 
         const status = statusResponse.data?.status;
-        logger.debug(`Fal.ai video poll: status=${status}`);
+        logger.debug(`Fal.ai poll: status=${status}`);
 
         if (status === 'COMPLETED') {
-          // Fetch the full result
           const resultResponse = await this.client.get(responseUrl);
-
-          const data = resultResponse.data;
-          const videoUrl = data?.video?.url;
-          if (!videoUrl) {
-            throw new Error(`Fal.ai video: completed but no video URL: ${JSON.stringify(data).slice(0, 300)}`);
-          }
-          return videoUrl;
+          return resultResponse.data;
         }
 
         if (status === 'FAILED') {
           const error = statusResponse.data?.error || 'Unknown error';
-          throw new Error(`Fal.ai video task failed: ${error}`);
+          throw new Error(`Fal.ai task failed: ${error}`);
         }
       } catch (error: any) {
-        // Re-throw if it's our own error (not a network/polling error)
-        if (error.message?.includes('Fal.ai video')) {
+        if (error.message?.includes('Fal.ai')) {
           throw error;
         }
-        // Fail immediately on 4xx client errors — retrying won't help
         const status = error.response?.status;
         if (status && status >= 400 && status < 500) {
-          throw new Error(`Fal.ai video: HTTP ${status} from polling endpoint (model may be unavailable)`);
+          throw new Error(`Fal.ai: HTTP ${status} from polling endpoint (model may be unavailable)`);
         }
-        logger.warn(`Fal.ai video poll error (will retry): ${error.message}`);
+        logger.warn(`Fal.ai poll error (will retry): ${error.message}`);
       }
     }
 
-    throw new Error('Fal.ai video: polling timed out after 5 minutes');
+    throw new Error(`Fal.ai: polling timed out after ${Math.round(timeoutMs / 60000)} minutes`);
   }
 
   private sleep(ms: number): Promise<void> {

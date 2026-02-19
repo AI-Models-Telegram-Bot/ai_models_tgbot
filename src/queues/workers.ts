@@ -158,9 +158,14 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       case 'TEXT':
         generationResponse = await manager.generateWithModel('TEXT', 'generateText', modelSlug, input);
         break;
-      case 'IMAGE':
-        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input, job.data.imageOptions);
+      case 'IMAGE': {
+        const imgOpts = { ...job.data.imageOptions };
+        if (job.data.inputImageUrls?.length) {
+          imgOpts.inputImageUrls = job.data.inputImageUrls;
+        }
+        generationResponse = await manager.generateWithModel('IMAGE', 'generateImage', modelSlug, input, imgOpts);
         break;
+      }
       case 'VIDEO': {
         const videoOpts = { ...job.data.videoOptions };
         if (job.data.inputImageUrls?.length) {

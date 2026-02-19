@@ -72,15 +72,23 @@ export class KieAIProvider extends EnhancedProvider {
 
     const start = Date.now();
     try {
-      logger.info(`KieAI image: starting Flux Kontext generation (${model})`);
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImage = inputImageUrls && inputImageUrls.length > 0;
+      logger.info(`KieAI image: starting Flux Kontext generation (${model}, editing: ${!!hasImage})`);
 
-      const fluxPayload = {
+      const fluxPayload: Record<string, unknown> = {
         prompt,
         model,
         aspectRatio: (options?.aspectRatio as string) || '16:9',
         outputFormat: 'png',
       };
-      logger.info('KieAI Flux Kontext payload:', { model, aspectRatio: fluxPayload.aspectRatio });
+
+      // Add reference image for editing mode
+      if (hasImage) {
+        fluxPayload.inputImage = inputImageUrls[0];
+      }
+
+      logger.info('KieAI Flux Kontext payload:', { model, aspectRatio: fluxPayload.aspectRatio, hasImage });
       const createResponse = await this.client.post('/flux/kontext/generate', fluxPayload);
 
       const fluxResp = createResponse.data;
