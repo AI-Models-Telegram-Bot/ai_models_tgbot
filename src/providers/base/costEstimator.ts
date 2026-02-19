@@ -92,7 +92,6 @@ const VIDEO_PRICING: Record<string, number> = {
   seedance: 0.04,                     // KieAI ~$0.20/5s
   kling: 0.052,                       // PiAPI $0.26/5s
   'kling-pro': 0.046,                 // PiAPI $0.46/10s
-  'kling-master': 0.192,              // PiAPI $0.96/5s
   luma: 0.08,                         // Fal/Replicate ~$0.40/5s
   runway: 0.06,                       // KieAI ~$0.30/5s
   sora: 0.10,                         // KieAI ~$0.50/5s

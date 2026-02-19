@@ -215,13 +215,6 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 55,
     isLossLeader: false,
   },
-  'kling-master': {
-    creditsPerUnit: 300,
-    unitType: '1_video',
-    baseCostUSD: 0.96,          // PiAPI master
-    marginPercent: 55,
-    isLossLeader: false,
-  },
   'runway': {
     creditsPerUnit: 80,
     unitType: '1_video',

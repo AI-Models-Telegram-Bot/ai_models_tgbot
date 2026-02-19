@@ -54,9 +54,8 @@ export const en = {
     videoWanFamily: '🌊 WAN',
     videoSeedanceFamily: '🌱 Seedance',
     // Video Models
-    videoKling: '🎥 Kling (⚡12)',
-    videoKlingPro: '💎 Kling Pro (⚡20)',
-    videoKlingMaster: '👑 Kling Master (⚡40)',
+    videoKling: '🎥 Kling Standard (⚡12–32)',
+    videoKlingPro: '💎 Kling Pro (⚡20–116)',
     videoVeoFast: '⚡ Veo Fast (⚡9–20)',
     videoVeoQuality: '💎 Veo Quality (⚡34–80)',
     videoSettings: '🎛️ Video Settings',
@@ -402,27 +401,23 @@ Fee: ⚡5–15 credits (depends on settings)`,
 
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
-Professional video generation with smooth motion and natural dynamics. Animate images or send a text prompt to create cinematic videos.
+Professional video generation with smooth motion and natural dynamics. Choose from multiple Kling versions (v1.5–v2.6).
+
+💡 Configure version, duration, creativity, and more in Video Settings.
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡12 credits`,
+Fee: ⚡12–32 credits (depends on settings)`,
 
     videoKlingProDesc: `💎 <b>Kling Pro</b>
 
-Premium Kling model — higher quality, 10-second extended videos with detailed output.
+Premium Kling model — higher quality, all versions including 2.1-Master, with optional native audio.
+
+💡 Configure version, duration, creativity, audio, and more in Video Settings.
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡20 credits`,
-
-    videoKlingMasterDesc: `👑 <b>Kling Master</b>
-
-The highest quality Kling model — cinematic detail, superior motion coherence, and best-in-class output.
-
-Send ✍️ a text prompt or 🌄 upload an image to get started 👇
-
-Fee: ⚡40 credits`,
+Fee: ⚡20–116 credits (depends on settings)`,
 
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 

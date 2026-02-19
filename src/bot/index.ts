@@ -126,7 +126,6 @@ export function createBot(): Telegraf<BotContext> {
   // Video model buttons (EN & RU)
   bot.hears([en.buttons.videoKling, ru.buttons.videoKling], (ctx) => handleVideoFunctionSelection(ctx, 'kling'));
   bot.hears([en.buttons.videoKlingPro, ru.buttons.videoKlingPro], (ctx) => handleVideoFunctionSelection(ctx, 'kling-pro'));
-  bot.hears([en.buttons.videoKlingMaster, ru.buttons.videoKlingMaster], (ctx) => handleVideoFunctionSelection(ctx, 'kling-master'));
   bot.hears([en.buttons.videoVeoFast, ru.buttons.videoVeoFast], (ctx) => handleVideoFunctionSelection(ctx, 'veo-fast'));
   bot.hears([en.buttons.videoVeoQuality, ru.buttons.videoVeoQuality], (ctx) => handleVideoFunctionSelection(ctx, 'veo'));
 

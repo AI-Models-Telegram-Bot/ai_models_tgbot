@@ -237,32 +237,24 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
 
   // ===================== VIDEO =====================
 
-  // Kling Standard — 5s (Kling 2.6)
+  // Kling Standard (mode: std) — version/duration come from user settings
   'kling': {
     category: 'VIDEO',
     providers: [
-      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'std', version: '2.6' } },  // $0.20/5s (cheapest)
-      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/standard' },                        // $0.07/s ($0.35/5s)
-      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },                                // $0.28/5s
-      { name: 'replicate', modelId: 'kling' },                                              // $1.40/5s
+      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'std' } },
+      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/standard' },
+      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },
+      { name: 'replicate', modelId: 'kling' },
     ],
   },
 
-  // Kling Pro — 10s extended (Kling 2.6 Pro mode)
+  // Kling Pro (mode: pro) — version/duration come from user settings
   'kling-pro': {
     category: 'VIDEO',
     providers: [
-      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'pro', duration: 10, version: '2.6' } },  // $0.66/10s
-      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/pro' },                                           // ~$0.70/10s
-      { name: 'kieai', modelId: 'kling-2.6/text-to-video', extraOptions: { duration: '10' } },
-    ],
-  },
-
-  // Kling Master — best quality (Kling 2.1-master Pro mode)
-  'kling-master': {
-    category: 'VIDEO',
-    providers: [
-      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'pro', version: '2.1-master' } },  // $0.96/5s
+      { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'pro' } },
+      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/pro' },
+      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },
     ],
   },
 

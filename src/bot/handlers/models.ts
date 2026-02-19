@@ -283,7 +283,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   const creditsCost = calculateDynamicCost(
     model.slug,
     model.tokenCost,
-    videoOptions as { duration?: number; resolution?: string } | undefined,
+    videoOptions as { duration?: number; resolution?: string; version?: string; enableAudio?: boolean } | undefined,
   );
 
   // ── Balance check ──
