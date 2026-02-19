@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0f0f23" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>AI Models Bot</title>
+    <script>
+      function showError(prefix, detail) {
+        var el = document.getElementById('loading-fallback');
+        if (el) {
+          el.style.whiteSpace = 'pre-wrap';
+          el.style.padding = '20px';
+          el.style.fontSize = '12px';
+          el.style.color = '#ff6b6b';
+          el.style.textAlign = 'left';
+          el.textContent = (el.textContent === 'Loading...' ? '' : el.textContent + '\n\n') + prefix + ': ' + detail;
+        }
+      }
+
+      // Catch synchronous JS errors
+      window.onerror = function(msg, src, line, col) {
+        showError('Error', msg + '\nSource: ' + src + ':' + line + ':' + col);
+      };
+
+      // Catch unhandled promise rejections
+      window.addEventListener('unhandledrejection', function(e) {
+        showError('Promise error', e.reason ? (e.reason.message || e.reason) : 'unknown');
+      });
+
+      // Detect if the app never loads (module script failed to fetch/parse)
+      // window.onerror does NOT fire for <script type="module"> fetch failures
+      window.__appLoaded = false;
+      setTimeout(function() {
+        if (!window.__appLoaded) {
+          showError('Load timeout', 'App JS bundle did not execute within 10s.\n\nPossible causes:\n- JS assets failed to load (check network)\n- Module parse error in mobile WebView\n- Telegram WebView blocked the script\n\nPlatform: ' + navigator.userAgent);
+        }
+      }, 10000);
+    </script>
+    <script type="module" crossorigin src="/assets/index--vVcZAxM.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DBl2kvvH.js">
+    <link rel="modulepreload" crossorigin href="/assets/ui-Dz3VGjCi.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-B1FVerP_.css">
+  </head>
+  <body>
+    <div id="root">
+      <div id="loading-fallback" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f0f23;color:#b8b8d4;font-family:system-ui,sans-serif;font-size:14px;">Loading...</div>
+    </div>
+  </body>
+</html>
