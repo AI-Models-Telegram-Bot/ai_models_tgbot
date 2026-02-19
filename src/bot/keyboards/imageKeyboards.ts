@@ -11,6 +11,7 @@ export function getImageFamiliesKeyboard(lang: Language) {
   return Markup.keyboard([
     [l.buttons.imageFluxFamily, l.buttons.imageDalleFamily],
     [l.buttons.imageMidjourneyFamily, l.buttons.imageGoogleAIFamily],
+    [l.buttons.imageSeedreamFamily],
     [l.buttons.mainMenu],
   ]).resize();
 }
