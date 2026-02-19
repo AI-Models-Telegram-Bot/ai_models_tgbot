@@ -36,7 +36,19 @@ router.get('/referral/links', async (req, res) => {
     const botUsername = config.bot.username;
     const userTier = (user.subscription?.tier || 'FREE') as SubscriptionTier;
     const plan = SUBSCRIPTION_PLANS.find((p) => p.tier === userTier);
-    const currentTierBonus = plan?.referralBonus ?? 5;
+    const currentTierBonus = plan?.referralBonus ?? 3;
+
+    // Sum actual earned credits from wallet BONUS transactions with referral description
+    const bonusTransactions = await prisma.walletTransaction.aggregate({
+      where: {
+        userId: user.id,
+        transactionType: 'BONUS',
+        description: { startsWith: 'Referral bonus' },
+      },
+      _sum: { amount: true },
+    });
+
+    const totalEarned = Math.round(bonusTransactions._sum.amount || 0);
 
     const referralUrl = botUsername
       ? `https://t.me/${botUsername}?start=${user.referralCode}`
@@ -47,7 +59,7 @@ router.get('/referral/links', async (req, res) => {
       referralUrl,
       stats: {
         totalInvited: user.referrals.length,
-        totalEarned: user.referrals.length * config.tokens.referralBonus,
+        totalEarned,
         currentTierBonus,
       },
     });

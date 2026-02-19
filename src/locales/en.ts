@@ -96,7 +96,7 @@ Use the menu below to navigate.`,
 🔗 <b>Referral Program</b>
 Your code: <code>{referralCode}</code>
 Referrals: {referralCount}
-Bonus earned: {referralBonus}
+Credits earned: {referralBonus} ⚡
 
 Share your link:
 <code>https://t.me/{botUsername}?start={referralCode}</code>`,
@@ -120,8 +120,8 @@ Press the corresponding button to contact support, ensure the safety of your dat
 • Audio: 1-3 tokens
 • Video: 5 tokens
 
-<b>Get Free Tokens:</b>
-• Refer friends: {referralBonus} tokens per referral
+<b>Get Free Credits:</b>
+• Refer friends and earn bonus credits
 • Use promo codes`,
 
     support: `🆘 <b>Support</b>

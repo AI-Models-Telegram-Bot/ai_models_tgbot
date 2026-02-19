@@ -58,14 +58,14 @@
     "free": {
       "basicModels": "Базовые модели ИИ (Fast AI, Gemini Flash)",
       "communitySupport": "Поддержка сообщества",
-      "referralBonus": "5% реферальный бонус"
+      "referralBonus": "3% реферальный бонус"
     },
     "starter": {
       "gpt4Claude": "Доступ к GPT-4o и Claude Sonnet",
       "allImageModels": "Все модели генерации изображений",
       "unlimitedBasicText": "Безлимитный Fast Text и Gemini Flash",
       "basicVideo": "Базовая генерация видео (Kling, Wan)",
-      "referralBonus": "10% реферальный бонус",
+      "referralBonus": "5% реферальный бонус",
       "emailSupport": "Поддержка по email"
     },
     "pro": {
@@ -74,7 +74,7 @@
       "geminiDeepseek": "Gemini Pro и DeepSeek R1",
       "proImage": "Профессиональная генерация изображений",
       "advancedVideo": "Продвинутое видео (Veo, Runway, Sora)",
-      "referralBonus": "15% реферальный бонус",
+      "referralBonus": "8% реферальный бонус",
       "priorityEmail": "Приоритетная поддержка по email",
       "earlyAccess": "Ранний доступ к новым моделям"
     },
@@ -82,13 +82,13 @@
       "unlimitedCheapText": "Безлимитные базовые текстовые модели",
       "allModels": "Все ИИ-модели доступны",
       "largeCredits": "5 000 текст + 5 000 изображения кредитов",
-      "referralBonus": "20% реферальный бонус",
+      "referralBonus": "12% реферальный бонус",
       "priorityChat": "Приоритетный чат-саппорт"
     },
     "business": {
       "unlimitedTextImage": "Безлимитные базовые текст и изображения",
       "massiveCredits": "15 000 текст + 10 000 изображения кредитов",
-      "referralBonus": "25% реферальный бонус",
+      "referralBonus": "16% реферальный бонус",
       "support247": "Приоритетная поддержка 24/7",
       "fineTuning": "Дообучение моделей",
       "accountManager": "Персональный менеджер"
@@ -96,7 +96,7 @@
     "enterprise": {
       "unlimitedEverything": "Безлимит на всё",
       "allModelsUnlimited": "Все модели без ограничений",
-      "referralBonus": "30% реферальный бонус",
+      "referralBonus": "20% реферальный бонус",
       "dedicatedSupport": "Выделенная команда поддержки 24/7",
       "customDevelopment": "Разработка пользовательских моделей",
       "teamCollaboration": "Командная работа",
