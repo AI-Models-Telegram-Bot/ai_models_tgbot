@@ -298,6 +298,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'veo3' },                           // $2.00
+      { name: 'fal', modelId: 'fal-ai/veo3' },                      // fallback ~$0.40/s
     ],
   },
 

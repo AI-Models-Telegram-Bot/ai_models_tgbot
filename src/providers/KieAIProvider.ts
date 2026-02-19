@@ -81,9 +81,13 @@ export class KieAIProvider extends EnhancedProvider {
         outputFormat: 'png',
       });
 
-      const taskId = createResponse.data?.data?.taskId;
+      const fluxResp = createResponse.data;
+      if (fluxResp?.code && fluxResp.code !== 200 && fluxResp.code !== 0) {
+        throw new Error(`KieAI Flux API error (${fluxResp.code}): ${fluxResp.msg || JSON.stringify(fluxResp).slice(0, 300)}`);
+      }
+      const taskId = fluxResp?.data?.taskId;
       if (!taskId) {
-        throw new Error('KieAI image: no taskId in response');
+        throw new Error(`KieAI image: no taskId in response: ${JSON.stringify(fluxResp).slice(0, 300)}`);
       }
 
       logger.info(`KieAI image: task created, taskId=${taskId}`);
@@ -243,9 +247,14 @@ export class KieAIProvider extends EnhancedProvider {
         enableTranslation: true,
       });
 
-      const taskId = createResponse.data?.data?.taskId;
+      const respData = createResponse.data;
+      // Check for API-level errors (e.g. 402 insufficient credits)
+      if (respData?.code && respData.code !== 200 && respData.code !== 0) {
+        throw new Error(`KieAI Veo API error (${respData.code}): ${respData.msg || JSON.stringify(respData).slice(0, 300)}`);
+      }
+      const taskId = respData?.data?.taskId;
       if (!taskId) {
-        throw new Error('KieAI Veo: no taskId in response');
+        throw new Error(`KieAI Veo: no taskId in response: ${JSON.stringify(respData).slice(0, 300)}`);
       }
 
       logger.info(`KieAI Veo: task created, taskId=${taskId}`);
@@ -301,9 +310,13 @@ export class KieAIProvider extends EnhancedProvider {
 
       const createResponse = await this.client.post('/runway/generate', body);
 
-      const taskId = createResponse.data?.data?.taskId;
+      const runwayResp = createResponse.data;
+      if (runwayResp?.code && runwayResp.code !== 200 && runwayResp.code !== 0) {
+        throw new Error(`KieAI Runway API error (${runwayResp.code}): ${runwayResp.msg || JSON.stringify(runwayResp).slice(0, 300)}`);
+      }
+      const taskId = runwayResp?.data?.taskId;
       if (!taskId) {
-        throw new Error('KieAI Runway: no taskId in response');
+        throw new Error(`KieAI Runway: no taskId in response: ${JSON.stringify(runwayResp).slice(0, 300)}`);
       }
 
       logger.info(`KieAI Runway: task created, taskId=${taskId}`);
