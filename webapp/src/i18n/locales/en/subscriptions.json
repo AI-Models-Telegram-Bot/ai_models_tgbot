@@ -58,14 +58,14 @@
     "free": {
       "basicModels": "Basic AI models (Fast AI, Gemini Flash)",
       "communitySupport": "Community support",
-      "referralBonus": "5% referral bonus"
+      "referralBonus": "3% referral bonus"
     },
     "starter": {
       "gpt4Claude": "Access to GPT-4o & Claude Sonnet",
       "allImageModels": "All image generation models",
       "unlimitedBasicText": "Unlimited Fast Text & Gemini Flash",
       "basicVideo": "Basic video generation (Kling, Wan)",
-      "referralBonus": "10% referral bonus",
+      "referralBonus": "5% referral bonus",
       "emailSupport": "Email support"
     },
     "pro": {
@@ -74,7 +74,7 @@
       "geminiDeepseek": "Gemini Pro & DeepSeek R1",
       "proImage": "Professional image generation",
       "advancedVideo": "Advanced video (Veo, Runway, Sora)",
-      "referralBonus": "15% referral bonus",
+      "referralBonus": "8% referral bonus",
       "priorityEmail": "Priority email support",
       "earlyAccess": "Early access to new models"
     },
@@ -82,13 +82,13 @@
       "unlimitedCheapText": "Unlimited basic text models",
       "allModels": "All AI models available",
       "largeCredits": "5,000 text + 5,000 image credits",
-      "referralBonus": "20% referral bonus",
+      "referralBonus": "12% referral bonus",
       "priorityChat": "Priority chat support"
     },
     "business": {
       "unlimitedTextImage": "Unlimited basic text & image models",
       "massiveCredits": "15,000 text + 10,000 image credits",
-      "referralBonus": "25% referral bonus",
+      "referralBonus": "16% referral bonus",
       "support247": "24/7 priority support",
       "fineTuning": "Custom model fine-tuning",
       "accountManager": "Dedicated account manager"
@@ -96,7 +96,7 @@
     "enterprise": {
       "unlimitedEverything": "Unlimited everything",
       "allModelsUnlimited": "All models unlimited",
-      "referralBonus": "30% referral bonus",
+      "referralBonus": "20% referral bonus",
       "dedicatedSupport": "Dedicated 24/7 support team",
       "customDevelopment": "Custom model development",
       "teamCollaboration": "Team collaboration features",

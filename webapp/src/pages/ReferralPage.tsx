@@ -89,7 +89,7 @@ const ReferralPage: React.FC = () => {
           </Card>
           <Card className="text-center">
             <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.earned')}</p>
-            <p className="text-white text-2xl font-bold mt-1">{stats.totalEarned}</p>
+            <p className="text-white text-2xl font-bold mt-1">{stats.totalEarned} ⚡</p>
           </Card>
           <Card className="text-center">
             <p className="text-gray-text text-xs uppercase tracking-wider">{t('referral:stats.bonus')}</p>
