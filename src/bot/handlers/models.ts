@@ -377,6 +377,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
       walletCategory: walletCat,
       botToken: config.bot.token,
       modelName: model.name,
+      telegramId: ctx.from?.id,
       settingsApplied: videoOptions || imageOptions || audioOptions || undefined,
       ...(inputImageUrls && { inputImageUrls }),
       ...(audioOptions && { audioOptions }),
