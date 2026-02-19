@@ -84,7 +84,12 @@ const SETTINGS_LABELS: Record<string, Record<string, string>> = {
 /** Internal settings keys that should NOT be shown to users */
 const HIDDEN_SETTINGS = new Set(['model', 'width', 'height', 'dalleSize']);
 
-/** Format a rich caption for generation results */
+/** Escape HTML special chars for Telegram */
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** Format a rich HTML caption for generation results */
 function formatResultCaption(opts: {
   input: string;
   modelName: string;
@@ -98,14 +103,14 @@ function formatResultCaption(opts: {
   const labels = SETTINGS_LABELS[lang] || SETTINGS_LABELS.en;
   const lines: string[] = [];
 
-  // Prompt (compact — no label prefix)
-  lines.push(`🎯 ${truncateText(input, 200)}`);
+  // Prompt — italic
+  lines.push(`🎯 <i>${escapeHtml(truncateText(input, 200))}</i>`);
   lines.push('');
 
-  // Model name
-  lines.push(`📊 ${modelName}`);
+  // Model name — bold
+  lines.push(`<b>${escapeHtml(modelName)}</b>`);
 
-  // Settings — compact, one line, only user-facing keys
+  // Settings — each on its own line, light style
   if (settingsApplied && Object.keys(settingsApplied).length > 0) {
     const settingParts: string[] = [];
     for (const [key, value] of Object.entries(settingsApplied)) {
@@ -114,7 +119,7 @@ function formatResultCaption(opts: {
       let displayVal = String(value);
       if (key === 'duration') displayVal = `${value}${lang === 'ru' ? 'с' : 's'}`;
       if (key === 'generateAudio') displayVal = value ? (lang === 'ru' ? 'Да' : 'Yes') : (lang === 'ru' ? 'Нет' : 'No');
-      settingParts.push(`${label}: ${displayVal}`);
+      settingParts.push(`${label}: <b>${escapeHtml(displayVal)}</b>`);
     }
     if (settingParts.length > 0) {
       lines.push(`⚙️ ${settingParts.join(' · ')}`);
@@ -122,11 +127,12 @@ function formatResultCaption(opts: {
   }
 
   // Balance line
+  lines.push('');
   const categoryLabel = lang === 'ru'
     ? { TEXT: 'Текст', IMAGE: 'Изображ.', VIDEO: 'Видео', AUDIO: 'Аудио' }[category] || category
     : category.charAt(0) + category.slice(1).toLowerCase();
   const balanceLabel = lang === 'ru' ? 'Баланс' : 'Balance';
-  lines.push(`💰 ⚡-${creditsCost} · ${balanceLabel}: ⚡${remainingBalance} (${categoryLabel})`);
+  lines.push(`💰 -${creditsCost} ⚡ · ${balanceLabel}: <b>${remainingBalance} ⚡</b> <i>(${categoryLabel})</i>`);
 
   return lines.join('\n');
 }
@@ -298,7 +304,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
-        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption, ...kb });
+        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption, parse_mode: 'HTML', ...kb });
       } else if ('videoUrl' in result) {
         const videoResult = result as VideoGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
@@ -307,6 +313,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         const dims = VIDEO_DIMS[arStr];
         await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, {
           caption,
+          parse_mode: 'HTML',
           ...kb,
           supports_streaming: true,
           ...(dims && { width: dims.width, height: dims.height }),
@@ -314,11 +321,11 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       } else if ('audioBuffer' in result && result.audioBuffer) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { actualProvider });
-        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, { caption, ...kb });
+        await telegram.sendVoice(chatId, { source: audioResult.audioBuffer! }, { caption, parse_mode: 'HTML', ...kb });
       } else if ('audioUrl' in result && result.audioUrl) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: audioResult.audioUrl, actualProvider });
-        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, { caption, ...kb });
+        await telegram.sendAudio(chatId, { url: audioResult.audioUrl! }, { caption, parse_mode: 'HTML', ...kb });
       }
     }
 
