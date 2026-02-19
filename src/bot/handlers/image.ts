@@ -49,6 +49,11 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
     getKeyboard: () => null,
     singleModel: 'nano-banana-pro',
   },
+  seedream: {
+    descriptionKey: 'imageSeedreamFamilyDesc',
+    getKeyboard: () => null,
+    singleModel: 'seedream',
+  },
 };
 
 // ── Model configs ───────────────────────────────────────
@@ -100,6 +105,11 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageNanoBananaProDesc',
     family: 'google-ai',
   },
+  'seedream': {
+    modelSlug: 'seedream',
+    descriptionKey: 'imageSeedreamDesc',
+    family: 'seedream',
+  },
 };
 
 const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
@@ -111,6 +121,7 @@ const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
   'dall-e-3': { en: 'DALL-E 3', ru: 'DALL-E 3' },
   'midjourney': { en: 'Midjourney', ru: 'Midjourney' },
   'nano-banana-pro': { en: 'Nano Banana Pro', ru: 'Nano Banana Pro' },
+  'seedream': { en: 'Seedream', ru: 'Seedream' },
 };
 
 // ── Handlers ────────────────────────────────────────────

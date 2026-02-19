@@ -22,6 +22,7 @@ const MODEL_DEFAULTS: Record<string, ImageModelSettings> = {
   'dall-e-3': { aspectRatio: '1:1', quality: 'standard', style: 'vivid' },
   'midjourney': { aspectRatio: '1:1', version: 'v6.1', stylize: 100 },
   'nano-banana-pro': { aspectRatio: '1:1', resolution: '1K' },
+  'seedream': { aspectRatio: '1:1' },
   'ideogram': { aspectRatio: '1:1' },
 };
 

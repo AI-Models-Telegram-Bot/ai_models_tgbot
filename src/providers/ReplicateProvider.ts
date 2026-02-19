@@ -45,6 +45,32 @@ export class ReplicateProvider extends BaseProvider {
 
   async generateImage(prompt: string, options?: Record<string, unknown>): Promise<ImageGenerationResult> {
     const modelSlug = (options?.model as string) || 'flux-schnell';
+    const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+    const hasImage = inputImageUrls && inputImageUrls.length > 0;
+
+    // Nano Banana Pro (Google) — supports image_input for editing
+    if (modelSlug === 'nano-banana-pro') {
+      const modelId = 'google/nano-banana';
+      logger.info(`Replicate image: running ${modelId} (editing: ${!!hasImage})`);
+
+      const SUPPORTED_RATIOS = new Set(['1:1', '16:9', '9:16', '3:2', '2:3', '4:5', '5:4', '3:4', '4:3', '21:9']);
+      const ar = options?.aspectRatio as string;
+      const input: Record<string, unknown> = {
+        prompt,
+        output_format: 'png',
+        aspect_ratio: hasImage ? 'match_input_image' : ((ar && SUPPORTED_RATIOS.has(ar)) ? ar : '1:1'),
+      };
+
+      if (hasImage) {
+        input.image_input = inputImageUrls;
+      }
+
+      logger.info('Replicate Nano Banana payload:', { aspect_ratio: input.aspect_ratio, hasImage, imageCount: inputImageUrls?.length });
+      const output = await this.client.run(modelId as `${string}/${string}`, { input });
+      const imageUrl = extractUrl(output);
+      logger.info(`Replicate image result: ${imageUrl.slice(0, 100)}`);
+      return { imageUrl };
+    }
 
     // Official Replicate models: use "owner/model" format (no version hash)
     let modelId: string;

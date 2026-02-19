@@ -106,7 +106,7 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
 
   // Image models that support reference image input
-  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext'];
+  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana-pro', 'midjourney', 'seedream'];
   // Text-only video models — no image-to-video support
   const TEXT_ONLY_VIDEO_MODELS = ['veo', 'veo-fast'];
 
@@ -124,8 +124,8 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
       await ctx.reply(msg);
     } else {
       const msg = lang === 'ru'
-        ? 'Загрузка изображений поддерживается только для видео моделей и Flux Kontext. Отправьте текстовый запрос.'
-        : 'Image uploads are supported for video models and Flux Kontext. Please send a text prompt.';
+        ? 'Загрузка изображений поддерживается только для видео и некоторых моделей изображений. Отправьте текстовый запрос.'
+        : 'Image uploads are only supported for video and select image models. Please send a text prompt.';
       await ctx.reply(msg);
     }
     return;

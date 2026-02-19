@@ -70,6 +70,10 @@ export class KieAIProvider extends EnhancedProvider {
       return this.generateNanoBananaImage(prompt, options);
     }
 
+    if (model === 'seedream-4.0') {
+      return this.generateSeedreamImage(prompt, options);
+    }
+
     const start = Date.now();
     try {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
@@ -368,20 +372,30 @@ export class KieAIProvider extends EnhancedProvider {
   ): Promise<ImageGenerationResult> {
     const start = Date.now();
     try {
-      logger.info('KieAI image: starting Midjourney generation');
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImage = inputImageUrls && inputImageUrls.length > 0;
+      logger.info(`KieAI image: starting Midjourney generation (img2img: ${!!hasImage})`);
 
       // Map version string: 'v6.1' → '6.1', 'v7' → '7'
       const versionStr = (options?.version as string) || 'v6.1';
       const versionNum = versionStr.replace('v', '');
 
-      const createResponse = await this.client.post('/mj/generate', {
-        taskType: 'mj_txt2img',
+      const payload: Record<string, unknown> = {
+        taskType: hasImage ? 'mj_img2img' : 'mj_txt2img',
         prompt,
         aspectRatio: (options?.aspectRatio as string) || '1:1',
         version: versionNum,
         stylization: (options?.stylize as number) || 100,
         speed: 'fast',
-      });
+      };
+
+      // Add reference image for img2img mode
+      if (hasImage) {
+        payload.fileUrl = inputImageUrls[0];
+      }
+
+      logger.info('KieAI Midjourney payload:', { taskType: payload.taskType, hasImage });
+      const createResponse = await this.client.post('/mj/generate', payload);
 
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
@@ -417,14 +431,30 @@ export class KieAIProvider extends EnhancedProvider {
   ): Promise<ImageGenerationResult> {
     const start = Date.now();
     try {
-      logger.info('KieAI image: starting Nano Banana Pro generation');
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImage = inputImageUrls && inputImageUrls.length > 0;
+      logger.info(`KieAI image: starting Nano Banana Pro generation (editing: ${!!hasImage})`);
 
+      const input: Record<string, unknown> = {
+        prompt,
+        aspect_ratio: (options?.aspectRatio as string) || '1:1',
+        output_format: 'png',
+      };
+
+      // Add resolution if specified (1K, 2K, 4K)
+      if (options?.resolution) {
+        input.resolution = options.resolution;
+      }
+
+      // Add reference image for editing mode
+      if (hasImage) {
+        input.image_input = inputImageUrls;
+      }
+
+      logger.info('KieAI Nano Banana payload:', { aspectRatio: input.aspect_ratio, resolution: input.resolution, hasImage, imageCount: inputImageUrls?.length });
       const createResponse = await this.client.post('/jobs/createTask', {
         model: 'nano-banana-pro',
-        input: {
-          prompt,
-          aspect_ratio: (options?.aspectRatio as string) || '1:1',
-        },
+        input,
       });
 
       const taskId = createResponse.data?.data?.taskId;
@@ -447,6 +477,82 @@ export class KieAIProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('KieAI Nano Banana: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Map aspect ratio string to Seedream image_size preset.
+   * Seedream uses named presets instead of ratio strings.
+   */
+  private toSeedreamImageSize(aspectRatio: string): string {
+    const map: Record<string, string> = {
+      '1:1': 'square_hd',
+      '16:9': 'landscape_16_9',
+      '9:16': 'portrait_16_9',
+      '4:3': 'landscape_4_3',
+      '3:4': 'portrait_4_3',
+      '3:2': 'landscape_3_2',
+      '2:3': 'portrait_3_2',
+      '21:9': 'landscape_21_9',
+    };
+    return map[aspectRatio] || 'square_hd';
+  }
+
+  /**
+   * Seedream 4.0 (ByteDance) via Market endpoint
+   * Text-to-image: model 'bytedance/seedream-v4-text-to-image'
+   * Image editing: model 'bytedance/seedream-v4-edit' with image_urls
+   * POST /jobs/createTask → poll /jobs/recordInfo
+   */
+  private async generateSeedreamImage(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<ImageGenerationResult> {
+    const start = Date.now();
+    try {
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImage = inputImageUrls && inputImageUrls.length > 0;
+      const model = hasImage ? 'bytedance/seedream-v4-edit' : 'bytedance/seedream-v4-text-to-image';
+      const aspectRatio = (options?.aspectRatio as string) || '1:1';
+      logger.info(`KieAI image: starting Seedream generation (${model}, editing: ${!!hasImage})`);
+
+      const input: Record<string, unknown> = {
+        prompt,
+        image_size: this.toSeedreamImageSize(aspectRatio),
+      };
+
+      // Add reference images for editing mode
+      if (hasImage) {
+        input.image_urls = inputImageUrls;
+      }
+
+      logger.info('KieAI Seedream payload:', { model, image_size: input.image_size, hasImage });
+      const createResponse = await this.client.post('/jobs/createTask', {
+        model,
+        input,
+      });
+
+      const taskId = createResponse.data?.data?.taskId;
+      if (!taskId) {
+        const respData = JSON.stringify(createResponse.data).slice(0, 500);
+        throw new Error(`KieAI Seedream: no taskId in response: ${respData}`);
+      }
+
+      logger.info(`KieAI Seedream: task created, taskId=${taskId}`);
+
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+
+      const time = Date.now() - start;
+      const cost = 0.0175;
+      this.updateStats(true, cost, time);
+
+      logger.info(`KieAI Seedream: success (${time}ms, $${cost})`);
+      return { imageUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Seedream: failed', error.response?.data || error.message);
       throw error;
     }
   }

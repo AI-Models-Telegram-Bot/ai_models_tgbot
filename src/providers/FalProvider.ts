@@ -50,14 +50,30 @@ export class FalProvider extends EnhancedProvider {
    * Image generation via fal.ai queue API
    * Supports text-to-image and image editing (Flux Kontext)
    */
+  /**
+   * Switch model ID to editing variant when images are provided.
+   * Fal.ai uses different endpoints for text-to-image vs image editing.
+   */
+  private getImageEditModel(textModel: string): string {
+    const modelMap: Record<string, string> = {
+      'fal-ai/seedream': 'fal-ai/bytedance/seedream/v4/edit',
+    };
+    return modelMap[textModel] || textModel;
+  }
+
   async generateImage(
     prompt: string,
     options?: Record<string, unknown>
   ): Promise<ImageGenerationResult> {
-    const model = (options?.model as string) || 'fal-ai/flux-kontext/pro';
+    let model = (options?.model as string) || 'fal-ai/flux-kontext/pro';
     const inputImageUrls = options?.inputImageUrls as string[] | undefined;
     const hasImage = inputImageUrls && inputImageUrls.length > 0;
     const start = Date.now();
+
+    // Switch to editing model variant if images are provided
+    if (hasImage) {
+      model = this.getImageEditModel(model);
+    }
 
     try {
       logger.info(`Fal.ai image: starting generation (${model}, editing: ${!!hasImage})`);

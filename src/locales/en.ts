@@ -36,6 +36,7 @@ export const en = {
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
     imageGoogleAIFamily: '🍌 Nano Banana Pro',
+    imageSeedreamFamily: '🌱 Seedream',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
     imageFluxKontext: '🎨 Flux Kontext (⚡5)',
@@ -241,6 +242,12 @@ Cutting-edge image generation powered by Google Gemini.
 
 Select a model:`,
 
+    imageSeedreamFamilyDesc: `🌱 <b>Seedream</b>
+
+ByteDance Seedream 4.0 — high-quality image generation and editing.
+
+Select a model:`,
+
     imageFluxSchnellDesc: `⚡ <b>Flux Schnell</b>
 
 Fast and affordable image generation by Black Forest Labs. Great for quick iterations and drafts.
@@ -296,7 +303,10 @@ Fee: ⚡25 credits per image`,
 
 Artistic image generation with one of the most popular AI art tools.
 
-💡 Adjust aspect ratio, version, and stylize in Image Settings, then send a text prompt.
+🌄 Send a reference image + ✍️ text prompt to transform an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio, version, and stylize in Image Settings.
 
 Fee: ⚡25 credits per image`,
 
@@ -304,9 +314,23 @@ Fee: ⚡25 credits per image`,
 
 Google Gemini image generation — powerful quality with excellent detail.
 
-💡 Adjust aspect ratio and resolution in Image Settings, then send a text prompt.
+🌄 Send a reference image + ✍️ text prompt to edit an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio and resolution in Image Settings.
 
 Fee: ⚡20 credits per image`,
+
+    imageSeedreamDesc: `🌱 <b>Seedream 4.0</b>
+
+ByteDance Seedream — high-quality image generation and editing with excellent detail and creativity.
+
+🌄 Send a reference image + ✍️ text prompt to edit an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio in Image Settings.
+
+Fee: ⚡5 credits per image`,
 
     imageAccessDenied: 'is not available on your current plan.',
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',
