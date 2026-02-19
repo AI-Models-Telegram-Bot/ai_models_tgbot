@@ -81,6 +81,9 @@ const SETTINGS_LABELS: Record<string, Record<string, string>> = {
   },
 };
 
+/** Internal settings keys that should NOT be shown to users */
+const HIDDEN_SETTINGS = new Set(['model', 'width', 'height', 'dalleSize']);
+
 /** Format a rich caption for generation results */
 function formatResultCaption(opts: {
   input: string;
@@ -95,37 +98,35 @@ function formatResultCaption(opts: {
   const labels = SETTINGS_LABELS[lang] || SETTINGS_LABELS.en;
   const lines: string[] = [];
 
-  // Prompt
-  const promptLabel = lang === 'ru' ? 'Ваш запрос' : 'Your request';
-  lines.push(`🎯 ${promptLabel}: ${truncateText(input, 200)}`);
+  // Prompt (compact — no label prefix)
+  lines.push(`🎯 ${truncateText(input, 200)}`);
+  lines.push('');
 
-  // Settings
+  // Model name
+  lines.push(`📊 ${modelName}`);
+
+  // Settings — compact, one line, only user-facing keys
   if (settingsApplied && Object.keys(settingsApplied).length > 0) {
-    lines.push('');
-    const settingsHeader = lang === 'ru' ? 'Настройки' : 'Settings';
     const settingParts: string[] = [];
     for (const [key, value] of Object.entries(settingsApplied)) {
-      if (value === undefined || value === null || key === 'model') continue;
+      if (value === undefined || value === null || HIDDEN_SETTINGS.has(key)) continue;
       const label = labels[key] || key;
       let displayVal = String(value);
-      if (key === 'duration') displayVal = `${value} ${lang === 'ru' ? 'сек.' : 'sec.'}`;
+      if (key === 'duration') displayVal = `${value}${lang === 'ru' ? 'с' : 's'}`;
       if (key === 'generateAudio') displayVal = value ? (lang === 'ru' ? 'Да' : 'Yes') : (lang === 'ru' ? 'Нет' : 'No');
       settingParts.push(`${label}: ${displayVal}`);
     }
     if (settingParts.length > 0) {
-      lines.push(`⚙️ ${settingsHeader}: ${settingParts.join(' | ')}`);
+      lines.push(`⚙️ ${settingParts.join(' · ')}`);
     }
   }
 
-  // Model + cost
-  lines.push('');
+  // Balance line
   const categoryLabel = lang === 'ru'
     ? { TEXT: 'Текст', IMAGE: 'Изображ.', VIDEO: 'Видео', AUDIO: 'Аудио' }[category] || category
     : category.charAt(0) + category.slice(1).toLowerCase();
   const balanceLabel = lang === 'ru' ? 'Баланс' : 'Balance';
-  const deductedLabel = lang === 'ru' ? 'Списано' : 'Deducted';
-  lines.push(`📊 ${modelName}`);
-  lines.push(`💰 ${deductedLabel}: ⚡-${creditsCost}. ${balanceLabel}: ⚡${remainingBalance} (${categoryLabel})`);
+  lines.push(`💰 ⚡-${creditsCost} · ${balanceLabel}: ⚡${remainingBalance} (${categoryLabel})`);
 
   return lines.join('\n');
 }
