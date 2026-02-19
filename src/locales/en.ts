@@ -385,6 +385,7 @@ Fee: ⚡20 credits`,
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 
 Google Veo fast mode — quick video generation with great quality and optional audio.
+⚠️ Text-only — reference images are not supported.
 
 💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
 
@@ -395,6 +396,7 @@ Fee: ⚡20 credits`,
     videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
 
 Google Veo quality mode — maximum fidelity, photorealism, and optional audio generation.
+⚠️ Text-only — reference images are not supported.
 
 💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
 

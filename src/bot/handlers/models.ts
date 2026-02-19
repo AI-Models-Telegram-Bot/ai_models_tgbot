@@ -113,6 +113,17 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     return;
   }
 
+  // Text-only video models — no image-to-video support
+  const TEXT_ONLY_VIDEO_MODELS = ['veo', 'veo-fast'];
+  if (TEXT_ONLY_VIDEO_MODELS.includes(ctx.session.videoFunction)) {
+    const modelName = ctx.session.videoFunction === 'veo' ? 'Veo Quality' : 'Veo Fast';
+    const msg = lang === 'ru'
+      ? `⚠️ ${modelName} поддерживает только текстовые запросы — референсные изображения не применяются. Отправьте ✍️ текстовый запрос.`
+      : `⚠️ ${modelName} is text-only — reference images are not supported. Please send ✍️ a text prompt.`;
+    await ctx.reply(msg);
+    return;
+  }
+
   // Get the largest photo (last element in the array)
   const photo = ctx.message.photo[ctx.message.photo.length - 1];
   try {
