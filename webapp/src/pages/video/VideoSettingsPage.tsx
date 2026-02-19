@@ -24,6 +24,7 @@ const ALL_ASPECTS: AspectOption[] = [
 const MODEL_ASPECTS: Record<string, string[]> = {
   'kling': ['16:9', '9:16', '1:1'],
   'kling-pro': ['16:9', '9:16', '1:1'],
+  'kling-master': ['16:9', '9:16', '1:1'],
   'veo-fast': ['16:9', '9:16'],
   'veo': ['16:9', '9:16'],
   'sora': ['16:9', '9:16', '1:1'],
@@ -53,6 +54,11 @@ const MODEL_DURATIONS: Record<string, DurationOption[]> = {
   'runway': [
     { value: 5, labelKey: 'duration5s' },
     { value: 10, labelKey: 'duration10s' },
+  ],
+  'seedance': [
+    { value: 4, labelKey: 'duration4s' },
+    { value: 8, labelKey: 'duration8s' },
+    { value: 12, labelKey: 'duration12s' },
   ],
 };
 

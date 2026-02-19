@@ -14,6 +14,7 @@
   "duration2s": "2 seconds",
   "duration4s": "4 seconds",
   "duration6s": "6 seconds",
+  "duration12s": "12 seconds",
   "resolution480p": "480p",
   "resolution720p": "720p",
   "resolution1080p": "1080p",
@@ -32,6 +33,8 @@
     "veo-fast": "Veo Fast",
     "veo": "Veo Quality",
     "sora": "Sora",
-    "runway": "Runway"
+    "runway": "Runway",
+    "kling-master": "Kling Master",
+    "seedance": "Seedance"
   }
 }

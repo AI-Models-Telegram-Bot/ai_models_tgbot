@@ -12,6 +12,7 @@ import { Language, t, getLocale } from '../../locales';
 import { enqueueGeneration } from '../../queues/producer';
 import { config } from '../../config';
 import { resizeImageForAspectRatio } from '../../utils/imageResize';
+import { calculateDynamicCost } from '../../utils/videoPricing';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -235,9 +236,58 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
 
   const walletCat = toWalletCategory(model.category);
   const priceItemCode = modelService.getPriceItemCode(model.slug);
-  const creditsCost = model.tokenCost;
 
-  // Check wallet balance
+  // ── Load user settings BEFORE balance check (needed for dynamic pricing) ──
+
+  let audioOptions: Record<string, unknown> | undefined;
+  if (ctx.session.audioFunction && ctx.from) {
+    try {
+      audioOptions = await getAudioOptionsForFunction(
+        ctx.user.id,
+        BigInt(ctx.from.id),
+        ctx.session.audioFunction,
+      );
+    } catch (err) {
+      logger.warn('Failed to load audio options, using defaults', { err });
+    }
+  }
+
+  let imageOptions: Record<string, unknown> | undefined;
+  if (ctx.session.imageFunction && ctx.from) {
+    try {
+      imageOptions = await getImageOptionsForFunction(
+        ctx.user.id,
+        BigInt(ctx.from.id),
+        ctx.session.imageFunction,
+      );
+    } catch (err) {
+      logger.warn('Failed to load image options, using defaults', { err });
+    }
+  }
+
+  let videoOptions: Record<string, unknown> | undefined;
+  if (ctx.session.videoFunction && ctx.from) {
+    try {
+      videoOptions = await getVideoOptionsForFunction(
+        ctx.user.id,
+        BigInt(ctx.from.id),
+        ctx.session.videoFunction,
+      );
+    } catch (err) {
+      logger.warn('Failed to load video options, using defaults', { err });
+    }
+  }
+
+  // ── Calculate dynamic cost (scales with duration/resolution for video models) ──
+
+  const creditsCost = calculateDynamicCost(
+    model.slug,
+    model.tokenCost,
+    videoOptions as { duration?: number; resolution?: string } | undefined,
+  );
+
+  // ── Balance check ──
+
   const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
   if (!hasBalance) {
     const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
@@ -282,48 +332,6 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   const processingMessage = t(lang, 'messages.processing', { modelName: model.name });
   const processingMsg = await ctx.reply(processingMessage, getMainKeyboard(lang));
 
-  // Load audio settings if this is an audio function
-  let audioOptions: Record<string, unknown> | undefined;
-  if (ctx.session.audioFunction && ctx.from) {
-    try {
-      audioOptions = await getAudioOptionsForFunction(
-        ctx.user.id,
-        BigInt(ctx.from.id),
-        ctx.session.audioFunction,
-      );
-    } catch (err) {
-      logger.warn('Failed to load audio options, using defaults', { err });
-    }
-  }
-
-  // Load image settings if this is an image function
-  let imageOptions: Record<string, unknown> | undefined;
-  if (ctx.session.imageFunction && ctx.from) {
-    try {
-      imageOptions = await getImageOptionsForFunction(
-        ctx.user.id,
-        BigInt(ctx.from.id),
-        ctx.session.imageFunction,
-      );
-    } catch (err) {
-      logger.warn('Failed to load image options, using defaults', { err });
-    }
-  }
-
-  // Load video settings if this is a video function
-  let videoOptions: Record<string, unknown> | undefined;
-  if (ctx.session.videoFunction && ctx.from) {
-    try {
-      videoOptions = await getVideoOptionsForFunction(
-        ctx.user.id,
-        BigInt(ctx.from.id),
-        ctx.session.videoFunction,
-      );
-    } catch (err) {
-      logger.warn('Failed to load video options, using defaults', { err });
-    }
-  }
-
   // Collect uploaded image URLs for image-to-video or image editing.
   // If user set an aspect ratio, resize/crop images to match before sending to provider
   // (most image-to-video APIs ignore the aspect_ratio param and use the source image dims).
@@ -331,20 +339,16 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   if (ctx.session.uploadedImageUrls?.length) {
     const targetAR = (videoOptions?.aspectRatio || imageOptions?.aspectRatio) as string | undefined;
     if (targetAR && ctx.chat) {
-      // Resize images to the requested aspect ratio
       const resized: string[] = [];
       for (const originalUrl of ctx.session.uploadedImageUrls) {
         try {
           const buffer = await resizeImageForAspectRatio(originalUrl, targetAR);
-          // Re-upload to Telegram to get a publicly accessible URL
           const msg = await ctx.telegram.sendPhoto(
             ctx.chat.id,
             { source: buffer },
             { disable_notification: true } as any,
           );
-          // Delete the temp message immediately
           await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {});
-          // Get file link (remains accessible even after message deletion)
           const fileId = msg.photo![msg.photo!.length - 1].file_id;
           const fileLink = await ctx.telegram.getFileLink(fileId);
           resized.push(fileLink.href);
@@ -385,7 +389,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
       ...(videoOptions && { videoOptions }),
     });
 
-    logger.info('Job enqueued', { requestId: request.id, model: model.slug, hasImages: !!inputImageUrls });
+    logger.info('Job enqueued', { requestId: request.id, model: model.slug, creditsCost, hasImages: !!inputImageUrls });
   } catch (error) {
     logger.error('Failed to enqueue job:', error);
 

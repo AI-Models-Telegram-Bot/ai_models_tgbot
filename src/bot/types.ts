@@ -7,7 +7,7 @@ export type ImageFamily = 'flux' | 'dall-e' | 'midjourney' | 'google-ai' | 'seed
 export type ImageFunction = 'flux-schnell' | 'flux-kontext' | 'flux-dev' | 'flux-pro' | 'dall-e-2' | 'dall-e-3' | 'midjourney' | 'nano-banana-pro' | 'seedream';
 
 export type VideoFamily = 'kling' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance';
-export type VideoFunction = 'kling' | 'kling-pro' | 'veo-fast' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance';
+export type VideoFunction = 'kling' | 'kling-pro' | 'kling-master' | 'veo-fast' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance';
 
 export interface BotContext extends Context {
   user?: User;

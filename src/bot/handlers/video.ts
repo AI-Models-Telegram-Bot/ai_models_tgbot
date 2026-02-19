@@ -88,6 +88,12 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'kling',
     hasSettings: true,
   },
+  'kling-master': {
+    modelSlug: 'kling-master',
+    descriptionKey: 'videoKlingMasterDesc',
+    family: 'kling',
+    hasSettings: true,
+  },
   'veo-fast': {
     modelSlug: 'veo-fast',
     descriptionKey: 'videoVeoFastDesc',
@@ -135,6 +141,7 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
 const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'kling': { en: 'Kling', ru: 'Kling' },
   'kling-pro': { en: 'Kling Pro', ru: 'Kling Pro' },
+  'kling-master': { en: 'Kling Master', ru: 'Kling Master' },
   'veo-fast': { en: 'Veo Fast', ru: 'Veo Fast' },
   'veo': { en: 'Veo Quality', ru: 'Veo Quality' },
   'sora': { en: 'Sora', ru: 'Sora' },

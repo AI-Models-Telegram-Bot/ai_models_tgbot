@@ -11,6 +11,7 @@ export interface VideoModelSettings {
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'kling': { aspectRatio: '16:9' },
   'kling-pro': { aspectRatio: '16:9' },
+  'kling-master': { aspectRatio: '16:9' },
   'veo-fast': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true },
   'veo': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true },
   'sora': { aspectRatio: '16:9', duration: 4, resolution: '720p' },

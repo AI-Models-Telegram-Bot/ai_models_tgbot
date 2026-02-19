@@ -56,8 +56,9 @@ export const en = {
     // Video Models
     videoKling: '🎥 Kling (⚡12)',
     videoKlingPro: '💎 Kling Pro (⚡20)',
-    videoVeoFast: '⚡ Veo Fast (⚡20)',
-    videoVeoQuality: '💎 Veo Quality (⚡80)',
+    videoKlingMaster: '👑 Kling Master (⚡40)',
+    videoVeoFast: '⚡ Veo Fast (⚡9–20)',
+    videoVeoQuality: '💎 Veo Quality (⚡34–80)',
     videoSettings: '🎛️ Video Settings',
   },
 
@@ -356,18 +357,22 @@ Select a model:`,
 
 An advanced AI model by OpenAI capable of transforming text descriptions or images into dynamic videos with resolutions up to 1080p.
 
+💡 Adjust duration and resolution in Video Settings.
+
 Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
-Fee: ⚡25 credits`,
+Fee: ⚡9–57 credits (depends on settings)`,
 
     videoRunwayFamilyDesc: `✈️ <b>Runway Gen-4 Turbo</b>
 
 Professional-grade video generation with cinematic output. Send a text prompt or upload up to 3 images to generate a video.
 
+💡 Adjust duration and resolution in Video Settings.
+
 Send ✍️ a text prompt or 🌄 upload images to get started 👇
 ⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
-Fee: ⚡15 credits`,
+Fee: ⚡15–45 credits (depends on settings)`,
 
     videoLumaFamilyDesc: `💫 <b>Luma Dream Machine</b>
 
@@ -389,9 +394,11 @@ Fee: ⚡10 credits`,
 
 An advanced video generation model from ByteDance. Known for multi-scene storytelling, high-quality animation, and impressive motion quality — especially useful for content creators and visual artists.
 
+💡 Adjust duration in Video Settings.
+
 Upload up to 2 images and/or send a text prompt to get started 👇
 
-Fee: ⚡10 credits`,
+Fee: ⚡5–15 credits (depends on settings)`,
 
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
@@ -409,6 +416,14 @@ Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
 Fee: ⚡20 credits`,
 
+    videoKlingMasterDesc: `👑 <b>Kling Master</b>
+
+The highest quality Kling model — cinematic detail, superior motion coherence, and best-in-class output.
+
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+
+Fee: ⚡40 credits`,
+
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 
 Google Veo fast mode — quick video generation with great quality and optional audio.
@@ -418,7 +433,7 @@ Google Veo fast mode — quick video generation with great quality and optional 
 
 Send ✍️ a text prompt to get started 👇
 
-Fee: ⚡20 credits`,
+Fee: ⚡9–20 credits (depends on settings)`,
 
     videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
 
@@ -429,24 +444,28 @@ Google Veo quality mode — maximum fidelity, photorealism, and optional audio g
 
 Send ✍️ a text prompt to get started 👇
 
-Fee: ⚡80 credits`,
+Fee: ⚡34–80 credits (depends on settings)`,
 
     videoSoraDesc: `🎬 <b>Sora</b>
 
 An advanced AI model by OpenAI capable of transforming text descriptions or images into dynamic videos with resolutions up to 1080p.
 
+💡 Adjust duration and resolution in Video Settings.
+
 Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
-Fee: ⚡25 credits`,
+Fee: ⚡9–57 credits (depends on settings)`,
 
     videoRunwayDesc: `✈️ <b>Runway Gen-4 Turbo</b>
 
 Professional-grade video generation with cinematic output. Send a text prompt or upload up to 3 images.
 
+💡 Adjust duration and resolution in Video Settings.
+
 Send ✍️ a text prompt or 🌄 upload images to get started 👇
 ⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
-Fee: ⚡15 credits`,
+Fee: ⚡15–45 credits (depends on settings)`,
 
     videoLumaDesc: `💫 <b>Luma Dream Machine</b>
 
@@ -468,9 +487,11 @@ Fee: ⚡10 credits`,
 
 An advanced video generation model from ByteDance. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
+💡 Adjust duration in Video Settings.
+
 Upload up to 2 images and/or send a text prompt to get started 👇
 
-Fee: ⚡10 credits`,
+Fee: ⚡5–15 credits (depends on settings)`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',
