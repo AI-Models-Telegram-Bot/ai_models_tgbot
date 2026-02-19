@@ -104,6 +104,7 @@ export class FalProvider extends EnhancedProvider {
       }
 
       // Submit to queue
+      logger.info('Fal.ai video payload:', { model, aspect_ratio: input.aspect_ratio, resolution: input.resolution, duration: input.duration, hasImage: !!input.image_url });
       const submitResponse = await this.client.post(
         `https://queue.fal.run/${model}`,
         input

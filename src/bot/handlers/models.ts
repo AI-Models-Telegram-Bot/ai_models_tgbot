@@ -11,6 +11,7 @@ import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
 import { enqueueGeneration } from '../../queues/producer';
 import { config } from '../../config';
+import { resizeImageForAspectRatio } from '../../utils/imageResize';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -291,10 +292,41 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     }
   }
 
-  // Collect uploaded image URLs for image-to-video generation
-  const inputImageUrls = ctx.session.uploadedImageUrls?.length
-    ? [...ctx.session.uploadedImageUrls]
-    : undefined;
+  // Collect uploaded image URLs for image-to-video generation.
+  // If user set an aspect ratio, resize/crop images to match before sending to provider
+  // (most image-to-video APIs ignore the aspect_ratio param and use the source image dims).
+  let inputImageUrls: string[] | undefined;
+  if (ctx.session.uploadedImageUrls?.length) {
+    const targetAR = videoOptions?.aspectRatio as string | undefined;
+    if (targetAR && ctx.chat) {
+      // Resize images to the requested aspect ratio
+      const resized: string[] = [];
+      for (const originalUrl of ctx.session.uploadedImageUrls) {
+        try {
+          const buffer = await resizeImageForAspectRatio(originalUrl, targetAR);
+          // Re-upload to Telegram to get a publicly accessible URL
+          const msg = await ctx.telegram.sendPhoto(
+            ctx.chat.id,
+            { source: buffer },
+            { disable_notification: true } as any,
+          );
+          // Delete the temp message immediately
+          await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {});
+          // Get file link (remains accessible even after message deletion)
+          const fileId = msg.photo![msg.photo!.length - 1].file_id;
+          const fileLink = await ctx.telegram.getFileLink(fileId);
+          resized.push(fileLink.href);
+          logger.info(`Image resized for aspect ratio ${targetAR}`, { originalUrl: originalUrl.slice(0, 60) });
+        } catch (err) {
+          logger.warn('Image resize failed, using original', { err });
+          resized.push(originalUrl);
+        }
+      }
+      inputImageUrls = resized;
+    } else {
+      inputImageUrls = [...ctx.session.uploadedImageUrls];
+    }
+  }
 
   // Enqueue the job - worker will handle execution and result delivery
   try {

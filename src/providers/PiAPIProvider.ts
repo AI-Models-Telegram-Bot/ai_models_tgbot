@@ -148,6 +148,7 @@ export class PiAPIProvider extends EnhancedProvider {
         input.negative_prompt = options.negativePrompt;
       }
 
+      logger.info('PiAPI video payload:', { model, aspect_ratio: input.aspect_ratio, duration: input.duration, mode: input.mode, hasImage: !!input.image_url });
       const createResponse = await this.client.post('/task', {
         model,
         task_type: 'video_generation',

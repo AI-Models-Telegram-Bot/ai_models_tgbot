@@ -56,6 +56,17 @@ function getMainKeyboardMarkup(lang: Language) {
   };
 }
 
+/** Aspect ratio → video pixel dimensions (720p base) for Telegram previews */
+const VIDEO_DIMS: Record<string, { width: number; height: number }> = {
+  '16:9': { width: 1280, height: 720 },
+  '9:16': { width: 720, height: 1280 },
+  '1:1':  { width: 720, height: 720 },
+  '4:3':  { width: 960, height: 720 },
+  '3:4':  { width: 720, height: 960 },
+  '3:2':  { width: 1080, height: 720 },
+  '2:3':  { width: 720, height: 1080 },
+};
+
 /** Settings label translations */
 const SETTINGS_LABELS: Record<string, Record<string, string>> = {
   en: {
@@ -285,7 +296,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       } else if ('videoUrl' in result) {
         const videoResult = result as VideoGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
-        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, { caption, ...kb });
+        // Pass width/height so Telegram renders the preview in the correct aspect ratio
+        const arStr = (job.data.settingsApplied?.aspectRatio as string) || '';
+        const dims = VIDEO_DIMS[arStr];
+        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, {
+          caption,
+          ...kb,
+          supports_streaming: true,
+          ...(dims && { width: dims.width, height: dims.height }),
+        });
       } else if ('audioBuffer' in result && result.audioBuffer) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { actualProvider });

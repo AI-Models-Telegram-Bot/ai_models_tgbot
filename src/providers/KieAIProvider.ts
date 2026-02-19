@@ -74,12 +74,14 @@ export class KieAIProvider extends EnhancedProvider {
     try {
       logger.info(`KieAI image: starting Flux Kontext generation (${model})`);
 
-      const createResponse = await this.client.post('/flux/kontext/generate', {
+      const fluxPayload = {
         prompt,
         model,
         aspectRatio: (options?.aspectRatio as string) || '16:9',
         outputFormat: 'png',
-      });
+      };
+      logger.info('KieAI Flux Kontext payload:', { model, aspectRatio: fluxPayload.aspectRatio });
+      const createResponse = await this.client.post('/flux/kontext/generate', fluxPayload);
 
       const fluxResp = createResponse.data;
       if (fluxResp?.code && fluxResp.code !== 200 && fluxResp.code !== 0) {
@@ -195,6 +197,7 @@ export class KieAIProvider extends EnhancedProvider {
         input.resolution = (options?.resolution as string) || '720p';
       }
 
+      logger.info('KieAI market video payload:', { model, input });
       const createResponse = await this.client.post('/jobs/createTask', {
         model,
         input,
@@ -240,12 +243,14 @@ export class KieAIProvider extends EnhancedProvider {
       const model = (options?.model as string) || 'veo3_fast';
       logger.info(`KieAI Veo: starting generation (${model})`);
 
-      const createResponse = await this.client.post('/veo/generate', {
+      const veoPayload = {
         prompt,
         model,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         enableTranslation: true,
-      });
+      };
+      logger.info('KieAI Veo payload:', { model, aspect_ratio: veoPayload.aspect_ratio });
+      const createResponse = await this.client.post('/veo/generate', veoPayload);
 
       const respData = createResponse.data;
       // Check for API-level errors (e.g. 402 insufficient credits)
@@ -308,6 +313,7 @@ export class KieAIProvider extends EnhancedProvider {
         body.imageUrl = inputImageUrls[0];
       }
 
+      logger.info('KieAI Runway payload:', { aspectRatio: body.aspectRatio, duration: body.duration, quality: body.quality });
       const createResponse = await this.client.post('/runway/generate', body);
 
       const runwayResp = createResponse.data;

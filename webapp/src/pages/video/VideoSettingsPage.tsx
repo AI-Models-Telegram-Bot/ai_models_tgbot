@@ -28,6 +28,7 @@ const MODEL_ASPECTS: Record<string, string[]> = {
   'veo': ['16:9', '9:16'],
   'sora': ['16:9', '9:16', '1:1'],
   'runway': ['16:9', '9:16'],
+  'seedance': ['16:9', '9:16', '1:1'],
 };
 
 interface DurationOption {
