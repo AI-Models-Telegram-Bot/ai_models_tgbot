@@ -164,9 +164,9 @@ export class KieAIProvider extends EnhancedProvider {
         duration: (options?.duration as string) || '5',
       };
 
-      // Add image URLs for image-to-video
+      // Add image URLs for image-to-video (KieAI uses `image_urls` for Kling/Sora)
       if (hasImages) {
-        input.input_urls = inputImageUrls;
+        input.image_urls = inputImageUrls;
       }
 
       // Kling-specific: sound off
@@ -294,9 +294,9 @@ export class KieAIProvider extends EnhancedProvider {
         aspectRatio: (options?.aspectRatio as string) || '16:9',
       };
 
-      // Runway supports up to 3 init images
+      // KieAI Runway expects `imageUrl` (single string), not an array
       if (inputImageUrls?.length) {
-        body.promptImage = inputImageUrls.slice(0, 3);
+        body.imageUrl = inputImageUrls[0];
       }
 
       const createResponse = await this.client.post('/runway/generate', body);
