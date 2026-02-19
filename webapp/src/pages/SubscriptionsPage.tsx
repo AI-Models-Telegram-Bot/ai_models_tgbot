@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ParticleBackground, Skeleton } from '@/shared/ui';
@@ -9,6 +9,8 @@ import { useProfileStore } from '@/features/profile/store/profileStore';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { isTelegramEnvironment } from '@/services/telegram/telegram';
 import type { SubscriptionTier } from '@/types/user.types';
+
+const TIER_ORDER: SubscriptionTier[] = ['FREE', 'STARTER', 'PRO', 'PREMIUM', 'BUSINESS', 'ENTERPRISE'];
 
 const SubscriptionsPage: React.FC = () => {
   const { t } = useTranslation(['subscriptions', 'common']);
@@ -21,6 +23,25 @@ const SubscriptionsPage: React.FC = () => {
   const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
 
   const currentTier: SubscriptionTier = (currentPlan?.tier as SubscriptionTier) || 'FREE';
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the next plan above current (so user sees upgrade option)
+  const scrollToNextPlan = useCallback(() => {
+    if (!scrollRef.current || plans.length === 0) return;
+    const currentIndex = TIER_ORDER.indexOf(currentTier);
+    // Scroll to the next plan above current, or current if already top
+    const targetIndex = Math.min(currentIndex + 1, plans.length - 1);
+    // Find the target card element: each card is ~280px + 16px gap
+    const cardWidth = 280 + 16;
+    scrollRef.current.scrollTo({ left: targetIndex * cardWidth - 16, behavior: 'smooth' });
+  }, [plans, currentTier]);
+
+  useEffect(() => {
+    if (!isLoading && plans.length > 0 && currentTier !== 'FREE') {
+      // Small delay to ensure DOM is rendered
+      setTimeout(scrollToNextPlan, 300);
+    }
+  }, [isLoading, plans, currentTier, scrollToNextPlan]);
 
   useEffect(() => {
     fetchPlans();
@@ -101,18 +122,24 @@ const SubscriptionsPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="flex overflow-x-auto scrollbar-hide pt-4 pb-4 snap-x snap-mandatory" style={{ columnGap: 16 }}>
-            {plans.map((plan, index) => (
-              <div key={plan.tier} className="snap-start">
-                <SubscriptionTierCard
-                  plan={plan}
-                  isCurrent={plan.tier === currentTier}
-                  isPopular={plan.tier === 'PRO'}
-                  index={index}
-                  onUpgradeSuccess={handleUpgradeSuccess}
-                />
-              </div>
-            ))}
+          <div ref={scrollRef} className="flex overflow-x-auto scrollbar-hide pt-4 pb-4 snap-x snap-mandatory" style={{ columnGap: 16 }}>
+            {plans.map((plan, index) => {
+              const planTierIndex = TIER_ORDER.indexOf(plan.tier as SubscriptionTier);
+              const currentTierIndex = TIER_ORDER.indexOf(currentTier);
+              const isLowerThan = planTierIndex < currentTierIndex;
+              return (
+                <div key={plan.tier} className="snap-start">
+                  <SubscriptionTierCard
+                    plan={plan}
+                    isCurrent={plan.tier === currentTier}
+                    isLowerThanCurrent={isLowerThan}
+                    isPopular={plan.tier === 'PRO'}
+                    index={index}
+                    onUpgradeSuccess={handleUpgradeSuccess}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
 

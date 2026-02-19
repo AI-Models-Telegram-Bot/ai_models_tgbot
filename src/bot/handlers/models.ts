@@ -11,6 +11,7 @@ import { sendTrackedMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
 import { enqueueGeneration } from '../../queues/producer';
 import { config } from '../../config';
+import { resizeImageForAspectRatio } from '../../utils/imageResize';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -104,11 +105,47 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
 
   const lang = getLang(ctx);
 
-  // Only allow photo uploads for video models
-  if (!ctx.session.videoFunction) {
+  // Image models that support reference image input
+  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext'];
+  // Text-only video models — no image-to-video support
+  const TEXT_ONLY_VIDEO_MODELS = ['veo', 'veo-fast'];
+
+  const isVideoModel = !!ctx.session.videoFunction;
+  const isImageModelWithInput = !!ctx.session.imageFunction &&
+    IMAGE_MODELS_WITH_IMAGE_INPUT.includes(ctx.session.imageFunction);
+
+  // Reject photo uploads for non-video, non-image-editing models
+  if (!isVideoModel && !isImageModelWithInput) {
+    if (ctx.session.imageFunction) {
+      // Image model that doesn't support reference images
+      const msg = lang === 'ru'
+        ? '⚠️ Эта модель поддерживает только текстовые запросы — референсные изображения не поддерживаются. Отправьте ✍️ текстовый запрос.'
+        : '⚠️ This model is text-only — reference images are not supported. Please send ✍️ a text prompt.';
+      await ctx.reply(msg);
+    } else {
+      const msg = lang === 'ru'
+        ? 'Загрузка изображений поддерживается только для видео моделей и Flux Kontext. Отправьте текстовый запрос.'
+        : 'Image uploads are supported for video models and Flux Kontext. Please send a text prompt.';
+      await ctx.reply(msg);
+    }
+    return;
+  }
+
+  // Text-only video models
+  if (isVideoModel && TEXT_ONLY_VIDEO_MODELS.includes(ctx.session.videoFunction!)) {
+    const modelName = ctx.session.videoFunction === 'veo' ? 'Veo Quality' : 'Veo Fast';
     const msg = lang === 'ru'
-      ? 'Загрузка изображений поддерживается только для видео моделей. Отправьте текстовый запрос.'
-      : 'Image uploads are only supported for video models. Please send a text prompt.';
+      ? `⚠️ ${modelName} поддерживает только текстовые запросы — референсные изображения не применяются. Отправьте ✍️ текстовый запрос.`
+      : `⚠️ ${modelName} is text-only — reference images are not supported. Please send ✍️ a text prompt.`;
+    await ctx.reply(msg);
+    return;
+  }
+
+  // For image editing models, limit to 1 reference image
+  if (isImageModelWithInput && ctx.session.uploadedImageUrls?.length) {
+    const msg = lang === 'ru'
+      ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
+      : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.';
     await ctx.reply(msg);
     return;
   }
@@ -132,9 +169,16 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     }
 
     // Otherwise acknowledge and wait for text prompt
-    const msg = lang === 'ru'
-      ? `✅ Изображение загружено (${count}). Отправьте ✍️ текстовый запрос для генерации или 🌄 ещё одно изображение.`
-      : `✅ Image uploaded (${count}). Send ✍️ a text prompt to generate or 🌄 another image.`;
+    let msg: string;
+    if (isImageModelWithInput) {
+      msg = lang === 'ru'
+        ? `✅ Изображение загружено. Отправьте ✍️ текстовый запрос для редактирования.`
+        : `✅ Image uploaded. Send ✍️ a text prompt describing the edit.`;
+    } else {
+      msg = lang === 'ru'
+        ? `✅ Изображение загружено (${count}). Отправьте ✍️ текстовый запрос для генерации или 🌄 ещё одно изображение.`
+        : `✅ Image uploaded (${count}). Send ✍️ a text prompt to generate or 🌄 another image.`;
+    }
     await ctx.reply(msg);
   } catch (error) {
     logger.error('Failed to get file link for photo:', error);
@@ -280,10 +324,41 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     }
   }
 
-  // Collect uploaded image URLs for image-to-video generation
-  const inputImageUrls = ctx.session.uploadedImageUrls?.length
-    ? [...ctx.session.uploadedImageUrls]
-    : undefined;
+  // Collect uploaded image URLs for image-to-video or image editing.
+  // If user set an aspect ratio, resize/crop images to match before sending to provider
+  // (most image-to-video APIs ignore the aspect_ratio param and use the source image dims).
+  let inputImageUrls: string[] | undefined;
+  if (ctx.session.uploadedImageUrls?.length) {
+    const targetAR = (videoOptions?.aspectRatio || imageOptions?.aspectRatio) as string | undefined;
+    if (targetAR && ctx.chat) {
+      // Resize images to the requested aspect ratio
+      const resized: string[] = [];
+      for (const originalUrl of ctx.session.uploadedImageUrls) {
+        try {
+          const buffer = await resizeImageForAspectRatio(originalUrl, targetAR);
+          // Re-upload to Telegram to get a publicly accessible URL
+          const msg = await ctx.telegram.sendPhoto(
+            ctx.chat.id,
+            { source: buffer },
+            { disable_notification: true } as any,
+          );
+          // Delete the temp message immediately
+          await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {});
+          // Get file link (remains accessible even after message deletion)
+          const fileId = msg.photo![msg.photo!.length - 1].file_id;
+          const fileLink = await ctx.telegram.getFileLink(fileId);
+          resized.push(fileLink.href);
+          logger.info(`Image resized for aspect ratio ${targetAR}`, { originalUrl: originalUrl.slice(0, 60) });
+        } catch (err) {
+          logger.warn('Image resize failed, using original', { err });
+          resized.push(originalUrl);
+        }
+      }
+      inputImageUrls = resized;
+    } else {
+      inputImageUrls = [...ctx.session.uploadedImageUrls];
+    }
+  }
 
   // Enqueue the job - worker will handle execution and result delivery
   try {

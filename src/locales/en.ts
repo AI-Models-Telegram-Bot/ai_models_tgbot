@@ -251,9 +251,12 @@ Fee: ⚡2 credits per image`,
 
     imageFluxKontextDesc: `🎨 <b>Flux Kontext</b>
 
-Context-aware image generation with Flux Kontext Pro. Excellent for coherent, detailed scenes.
+Context-aware image generation and editing with Flux Kontext Pro.
 
-💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
+🌄 Send a reference image + ✍️ text prompt to edit an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio in Image Settings.
 
 Fee: ⚡5 credits per image`,
 
@@ -385,6 +388,7 @@ Fee: ⚡20 credits`,
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 
 Google Veo fast mode — quick video generation with great quality and optional audio.
+⚠️ Text-only — reference images are not supported.
 
 💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
 
@@ -395,6 +399,7 @@ Fee: ⚡20 credits`,
     videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
 
 Google Veo quality mode — maximum fidelity, photorealism, and optional audio generation.
+⚠️ Text-only — reference images are not supported.
 
 💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
 

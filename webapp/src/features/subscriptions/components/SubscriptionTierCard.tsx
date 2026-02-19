@@ -12,6 +12,7 @@ import type { SubscriptionPlan } from '@/types/subscription.types';
 interface SubscriptionTierCardProps {
   plan: SubscriptionPlan;
   isCurrent: boolean;
+  isLowerThanCurrent?: boolean;
   isPopular?: boolean;
   index: number;
   onUpgradeSuccess?: () => void;
@@ -20,6 +21,7 @@ interface SubscriptionTierCardProps {
 export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   plan,
   isCurrent,
+  isLowerThanCurrent = false,
   isPopular = false,
   index,
   onUpgradeSuccess,
@@ -74,8 +76,10 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         'relative flex-shrink-0 w-[280px] h-[420px] rounded-2xl backdrop-blur-xl bg-surface-card/90 border transition-all duration-300 flex flex-col',
         isCurrent
           ? 'border-brand-primary/50 shadow-neon'
-          : 'border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-4px]',
-        isPopular && !isCurrent && 'border-brand-secondary/40'
+          : isLowerThanCurrent
+            ? 'border-white/10 shadow-card opacity-60'
+            : 'border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-4px]',
+        isPopular && !isCurrent && !isLowerThanCurrent && 'border-brand-secondary/40'
       )}
     >
       {/* Popular badge */}
@@ -154,6 +158,12 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           <Button variant="premium" fullWidth size="sm" onClick={handleUpgradeClick}>
             {t('subscriptions:contactUs', 'Contact Us')}
           </Button>
+        ) : isLowerThanCurrent ? (
+          <Button variant="secondary" fullWidth size="sm" disabled className="opacity-50">
+            {plan.priceUSD === 0
+              ? t('subscriptions:getStarted', 'Get Started')
+              : t('subscriptions:includedInCurrent', 'Included')}
+          </Button>
         ) : (
           <Button
             variant={plan.priceUSD === 0 ? 'secondary' : 'primary'}
@@ -163,7 +173,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           >
             {plan.priceUSD === 0
               ? t('subscriptions:getStarted', 'Get Started')
-              : t('subscriptions:upgrade', 'Subscribe')}
+              : t('subscriptions:upgrade', 'Upgrade')}
           </Button>
         )}
       </div>
