@@ -148,7 +148,17 @@ export class PiAPIProvider extends EnhancedProvider {
         input.negative_prompt = options.negativePrompt;
       }
 
-      logger.info('PiAPI video payload:', { model, aspect_ratio: input.aspect_ratio, duration: input.duration, mode: input.mode, hasImage: !!input.image_url });
+      // CFG Scale (creativity)
+      if (options?.cfgScale !== undefined) {
+        input.cfg_scale = options.cfgScale;
+      }
+
+      // Enable audio (Kling native audio)
+      if (options?.enableAudio !== undefined) {
+        input.enable_audio = options.enableAudio;
+      }
+
+      logger.info('PiAPI video payload:', { model, aspect_ratio: input.aspect_ratio, duration: input.duration, mode: input.mode, version: input.version, hasImage: !!input.image_url, enableAudio: !!input.enable_audio });
       const createResponse = await this.client.post('/task', {
         model,
         task_type: 'video_generation',
@@ -165,7 +175,8 @@ export class PiAPIProvider extends EnhancedProvider {
       const videoUrl = await this.pollVideoResult(taskId);
 
       const time = Date.now() - start;
-      const cost = this.estimateVideoCost(mode, duration, version);
+      const enableAudio = (options?.enableAudio as boolean) || false;
+      const cost = this.estimateVideoCost(mode, duration, version, enableAudio);
       this.updateStats(true, cost, time);
 
       logger.info(`PiAPI video: success (${time}ms, $${cost})`);
@@ -185,15 +196,25 @@ export class PiAPIProvider extends EnhancedProvider {
     throw new Error('PiAPI audio generation not supported — use OpenAI or ElevenLabs');
   }
 
-  private estimateVideoCost(mode: string, duration: number, version: string): number {
+  private estimateVideoCost(mode: string, duration: number, version: string, enableAudio = false): number {
+    const isNewVersion = ['2.5', '2.6'].includes(version);
+
     if (version === '2.1-master') {
       return duration <= 5 ? 0.96 : 1.92;
     }
-    // Kling 2.6 pricing
+
     if (mode === 'pro') {
-      return duration <= 5 ? 0.33 : 0.66;
+      const baseCost = isNewVersion
+        ? (duration <= 5 ? 0.33 : 0.66)
+        : (duration <= 5 ? 0.46 : 0.92);
+      // 2.6 pro audio = 2× pro price
+      if (enableAudio && version === '2.6') return baseCost * 2;
+      return baseCost;
     }
-    return duration <= 5 ? 0.20 : 0.40;
+
+    return isNewVersion
+      ? (duration <= 5 ? 0.20 : 0.40)
+      : (duration <= 5 ? 0.26 : 0.52);
   }
 
   private async pollImageResult(taskId: string): Promise<string> {

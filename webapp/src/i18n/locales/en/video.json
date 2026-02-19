@@ -3,6 +3,16 @@
   "aspectRatio": "Aspect Ratio",
   "duration": "Duration",
   "resolution": "Resolution",
+  "version": "Version",
+  "negativePrompt": "Negative Prompt",
+  "negativePromptPlaceholder": "Things to avoid (e.g. blurry, distorted faces, text)",
+  "creativity": "Creativity",
+  "creativityLow": "Precise",
+  "creativityHigh": "Creative",
+  "enableAudio": "Audio",
+  "enableAudioDesc": "AI-generated native audio (v2.6 Pro only, doubles cost)",
+  "estimatedCost": "Estimated Cost",
+  "credits": "credits",
   "generateAudio": "Generate Audio",
   "audioOn": "On",
   "audioOff": "Off",
@@ -27,14 +37,21 @@
   "saved": "Settings saved!",
   "loadError": "Failed to load settings",
   "saveError": "Failed to save settings",
+  "versionNames": {
+    "2.6": "v2.6 (Latest)",
+    "2.5": "v2.5",
+    "2.1": "v2.1",
+    "2.1-master": "v2.1 Master",
+    "1.6": "v1.6",
+    "1.5": "v1.5"
+  },
   "modelNames": {
-    "kling": "Kling",
+    "kling": "Kling Standard",
     "kling-pro": "Kling Pro",
     "veo-fast": "Veo Fast",
     "veo": "Veo Quality",
     "sora": "Sora",
     "runway": "Runway",
-    "kling-master": "Kling Master",
     "seedance": "Seedance"
   }
 }

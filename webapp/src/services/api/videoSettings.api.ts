@@ -5,6 +5,10 @@ export interface VideoModelSettings {
   duration?: number;
   resolution?: string;
   generateAudio?: boolean;
+  version?: string;
+  negativePrompt?: string;
+  cfgScale?: number;
+  enableAudio?: boolean;
 }
 
 export interface VideoSettingsResponse {

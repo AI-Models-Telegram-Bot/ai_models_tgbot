@@ -6,12 +6,16 @@ export interface VideoModelSettings {
   duration?: number;
   resolution?: string;
   generateAudio?: boolean;
+  // Kling-specific fields
+  version?: string;        // e.g. '2.6', '2.5', '2.1', '2.1-master', '1.6', '1.5'
+  negativePrompt?: string;
+  cfgScale?: number;       // creativity: 0-1, default 0.5
+  enableAudio?: boolean;   // Kling native audio (2.6 pro only)
 }
 
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
-  'kling': { aspectRatio: '16:9' },
-  'kling-pro': { aspectRatio: '16:9' },
-  'kling-master': { aspectRatio: '16:9' },
+  'kling': { aspectRatio: '16:9', version: '2.6', duration: 5, cfgScale: 0.5 },
+  'kling-pro': { aspectRatio: '16:9', version: '2.6', duration: 5, cfgScale: 0.5 },
   'veo-fast': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true },
   'veo': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true },
   'sora': { aspectRatio: '16:9', duration: 4, resolution: '720p' },

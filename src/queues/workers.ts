@@ -134,17 +134,17 @@ const SETTINGS_LABELS: Record<string, Record<string, string>> = {
   en: {
     aspectRatio: 'Aspect Ratio', duration: 'Duration', resolution: 'Resolution',
     quality: 'Quality', style: 'Style', version: 'Version', generateAudio: 'Audio',
-    stylize: 'Stylize', voiceId: 'Voice',
+    stylize: 'Stylize', voiceId: 'Voice', cfgScale: 'Creativity', enableAudio: 'Audio',
   },
   ru: {
     aspectRatio: 'Формат', duration: 'Длительность', resolution: 'Разрешение',
     quality: 'Качество', style: 'Стиль', version: 'Версия', generateAudio: 'Аудио',
-    stylize: 'Стилизация', voiceId: 'Голос',
+    stylize: 'Стилизация', voiceId: 'Голос', cfgScale: 'Творчество', enableAudio: 'Аудио',
   },
 };
 
 /** Internal settings keys that should NOT be shown to users */
-const HIDDEN_SETTINGS = new Set(['model', 'width', 'height', 'dalleSize']);
+const HIDDEN_SETTINGS = new Set(['model', 'width', 'height', 'dalleSize', 'negativePrompt']);
 
 /** Escape HTML special chars for Telegram */
 function escapeHtml(text: string): string {

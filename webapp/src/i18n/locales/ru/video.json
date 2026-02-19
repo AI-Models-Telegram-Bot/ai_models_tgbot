@@ -3,6 +3,16 @@
   "aspectRatio": "Соотношение сторон",
   "duration": "Длительность",
   "resolution": "Разрешение",
+  "version": "Версия",
+  "negativePrompt": "Негативный промпт",
+  "negativePromptPlaceholder": "Чего избегать (напр. размытие, искажённые лица, текст)",
+  "creativity": "Креативность",
+  "creativityLow": "Точнее",
+  "creativityHigh": "Креативнее",
+  "enableAudio": "Аудио",
+  "enableAudioDesc": "Нативное AI-аудио (только v2.6 Pro, удваивает стоимость)",
+  "estimatedCost": "Примерная стоимость",
+  "credits": "кредитов",
   "generateAudio": "Генерация звука",
   "audioOn": "Вкл",
   "audioOff": "Выкл",
@@ -27,14 +37,21 @@
   "saved": "Настройки сохранены!",
   "loadError": "Не удалось загрузить настройки",
   "saveError": "Не удалось сохранить настройки",
+  "versionNames": {
+    "2.6": "v2.6 (Последняя)",
+    "2.5": "v2.5",
+    "2.1": "v2.1",
+    "2.1-master": "v2.1 Master",
+    "1.6": "v1.6",
+    "1.5": "v1.5"
+  },
   "modelNames": {
-    "kling": "Kling",
+    "kling": "Kling Стандарт",
     "kling-pro": "Kling Pro",
     "veo-fast": "Veo Fast",
     "veo": "Veo Quality",
     "sora": "Sora",
     "runway": "Runway",
-    "kling-master": "Kling Master",
     "seedance": "Seedance"
   }
 }
