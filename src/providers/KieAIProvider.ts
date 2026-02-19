@@ -438,14 +438,20 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         prompt,
         aspect_ratio: (options?.aspectRatio as string) || '1:1',
+        output_format: 'png',
       };
+
+      // Add resolution if specified (1K, 2K, 4K)
+      if (options?.resolution) {
+        input.resolution = options.resolution;
+      }
 
       // Add reference image for editing mode
       if (hasImage) {
         input.image_input = inputImageUrls;
       }
 
-      logger.info('KieAI Nano Banana payload:', { aspectRatio: input.aspect_ratio, hasImage });
+      logger.info('KieAI Nano Banana payload:', { aspectRatio: input.aspect_ratio, resolution: input.resolution, hasImage, imageCount: inputImageUrls?.length });
       const createResponse = await this.client.post('/jobs/createTask', {
         model: 'nano-banana-pro',
         input,
@@ -476,9 +482,27 @@ export class KieAIProvider extends EnhancedProvider {
   }
 
   /**
+   * Map aspect ratio string to Seedream image_size preset.
+   * Seedream uses named presets instead of ratio strings.
+   */
+  private toSeedreamImageSize(aspectRatio: string): string {
+    const map: Record<string, string> = {
+      '1:1': 'square_hd',
+      '16:9': 'landscape_16_9',
+      '9:16': 'portrait_16_9',
+      '4:3': 'landscape_4_3',
+      '3:4': 'portrait_4_3',
+      '3:2': 'landscape_3_2',
+      '2:3': 'portrait_3_2',
+      '21:9': 'landscape_21_9',
+    };
+    return map[aspectRatio] || 'square_hd';
+  }
+
+  /**
    * Seedream 4.0 (ByteDance) via Market endpoint
-   * Text-to-image: model 'seedream-4.0'
-   * Image editing: model 'bytedance/seedream-v4-edit' with image_input
+   * Text-to-image: model 'bytedance/seedream-v4-text-to-image'
+   * Image editing: model 'bytedance/seedream-v4-edit' with image_urls
    * POST /jobs/createTask → poll /jobs/recordInfo
    */
   private async generateSeedreamImage(
@@ -489,20 +513,21 @@ export class KieAIProvider extends EnhancedProvider {
     try {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
       const hasImage = inputImageUrls && inputImageUrls.length > 0;
-      const model = hasImage ? 'bytedance/seedream-v4-edit' : 'seedream-4.0';
+      const model = hasImage ? 'bytedance/seedream-v4-edit' : 'bytedance/seedream-v4-text-to-image';
+      const aspectRatio = (options?.aspectRatio as string) || '1:1';
       logger.info(`KieAI image: starting Seedream generation (${model}, editing: ${!!hasImage})`);
 
       const input: Record<string, unknown> = {
         prompt,
-        aspect_ratio: (options?.aspectRatio as string) || '1:1',
+        image_size: this.toSeedreamImageSize(aspectRatio),
       };
 
-      // Add reference image for editing mode
+      // Add reference images for editing mode
       if (hasImage) {
-        input.image_input = inputImageUrls;
+        input.image_urls = inputImageUrls;
       }
 
-      logger.info('KieAI Seedream payload:', { model, aspectRatio: input.aspect_ratio, hasImage });
+      logger.info('KieAI Seedream payload:', { model, image_size: input.image_size, hasImage });
       const createResponse = await this.client.post('/jobs/createTask', {
         model,
         input,
