@@ -134,6 +134,11 @@ function formatResultCaption(opts: {
   const balanceLabel = lang === 'ru' ? 'Баланс' : 'Balance';
   lines.push(`💰 -${creditsCost} ⚡ · ${balanceLabel}: <b>${remainingBalance} ⚡</b> <i>(${categoryLabel})</i>`);
 
+  // Continue hint — let user know they can send another prompt
+  const hint = t(lang, 'messages.continueHint', { modelName: escapeHtml(modelName) });
+  lines.push('');
+  lines.push(hint);
+
   return lines.join('\n');
 }
 
@@ -285,7 +290,8 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
 
         const formattedText = markdownToTelegramHtml(textResult.text);
-        const footer = `\n\n📊 <i>${displayName}</i>\n💰 <i>${lang === 'ru' ? 'Списано' : 'Deducted'}: ⚡-${creditsCost}. ${lang === 'ru' ? 'Баланс' : 'Balance'}: ⚡${remainingBalance}</i>`;
+        const continueHint = t(lang, 'messages.continueHint', { modelName: escapeHtml(displayName) });
+        const footer = `\n\n📊 <i>${displayName}</i>\n💰 <i>${lang === 'ru' ? 'Списано' : 'Deducted'}: ⚡-${creditsCost}. ${lang === 'ru' ? 'Баланс' : 'Balance'}: ⚡${remainingBalance}</i>\n\n${continueHint}`;
         const maxLength = 4000 - footer.length;
 
         if (formattedText.length > maxLength) {

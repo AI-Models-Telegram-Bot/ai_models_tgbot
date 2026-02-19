@@ -402,12 +402,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     await sendTrackedMessage(ctx, l.messages.errorGeneric, getMainKeyboard(lang));
   }
 
-  ctx.session.awaitingInput = false;
-  ctx.session.selectedModel = undefined;
-  ctx.session.audioFunction = undefined;
-  ctx.session.imageFunction = undefined;
-  ctx.session.imageFamily = undefined;
-  ctx.session.videoFunction = undefined;
-  ctx.session.videoFamily = undefined;
+  // Keep model context active so user can send consecutive prompts.
+  // Only clear uploaded images — they were consumed by this generation.
   ctx.session.uploadedImageUrls = undefined;
 }

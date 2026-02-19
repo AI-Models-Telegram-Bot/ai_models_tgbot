@@ -484,6 +484,7 @@ Send your prompt:
     // Processing
     processing: '⏳ Processing with {modelName}...',
     done: '✅ Done! Send another prompt or choose a new model:',
+    continueHint: '💡 Send another prompt for <b>{modelName}</b> or choose from the menu.',
     cancelled: 'Cancelled.',
 
     // Errors
