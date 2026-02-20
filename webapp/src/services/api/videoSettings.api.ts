@@ -9,6 +9,7 @@ export interface VideoModelSettings {
   negativePrompt?: string;
   cfgScale?: number;
   enableAudio?: boolean;
+  mode?: string;
 }
 
 export interface VideoSettingsResponse {

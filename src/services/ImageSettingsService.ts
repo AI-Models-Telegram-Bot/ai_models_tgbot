@@ -26,6 +26,7 @@ const MODEL_DEFAULTS: Record<string, ImageModelSettings> = {
   'nano-banana': { aspectRatio: '1:1' },
   'nano-banana-pro': { aspectRatio: '1:1', resolution: '1K' },
   'seedream': { aspectRatio: '1:1' },
+  'seedream-4.5': { aspectRatio: '1:1', resolution: '1K' },
   'ideogram': { aspectRatio: '1:1' },
 };
 

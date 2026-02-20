@@ -4,6 +4,8 @@ import {
   getVideoFamiliesKeyboard,
   getKlingModelsKeyboard,
   getVeoModelsKeyboard,
+  getSoraModelsKeyboard,
+  getRunwayModelsKeyboard,
   getVideoModelMenuKeyboard,
 } from '../keyboards/videoKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -41,13 +43,11 @@ const VIDEO_FAMILIES: Record<VideoFamily, VideoFamilyConfig> = {
   },
   sora: {
     descriptionKey: 'videoSoraFamilyDesc',
-    getKeyboard: () => null,
-    singleModel: 'sora',
+    getKeyboard: getSoraModelsKeyboard,
   },
   runway: {
     descriptionKey: 'videoRunwayFamilyDesc',
-    getKeyboard: () => null,
-    singleModel: 'runway',
+    getKeyboard: getRunwayModelsKeyboard,
   },
   luma: {
     descriptionKey: 'videoLumaFamilyDesc',
@@ -106,9 +106,21 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'sora',
     hasSettings: true,
   },
+  'sora-pro': {
+    modelSlug: 'sora-pro',
+    descriptionKey: 'videoSoraProDesc',
+    family: 'sora',
+    hasSettings: true,
+  },
   'runway': {
     modelSlug: 'runway',
     descriptionKey: 'videoRunwayDesc',
+    family: 'runway',
+    hasSettings: true,
+  },
+  'runway-gen4': {
+    modelSlug: 'runway-gen4',
+    descriptionKey: 'videoRunwayGen4Desc',
     family: 'runway',
     hasSettings: true,
   },
@@ -137,8 +149,10 @@ const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'kling-pro': { en: 'Kling Pro', ru: 'Kling Pro' },
   'veo-fast': { en: 'Veo Fast', ru: 'Veo Fast' },
   'veo': { en: 'Veo Quality', ru: 'Veo Quality' },
-  'sora': { en: 'Sora', ru: 'Sora' },
-  'runway': { en: 'Runway', ru: 'Runway' },
+  'sora': { en: 'Sora 2', ru: 'Sora 2' },
+  'sora-pro': { en: 'Sora 2 Pro', ru: 'Sora 2 Pro' },
+  'runway': { en: 'Runway Gen-4 Turbo', ru: 'Runway Gen-4 Turbo' },
+  'runway-gen4': { en: 'Runway Gen-4', ru: 'Runway Gen-4' },
   'luma': { en: 'Luma', ru: 'Luma' },
   'wan': { en: 'WAN', ru: 'WAN' },
   'seedance': { en: 'Seedance', ru: 'Seedance' },
@@ -312,6 +326,10 @@ export async function getVideoOptionsForFunction(
     }
     if (settings.enableAudio !== undefined) {
       options.enableAudio = settings.enableAudio;
+    }
+    // Veo-specific: image processing mode
+    if (settings.mode) {
+      options.mode = settings.mode;
     }
 
     return options;

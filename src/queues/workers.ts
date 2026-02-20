@@ -135,13 +135,13 @@ const SETTINGS_LABELS: Record<string, Record<string, string>> = {
     aspectRatio: 'Aspect Ratio', duration: 'Duration', resolution: 'Resolution',
     quality: 'Quality', style: 'Style', version: 'Version', generateAudio: 'Audio',
     stylize: 'Stylize', voiceId: 'Voice', cfgScale: 'Creativity', enableAudio: 'Audio',
-    speed: 'Speed', weirdness: 'Weirdness',
+    speed: 'Speed', weirdness: 'Weirdness', mode: 'Mode',
   },
   ru: {
     aspectRatio: 'Формат', duration: 'Длительность', resolution: 'Разрешение',
     quality: 'Качество', style: 'Стиль', version: 'Версия', generateAudio: 'Аудио',
     stylize: 'Стилизация', voiceId: 'Голос', cfgScale: 'Творчество', enableAudio: 'Аудио',
-    speed: 'Скорость', weirdness: 'Необычность',
+    speed: 'Скорость', weirdness: 'Необычность', mode: 'Режим',
   },
 };
 

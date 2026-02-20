@@ -236,6 +236,14 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
+  // Seedream 4.5 Beta — ByteDance latest, supports quality/resolution
+  'seedream-4.5': {
+    category: 'IMAGE',
+    providers: [
+      { name: 'kieai', modelId: 'seedream-4.5' },                   // ~$0.03-0.06
+    ],
+  },
+
   // Playground v2.5 — aesthetic images
   'playground-v2-5': {
     category: 'IMAGE',
@@ -311,11 +319,27 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Runway — video gen (KieAI only — fal.ai doesn't offer Runway models)
+  // Sora 2 Pro — OpenAI premium video
+  'sora-pro': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'sora-2-pro-text-to-video' },       // ~$0.80
+    ],
+  },
+
+  // Runway Gen-4 Turbo — fast video gen
   'runway': {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'runway' },                          // ~$0.30
+    ],
+  },
+
+  // Runway Gen-4 — standard quality
+  'runway-gen4': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'runway-gen4' },                     // ~$0.40
     ],
   },
 

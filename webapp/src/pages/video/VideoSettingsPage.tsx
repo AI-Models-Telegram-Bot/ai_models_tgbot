@@ -27,7 +27,9 @@ const MODEL_ASPECTS: Record<string, string[]> = {
   'veo-fast': ['16:9', '9:16'],
   'veo': ['16:9', '9:16'],
   'sora': ['16:9', '9:16', '1:1'],
+  'sora-pro': ['16:9', '9:16', '1:1'],
   'runway': ['16:9', '9:16'],
+  'runway-gen4': ['16:9', '9:16'],
   'seedance': ['16:9', '9:16', '1:1'],
 };
 
@@ -54,11 +56,24 @@ const MODEL_DURATIONS: Record<string, DurationOption[]> = {
     { value: 8, labelKey: 'duration8s' },
   ],
   'sora': [
-    { value: 2, labelKey: 'duration2s' },
     { value: 4, labelKey: 'duration4s' },
-    { value: 6, labelKey: 'duration6s' },
+    { value: 8, labelKey: 'duration8s' },
+    { value: 10, labelKey: 'duration10s' },
+    { value: 12, labelKey: 'duration12s' },
+    { value: 15, labelKey: 'duration15s' },
+  ],
+  'sora-pro': [
+    { value: 4, labelKey: 'duration4s' },
+    { value: 8, labelKey: 'duration8s' },
+    { value: 10, labelKey: 'duration10s' },
+    { value: 12, labelKey: 'duration12s' },
+    { value: 15, labelKey: 'duration15s' },
   ],
   'runway': [
+    { value: 5, labelKey: 'duration5s' },
+    { value: 10, labelKey: 'duration10s' },
+  ],
+  'runway-gen4': [
     { value: 5, labelKey: 'duration5s' },
     { value: 10, labelKey: 'duration10s' },
   ],
@@ -80,12 +95,19 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
   'veo-fast': [
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+    { value: '4K', labelKey: 'resolution4K', descKey: 'resolution4KDesc', icon: '📐' },
   ],
   'veo': [
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+    { value: '4K', labelKey: 'resolution4K', descKey: 'resolution4KDesc', icon: '📐' },
   ],
   'sora': [
+    { value: '480p', labelKey: 'resolution480p', descKey: 'resolution480pDesc', icon: '📱' },
+    { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+  ],
+  'sora-pro': [
     { value: '480p', labelKey: 'resolution480p', descKey: 'resolution480pDesc', icon: '📱' },
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
@@ -94,9 +116,28 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
   ],
+  'runway-gen4': [
+    { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+  ],
 };
 
 const AUDIO_MODELS = ['veo-fast', 'veo'];
+
+const VEO_MODELS = ['veo-fast', 'veo'];
+
+interface ModeOption {
+  value: string;
+  labelKey: string;
+  descKey: string;
+  icon: string;
+}
+
+const MODE_OPTIONS: ModeOption[] = [
+  { value: 'text', labelKey: 'modeText', descKey: 'modeTextDesc', icon: '✏️' },
+  { value: 'frames', labelKey: 'modeFrames', descKey: 'modeFramesDesc', icon: '🖼️' },
+  { value: 'ingredients', labelKey: 'modeIngredients', descKey: 'modeIngredientsDesc', icon: '🧩' },
+];
 
 // ── Kling-specific config ──────────────────────────────────
 
@@ -177,7 +218,8 @@ export default function VideoSettingsPage() {
   const hasDuration = !!MODEL_DURATIONS[modelSlug];
   const hasResolution = !!MODEL_RESOLUTIONS[modelSlug];
   const hasAudio = AUDIO_MODELS.includes(modelSlug);
-  const isRunway = modelSlug === 'runway';
+  const isVeo = VEO_MODELS.includes(modelSlug);
+  const isRunway = modelSlug === 'runway' || modelSlug === 'runway-gen4';
   const isKling = KLING_MODELS.includes(modelSlug);
   const klingMode: 'std' | 'pro' = modelSlug === 'kling-pro' ? 'pro' : 'std';
   const availableVersions = modelSlug === 'kling-pro' ? KLING_VERSIONS_PRO : KLING_VERSIONS_STD;
@@ -191,6 +233,8 @@ export default function VideoSettingsPage() {
   const [duration, setDuration] = useState(5);
   const [resolution, setResolution] = useState('720p');
   const [generateAudio, setGenerateAudio] = useState(true);
+  // Veo mode state
+  const [mode, setMode] = useState('text');
   // Kling-specific state
   const [version, setVersion] = useState('2.6');
   const [negativePrompt, setNegativePrompt] = useState('');
@@ -213,6 +257,9 @@ export default function VideoSettingsPage() {
       if (hasAudio) {
         setGenerateAudio(modelSettings.generateAudio ?? true);
       }
+      if (isVeo) {
+        setMode(modelSettings.mode || 'text');
+      }
       if (isKling) {
         setVersion(modelSettings.version || '2.6');
         setNegativePrompt(modelSettings.negativePrompt || '');
@@ -221,7 +268,7 @@ export default function VideoSettingsPage() {
         setDuration(modelSettings.duration ?? 5);
       }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isKling, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isKling, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -232,7 +279,7 @@ export default function VideoSettingsPage() {
 
   const selectedAspect = ALL_ASPECTS.find(a => a.value === aspectRatio) || ALL_ASPECTS[1];
 
-  // Runway constraint: 10s + 1080p not allowed
+  // Runway constraint: 10s + 1080p not allowed (both Gen-4 and Gen-4 Turbo)
   const showRunwayWarning = isRunway && duration === 10 && resolution === '1080p';
 
   // Kling cost preview
@@ -246,6 +293,7 @@ export default function VideoSettingsPage() {
     if (hasDuration && !isKling && duration !== (modelSettings?.duration ?? (MODEL_DURATIONS[modelSlug]?.[0]?.value || 5))) return true;
     if (hasResolution && resolution !== (modelSettings?.resolution || '720p')) return true;
     if (hasAudio && generateAudio !== (modelSettings?.generateAudio ?? true)) return true;
+    if (isVeo && mode !== (modelSettings?.mode || 'text')) return true;
     if (isKling) {
       if (version !== (modelSettings?.version || '2.6')) return true;
       if (negativePrompt !== (modelSettings?.negativePrompt || '')) return true;
@@ -268,6 +316,7 @@ export default function VideoSettingsPage() {
       if (hasDuration && !isKling) updates.duration = duration;
       if (hasResolution) updates.resolution = resolution;
       if (hasAudio) updates.generateAudio = generateAudio;
+      if (isVeo) updates.mode = mode;
       if (isKling) {
         updates.version = version;
         updates.duration = duration;
@@ -512,6 +561,55 @@ export default function VideoSettingsPage() {
                   />
                 </div>
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Veo: Image Processing Mode */}
+        {isVeo && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('mode')}
+            </div>
+            <div className="space-y-2">
+              {MODE_OPTIONS.map(({ value, labelKey, descKey, icon }) => (
+                <div
+                  key={value}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setMode(value);
+                  }}
+                  className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                    mode === value
+                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center" style={{ columnGap: 10 }}>
+                    <span className="text-lg">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center" style={{ columnGap: 8 }}>
+                        <span className="font-semibold text-content-primary text-sm">
+                          {t(labelKey as any)}
+                        </span>
+                        {mode === value && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-video-primary/20 text-video-primary font-medium shrink-0">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {t(descKey as any)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}

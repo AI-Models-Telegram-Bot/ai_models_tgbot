@@ -43,6 +43,7 @@ const MODEL_ASPECTS: Record<string, string[]> = {
   'nano-banana': ['1:1', '16:9', '9:16', '3:2', '2:3', '4:5', '5:4', '3:4', '4:3', '21:9'],
   'nano-banana-pro': ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9'],
   'seedream': ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'],
+  'seedream-4.5': ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'],
 };
 
 const QUALITY_OPTIONS = [
@@ -130,6 +131,8 @@ export default function ImageSettingsPage() {
   const isDalle3 = modelSlug === 'dall-e-3';
   const isMidjourney = modelSlug === 'midjourney';
   const isNanoBananaPro = modelSlug === 'nano-banana-pro';
+  const isSeedream45 = modelSlug === 'seedream-4.5';
+  const hasResolution = isNanoBananaPro || isSeedream45;
   const availableAspects = useMemo(
     () => ALL_ASPECTS.filter(a => (MODEL_ASPECTS[modelSlug] || ['1:1']).includes(a.value)),
     [modelSlug]
@@ -161,11 +164,11 @@ export default function ImageSettingsPage() {
         setSpeed(modelSettings.speed || 'fast');
         setWeirdness(modelSettings.weirdness ?? 0);
       }
-      if (isNanoBananaPro) {
+      if (hasResolution) {
         setResolution(modelSettings.resolution || '1K');
       }
     }
-  }, [modelSettings, isDalle3, isMidjourney, isNanoBananaPro]);
+  }, [modelSettings, isDalle3, isMidjourney, hasResolution]);
 
   const selectedAspect = ALL_ASPECTS.find(a => a.value === aspectRatio) || ALL_ASPECTS[0];
 
@@ -182,7 +185,7 @@ export default function ImageSettingsPage() {
       if (speed !== (modelSettings?.speed || 'fast')) return true;
       if (weirdness !== (modelSettings?.weirdness ?? 0)) return true;
     }
-    if (isNanoBananaPro) {
+    if (hasResolution) {
       if (resolution !== (modelSettings?.resolution || '1K')) return true;
     }
     return false;
@@ -207,7 +210,7 @@ export default function ImageSettingsPage() {
         updates.speed = speed;
         updates.weirdness = weirdness;
       }
-      if (isNanoBananaPro) {
+      if (hasResolution) {
         updates.resolution = resolution;
       }
       await updateModelSettings(modelSlug, updates);
@@ -548,8 +551,8 @@ export default function ImageSettingsPage() {
           </motion.div>
         )}
 
-        {/* Nano Banana Pro: Resolution */}
-        {isNanoBananaPro && (
+        {/* Resolution (Nano Banana Pro, Seedream 4.5) */}
+        {hasResolution && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

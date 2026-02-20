@@ -17,7 +17,9 @@ const DYNAMIC_PRICING: Record<string, DynamicPricingConfig> = {
   'veo-fast': { defaultDuration: 8, defaultResolution: '1080p' },
   'veo':      { defaultDuration: 8, defaultResolution: '1080p' },
   'sora':     { defaultDuration: 4, defaultResolution: '720p' },
+  'sora-pro': { defaultDuration: 4, defaultResolution: '720p' },
   'runway':   { defaultDuration: 5, defaultResolution: '720p' },
+  'runway-gen4': { defaultDuration: 5, defaultResolution: '720p' },
   'seedance': { defaultDuration: 8 }, // duration-only scaling
 };
 
@@ -25,6 +27,7 @@ const RESOLUTION_MULT: Record<string, number> = {
   '480p': 0.7,
   '720p': 1.0,
   '1080p': 1.5,
+  '4K': 2.0,
 };
 
 // ── Kling pricing table ──────────────────────────────────────
@@ -87,10 +90,23 @@ function calculateMidjourneyCost(speed?: string): number {
   return MJ_SPEED_CREDITS[speed || 'fast'] || 15;
 }
 
+// ── Seedream 4.5 pricing (resolution-based) ─────────────────
+// 1K = base (8), 2K = 1.5x (12), 4K = ~1.9x (15)
+
+const SEEDREAM_RES_CREDITS: Record<string, number> = {
+  '1K': 8,
+  '2K': 12,
+  '4K': 15,
+};
+
+function calculateSeedreamCost(resolution?: string): number {
+  return SEEDREAM_RES_CREDITS[resolution || '1K'] || 8;
+}
+
 // ── Public API ───────────────────────────────────────────────
 
 export function hasDynamicPricing(slug: string): boolean {
-  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney';
+  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney' || slug === 'seedream-4.5';
 }
 
 export function calculateDynamicCost(
@@ -110,6 +126,12 @@ export function calculateDynamicCost(
   if (slug === 'midjourney') {
     return calculateMidjourneyCost(settings?.speed);
   }
+
+  // Seedream 4.5 pricing by resolution
+  if (slug === 'seedream-4.5') {
+    return calculateSeedreamCost(settings?.resolution);
+  }
+
 
   const cfg = DYNAMIC_PRICING[slug];
   if (!cfg || !settings) return baseCost;

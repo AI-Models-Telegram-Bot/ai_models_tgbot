@@ -39,6 +39,28 @@ export function getVeoModelsKeyboard(lang: Language) {
 }
 
 /**
+ * Reply keyboard: Sora family models + back/main
+ */
+export function getSoraModelsKeyboard(lang: Language) {
+  const l = getLocale(lang);
+  return Markup.keyboard([
+    [l.buttons.videoSora, l.buttons.videoSoraPro],
+    [l.buttons.back, l.buttons.mainMenu],
+  ]).resize();
+}
+
+/**
+ * Reply keyboard: Runway family models + back/main
+ */
+export function getRunwayModelsKeyboard(lang: Language) {
+  const l = getLocale(lang);
+  return Markup.keyboard([
+    [l.buttons.videoRunwayGen4, l.buttons.videoRunwayTurbo],
+    [l.buttons.back, l.buttons.mainMenu],
+  ]).resize();
+}
+
+/**
  * Reply keyboard for a selected video model (with optional webapp settings button + back/main)
  */
 export function getVideoModelMenuKeyboard(lang: Language, modelSlug: string, hasSettings: boolean, telegramId?: number) {

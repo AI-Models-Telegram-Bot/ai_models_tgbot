@@ -46,6 +46,8 @@ export const en = {
     imageDallE3: '✨ DALL-E 3 (⚡25)',
     imageNanoBanana: '🍌 Nano Banana (⚡6)',
     imageNanoBananaPro: '🍌 Nano Banana Pro (⚡20)',
+    imageSeedream: '🌱 Seedream 4.0 (⚡5)',
+    imageSeedream45: '🌱 Seedream 4.5 β (⚡8-15)',
     imageSettings: '🎛️ Image Settings',
     // Video Families
     videoKlingFamily: '🎥 Kling',
@@ -60,6 +62,10 @@ export const en = {
     videoKlingPro: '💎 Kling Pro (⚡20–116)',
     videoVeoFast: '⚡ Veo Fast (⚡9–20)',
     videoVeoQuality: '💎 Veo Quality (⚡34–80)',
+    videoSora: '🎬 Sora 2 (⚡9–57)',
+    videoSoraPro: '💎 Sora 2 Pro (⚡40–150)',
+    videoRunwayGen4: '✈️ Runway Gen-4 (⚡20–60)',
+    videoRunwayTurbo: '⚡ Runway Gen-4 Turbo (⚡15–45)',
     videoSettings: '🎛️ Video Settings',
   },
 
@@ -246,7 +252,7 @@ Select a model:`,
 
     imageSeedreamFamilyDesc: `🌱 <b>Seedream</b>
 
-ByteDance Seedream 4.0 — high-quality image generation and editing.
+ByteDance Seedream — high-quality image generation and editing. Choose between the proven 4.0 or the latest 4.5 Beta with resolution control.
 
 Select a model:`,
 
@@ -345,6 +351,17 @@ ByteDance Seedream — high-quality image generation and editing with excellent 
 
 Fee: ⚡5 credits per image`,
 
+    imageSeedream45Desc: `🌱 <b>Seedream 4.5 Beta</b>
+
+ByteDance's latest image model — improved quality, creativity, and resolution control up to 4K.
+
+🌄 Send a reference image + ✍️ text prompt to edit an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio and resolution (1K/2K/4K) in Image Settings.
+
+Fee: ⚡8–15 credits (depends on resolution)`,
+
     imageAccessDenied: 'is not available on your current plan.',
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',
 
@@ -367,24 +384,15 @@ Select a model:`,
 
     videoSoraFamilyDesc: `🎬 <b>Sora</b>
 
-An advanced AI model by OpenAI capable of transforming text descriptions or images into dynamic videos with resolutions up to 1080p.
+OpenAI's advanced video generation — from standard to premium pro quality.
 
-💡 Adjust duration and resolution in Video Settings.
+Select a model:`,
 
-Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
+    videoRunwayFamilyDesc: `✈️ <b>Runway</b>
 
-Fee: ⚡9–57 credits (depends on settings)`,
+Professional-grade Gen-4 video generation with cinematic output. Choose between standard quality or fast Turbo mode.
 
-    videoRunwayFamilyDesc: `✈️ <b>Runway Gen-4 Turbo</b>
-
-Professional-grade video generation with cinematic output. Send a text prompt or upload up to 3 images to generate a video.
-
-💡 Adjust duration and resolution in Video Settings.
-
-Send ✍️ a text prompt or 🌄 upload images to get started 👇
-⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
-
-Fee: ⚡15–45 credits (depends on settings)`,
+Select a model:`,
 
     videoLumaFamilyDesc: `💫 <b>Luma Dream Machine</b>
 
@@ -435,28 +443,28 @@ Fee: ⚡20–116 credits (depends on settings)`,
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 
 Google Veo fast mode — quick video generation with great quality and optional audio.
-⚠️ Text-only — reference images are not supported.
 
-💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
+💡 Adjust aspect ratio, duration, resolution (up to 4K), audio, and image processing mode in Video Settings.
+📸 <b>Image modes:</b> Frames (start+end images → transition) or Ingredients (reference images → scene).
 
-Send ✍️ a text prompt to get started 👇
+Send ✍️ a text prompt to get started, or 🌄 upload images for Frames/Ingredients mode 👇
 
-Fee: ⚡9–20 credits (depends on settings)`,
+Fee: ⚡9–40 credits (depends on settings)`,
 
     videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
 
 Google Veo quality mode — maximum fidelity, photorealism, and optional audio generation.
-⚠️ Text-only — reference images are not supported.
 
-💡 Adjust aspect ratio, duration, resolution, and audio in Video Settings.
+💡 Adjust aspect ratio, duration, resolution (up to 4K), audio, and image processing mode in Video Settings.
+📸 <b>Image modes:</b> Frames (start+end images → transition) or Ingredients (reference images → scene).
 
-Send ✍️ a text prompt to get started 👇
+Send ✍️ a text prompt to get started, or 🌄 upload images for Frames/Ingredients mode 👇
 
-Fee: ⚡34–80 credits (depends on settings)`,
+Fee: ⚡34–160 credits (depends on settings)`,
 
-    videoSoraDesc: `🎬 <b>Sora</b>
+    videoSoraDesc: `🎬 <b>Sora 2</b>
 
-An advanced AI model by OpenAI capable of transforming text descriptions or images into dynamic videos with resolutions up to 1080p.
+OpenAI Sora 2 — text-to-video and image-to-video with resolutions up to 1080p and durations up to 15s.
 
 💡 Adjust duration and resolution in Video Settings.
 
@@ -464,9 +472,19 @@ Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
 Fee: ⚡9–57 credits (depends on settings)`,
 
-    videoRunwayDesc: `✈️ <b>Runway Gen-4 Turbo</b>
+    videoSoraProDesc: `💎 <b>Sora 2 Pro</b>
 
-Professional-grade video generation with cinematic output. Send a text prompt or upload up to 3 images.
+OpenAI Sora 2 Pro — premium quality video generation with higher fidelity and detail. Durations up to 15s.
+
+💡 Adjust duration and resolution in Video Settings.
+
+Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
+
+Fee: ⚡40–150 credits (depends on settings)`,
+
+    videoRunwayDesc: `⚡ <b>Runway Gen-4 Turbo</b>
+
+Fast video generation with cinematic output. Optimized for speed while maintaining quality.
 
 💡 Adjust duration and resolution in Video Settings.
 
@@ -474,6 +492,17 @@ Send ✍️ a text prompt or 🌄 upload images to get started 👇
 ⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
 Fee: ⚡15–45 credits (depends on settings)`,
+
+    videoRunwayGen4Desc: `✈️ <b>Runway Gen-4</b>
+
+Professional-grade Gen-4 video generation — standard quality with enhanced detail and consistency.
+
+💡 Adjust duration and resolution in Video Settings.
+
+Send ✍️ a text prompt or 🌄 upload images to get started 👇
+⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
+
+Fee: ⚡20–60 credits (depends on settings)`,
 
     videoLumaDesc: `💫 <b>Luma Dream Machine</b>
 

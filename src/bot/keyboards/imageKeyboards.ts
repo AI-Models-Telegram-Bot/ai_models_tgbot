@@ -51,6 +51,17 @@ export function getGoogleAIModelsKeyboard(lang: Language) {
 }
 
 /**
+ * Reply keyboard: Seedream family models + back/main
+ */
+export function getSeedreamModelsKeyboard(lang: Language) {
+  const l = getLocale(lang);
+  return Markup.keyboard([
+    [l.buttons.imageSeedream, l.buttons.imageSeedream45],
+    [l.buttons.back, l.buttons.mainMenu],
+  ]).resize();
+}
+
+/**
  * Reply keyboard for a selected image model (with webapp settings button + back/main)
  */
 export function getImageModelMenuKeyboard(lang: Language, modelSlug: string, telegramId?: number) {

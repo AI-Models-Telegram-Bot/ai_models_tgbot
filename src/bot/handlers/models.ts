@@ -119,9 +119,10 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
 
   // Image models that support reference image input
-  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream'];
+  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
   // Text-only video models — no image-to-video support
-  const TEXT_ONLY_VIDEO_MODELS = ['veo', 'veo-fast'];
+  // Note: Veo supports image modes (frames/ingredients) via settings, so not text-only anymore
+  const TEXT_ONLY_VIDEO_MODELS: string[] = [];
 
   const isVideoModel = !!ctx.session.videoFunction;
   const isImageModelWithInput = !!ctx.session.imageFunction &&
