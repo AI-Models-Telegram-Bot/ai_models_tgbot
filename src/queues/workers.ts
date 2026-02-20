@@ -172,19 +172,26 @@ function formatResultCaption(opts: {
   // Model name — bold
   lines.push(`<b>${escapeHtml(modelName)}</b>`);
 
-  // Settings — each on its own line, light style
+  // Settings — each on its own line
   if (settingsApplied && Object.keys(settingsApplied).length > 0) {
     const settingParts: string[] = [];
     for (const [key, value] of Object.entries(settingsApplied)) {
       if (value === undefined || value === null || HIDDEN_SETTINGS.has(key)) continue;
+
+      // Hide enableAudio when false (only show when audio is ON)
+      if (key === 'enableAudio' && !value) continue;
+
       const label = labels[key] || key;
       let displayVal = String(value);
       if (key === 'duration') displayVal = `${value}${lang === 'ru' ? 'с' : 's'}`;
-      if (key === 'generateAudio') displayVal = value ? (lang === 'ru' ? 'Да' : 'Yes') : (lang === 'ru' ? 'Нет' : 'No');
-      settingParts.push(`${label}: <b>${escapeHtml(displayVal)}</b>`);
+      if (key === 'generateAudio' || key === 'enableAudio') {
+        displayVal = value ? (lang === 'ru' ? 'Да' : 'Yes') : (lang === 'ru' ? 'Нет' : 'No');
+      }
+      if (key === 'version') displayVal = `v${value}`;
+      settingParts.push(`⚙️ ${label}: <b>${escapeHtml(displayVal)}</b>`);
     }
     if (settingParts.length > 0) {
-      lines.push(`⚙️ ${settingParts.join(' · ')}`);
+      lines.push(settingParts.join('\n'));
     }
   }
 

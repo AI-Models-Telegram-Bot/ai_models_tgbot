@@ -188,6 +188,7 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
       ctx.session.uploadedImageUrls = undefined;
+      ctx.session.imageUploadMsgIds = undefined;
       if (family && isSingleVideoFamily(family)) {
         ctx.session.videoFamily = undefined;
         return handleVideoFamilyMenu(ctx);

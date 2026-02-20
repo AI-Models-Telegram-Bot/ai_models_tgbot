@@ -25,5 +25,6 @@ export interface BotContext extends Context {
     videoFamily?: VideoFamily;
     inVideoMenu?: boolean;
     uploadedImageUrls?: string[]; // Stored image URLs for image-to-video generation
+    imageUploadMsgIds?: number[]; // Message IDs of "image added" messages to clean up
   };
 }
