@@ -141,10 +141,17 @@ export const IMAGE_PRICING: Record<string, ModelPricing> = {
     marginPercent: 65,
     isLossLeader: false,
   },
-  'nano-banana-pro': {
-    creditsPerUnit: 8,
+  'nano-banana': {
+    creditsPerUnit: 6,
     unitType: '1_image',
     baseCostUSD: 0.02,          // KieAI
+    marginPercent: 60,
+    isLossLeader: false,
+  },
+  'nano-banana-pro': {
+    creditsPerUnit: 20,
+    unitType: '1_image',
+    baseCostUSD: 0.09,          // KieAI
     marginPercent: 70,
     isLossLeader: false,
   },
@@ -177,9 +184,9 @@ export const IMAGE_PRICING: Record<string, ModelPricing> = {
     isLossLeader: false,
   },
   'midjourney': {
-    creditsPerUnit: 20,
+    creditsPerUnit: 15,
     unitType: '1_image',
-    baseCostUSD: 0.04,          // KieAI
+    baseCostUSD: 0.04,          // KieAI (Fast mode)
     marginPercent: 65,
     isLossLeader: false,
   },

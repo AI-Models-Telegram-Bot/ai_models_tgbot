@@ -24,6 +24,15 @@
   "stylizeMediumDesc": "Баланс — стандартный стиль Midjourney",
   "stylizeHighDesc": "Усиленная художественная интерпретация",
   "stylizeMaxDesc": "Максимальная художественная стилизация",
+  "speed": "Режим скорости",
+  "speedRelax": "Relax",
+  "speedFast": "Fast",
+  "speedTurbo": "Turbo",
+  "speedRelaxDesc": "Медленный, дешёвый — ⚡8 кредитов",
+  "speedFastDesc": "Баланс скорости и стоимости — ⚡15 кредитов",
+  "speedTurboDesc": "Самая быстрая генерация — ⚡22 кредита",
+  "weirdness": "Необычность",
+  "weirdnessDesc": "Более высокие значения дают необычные, экспериментальные результаты",
   "resolution": "Разрешение",
   "resolution1K": "1K",
   "resolution2K": "2K",
@@ -49,6 +58,8 @@
     "dall-e-3": "DALL-E 3",
     "ideogram": "Ideogram v2",
     "midjourney": "Midjourney",
-    "nano-banana-pro": "Nano Banana Pro"
+    "nano-banana": "Nano Banana",
+    "nano-banana-pro": "Nano Banana Pro",
+    "seedream": "Seedream"
   }
 }

@@ -35,7 +35,7 @@ export const en = {
     imageFluxFamily: '🔥 Flux Family',
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
-    imageGoogleAIFamily: '🍌 Nano Banana Pro',
+    imageGoogleAIFamily: '🍌 Nano Banana',
     imageSeedreamFamily: '🌱 Seedream',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
@@ -44,6 +44,8 @@ export const en = {
     imageFluxPro: '💎 Flux Pro (⚡20)',
     imageDallE2: '🎨 DALL-E 2 (⚡10)',
     imageDallE3: '✨ DALL-E 3 (⚡25)',
+    imageNanoBanana: '🍌 Nano Banana (⚡6)',
+    imageNanoBananaPro: '🍌 Nano Banana Pro (⚡20)',
     imageSettings: '🎛️ Image Settings',
     // Video Families
     videoKlingFamily: '🎥 Kling',
@@ -236,9 +238,9 @@ Artistic image generation — stunning, creative, highly detailed.
 
 Select a model:`,
 
-    imageGoogleAIFamilyDesc: `🍌 <b>Nano Banana Pro</b>
+    imageGoogleAIFamilyDesc: `🍌 <b>Nano Banana</b>
 
-Cutting-edge image generation powered by Google Gemini.
+Image generation powered by Google Gemini — from fast drafts to premium 4K quality.
 
 Select a model:`,
 
@@ -306,9 +308,20 @@ Artistic image generation with one of the most popular AI art tools.
 🌄 Send a reference image + ✍️ text prompt to transform an existing image.
 ✍️ Or just send a text prompt to generate from scratch.
 
-💡 Adjust aspect ratio, version, and stylize in Image Settings.
+💡 Adjust aspect ratio, version, stylize, speed, and weirdness in Image Settings.
 
-Fee: ⚡25 credits per image`,
+Fee: ⚡8–22 credits (depends on speed mode)`,
+
+    imageNanoBananaDesc: `🍌 <b>Nano Banana</b>
+
+Google Gemini 2.5 Flash — fast and affordable image generation.
+
+🌄 Send a reference image + ✍️ text prompt to edit an existing image.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio in Image Settings.
+
+Fee: ⚡6 credits per image`,
 
     imageNanoBananaProDesc: `🍌 <b>Nano Banana Pro</b>
 

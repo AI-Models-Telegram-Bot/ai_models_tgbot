@@ -66,7 +66,7 @@ export class KieAIProvider extends EnhancedProvider {
       return this.generateMidjourneyImage(prompt, options);
     }
 
-    if (model === 'nano-banana-pro') {
+    if (model === 'nano-banana' || model === 'nano-banana-pro') {
       return this.generateNanoBananaImage(prompt, options);
     }
 
@@ -380,13 +380,17 @@ export class KieAIProvider extends EnhancedProvider {
       const versionStr = (options?.version as string) || 'v6.1';
       const versionNum = versionStr.replace('v', '');
 
+      const speed = (options?.speed as string) || 'fast';
+      const weirdness = (options?.weirdness as number) ?? 0;
+
       const payload: Record<string, unknown> = {
         taskType: hasImage ? 'mj_img2img' : 'mj_txt2img',
         prompt,
         aspectRatio: (options?.aspectRatio as string) || '1:1',
         version: versionNum,
         stylization: (options?.stylize as number) || 100,
-        speed: 'fast',
+        speed,
+        ...(weirdness > 0 ? { weirdness } : {}),
       };
 
       // Add reference image for img2img mode
@@ -433,7 +437,8 @@ export class KieAIProvider extends EnhancedProvider {
     try {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
       const hasImage = inputImageUrls && inputImageUrls.length > 0;
-      logger.info(`KieAI image: starting Nano Banana Pro generation (editing: ${!!hasImage})`);
+      const modelId = (options?.model as string) || 'nano-banana-pro';
+      logger.info(`KieAI image: starting ${modelId} generation (editing: ${!!hasImage})`);
 
       const input: Record<string, unknown> = {
         prompt,
@@ -441,8 +446,8 @@ export class KieAIProvider extends EnhancedProvider {
         output_format: 'png',
       };
 
-      // Add resolution if specified (1K, 2K, 4K)
-      if (options?.resolution) {
+      // Add resolution if specified (1K, 2K, 4K) — Pro only
+      if (options?.resolution && modelId === 'nano-banana-pro') {
         input.resolution = options.resolution;
       }
 
@@ -453,7 +458,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info('KieAI Nano Banana payload:', { aspectRatio: input.aspect_ratio, resolution: input.resolution, hasImage, imageCount: inputImageUrls?.length });
       const createResponse = await this.client.post('/jobs/createTask', {
-        model: 'nano-banana-pro',
+        model: modelId,
         input,
       });
 
@@ -463,15 +468,15 @@ export class KieAIProvider extends EnhancedProvider {
         throw new Error(`KieAI Nano Banana: no taskId in response: ${respData}`);
       }
 
-      logger.info(`KieAI Nano Banana: task created, taskId=${taskId}`);
+      logger.info(`KieAI ${modelId}: task created, taskId=${taskId}`);
 
       const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
 
       const time = Date.now() - start;
-      const cost = 0.09;
+      const cost = modelId === 'nano-banana-pro' ? 0.09 : 0.02;
       this.updateStats(true, cost, time);
 
-      logger.info(`KieAI Nano Banana: success (${time}ms, $${cost})`);
+      logger.info(`KieAI ${modelId}: success (${time}ms, $${cost})`);
       return { imageUrl };
     } catch (error: any) {
       const time = Date.now() - start;

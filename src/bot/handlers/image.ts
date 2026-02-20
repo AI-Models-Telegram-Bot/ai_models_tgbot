@@ -4,6 +4,7 @@ import {
   getImageFamiliesKeyboard,
   getFluxModelsKeyboard,
   getDalleModelsKeyboard,
+  getGoogleAIModelsKeyboard,
   getImageModelMenuKeyboard,
 } from '../keyboards/imageKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -46,8 +47,7 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
   },
   'google-ai': {
     descriptionKey: 'imageGoogleAIFamilyDesc',
-    getKeyboard: () => null,
-    singleModel: 'nano-banana-pro',
+    getKeyboard: getGoogleAIModelsKeyboard,
   },
   seedream: {
     descriptionKey: 'imageSeedreamFamilyDesc',
@@ -100,6 +100,11 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageMidjourneyDesc',
     family: 'midjourney',
   },
+  'nano-banana': {
+    modelSlug: 'nano-banana',
+    descriptionKey: 'imageNanoBananaDesc',
+    family: 'google-ai',
+  },
   'nano-banana-pro': {
     modelSlug: 'nano-banana-pro',
     descriptionKey: 'imageNanoBananaProDesc',
@@ -120,6 +125,7 @@ const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
   'dall-e-2': { en: 'DALL-E 2', ru: 'DALL-E 2' },
   'dall-e-3': { en: 'DALL-E 3', ru: 'DALL-E 3' },
   'midjourney': { en: 'Midjourney', ru: 'Midjourney' },
+  'nano-banana': { en: 'Nano Banana', ru: 'Nano Banana' },
   'nano-banana-pro': { en: 'Nano Banana Pro', ru: 'Nano Banana Pro' },
   'seedream': { en: 'Seedream', ru: 'Seedream' },
 };
@@ -302,6 +308,8 @@ export async function getImageOptionsForFunction(
     if (imageFunction === 'midjourney') {
       if (settings.version) options.version = settings.version;
       if (settings.stylize !== undefined) options.stylize = settings.stylize;
+      if (settings.speed) options.speed = settings.speed;
+      if (settings.weirdness !== undefined) options.weirdness = settings.weirdness;
     }
 
     // Nano Banana Pro specific options

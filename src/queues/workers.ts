@@ -135,11 +135,13 @@ const SETTINGS_LABELS: Record<string, Record<string, string>> = {
     aspectRatio: 'Aspect Ratio', duration: 'Duration', resolution: 'Resolution',
     quality: 'Quality', style: 'Style', version: 'Version', generateAudio: 'Audio',
     stylize: 'Stylize', voiceId: 'Voice', cfgScale: 'Creativity', enableAudio: 'Audio',
+    speed: 'Speed', weirdness: 'Weirdness',
   },
   ru: {
     aspectRatio: 'Формат', duration: 'Длительность', resolution: 'Разрешение',
     quality: 'Качество', style: 'Стиль', version: 'Версия', generateAudio: 'Аудио',
     stylize: 'Стилизация', voiceId: 'Голос', cfgScale: 'Творчество', enableAudio: 'Аудио',
+    speed: 'Скорость', weirdness: 'Необычность',
   },
 };
 
@@ -180,6 +182,8 @@ function formatResultCaption(opts: {
 
       // Hide enableAudio when false (only show when audio is ON)
       if (key === 'enableAudio' && !value) continue;
+      // Hide weirdness when 0 (default — not interesting to show)
+      if (key === 'weirdness' && (value === 0 || value === '0')) continue;
 
       const label = labels[key] || key;
       let displayVal = String(value);
