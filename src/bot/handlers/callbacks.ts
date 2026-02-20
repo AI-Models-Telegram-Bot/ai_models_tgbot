@@ -18,6 +18,28 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
   const l = getLocale(lang);
   await ctx.answerCbQuery();
 
+  // ── Image delete callback — edit message in-place, don't delete ──
+  if (data.startsWith('delete_image:')) {
+    const idx = parseInt(data.split(':')[1], 10);
+    if (ctx.session?.uploadedImageUrls?.length) {
+      ctx.session.uploadedImageUrls.splice(idx, 1);
+      if (ctx.session.uploadedImageUrls.length === 0) {
+        ctx.session.uploadedImageUrls = undefined;
+      }
+    }
+    const remaining = ctx.session?.uploadedImageUrls?.length || 0;
+    const deleteMsg = lang === 'ru'
+      ? `🗑 Изображение удалено.${remaining > 0 ? ` Осталось: ${remaining}` : ''}`
+      : `🗑 Image removed.${remaining > 0 ? ` Remaining: ${remaining}` : ''}`;
+    try {
+      await ctx.editMessageText(deleteMsg);
+    } catch {
+      // If edit fails (e.g. message too old), just send a new message
+      await ctx.reply(deleteMsg);
+    }
+    return;
+  }
+
   // Delete the message with inline keyboard to keep chat clean
   await deleteMessage(ctx, ctx.callbackQuery.message?.message_id);
 

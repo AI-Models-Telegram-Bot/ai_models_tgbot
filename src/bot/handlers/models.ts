@@ -173,14 +173,35 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     let msg: string;
     if (isImageModelWithInput) {
       msg = lang === 'ru'
-        ? `✅ Изображение загружено. Отправьте ✍️ текстовый запрос для редактирования.`
-        : `✅ Image uploaded. Send ✍️ a text prompt describing the edit.`;
+        ? `✅ 1 изображение добавлено.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос, или отправьте ✍️ текстовый запрос для редактирования 👇`
+        : `✅ 1 image added.\nYou can press "Configure" to adjust settings and send a prompt, or send ✍️ a text prompt describing the edit 👇`;
     } else {
       msg = lang === 'ru'
-        ? `✅ Изображение загружено (${count}). Отправьте ✍️ текстовый запрос для генерации или 🌄 ещё одно изображение.`
-        : `✅ Image uploaded (${count}). Send ✍️ a text prompt to generate or 🌄 another image.`;
+        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос или загрузить ещё изображения для работы с кадрами 👇`
+        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nYou can press "Configure" to adjust settings and send a prompt, or upload more images for start/end frames 👇`;
     }
-    await ctx.reply(msg);
+
+    // Build inline keyboard: [Delete] [Configure]
+    const buttons: any[][] = [];
+    buttons.push([
+      Markup.button.callback(lang === 'ru' ? '🗑 Удалить' : '🗑 Delete', `delete_image:${count - 1}`),
+    ]);
+
+    // Configure button — opens webapp settings for the current model
+    const webappUrl = config.webapp?.url;
+    const modelSlug = ctx.session.videoFunction || ctx.session.imageFunction;
+    if (webappUrl && ctx.from && modelSlug) {
+      const settingsPath = isImageModelWithInput ? 'image' : 'video';
+      const configureUrl = `${webappUrl}/${settingsPath}/settings?model=${encodeURIComponent(modelSlug)}&tgid=${ctx.from.id}`;
+      buttons.push([
+        Markup.button.webApp(lang === 'ru' ? '⚙️ Настроить' : '⚙️ Configure', configureUrl),
+      ]);
+    }
+
+    await ctx.reply(msg, {
+      reply_parameters: { message_id: ctx.message.message_id },
+      ...Markup.inlineKeyboard(buttons),
+    });
   } catch (error) {
     logger.error('Failed to get file link for photo:', error);
     const msg = lang === 'ru'
