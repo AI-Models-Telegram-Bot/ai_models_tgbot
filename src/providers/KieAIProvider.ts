@@ -74,6 +74,10 @@ export class KieAIProvider extends EnhancedProvider {
       return this.generateSeedreamImage(prompt, options);
     }
 
+    if (model === 'seedream-4.5') {
+      return this.generateSeedream45Image(prompt, options);
+    }
+
     const start = Date.now();
     try {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
@@ -134,7 +138,7 @@ export class KieAIProvider extends EnhancedProvider {
     if (model.startsWith('veo3')) {
       return this.generateVeoVideo(prompt, options);
     }
-    if (model === 'runway') {
+    if (model === 'runway' || model === 'runway-gen4') {
       return this.generateRunwayVideo(prompt, options);
     }
 
@@ -150,6 +154,7 @@ export class KieAIProvider extends EnhancedProvider {
     const modelMap: Record<string, string> = {
       'kling-2.6/text-to-video': 'kling-2.6/image-to-video',
       'sora-2-text-to-video': 'sora-2-image-to-video',
+      'sora-2-pro-text-to-video': 'sora-2-pro-image-to-video',
       // Seedance uses the same model ID for both text and image-to-video
     };
     return modelMap[textModel] || textModel;
@@ -196,9 +201,15 @@ export class KieAIProvider extends EnhancedProvider {
       if (model.startsWith('sora-')) {
         delete input.duration;
         const dur = parseInt(String(options?.duration || '4'), 10);
-        input.n_frames = dur <= 4 ? '10' : '15';
+        // Map duration to n_frames: 4s→10, 8s→20, 10s→25, 12s→30, 15s→38
+        const framesMap: Record<number, string> = { 4: '10', 8: '20', 10: '25', 12: '30', 15: '38' };
+        input.n_frames = framesMap[dur] || (dur <= 4 ? '10' : String(Math.round(dur * 2.5)));
         const ar = (options?.aspectRatio as string) || '16:9';
         input.aspect_ratio = ar === '9:16' ? 'portrait' : 'landscape';
+        // Sora Pro: add size param for higher quality
+        if (model.includes('pro')) {
+          input.size = 'high';
+        }
       }
 
       // Seedance-specific: duration must be 4, 8, or 12 (default 8)
@@ -229,7 +240,8 @@ export class KieAIProvider extends EnhancedProvider {
       const time = Date.now() - start;
       let cost = 0.28; // default for Kling
       if (model.includes('seedance')) cost = 0.45;
-      if (model.startsWith('sora-')) cost = 0.50;
+      if (model.includes('sora-2-pro')) cost = 0.80;
+      else if (model.startsWith('sora-')) cost = 0.50;
       this.updateStats(true, cost, time);
 
       logger.info(`KieAI video: success (${time}ms, $${cost})`);
@@ -253,15 +265,32 @@ export class KieAIProvider extends EnhancedProvider {
     const start = Date.now();
     try {
       const model = (options?.model as string) || 'veo3_fast';
-      logger.info(`KieAI Veo: starting generation (${model})`);
+      const mode = (options?.mode as string) || 'text';
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      logger.info(`KieAI Veo: starting generation (${model}, mode: ${mode})`);
 
-      const veoPayload = {
+      const veoPayload: Record<string, unknown> = {
         prompt,
         model,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         enableTranslation: true,
       };
-      logger.info('KieAI Veo payload:', { model, aspect_ratio: veoPayload.aspect_ratio });
+
+      // Handle image processing modes
+      if (mode === 'frames' && inputImageUrls?.length) {
+        veoPayload.mode = 'FIRST_AND_LAST_FRAMES_2_VIDEO';
+        veoPayload.imageUrls = inputImageUrls.slice(0, 2);
+      } else if (mode === 'ingredients' && inputImageUrls?.length) {
+        veoPayload.mode = 'REFERENCE_2_VIDEO';
+        veoPayload.imageUrls = inputImageUrls.slice(0, 3);
+      }
+
+      // Handle 4K resolution
+      if (options?.resolution === '4K') {
+        veoPayload.resolution = '4k';
+      }
+
+      logger.info('KieAI Veo payload:', { model, aspect_ratio: veoPayload.aspect_ratio, mode: veoPayload.mode, resolution: veoPayload.resolution });
       const createResponse = await this.client.post('/veo/generate', veoPayload);
 
       const respData = createResponse.data;
@@ -302,7 +331,9 @@ export class KieAIProvider extends EnhancedProvider {
   ): Promise<VideoGenerationResult> {
     const start = Date.now();
     try {
-      logger.info('KieAI Runway: starting generation');
+      const modelSlug = (options?.model as string) || 'runway';
+      const runwayModel = modelSlug === 'runway-gen4' ? 'gen-4' : 'gen-4-turbo';
+      logger.info(`KieAI Runway: starting generation (${runwayModel})`);
 
       const duration = parseInt(String(options?.duration || '5'), 10);
       let quality = (options?.resolution as string) || '720p';
@@ -315,6 +346,7 @@ export class KieAIProvider extends EnhancedProvider {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
       const body: Record<string, unknown> = {
         prompt,
+        model: runwayModel,
         duration,
         quality,
         aspectRatio: (options?.aspectRatio as string) || '16:9',
@@ -325,7 +357,7 @@ export class KieAIProvider extends EnhancedProvider {
         body.imageUrl = inputImageUrls[0];
       }
 
-      logger.info('KieAI Runway payload:', { aspectRatio: body.aspectRatio, duration: body.duration, quality: body.quality });
+      logger.info('KieAI Runway payload:', { model: runwayModel, aspectRatio: body.aspectRatio, duration: body.duration, quality: body.quality });
       const createResponse = await this.client.post('/runway/generate', body);
 
       const runwayResp = createResponse.data;
@@ -342,7 +374,7 @@ export class KieAIProvider extends EnhancedProvider {
       const videoUrl = await this.pollRunwayResult(taskId);
 
       const time = Date.now() - start;
-      const cost = 0.3;
+      const cost = runwayModel === 'gen-4' ? 0.4 : 0.3;
       this.updateStats(true, cost, time);
 
       logger.info(`KieAI Runway: success (${time}ms, $${cost})`);
@@ -558,6 +590,67 @@ export class KieAIProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('KieAI Seedream: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Seedream 4.5 Beta (ByteDance) via Market endpoint
+   * Text-to-image: model 'seedream/4.5-text-to-image'
+   * Image editing: model 'seedream/4.5-edit' with image_urls
+   * Supports quality: 'basic' (1K) | 'high' (2K/4K)
+   * POST /jobs/createTask → poll /jobs/recordInfo
+   */
+  private async generateSeedream45Image(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<ImageGenerationResult> {
+    const start = Date.now();
+    try {
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const hasImage = inputImageUrls && inputImageUrls.length > 0;
+      const model = hasImage ? 'seedream/4.5-edit' : 'seedream/4.5-text-to-image';
+      const aspectRatio = (options?.aspectRatio as string) || '1:1';
+      const resolution = (options?.resolution as string) || '1K';
+      logger.info(`KieAI image: starting Seedream 4.5 generation (${model}, editing: ${!!hasImage})`);
+
+      const input: Record<string, unknown> = {
+        prompt,
+        image_size: this.toSeedreamImageSize(aspectRatio),
+        quality: resolution === '1K' ? 'basic' : 'high',
+      };
+
+      // Add reference images for editing mode
+      if (hasImage) {
+        input.image_urls = inputImageUrls;
+      }
+
+      logger.info('KieAI Seedream 4.5 payload:', { model, image_size: input.image_size, quality: input.quality, hasImage });
+      const createResponse = await this.client.post('/jobs/createTask', {
+        model,
+        input,
+      });
+
+      const taskId = createResponse.data?.data?.taskId;
+      if (!taskId) {
+        const respData = JSON.stringify(createResponse.data).slice(0, 500);
+        throw new Error(`KieAI Seedream 4.5: no taskId in response: ${respData}`);
+      }
+
+      logger.info(`KieAI Seedream 4.5: task created, taskId=${taskId}`);
+
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+
+      const time = Date.now() - start;
+      const cost = resolution === '1K' ? 0.03 : 0.06;
+      this.updateStats(true, cost, time);
+
+      logger.info(`KieAI Seedream 4.5: success (${time}ms, $${cost})`);
+      return { imageUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Seedream 4.5: failed', error.response?.data || error.message);
       throw error;
     }
   }

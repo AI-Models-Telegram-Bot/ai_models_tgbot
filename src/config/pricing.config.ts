@@ -141,6 +141,13 @@ export const IMAGE_PRICING: Record<string, ModelPricing> = {
     marginPercent: 65,
     isLossLeader: false,
   },
+  'seedream-4.5': {
+    creditsPerUnit: 8,
+    unitType: '1_image',
+    baseCostUSD: 0.03,          // KieAI (basic), up to $0.06 (high/4K)
+    marginPercent: 63,
+    isLossLeader: false,
+  },
   'nano-banana': {
     creditsPerUnit: 6,
     unitType: '1_image',
@@ -225,7 +232,14 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
   'runway': {
     creditsPerUnit: 80,
     unitType: '1_video',
-    baseCostUSD: 0.30,          // KieAI
+    baseCostUSD: 0.30,          // KieAI Gen-4 Turbo
+    marginPercent: 55,
+    isLossLeader: false,
+  },
+  'runway-gen4': {
+    creditsPerUnit: 100,
+    unitType: '1_video',
+    baseCostUSD: 0.40,          // KieAI Gen-4
     marginPercent: 55,
     isLossLeader: false,
   },
@@ -247,6 +261,13 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     creditsPerUnit: 120,
     unitType: '1_video',
     baseCostUSD: 0.50,          // KieAI
+    marginPercent: 55,
+    isLossLeader: false,
+  },
+  'sora-pro': {
+    creditsPerUnit: 200,
+    unitType: '1_video',
+    baseCostUSD: 0.80,          // KieAI Sora 2 Pro
     marginPercent: 55,
     isLossLeader: false,
   },

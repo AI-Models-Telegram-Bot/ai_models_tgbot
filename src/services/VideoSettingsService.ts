@@ -6,6 +6,7 @@ export interface VideoModelSettings {
   duration?: number;
   resolution?: string;
   generateAudio?: boolean;
+  mode?: string;           // 'text' | 'frames' | 'ingredients' (Veo only)
   // Kling-specific fields
   version?: string;        // e.g. '2.6', '2.5', '2.1', '2.1-master', '1.6', '1.5'
   negativePrompt?: string;
@@ -16,10 +17,12 @@ export interface VideoModelSettings {
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'kling': { aspectRatio: '16:9', version: '2.6', duration: 5, cfgScale: 0.5 },
   'kling-pro': { aspectRatio: '16:9', version: '2.6', duration: 5, cfgScale: 0.5 },
-  'veo-fast': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true },
-  'veo': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true },
+  'veo-fast': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true, mode: 'text' },
+  'veo': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true, mode: 'text' },
   'sora': { aspectRatio: '16:9', duration: 4, resolution: '720p' },
+  'sora-pro': { aspectRatio: '16:9', duration: 4, resolution: '720p' },
   'runway': { aspectRatio: '16:9', duration: 5, resolution: '720p' },
+  'runway-gen4': { aspectRatio: '16:9', duration: 5, resolution: '720p' },
   'luma': {},
   'wan': {},
   'seedance': { aspectRatio: '16:9', duration: 8, resolution: '720p' },

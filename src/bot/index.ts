@@ -115,6 +115,8 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageDallE3, ru.buttons.imageDallE3], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-3'));
   bot.hears([en.buttons.imageNanoBanana, ru.buttons.imageNanoBanana], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana'));
   bot.hears([en.buttons.imageNanoBananaPro, ru.buttons.imageNanoBananaPro], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana-pro'));
+  bot.hears([en.buttons.imageSeedream, ru.buttons.imageSeedream], (ctx) => handleImageFunctionSelection(ctx, 'seedream'));
+  bot.hears([en.buttons.imageSeedream45, ru.buttons.imageSeedream45], (ctx) => handleImageFunctionSelection(ctx, 'seedream-4.5'));
 
   // Video family buttons (EN & RU)
   bot.hears([en.buttons.videoKlingFamily, ru.buttons.videoKlingFamily], (ctx) => handleVideoFamilySelection(ctx, 'kling'));
@@ -130,6 +132,10 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.videoKlingPro, ru.buttons.videoKlingPro], (ctx) => handleVideoFunctionSelection(ctx, 'kling-pro'));
   bot.hears([en.buttons.videoVeoFast, ru.buttons.videoVeoFast], (ctx) => handleVideoFunctionSelection(ctx, 'veo-fast'));
   bot.hears([en.buttons.videoVeoQuality, ru.buttons.videoVeoQuality], (ctx) => handleVideoFunctionSelection(ctx, 'veo'));
+  bot.hears([en.buttons.videoSora, ru.buttons.videoSora], (ctx) => handleVideoFunctionSelection(ctx, 'sora'));
+  bot.hears([en.buttons.videoSoraPro, ru.buttons.videoSoraPro], (ctx) => handleVideoFunctionSelection(ctx, 'sora-pro'));
+  bot.hears([en.buttons.videoRunwayGen4, ru.buttons.videoRunwayGen4], (ctx) => handleVideoFunctionSelection(ctx, 'runway-gen4'));
+  bot.hears([en.buttons.videoRunwayTurbo, ru.buttons.videoRunwayTurbo], (ctx) => handleVideoFunctionSelection(ctx, 'runway'));
 
   bot.hears([en.buttons.profile, ru.buttons.profile], handleProfile);
   bot.hears([en.buttons.help, ru.buttons.help], handleHelp);

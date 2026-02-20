@@ -5,6 +5,7 @@ import {
   getFluxModelsKeyboard,
   getDalleModelsKeyboard,
   getGoogleAIModelsKeyboard,
+  getSeedreamModelsKeyboard,
   getImageModelMenuKeyboard,
 } from '../keyboards/imageKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -51,8 +52,7 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
   },
   seedream: {
     descriptionKey: 'imageSeedreamFamilyDesc',
-    getKeyboard: () => null,
-    singleModel: 'seedream',
+    getKeyboard: getSeedreamModelsKeyboard,
   },
 };
 
@@ -115,6 +115,11 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageSeedreamDesc',
     family: 'seedream',
   },
+  'seedream-4.5': {
+    modelSlug: 'seedream-4.5',
+    descriptionKey: 'imageSeedream45Desc',
+    family: 'seedream',
+  },
 };
 
 const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
@@ -127,7 +132,8 @@ const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
   'midjourney': { en: 'Midjourney', ru: 'Midjourney' },
   'nano-banana': { en: 'Nano Banana', ru: 'Nano Banana' },
   'nano-banana-pro': { en: 'Nano Banana Pro', ru: 'Nano Banana Pro' },
-  'seedream': { en: 'Seedream', ru: 'Seedream' },
+  'seedream': { en: 'Seedream 4.0', ru: 'Seedream 4.0' },
+  'seedream-4.5': { en: 'Seedream 4.5', ru: 'Seedream 4.5' },
 };
 
 // ── Handlers ────────────────────────────────────────────
@@ -314,6 +320,11 @@ export async function getImageOptionsForFunction(
 
     // Nano Banana Pro specific options
     if (imageFunction === 'nano-banana-pro') {
+      if (settings.resolution) options.resolution = settings.resolution;
+    }
+
+    // Seedream 4.5 specific options
+    if (imageFunction === 'seedream-4.5') {
       if (settings.resolution) options.resolution = settings.resolution;
     }
 

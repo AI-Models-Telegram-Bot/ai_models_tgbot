@@ -60,6 +60,7 @@ const IMAGE_PRICING: Record<string, number> = {
   'flux-2-turbo': 0.008,            // Fal.ai
   'flux-kontext': 0.01,             // KieAI
   'seedream': 0.0175,               // KieAI
+  'seedream-4.5': 0.03,             // KieAI
   'nano-banana': 0.02,              // KieAI
   'nano-banana-pro': 0.09,          // KieAI
   'playground-v2-5': 0.01,          // Replicate
@@ -94,8 +95,10 @@ const VIDEO_PRICING: Record<string, number> = {
   kling: 0.052,                       // PiAPI $0.26/5s
   'kling-pro': 0.046,                 // PiAPI $0.46/10s
   luma: 0.08,                         // Fal/Replicate ~$0.40/5s
-  runway: 0.06,                       // KieAI ~$0.30/5s
+  runway: 0.06,                       // KieAI ~$0.30/5s Gen-4 Turbo
+  'runway-gen4': 0.08,               // KieAI ~$0.40/5s Gen-4
   sora: 0.10,                         // KieAI ~$0.50/5s
+  'sora-pro': 0.20,                  // KieAI ~$0.80/4s Sora 2 Pro
   'veo-fast': 0.08,                   // KieAI ~$0.40/5s
   veo: 0.40,                          // KieAI ~$2.00/5s
   // Provider-specific model IDs
