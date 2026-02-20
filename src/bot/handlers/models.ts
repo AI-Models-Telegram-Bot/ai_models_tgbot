@@ -18,6 +18,18 @@ function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
 }
 
+/** Delete tracked "image added" inline-button messages to keep chat clean */
+async function cleanUpImageUploadMessages(ctx: BotContext): Promise<void> {
+  const msgIds = ctx.session?.imageUploadMsgIds;
+  if (!msgIds?.length || !ctx.chat) return;
+  for (const msgId of msgIds) {
+    try {
+      await ctx.telegram.deleteMessage(ctx.chat.id, msgId);
+    } catch { /* message may already be deleted */ }
+  }
+  ctx.session!.imageUploadMsgIds = undefined;
+}
+
 function formatCredits(amount: number): string {
   return `${amount} credits`;
 }
@@ -166,8 +178,13 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
 
     // If caption is provided, treat it as the prompt and enqueue immediately
     if (ctx.message.caption) {
+      // Clean up any previous image-upload messages before generation
+      await cleanUpImageUploadMessages(ctx);
       return processGeneration(ctx, ctx.message.caption);
     }
+
+    // Clean up previous image-upload message (if user uploads another image)
+    await cleanUpImageUploadMessages(ctx);
 
     // Otherwise acknowledge and wait for text prompt
     let msg: string;
@@ -198,10 +215,14 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
       ]);
     }
 
-    await ctx.reply(msg, {
+    const sentMsg = await ctx.reply(msg, {
       reply_parameters: { message_id: ctx.message.message_id },
       ...Markup.inlineKeyboard(buttons),
     });
+
+    // Track this message for cleanup when user sends a prompt
+    if (!ctx.session.imageUploadMsgIds) ctx.session.imageUploadMsgIds = [];
+    ctx.session.imageUploadMsgIds.push(sentMsg.message_id);
   } catch (error) {
     logger.error('Failed to get file link for photo:', error);
     const msg = lang === 'ru'
@@ -231,6 +252,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
     ctx.session.uploadedImageUrls = undefined;
+    await cleanUpImageUploadMessages(ctx);
     await sendTrackedMessage(ctx, l.messages.cancelled, getMainKeyboard(lang));
     return;
   }
@@ -244,6 +266,9 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
  */
 async function processGeneration(ctx: BotContext, input: string): Promise<void> {
   if (!ctx.user || !ctx.session) return;
+
+  // Clean up "image added" messages — no longer needed once generation starts
+  await cleanUpImageUploadMessages(ctx);
 
   const lang = getLang(ctx);
   const l = getLocale(lang);
@@ -429,6 +454,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   }
 
   // Keep model context active so user can send consecutive prompts.
-  // Only clear uploaded images — they were consumed by this generation.
+  // Only clear uploaded images and their tracked messages — they were consumed by this generation.
   ctx.session.uploadedImageUrls = undefined;
+  ctx.session.imageUploadMsgIds = undefined;
 }

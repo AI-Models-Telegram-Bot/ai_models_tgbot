@@ -2,6 +2,8 @@ import { BotContext } from '../types';
 import { handleCategorySelection } from './categories';
 import { handleModelSelection } from './models';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
+import { getVideoModelMenuKeyboard } from '../keyboards/videoKeyboards';
+import { getImageModelMenuKeyboard } from '../keyboards/imageKeyboards';
 import { ModelCategory } from '@prisma/client';
 import { deleteMessage } from '../utils';
 import { Language, getLocale } from '../../locales';
@@ -18,7 +20,7 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
   const l = getLocale(lang);
   await ctx.answerCbQuery();
 
-  // ── Image delete callback — edit message in-place, don't delete ──
+  // ── Image delete callback — edit message in-place, restore reply keyboard ──
   if (data.startsWith('delete_image:')) {
     const idx = parseInt(data.split(':')[1], 10);
     if (ctx.session?.uploadedImageUrls?.length) {
@@ -27,6 +29,16 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
         ctx.session.uploadedImageUrls = undefined;
       }
     }
+
+    // Remove tracked message ID for the deleted message
+    const cbMsgId = ctx.callbackQuery.message?.message_id;
+    if (cbMsgId && ctx.session?.imageUploadMsgIds) {
+      ctx.session.imageUploadMsgIds = ctx.session.imageUploadMsgIds.filter(id => id !== cbMsgId);
+      if (ctx.session.imageUploadMsgIds.length === 0) {
+        ctx.session.imageUploadMsgIds = undefined;
+      }
+    }
+
     const remaining = ctx.session?.uploadedImageUrls?.length || 0;
     const deleteMsg = lang === 'ru'
       ? `🗑 Изображение удалено.${remaining > 0 ? ` Осталось: ${remaining}` : ''}`
@@ -34,9 +46,22 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
     try {
       await ctx.editMessageText(deleteMsg);
     } catch {
-      // If edit fails (e.g. message too old), just send a new message
       await ctx.reply(deleteMsg);
     }
+
+    // Re-send a brief message with the reply keyboard so navigation buttons stay visible
+    const promptMsg = lang === 'ru'
+      ? '✍️ Отправьте текстовый запрос или 🌄 загрузите изображение.'
+      : '✍️ Send a text prompt or 🌄 upload an image.';
+    let kb: any;
+    if (ctx.session?.videoFunction) {
+      kb = getVideoModelMenuKeyboard(lang, ctx.session.videoFunction, true, ctx.from?.id);
+    } else if (ctx.session?.imageFunction) {
+      kb = getImageModelMenuKeyboard(lang, ctx.session.imageFunction, ctx.from?.id);
+    } else {
+      kb = getMainKeyboard(lang);
+    }
+    await ctx.reply(promptMsg, kb);
     return;
   }
 
