@@ -132,6 +132,7 @@ export function calculateDynamicCost(
     return calculateSeedreamCost(settings?.resolution);
   }
 
+
   const cfg = DYNAMIC_PRICING[slug];
   if (!cfg || !settings) return baseCost;
 
