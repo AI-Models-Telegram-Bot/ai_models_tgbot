@@ -7,6 +7,8 @@ export interface ImageModelSettings {
   style?: string;       // 'vivid' | 'natural' (DALL-E 3 only)
   version?: string;     // 'v5.2' | 'v6.1' | 'v7' (Midjourney only)
   stylize?: number;     // 50 | 100 | 250 | 750 (Midjourney only)
+  speed?: string;       // 'relax' | 'fast' | 'turbo' (Midjourney only)
+  weirdness?: number;   // 0-3000 (Midjourney only)
   resolution?: string;  // '1K' | '2K' | '4K' (Nano Banana Pro only)
 }
 
@@ -20,7 +22,8 @@ const MODEL_DEFAULTS: Record<string, ImageModelSettings> = {
   'playground-v2-5': { aspectRatio: '1:1' },
   'dall-e-2': { aspectRatio: '1:1' },
   'dall-e-3': { aspectRatio: '1:1', quality: 'standard', style: 'vivid' },
-  'midjourney': { aspectRatio: '1:1', version: 'v6.1', stylize: 100 },
+  'midjourney': { aspectRatio: '1:1', version: 'v6.1', stylize: 100, speed: 'fast', weirdness: 0 },
+  'nano-banana': { aspectRatio: '1:1' },
   'nano-banana-pro': { aspectRatio: '1:1', resolution: '1K' },
   'seedream': { aspectRatio: '1:1' },
   'ideogram': { aspectRatio: '1:1' },

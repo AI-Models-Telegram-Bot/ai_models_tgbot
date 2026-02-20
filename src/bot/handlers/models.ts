@@ -119,7 +119,7 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
 
   // Image models that support reference image input
-  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana-pro', 'midjourney', 'seedream'];
+  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream'];
   // Text-only video models — no image-to-video support
   const TEXT_ONLY_VIDEO_MODELS = ['veo', 'veo-fast'];
 
@@ -324,13 +324,12 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     }
   }
 
-  // ── Calculate dynamic cost (scales with duration/resolution for video models) ──
+  // ── Calculate dynamic cost (scales with duration/resolution for video, speed for Midjourney) ──
 
-  const creditsCost = calculateDynamicCost(
-    model.slug,
-    model.tokenCost,
-    videoOptions as { duration?: number; resolution?: string; version?: string; enableAudio?: boolean } | undefined,
-  );
+  const dynamicSettings = { ...(videoOptions || {}), ...(imageOptions || {}) } as {
+    duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string;
+  };
+  const creditsCost = calculateDynamicCost(model.slug, model.tokenCost, dynamicSettings);
 
   // ── Balance check ──
 

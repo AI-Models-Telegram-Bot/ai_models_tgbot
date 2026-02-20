@@ -74,16 +74,29 @@ export function calculateKlingCost(
   return KLING_CREDIT_TABLE[key] || (mode === 'pro' ? 20 : 12);
 }
 
+// ── Midjourney pricing table ─────────────────────────────────
+// Credits per image based on speed mode
+
+const MJ_SPEED_CREDITS: Record<string, number> = {
+  relax: 8,
+  fast: 15,
+  turbo: 22,
+};
+
+function calculateMidjourneyCost(speed?: string): number {
+  return MJ_SPEED_CREDITS[speed || 'fast'] || 15;
+}
+
 // ── Public API ───────────────────────────────────────────────
 
 export function hasDynamicPricing(slug: string): boolean {
-  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro';
+  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney';
 }
 
 export function calculateDynamicCost(
   slug: string,
   baseCost: number,
-  settings?: { duration?: number; resolution?: string; version?: string; enableAudio?: boolean },
+  settings?: { duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string },
 ): number {
   // Kling uses its own pricing table (not proportional scaling)
   if (slug === 'kling') {
@@ -91,6 +104,11 @@ export function calculateDynamicCost(
   }
   if (slug === 'kling-pro') {
     return calculateKlingCost('pro', settings);
+  }
+
+  // Midjourney pricing by speed mode
+  if (slug === 'midjourney') {
+    return calculateMidjourneyCost(settings?.speed);
   }
 
   const cfg = DYNAMIC_PRICING[slug];

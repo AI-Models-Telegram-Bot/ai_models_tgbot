@@ -40,6 +40,7 @@ const MODEL_ASPECTS: Record<string, string[]> = {
   'dall-e-3': ['1:1', '16:9', '9:16'],
   'ideogram': ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'],
   'midjourney': ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'],
+  'nano-banana': ['1:1', '16:9', '9:16', '3:2', '2:3', '4:5', '5:4', '3:4', '4:3', '21:9'],
   'nano-banana-pro': ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9'],
   'seedream': ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'],
 };
@@ -65,6 +66,12 @@ const STYLIZE_OPTIONS = [
   { value: 100, labelKey: 'stylizeMedium', descKey: 'stylizeMediumDesc', icon: '🔆' },
   { value: 250, labelKey: 'stylizeHigh', descKey: 'stylizeHighDesc', icon: '✨' },
   { value: 750, labelKey: 'stylizeMax', descKey: 'stylizeMaxDesc', icon: '💎' },
+];
+
+const SPEED_OPTIONS = [
+  { value: 'relax', labelKey: 'speedRelax', descKey: 'speedRelaxDesc', icon: '🐢' },
+  { value: 'fast', labelKey: 'speedFast', descKey: 'speedFastDesc', icon: '⚡' },
+  { value: 'turbo', labelKey: 'speedTurbo', descKey: 'speedTurboDesc', icon: '🚀' },
 ];
 
 const RESOLUTION_OPTIONS = [
@@ -122,7 +129,7 @@ export default function ImageSettingsPage() {
   const modelSettings = settings[modelSlug];
   const isDalle3 = modelSlug === 'dall-e-3';
   const isMidjourney = modelSlug === 'midjourney';
-  const isNanoBanana = modelSlug === 'nano-banana-pro';
+  const isNanoBananaPro = modelSlug === 'nano-banana-pro';
   const availableAspects = useMemo(
     () => ALL_ASPECTS.filter(a => (MODEL_ASPECTS[modelSlug] || ['1:1']).includes(a.value)),
     [modelSlug]
@@ -133,6 +140,8 @@ export default function ImageSettingsPage() {
   const [style, setStyle] = useState('vivid');
   const [version, setVersion] = useState('v6.1');
   const [stylize, setStylize] = useState(100);
+  const [speed, setSpeed] = useState('fast');
+  const [weirdness, setWeirdness] = useState(0);
   const [resolution, setResolution] = useState('1K');
 
   useEffect(() => {
@@ -149,12 +158,14 @@ export default function ImageSettingsPage() {
       if (isMidjourney) {
         setVersion(modelSettings.version || 'v6.1');
         setStylize(modelSettings.stylize ?? 100);
+        setSpeed(modelSettings.speed || 'fast');
+        setWeirdness(modelSettings.weirdness ?? 0);
       }
-      if (isNanoBanana) {
+      if (isNanoBananaPro) {
         setResolution(modelSettings.resolution || '1K');
       }
     }
-  }, [modelSettings, isDalle3, isMidjourney, isNanoBanana]);
+  }, [modelSettings, isDalle3, isMidjourney, isNanoBananaPro]);
 
   const selectedAspect = ALL_ASPECTS.find(a => a.value === aspectRatio) || ALL_ASPECTS[0];
 
@@ -168,8 +179,10 @@ export default function ImageSettingsPage() {
     if (isMidjourney) {
       if (version !== (modelSettings?.version || 'v6.1')) return true;
       if (stylize !== (modelSettings?.stylize ?? 100)) return true;
+      if (speed !== (modelSettings?.speed || 'fast')) return true;
+      if (weirdness !== (modelSettings?.weirdness ?? 0)) return true;
     }
-    if (isNanoBanana) {
+    if (isNanoBananaPro) {
       if (resolution !== (modelSettings?.resolution || '1K')) return true;
     }
     return false;
@@ -191,8 +204,10 @@ export default function ImageSettingsPage() {
       if (isMidjourney) {
         updates.version = version;
         updates.stylize = stylize;
+        updates.speed = speed;
+        updates.weirdness = weirdness;
       }
-      if (isNanoBanana) {
+      if (isNanoBananaPro) {
         updates.resolution = resolution;
       }
       await updateModelSettings(modelSlug, updates);
@@ -448,8 +463,93 @@ export default function ImageSettingsPage() {
           </motion.div>
         )}
 
+        {/* Midjourney: Speed Mode */}
+        {isMidjourney && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('speed')}
+            </div>
+            <div className="space-y-2">
+              {SPEED_OPTIONS.map(({ value, labelKey, descKey, icon }) => (
+                <div
+                  key={value}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setSpeed(value);
+                  }}
+                  className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                    speed === value
+                      ? 'bg-image-surface-elevated border-2 border-image-primary shadow-image-neon'
+                      : 'bg-image-surface-card border border-white/5 hover:border-image-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center" style={{ columnGap: 10 }}>
+                    <span className="text-lg">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center" style={{ columnGap: 8 }}>
+                        <span className="font-semibold text-content-primary text-sm">
+                          {t(labelKey as any)}
+                        </span>
+                        {speed === value && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-image-primary/20 text-image-primary font-medium shrink-0">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {t(descKey as any)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Midjourney: Weirdness */}
+        {isMidjourney && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-2">
+              {t('weirdness')}
+            </div>
+            <p className="text-xs text-content-tertiary mb-3">
+              {t('weirdnessDesc')}
+            </p>
+            <div className="rounded-xl bg-image-surface-card border border-white/5 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-content-tertiary">0</span>
+                <span className="text-sm font-semibold text-image-primary">{weirdness}</span>
+                <span className="text-xs text-content-tertiary">3000</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={3000}
+                step={50}
+                value={weirdness}
+                onChange={(e) => {
+                  setWeirdness(Number(e.target.value));
+                  hapticImpact('light');
+                }}
+                className="w-full accent-image-primary"
+              />
+            </div>
+          </motion.div>
+        )}
+
         {/* Nano Banana Pro: Resolution */}
-        {isNanoBanana && (
+        {isNanoBananaPro && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

@@ -48,8 +48,8 @@ export class ReplicateProvider extends BaseProvider {
     const inputImageUrls = options?.inputImageUrls as string[] | undefined;
     const hasImage = inputImageUrls && inputImageUrls.length > 0;
 
-    // Nano Banana Pro (Google) — supports image_input for editing
-    if (modelSlug === 'nano-banana-pro') {
+    // Nano Banana / Nano Banana Pro (Google) — supports image_input for editing
+    if (modelSlug === 'nano-banana' || modelSlug === 'nano-banana-pro') {
       const modelId = 'google/nano-banana';
       logger.info(`Replicate image: running ${modelId} (editing: ${!!hasImage})`);
 

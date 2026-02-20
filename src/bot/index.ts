@@ -113,6 +113,8 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageFluxPro, ru.buttons.imageFluxPro], (ctx) => handleImageFunctionSelection(ctx, 'flux-pro'));
   bot.hears([en.buttons.imageDallE2, ru.buttons.imageDallE2], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-2'));
   bot.hears([en.buttons.imageDallE3, ru.buttons.imageDallE3], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-3'));
+  bot.hears([en.buttons.imageNanoBanana, ru.buttons.imageNanoBanana], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana'));
+  bot.hears([en.buttons.imageNanoBananaPro, ru.buttons.imageNanoBananaPro], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana-pro'));
 
   // Video family buttons (EN & RU)
   bot.hears([en.buttons.videoKlingFamily, ru.buttons.videoKlingFamily], (ctx) => handleVideoFamilySelection(ctx, 'kling'));

@@ -60,7 +60,8 @@ const IMAGE_PRICING: Record<string, number> = {
   'flux-2-turbo': 0.008,            // Fal.ai
   'flux-kontext': 0.01,             // KieAI
   'seedream': 0.0175,               // KieAI
-  'nano-banana-pro': 0.02,          // KieAI
+  'nano-banana': 0.02,              // KieAI
+  'nano-banana-pro': 0.09,          // KieAI
   'playground-v2-5': 0.01,          // Replicate
   'dall-e-2': 0.02,                 // OpenAI
   'flux-pro': 0.04,                 // Fal/Replicate

@@ -6,6 +6,8 @@ export interface ImageModelSettings {
   style?: string;
   version?: string;
   stylize?: number;
+  speed?: string;       // 'relax' | 'fast' | 'turbo' (Midjourney)
+  weirdness?: number;   // 0-3000 (Midjourney)
   resolution?: string;
 }
 

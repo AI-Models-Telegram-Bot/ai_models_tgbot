@@ -32,6 +32,7 @@ const SLUG_TO_PRICE: Record<string, string> = {
   'xtts-v2': 'AUDIO_XTTS',
   'bark': 'AUDIO_BARK',
   'midjourney': 'IMAGE_MIDJOURNEY',
+  'nano-banana': 'IMAGE_NANO_BANANA',
   'nano-banana-pro': 'IMAGE_NANO_BANANA_PRO',
   'seedream': 'IMAGE_SEEDREAM',
   'fish-speech': 'AUDIO_FISH_SPEECH',
@@ -106,9 +107,10 @@ export class ModelService {
       { name: 'Flux Pro', slug: 'flux-pro', provider: 'replicate', category: 'IMAGE', tokenCost: 20, priceItemCode: 'IMAGE_FLUX_PRO', description: 'Flux Pro v1.1 - best quality' },
       { name: 'Stable Diffusion XL', slug: 'sdxl', provider: 'replicate', category: 'IMAGE', tokenCost: 8, priceItemCode: 'IMAGE_SDXL', description: 'High-quality versatile generation' },
       { name: 'Playground v2.5', slug: 'playground-v2-5', provider: 'replicate', category: 'IMAGE', tokenCost: 8, priceItemCode: 'IMAGE_PLAYGROUND', description: 'Aesthetic high-quality images' },
-      { name: 'Nano Banana Pro', slug: 'nano-banana-pro', provider: 'kieai', category: 'IMAGE', tokenCost: 20, priceItemCode: 'IMAGE_NANO_BANANA_PRO', description: 'Google Gemini 3 Pro Image — powerful AI image generation' },
+      { name: 'Nano Banana', slug: 'nano-banana', provider: 'kieai', category: 'IMAGE', tokenCost: 6, priceItemCode: 'IMAGE_NANO_BANANA', description: 'Google Gemini 2.5 Flash — fast and affordable image generation' },
+      { name: 'Nano Banana Pro', slug: 'nano-banana-pro', provider: 'kieai', category: 'IMAGE', tokenCost: 20, priceItemCode: 'IMAGE_NANO_BANANA_PRO', description: 'Google Gemini 3 Pro Image — high-quality up to 4K' },
       { name: 'DALL-E 3', slug: 'dall-e-3', provider: 'openai', category: 'IMAGE', tokenCost: 25, priceItemCode: 'IMAGE_DALLE3', description: 'OpenAI DALL-E 3 - premium quality' },
-      { name: 'Midjourney', slug: 'midjourney', provider: 'kieai', category: 'IMAGE', tokenCost: 25, priceItemCode: 'IMAGE_MIDJOURNEY', description: 'Midjourney artistic image generation via KieAI' },
+      { name: 'Midjourney', slug: 'midjourney', provider: 'kieai', category: 'IMAGE', tokenCost: 15, priceItemCode: 'IMAGE_MIDJOURNEY', description: 'Midjourney artistic image generation via KieAI' },
       { name: 'Seedream 4.0', slug: 'seedream', provider: 'kieai', category: 'IMAGE', tokenCost: 5, priceItemCode: 'IMAGE_SEEDREAM', description: 'ByteDance Seedream 4.0 — high-quality image generation and editing' },
 
       // Video models

@@ -209,11 +209,20 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Nano Banana Pro — Gemini-based image gen
+  // Nano Banana — Gemini 2.5 Flash (fast, cheap)
+  'nano-banana': {
+    category: 'IMAGE',
+    providers: [
+      { name: 'kieai', modelId: 'nano-banana' },                    // ~$0.02
+      { name: 'replicate', modelId: 'nano-banana' },                // fallback
+    ],
+  },
+
+  // Nano Banana Pro — Gemini 3 Pro (high quality, up to 4K)
   'nano-banana-pro': {
     category: 'IMAGE',
     providers: [
-      { name: 'kieai', modelId: 'nano-banana-pro' },                // ~$0.02
+      { name: 'kieai', modelId: 'nano-banana-pro' },                // ~$0.09
       { name: 'replicate', modelId: 'nano-banana-pro' },            // fallback
     ],
   },
