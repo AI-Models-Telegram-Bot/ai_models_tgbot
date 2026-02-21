@@ -71,13 +71,9 @@ export function createBot(): Telegraf<BotContext> {
       }
     }
 
-    // Also delete previous nav message when photo is received (image-to-video flow)
-    if (ctx.message && 'photo' in ctx.message) {
-      if (ctx.session?.lastBotMessageId) {
-        await deleteMessage(ctx, ctx.session.lastBotMessageId);
-        ctx.session.lastBotMessageId = undefined;
-      }
-    }
+    // NOTE: Do NOT delete lastBotMessageId for photo/document uploads here.
+    // Let the photo/document handler manage cleanup after validating session state,
+    // so the user doesn't lose the menu if the handler silently returns.
 
     return next();
   });
