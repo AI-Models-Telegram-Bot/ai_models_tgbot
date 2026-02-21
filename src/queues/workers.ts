@@ -382,7 +382,20 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: imageResult.imageUrl, actualProvider });
-        await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption, parse_mode: 'HTML', ...kb });
+        try {
+          await telegram.sendPhoto(chatId, { url: imageResult.imageUrl }, { caption, parse_mode: 'HTML', ...kb });
+        } catch (sendErr: any) {
+          const errMsg = sendErr?.message || String(sendErr);
+          if (errMsg.includes('too big for a photo') || errMsg.includes('file is too big')) {
+            // Image exceeds Telegram's 10 MB photo limit — compress and retry
+            logger.info('Image too large for Telegram, compressing...', { url: imageResult.imageUrl.slice(0, 80) });
+            const { compressImageForTelegram } = await import('../utils/imageResize');
+            const compressed = await compressImageForTelegram(imageResult.imageUrl);
+            await telegram.sendPhoto(chatId, { source: compressed }, { caption, parse_mode: 'HTML', ...kb });
+          } else {
+            throw sendErr;
+          }
+        }
       } else if ('videoUrl' in result) {
         const videoResult = result as VideoGenerationResult;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
