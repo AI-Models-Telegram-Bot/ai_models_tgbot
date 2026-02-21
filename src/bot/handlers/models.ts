@@ -112,6 +112,14 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
  * or waits for a text prompt.
  */
 export async function handlePhotoInput(ctx: BotContext): Promise<void> {
+  logger.info('handlePhotoInput called', {
+    hasUser: !!ctx.user,
+    hasSession: !!ctx.session,
+    awaitingInput: ctx.session?.awaitingInput,
+    selectedModel: ctx.session?.selectedModel,
+    videoFunction: ctx.session?.videoFunction,
+    imageFunction: ctx.session?.imageFunction,
+  });
   if (!ctx.user || !ctx.session) return;
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
   if (!ctx.message || !('photo' in ctx.message) || !ctx.message.photo) return;
@@ -216,6 +224,7 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
       ]);
     }
 
+    logger.info('handlePhotoInput: sending image-added reply', { count, modelSlug: ctx.session.videoFunction || ctx.session.imageFunction });
     const sentMsg = await ctx.reply(msg, {
       reply_parameters: { message_id: ctx.message.message_id },
       ...Markup.inlineKeyboard(buttons),
