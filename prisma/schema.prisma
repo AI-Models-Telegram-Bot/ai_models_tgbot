@@ -63,10 +63,7 @@ model UserWallet {
   userId        String    @unique @map("user_id")
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  textBalance   Float     @default(0) @map("text_balance")
-  imageBalance  Float     @default(0) @map("image_balance")
-  videoBalance  Float     @default(0) @map("video_balance")
-  audioBalance  Float     @default(0) @map("audio_balance")
+  tokenBalance  Float     @default(0) @map("token_balance")
 
   moneyBalance  Float     @default(0) @map("money_balance")
   currency      String    @default("USD")
@@ -364,10 +361,7 @@ model SubscriptionPlan {
   priceUSD        Float?            @map("price_usd")
   priceRUB        Float?            @map("price_rub")
 
-  textCredits     Int?              @map("text_credits")
-  imageCredits    Int?              @map("image_credits")
-  videoCredits    Int?              @map("video_credits")
-  audioCredits    Int?              @map("audio_credits")
+  tokens          Int?              @map("tokens")
 
   modelAccess     Json              @map("model_access")
   features        Json

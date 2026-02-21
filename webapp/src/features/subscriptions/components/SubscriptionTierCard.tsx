@@ -105,27 +105,19 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           </span>
         </div>
 
-        {/* Credits */}
+        {/* Tokens */}
         <div className="space-y-2 mb-4">
           <div className="text-xs font-medium text-content-tertiary uppercase tracking-wider">
-            {t('subscriptions:credits', 'Credits')}
+            {t('subscriptions:tokens', 'Tokens')}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: t('profile:balances.text', 'Text'), value: plan.credits.text, icon: '💬' },
-              { label: t('profile:balances.image', 'Image'), value: plan.credits.image, icon: '🖼' },
-              { label: t('profile:balances.video', 'Video'), value: plan.credits.video, icon: '🎬' },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center text-sm" style={{ columnGap: 6 }}>
-                <span className="text-xs">{item.icon}</span>
-                <span className={cn(
-                  'font-mono text-xs',
-                  item.value === null ? 'text-brand-accent font-semibold' : 'text-content-secondary'
-                )}>
-                  {formatCredits(item.value)}
-                </span>
-              </div>
-            ))}
+          <div className="flex items-center text-sm" style={{ columnGap: 6 }}>
+            <span className="text-sm">⚡</span>
+            <span className={cn(
+              'font-mono text-sm',
+              plan.tokens === null ? 'text-brand-accent font-semibold' : 'text-content-secondary'
+            )}>
+              {formatCredits(plan.tokens)} {t('subscriptions:tokens', 'tokens')}
+            </span>
           </div>
         </div>
 

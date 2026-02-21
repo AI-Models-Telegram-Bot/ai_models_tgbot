@@ -89,7 +89,7 @@ export default function LandingPage() {
             {t('auth:readyToStart')}
           </h2>
           <p className="text-content-secondary mb-8">
-            {t('auth:freeCreditsOnSignup')}
+            {t('auth:freeTokensOnSignup')}
           </p>
           <Link
             to="/pricing"

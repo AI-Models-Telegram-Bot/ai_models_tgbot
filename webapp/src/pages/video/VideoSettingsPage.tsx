@@ -736,7 +736,7 @@ export default function VideoSettingsPage() {
           <div className="mb-3 p-3 rounded-xl bg-video-surface-card border border-white/5 flex items-center justify-between">
             <span className="text-sm text-content-secondary">{t('estimatedCost')}</span>
             <span className="text-lg font-bold text-video-primary">
-              ⚡{estimatedCost} {t('credits')}
+              ⚡{estimatedCost} {t('tokens')}
             </span>
           </div>
         )}

@@ -22,7 +22,7 @@ export const ModelAccessBadge: React.FC<ModelAccessBadgeProps> = ({
 
   const labels: Record<AccessLevel, string> = {
     locked: 'Locked',
-    limited: credits !== undefined ? `${credits} credits` : 'Limited',
+    limited: credits !== undefined ? `${credits} tokens` : 'Limited',
     unlimited: 'Unlimited',
   };
 

@@ -93,7 +93,7 @@ const ProfilePage: React.FC = () => {
           onViewPlans={() => navigate('/subscriptions')}
         />
 
-        {/* Credit Usage */}
+        {/* Token Usage */}
         {currentPlan && (
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -102,31 +102,15 @@ const ProfilePage: React.FC = () => {
           >
             <Card>
               <h3 className="text-sm font-medium text-content-tertiary uppercase tracking-wider mb-3">
-                {t('profile:creditUsage', 'Credit Usage')}
+                {t('profile:tokenUsage', 'Token Usage')}
               </h3>
-              <div className="space-y-3">
-                <CreditAllocationBar
-                  label="Text"
-                  icon="🤖"
-                  used={wallet.textBalance}
-                  total={currentPlan.credits.text}
-                  color="bg-cyan-500"
-                />
-                <CreditAllocationBar
-                  label="Image"
-                  icon="🖼"
-                  used={wallet.imageBalance}
-                  total={currentPlan.credits.image}
-                  color="bg-pink-500"
-                />
-                <CreditAllocationBar
-                  label="Video"
-                  icon="🎬"
-                  used={wallet.videoBalance}
-                  total={currentPlan.credits.video}
-                  color="bg-purple-500"
-                />
-              </div>
+              <CreditAllocationBar
+                label={t('profile:tokens', 'Tokens')}
+                icon="⚡"
+                used={wallet.tokenBalance}
+                total={currentPlan.tokens}
+                color="bg-brand-primary"
+              />
             </Card>
           </motion.div>
         )}

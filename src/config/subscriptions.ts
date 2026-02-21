@@ -33,12 +33,7 @@ export interface SubscriptionPlanConfig {
   priceRUB: number | null;
   duration: 'monthly' | 'lifetime';
 
-  credits: {
-    text: number | null;    // null = unlimited
-    image: number | null;
-    video: number | null;
-    audio: number | null;
-  };
+  tokens: number | null; // null = unlimited
 
   modelAccess: ModelAccessConfig;
   rateLimits: TierRateLimits;
@@ -57,12 +52,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 0,
     priceRUB: 0,
     duration: 'lifetime',
-    credits: {
-      text: 100,
-      image: 50,
-      video: 10,
-      audio: 0,
-    },
+    tokens: 160,
     modelAccess: {
       text: {
         allowed: ['gpt-4o-mini', 'gemini-flash', 'fast-text'],
@@ -100,12 +90,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 5.99,
     priceRUB: 549,
     duration: 'monthly',
-    credits: {
-      text: 500,
-      image: 300,
-      video: 50,
-      audio: 0,
-    },
+    tokens: 850,
     modelAccess: {
       text: {
         allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok', 'gemini-flash', 'fast-text'],
@@ -148,12 +133,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 14.99,
     priceRUB: 1399,
     duration: 'monthly',
-    credits: {
-      text: 3000,
-      image: 1500,
-      video: 200,
-      audio: 0,
-    },
+    tokens: 4700,
     modelAccess: {
       text: {
         allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok', 'gemini-flash', 'gemini-pro', 'fast-text', 'deepseek-r1'],
@@ -198,12 +178,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 34.99,
     priceRUB: 3199,
     duration: 'monthly',
-    credits: {
-      text: 5000,
-      image: 5000,
-      video: 800,
-      audio: 0,
-    },
+    tokens: 10800,
     modelAccess: {
       text: {
         allowed: ['*'],
@@ -245,12 +220,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 79.99,
     priceRUB: 7299,
     duration: 'monthly',
-    credits: {
-      text: 15000,
-      image: 10000,
-      video: 2000,
-      audio: 0,
-    },
+    tokens: 27000,
     modelAccess: {
       text: {
         allowed: ['*'],
@@ -293,12 +263,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: null,
     priceRUB: null,
     duration: 'monthly',
-    credits: {
-      text: null,
-      image: null,
-      video: null,
-      audio: 0,
-    },
+    tokens: null,
     modelAccess: {
       text: {
         allowed: ['*'],

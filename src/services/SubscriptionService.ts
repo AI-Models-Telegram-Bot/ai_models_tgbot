@@ -1,4 +1,4 @@
-import { SubscriptionTier, SubscriptionStatus, WalletCategory } from '@prisma/client';
+import { SubscriptionTier, SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../config/database';
 import { logger } from '../utils/logger';
 import { SUBSCRIPTION_PLANS, getPlanByTier, SubscriptionPlanConfig } from '../config/subscriptions';
@@ -89,21 +89,12 @@ export class SubscriptionService {
       },
     });
 
-    // Grant monthly credits based on the new tier
-    const credits = plan.credits;
-    const creditCategories: Array<{ category: WalletCategory; amount: number | null }> = [
-      { category: 'TEXT', amount: credits.text },
-      { category: 'IMAGE', amount: credits.image },
-      { category: 'VIDEO', amount: credits.video },
-      { category: 'AUDIO', amount: credits.audio },
-    ];
-
-    for (const { category, amount } of creditCategories) {
-      if (amount !== null && amount > 0) {
-        await walletService.addCredits(userId, category, amount, 'BONUS', {
-          description: `${plan.name} subscription credits`,
-        });
-      }
+    // Grant tokens based on the new tier
+    const tokens = plan.tokens;
+    if (tokens !== null && tokens > 0) {
+      await walletService.addCredits(userId, 'TEXT', tokens, 'BONUS', {
+        description: `${plan.name} subscription tokens`,
+      });
     }
 
     logger.info(`User ${userId} upgraded to ${newTier}, credits granted`);
@@ -161,11 +152,11 @@ export class SubscriptionService {
   }
 
   /**
-   * Get credit limits for a tier.
+   * Get token limit for a tier.
    */
-  getCreditLimits(tier: SubscriptionTier) {
+  getTokenLimit(tier: SubscriptionTier): number | null {
     const plan = getPlanByTier(tier as any);
-    return plan?.credits ?? { text: 0, image: 0, video: 0, audio: 0 };
+    return plan?.tokens ?? 0;
   }
 }
 

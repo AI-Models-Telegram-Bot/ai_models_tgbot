@@ -1,17 +1,12 @@
 {
   "title": "Profile",
-  "creditBalance": "Credit Balance",
+  "tokenBalance": "Token Balance",
   "currentPlan": "Current Plan",
   "viewPlans": "View Plans",
   "managePlan": "Manage Plan",
-  "creditUsage": "Credit Usage",
+  "tokenUsage": "Token Usage",
+  "tokens": "Tokens",
   "totalSpent": "Total Spent",
   "totalRequests": "Requests",
-  "balances": {
-    "text": "Text",
-    "image": "Image",
-    "video": "Video",
-    "audio": "Audio",
-    "money": "Money"
-  }
+  "moneyBalance": "Money"
 }

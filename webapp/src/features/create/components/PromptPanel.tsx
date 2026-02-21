@@ -100,7 +100,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
                 'shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md tabular-nums',
                 colors.bg, colors.text,
               )}>
-                {model.isUnlimited ? '∞' : `${model.tokenCost} ${t('create:credits')}`}
+                {model.isUnlimited ? '∞' : `${model.tokenCost} ${t('create:tokens')}`}
               </span>
             </div>
             {description && (

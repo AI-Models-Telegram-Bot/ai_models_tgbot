@@ -83,11 +83,11 @@ export const PackageDetailsModal: React.FC<PackageDetailsModalProps> = ({
                         </Badge>
                       ) : model.creditRange ? (
                         <span className="text-gray-400 text-sm tabular-nums">
-                          {model.creditRange[0]}-{model.creditRange[1]} cr.
+                          {model.creditRange[0]}-{model.creditRange[1]} tk
                         </span>
                       ) : (
                         <span className="text-gray-400 text-sm tabular-nums">
-                          {model.creditCost} cr.
+                          {model.creditCost} tk
                         </span>
                       )}
                     </span>

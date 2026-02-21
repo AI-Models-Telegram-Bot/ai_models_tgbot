@@ -48,7 +48,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({
           <div>
             <h3 className="text-white text-[22px] font-bold">{pkg.name}</h3>
             <p className="text-content-secondary text-sm mt-0.5">
-              {t('credits', { count: pkg.credits })}
+              {t('tokens', { count: pkg.credits })}
             </p>
           </div>
           {pkg.isUnlimited && pkg.unlimitedModels?.length ? (

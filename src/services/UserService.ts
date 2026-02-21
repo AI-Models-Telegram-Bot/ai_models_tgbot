@@ -8,8 +8,8 @@ import { walletService } from './WalletService';
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from '../config/subscriptions';
 import { logger } from '../utils/logger';
 
-/** Credits granted to the referrer when someone signs up via their link */
-const REFERRAL_SIGNUP_BONUS = { text: 10, image: 5 };
+/** Tokens granted to the referrer when someone signs up via their link */
+const REFERRAL_SIGNUP_BONUS = 15;
 
 export class UserService {
   async findOrCreate(telegramId: bigint, userData: {
@@ -129,33 +129,25 @@ export class UserService {
       const plan = SUBSCRIPTION_PLANS.find((p) => p.tier === referrerTier);
       const bonusPercent = plan?.referralBonus ?? 3;
 
-      // Calculate bonus credits: base signup bonus scaled by tier percentage
-      const textBonus = Math.round(REFERRAL_SIGNUP_BONUS.text * (1 + bonusPercent / 100));
-      const imageBonus = Math.round(REFERRAL_SIGNUP_BONUS.image * (1 + bonusPercent / 100));
+      // Calculate token bonus: base signup bonus scaled by tier percentage
+      const tokenBonus = Math.round(REFERRAL_SIGNUP_BONUS * (1 + bonusPercent / 100));
 
       // Ensure wallet exists
       await walletService.getOrCreateWallet(referrer.id);
 
-      // Grant text credits
-      if (textBonus > 0) {
-        await walletService.addCredits(referrer.id, 'TEXT', textBonus, 'BONUS', {
-          description: `Referral bonus: new user joined`,
-        });
-      }
-
-      // Grant image credits
-      if (imageBonus > 0) {
-        await walletService.addCredits(referrer.id, 'IMAGE', imageBonus, 'BONUS', {
+      // Grant tokens
+      if (tokenBonus > 0) {
+        await walletService.addCredits(referrer.id, 'TEXT', tokenBonus, 'BONUS', {
           description: `Referral bonus: new user joined`,
         });
       }
 
       // Notify referrer via Telegram
       if (referrer.telegramId) {
-        await this.notifyReferrer(referrer, newUser, textBonus, imageBonus);
+        await this.notifyReferrer(referrer, newUser, tokenBonus);
       }
 
-      logger.info(`Referral bonus granted to ${referrer.id}: +${textBonus} text, +${imageBonus} image (tier: ${referrerTier}, ${bonusPercent}%)`, {
+      logger.info(`Referral bonus granted to ${referrer.id}: +${tokenBonus} tokens (tier: ${referrerTier}, ${bonusPercent}%)`, {
         referrerId: referrer.id,
         newUserId: newUser.id,
       });
@@ -164,15 +156,15 @@ export class UserService {
     }
   }
 
-  private async notifyReferrer(referrer: User, newUser: User, textBonus: number, imageBonus: number): Promise<void> {
+  private async notifyReferrer(referrer: User, newUser: User, tokenBonus: number): Promise<void> {
     try {
       const telegram = new Telegram(config.bot.token);
       const lang = (referrer.language as Language) || 'en';
       const newUserName = newUser.username ? `@${newUser.username}` : (newUser.firstName || 'Someone');
 
       const message = lang === 'ru'
-        ? `🎉 <b>Новый реферал!</b>\n\n${newUserName} присоединился по вашей ссылке.\n\n💰 <b>Ваш бонус:</b>\n🤖 +${textBonus} текстовых кредитов\n🖼 +${imageBonus} кредитов на изображения\n\nПриглашайте больше друзей, чтобы заработать ещё!`
-        : `🎉 <b>New referral!</b>\n\n${newUserName} joined via your link.\n\n💰 <b>Your bonus:</b>\n🤖 +${textBonus} text credits\n🖼 +${imageBonus} image credits\n\nInvite more friends to earn more!`;
+        ? `🎉 <b>Новый реферал!</b>\n\n${newUserName} присоединился по вашей ссылке.\n\n💰 <b>Ваш бонус:</b>\n⚡ +${tokenBonus} токенов\n\nПриглашайте больше друзей, чтобы заработать ещё!`
+        : `🎉 <b>New referral!</b>\n\n${newUserName} joined via your link.\n\n💰 <b>Your bonus:</b>\n⚡ +${tokenBonus} tokens\n\nInvite more friends to earn more!`;
 
       await telegram.sendMessage(referrer.telegramId!.toString(), message, { parse_mode: 'HTML' });
     } catch (error) {

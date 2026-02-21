@@ -2,7 +2,7 @@ import { BotContext } from '../types';
 import { createModelSelectionKeyboard } from '../keyboards/modelKeyboards';
 import { getCancelKeyboard } from '../keyboards/mainKeyboard';
 import { modelService, walletService } from '../../services';
-import { ModelCategory, WalletCategory } from '@prisma/client';
+import { ModelCategory } from '@prisma/client';
 import { Language, getLocale, t } from '../../locales';
 import { sendTrackedMessage } from '../utils';
 
@@ -55,10 +55,10 @@ export async function handleTextCategory(ctx: BotContext): Promise<void> {
   }
 
   const creditsCost = defaultModel.tokenCost;
-  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, 'TEXT' as WalletCategory, creditsCost);
+  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, creditsCost);
 
   if (!hasBalance) {
-    const currentBalance = await walletService.getBalance(ctx.user.id, 'TEXT' as WalletCategory);
+    const currentBalance = await walletService.getBalance(ctx.user.id);
     const message = t(lang, 'messages.errorInsufficientBalance', {
       required: formatCredits(creditsCost),
       current: formatCredits(currentBalance),

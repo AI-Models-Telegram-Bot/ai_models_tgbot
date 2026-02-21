@@ -308,15 +308,10 @@ export class AuthService {
 
   private async initNewUserWallet(userId: string): Promise<void> {
     const freePlan = SUBSCRIPTION_PLANS.find((p) => p.tier === SubscriptionTier.FREE);
-    const credits = freePlan?.credits ?? { text: 100, image: 50, video: 10, audio: 50 };
+    const tokens = freePlan?.tokens ?? 160;
 
     await walletService.getOrCreateWallet(userId);
-    await walletService.grantSignupBonus(userId, {
-      text: credits.text ?? 100,
-      image: credits.image ?? 50,
-      video: credits.video ?? 10,
-      audio: credits.audio ?? 50,
-    });
+    await walletService.grantSignupBonus(userId, tokens);
     await subscriptionService.getUserSubscription(userId);
   }
 

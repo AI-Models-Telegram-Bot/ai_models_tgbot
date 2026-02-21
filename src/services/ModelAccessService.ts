@@ -77,7 +77,7 @@ export class ModelAccessService {
     }
 
     // Check sufficient balance and deduct
-    const hasSufficient = await walletService.hasSufficientBalance(userId, category, amount);
+    const hasSufficient = await walletService.hasSufficientBalance(userId, amount);
     if (!hasSufficient) {
       return false;
     }

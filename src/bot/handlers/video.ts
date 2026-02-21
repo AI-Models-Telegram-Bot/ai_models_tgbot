@@ -265,9 +265,9 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
 
   // Check balance (unless unlimited)
   if (!access.unlimited) {
-    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, 'VIDEO' as WalletCategory, model.tokenCost);
+    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, model.tokenCost);
     if (!hasBalance) {
-      const currentBalance = await walletService.getBalance(ctx.user.id, 'VIDEO' as WalletCategory);
+      const currentBalance = await walletService.getBalance(ctx.user.id);
       const message = `Insufficient balance. You need ${formatCredits(model.tokenCost)} but have ${formatCredits(currentBalance)}.`;
       await sendTrackedMessage(ctx, message, getMainKeyboard(lang));
       return;

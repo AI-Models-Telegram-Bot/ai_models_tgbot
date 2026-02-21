@@ -18,12 +18,7 @@ export interface SubscriptionPlan {
   priceUSD: number | null;   // null = "Contact Us"
   priceRUB: number | null;
   duration: 'monthly' | 'lifetime';
-  credits: {
-    text: number | null;      // null = unlimited
-    image: number | null;
-    video: number | null;
-    audio: number | null;
-  };
+  tokens: number | null;      // null = unlimited
   modelAccess: ModelAccessConfig;
   features: string[];
   referralBonus: number;
@@ -45,7 +40,7 @@ export interface CurrentSubscriptionResponse {
   };
   plan: {
     name: string;
-    credits: SubscriptionPlan['credits'];
+    tokens: number | null;
     features: string[];
     referralBonus: number;
     modelAccess: ModelAccessConfig;
@@ -63,7 +58,7 @@ export interface TierModel {
 
 export interface TierModelsResponse {
   tier: string;
-  credits: SubscriptionPlan['credits'];
+  tokens: number | null;
   models: {
     text: TierModel[];
     image: TierModel[];

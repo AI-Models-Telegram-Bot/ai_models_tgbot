@@ -1,51 +1,28 @@
-import { Transaction, TransactionType, WalletCategory } from '@prisma/client';
+import { Transaction, WalletCategory } from '@prisma/client';
 import { prisma } from '../config/database';
 import { walletService } from './WalletService';
 
 /**
- * BalanceService now delegates to WalletService for multi-wallet operations.
- * Kept for backward compatibility with existing handlers during migration.
+ * BalanceService now delegates to WalletService for unified token operations.
+ * Kept for backward compatibility with existing handlers.
  */
 export class BalanceService {
   /**
-   * Check if user has enough credits in the specified wallet category
+   * Check if user has enough tokens
    */
-  async hasEnoughTokens(userId: string, amount: number, category?: WalletCategory): Promise<boolean> {
-    if (category) {
-      return walletService.hasSufficientBalance(userId, category, amount);
-    }
-    // Legacy: check old tokenBalance
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { tokenBalance: true },
-    });
-    return (user?.tokenBalance ?? 0) >= amount;
+  async hasEnoughTokens(userId: string, amount: number): Promise<boolean> {
+    return walletService.hasSufficientBalance(userId, amount);
   }
 
   /**
-   * Get balance for a category from the wallet
+   * Get token balance
    */
-  async getBalance(userId: string, category?: WalletCategory): Promise<number> {
-    if (category) {
-      return walletService.getBalance(userId, category);
-    }
-    // Legacy fallback
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { tokenBalance: true },
-    });
-    return user?.tokenBalance ?? 0;
+  async getBalance(userId: string): Promise<number> {
+    return walletService.getBalance(userId);
   }
 
   /**
-   * Get all wallet balances
-   */
-  async getAllBalances(userId: string) {
-    return walletService.getAllBalances(userId);
-  }
-
-  /**
-   * Deduct credits from wallet category
+   * Deduct credits from wallet (category kept for analytics)
    */
   async deductFromWallet(
     userId: string,
@@ -57,7 +34,7 @@ export class BalanceService {
   }
 
   /**
-   * Refund credits to wallet category
+   * Refund credits to wallet (category kept for analytics)
    */
   async refundToWallet(
     userId: string,

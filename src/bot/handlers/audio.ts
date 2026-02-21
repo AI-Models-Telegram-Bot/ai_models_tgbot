@@ -143,9 +143,9 @@ export async function handleAudioFunctionSelection(ctx: BotContext, functionId: 
 
   // Check balance (unless unlimited)
   if (!access.unlimited) {
-    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, 'AUDIO' as WalletCategory, model.tokenCost);
+    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, model.tokenCost);
     if (!hasBalance) {
-      const currentBalance = await walletService.getBalance(ctx.user.id, 'AUDIO' as WalletCategory);
+      const currentBalance = await walletService.getBalance(ctx.user.id);
       const message = t(lang, 'messages.errorInsufficientBalance', {
         required: formatCredits(model.tokenCost),
         current: formatCredits(currentBalance),
