@@ -24,6 +24,7 @@ import {
   handleImageFunctionSelection,
   handleUserInput,
   handlePhotoInput,
+  handleDocumentInput,
   handleCallbackQuery,
   handleWebAppData,
   handlePreCheckoutQuery,
@@ -136,6 +137,10 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.videoSoraPro, ru.buttons.videoSoraPro], (ctx) => handleVideoFunctionSelection(ctx, 'sora-pro'));
   bot.hears([en.buttons.videoRunwayGen4, ru.buttons.videoRunwayGen4], (ctx) => handleVideoFunctionSelection(ctx, 'runway-gen4'));
   bot.hears([en.buttons.videoRunwayTurbo, ru.buttons.videoRunwayTurbo], (ctx) => handleVideoFunctionSelection(ctx, 'runway'));
+  bot.hears([en.buttons.videoSeedanceLite, ru.buttons.videoSeedanceLite], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-lite'));
+  bot.hears([en.buttons.videoSeedancePro, ru.buttons.videoSeedancePro], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-1-pro'));
+  bot.hears([en.buttons.videoSeedanceFast, ru.buttons.videoSeedanceFast], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-fast'));
+  bot.hears([en.buttons.videoSeedance15Pro, ru.buttons.videoSeedance15Pro], (ctx) => handleVideoFunctionSelection(ctx, 'seedance'));
 
   bot.hears([en.buttons.profile, ru.buttons.profile], handleProfile);
   bot.hears([en.buttons.help, ru.buttons.help], handleHelp);
@@ -241,6 +246,9 @@ export function createBot(): Telegraf<BotContext> {
 
   // Photo messages (image upload for video models)
   bot.on('photo', handlePhotoInput);
+
+  // Document messages (file uploads — .png, .jpg, etc.)
+  bot.on('document', handleDocumentInput);
 
   // Text messages (user input for models)
   bot.on('text', handleUserInput);

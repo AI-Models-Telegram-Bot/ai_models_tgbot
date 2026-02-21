@@ -7,6 +7,7 @@ export interface VideoModelSettings {
   resolution?: string;
   generateAudio?: boolean;
   mode?: string;           // 'text' | 'frames' | 'ingredients' (Veo only)
+  cameraFixed?: boolean;   // Seedance camera lock
   // Kling-specific fields
   version?: string;        // e.g. '2.6', '2.5', '2.1', '2.1-master', '1.6', '1.5'
   negativePrompt?: string;
@@ -25,7 +26,10 @@ const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'runway-gen4': { aspectRatio: '16:9', duration: 5, resolution: '720p' },
   'luma': {},
   'wan': {},
-  'seedance': { aspectRatio: '16:9', duration: 8, resolution: '720p' },
+  'seedance': { aspectRatio: '16:9', duration: 4, resolution: '720p' },
+  'seedance-lite': { aspectRatio: '16:9', duration: 4, resolution: '720p' },
+  'seedance-1-pro': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
+  'seedance-fast': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
 };
 
 export class VideoSettingsService {

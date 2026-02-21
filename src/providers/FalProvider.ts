@@ -134,13 +134,19 @@ export class FalProvider extends EnhancedProvider {
    * Switch model ID from text-to-video to image-to-video variant when images are provided.
    */
   private getImageToVideoModel(textModel: string): string {
-    const modelMap: Record<string, string> = {
-      'fal-ai/bytedance/seedance/v1.5/pro/text-to-video': 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video',
-      'fal-ai/kling-video/v2.5/standard': 'fal-ai/kling-video/v2.5/standard/image-to-video',
-      'fal-ai/kling-video/v2.5/pro': 'fal-ai/kling-video/v2.5/pro/image-to-video',
-      'fal-ai/wan/v2.5/text-to-video': 'fal-ai/wan/v2.5/image-to-video',
-    };
-    return modelMap[textModel] || textModel;
+    // Seedance: text-to-video → image-to-video
+    if (textModel.includes('seedance') && textModel.endsWith('/text-to-video')) {
+      return textModel.replace('/text-to-video', '/image-to-video');
+    }
+    // Kling: append /image-to-video (fal kling IDs don't have /text-to-video suffix)
+    if (textModel.includes('kling-video') && !textModel.endsWith('/image-to-video')) {
+      return `${textModel}/image-to-video`;
+    }
+    // Wan: text-to-video → image-to-video
+    if (textModel.includes('/wan/') && textModel.endsWith('/text-to-video')) {
+      return textModel.replace('/text-to-video', '/image-to-video');
+    }
+    return textModel;
   }
 
   async generateVideo(
@@ -175,10 +181,19 @@ export class FalProvider extends EnhancedProvider {
       // Add image URL for image-to-video
       if (hasImages) {
         input.image_url = inputImageUrls[0];
+        // Pass second image as end frame (Seedance, Kling support this)
+        if (inputImageUrls.length >= 2) {
+          input.end_image_url = inputImageUrls[1];
+        }
+      }
+
+      // Seedance-specific: camera_fixed
+      if (model.includes('seedance') && options?.cameraFixed !== undefined) {
+        input.camera_fixed = options.cameraFixed;
       }
 
       // Submit to queue
-      logger.info('Fal.ai video payload:', { model, aspect_ratio: input.aspect_ratio, resolution: input.resolution, duration: input.duration, hasImage: !!input.image_url });
+      logger.info('Fal.ai video payload:', { model, aspect_ratio: input.aspect_ratio, resolution: input.resolution, duration: input.duration, hasImage: !!input.image_url, hasEndImage: !!input.end_image_url, cameraFixed: input.camera_fixed });
       const submitResponse = await this.client.post(
         `https://queue.fal.run/${model}`,
         input

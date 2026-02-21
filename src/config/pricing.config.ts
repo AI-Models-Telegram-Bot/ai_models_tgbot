@@ -209,11 +209,32 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     isLossLeader: true,          // Unlimited on Business+
   },
   'seedance': {
-    creditsPerUnit: 50,
+    creditsPerUnit: 15,
     unitType: '1_video',
-    baseCostUSD: 0.20,          // KieAI
-    marginPercent: 55,
+    baseCostUSD: 0.26,          // Fal.ai 1.5 Pro
+    marginPercent: 42,
     isLossLeader: true,
+  },
+  'seedance-lite': {
+    creditsPerUnit: 8,
+    unitType: '1_video',
+    baseCostUSD: 0.18,          // Fal.ai 1.0 Lite (720p)
+    marginPercent: 56,
+    isLossLeader: false,
+  },
+  'seedance-1-pro': {
+    creditsPerUnit: 30,
+    unitType: '1_video',
+    baseCostUSD: 0.74,          // Fal.ai 1.0 Pro (1080p)
+    marginPercent: 60,
+    isLossLeader: false,
+  },
+  'seedance-fast': {
+    creditsPerUnit: 12,
+    unitType: '1_video',
+    baseCostUSD: 0.245,         // Fal.ai 1.0 Pro Fast (1080p)
+    marginPercent: 51,
+    isLossLeader: false,
   },
   'kling': {
     creditsPerUnit: 80,

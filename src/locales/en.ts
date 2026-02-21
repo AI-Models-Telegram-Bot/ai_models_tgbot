@@ -66,6 +66,10 @@ export const en = {
     videoSoraPro: '💎 Sora 2 Pro (⚡40–150)',
     videoRunwayGen4: '✈️ Runway Gen-4 (⚡20–60)',
     videoRunwayTurbo: '⚡ Runway Gen-4 Turbo (⚡15–45)',
+    videoSeedanceLite: '🌱 1.0 Lite (⚡8–24)',
+    videoSeedancePro: '💎 1.0 Pro (⚡30–90)',
+    videoSeedanceFast: '⚡ 1.0 Fast (⚡12–36)',
+    videoSeedance15Pro: '🌱 1.5 Pro (⚡15–45)',
     videoSettings: '🎛️ Video Settings',
   },
 
@@ -407,15 +411,15 @@ Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
 Fee: ⚡10 credits`,
 
-    videoSeedanceFamilyDesc: `🌱 <b>Seedance 1.5</b>
+    videoSeedanceFamilyDesc: `🌱 <b>Seedance</b>
 
-An advanced video generation model from ByteDance. Known for multi-scene storytelling, high-quality animation, and impressive motion quality — especially useful for content creators and visual artists.
+ByteDance's advanced video generation family. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
-💡 Adjust duration in Video Settings.
-
-Upload up to 2 images and/or send a text prompt to get started 👇
-
-Fee: ⚡5–15 credits (depends on settings)`,
+Choose a version:
+• <b>1.0 Lite</b> — affordable 720p (⚡8–24)
+• <b>1.0 Pro</b> — highest quality 1080p (⚡30–90)
+• <b>1.0 Fast</b> — fast 1080p generation (⚡12–36)
+• <b>1.5 Pro</b> — latest model (⚡15–45)`,
 
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
@@ -517,15 +521,45 @@ Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
 Fee: ⚡10 credits`,
 
-    videoSeedanceDesc: `🌱 <b>Seedance 1.5</b>
+    videoSeedanceLiteDesc: `🌱 <b>Seedance 1.0 Lite</b>
 
-An advanced video generation model from ByteDance. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
+Affordable 720p video generation from ByteDance. Great for quick iterations and previews.
+
+💡 Adjust duration and aspect ratio in Video Settings.
+
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+
+Fee: ⚡8–24 credits (depends on duration)`,
+
+    videoSeedanceProDesc: `💎 <b>Seedance 1.0 Pro</b>
+
+Highest quality 1080p video from ByteDance. Best for final renders and premium content.
+
+💡 Adjust duration and aspect ratio in Video Settings.
+
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+
+Fee: ⚡30–90 credits (depends on duration)`,
+
+    videoSeedanceFastDesc: `⚡ <b>Seedance 1.0 Fast</b>
+
+Fast 1080p video generation — great balance of speed and quality.
+
+💡 Adjust duration and aspect ratio in Video Settings.
+
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+
+Fee: ⚡12–36 credits (depends on duration)`,
+
+    videoSeedanceDesc: `🌱 <b>Seedance 1.5 Pro</b>
+
+Latest Seedance model from ByteDance. Multi-scene storytelling, high-quality animation, and impressive motion.
 
 💡 Adjust duration in Video Settings.
 
-Upload up to 2 images and/or send a text prompt to get started 👇
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡5–15 credits (depends on settings)`,
+Fee: ⚡15–45 credits (depends on duration)`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',

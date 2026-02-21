@@ -91,7 +91,10 @@ const IMAGE_PRICING: Record<string, number> = {
 const VIDEO_PRICING: Record<string, number> = {
   // User-facing slugs (per second)
   wan: 0.05,                          // Fal $0.05/s → $0.25/5s
-  seedance: 0.04,                     // KieAI ~$0.20/5s
+  seedance: 0.052,                     // Fal ~$0.26/5s (1.5 Pro)
+  'seedance-lite': 0.036,             // Fal ~$0.18/5s (1.0 Lite)
+  'seedance-1-pro': 0.148,            // Fal ~$0.74/5s (1.0 Pro)
+  'seedance-fast': 0.049,             // Fal ~$0.245/5s (1.0 Fast)
   kling: 0.052,                       // PiAPI $0.26/5s
   'kling-pro': 0.046,                 // PiAPI $0.46/10s
   luma: 0.08,                         // Fal/Replicate ~$0.40/5s

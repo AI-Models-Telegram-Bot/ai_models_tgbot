@@ -41,6 +41,10 @@
   "modeFramesDesc": "Загрузите 2 изображения как начальный и конечный кадры",
   "modeIngredients": "Ингредиенты",
   "modeIngredientsDesc": "Загрузите 1-3 референсных изображения для создания сцены",
+  "cameraLock": "Фиксация камеры",
+  "cameraLockOn": "Вкл",
+  "cameraLockOff": "Выкл",
+  "cameraLockDesc": "Фиксирует положение камеры — объект движется, камера неподвижна",
   "runwayWarning": "Длительность 10 сек в 1080p не поддерживается. Разрешение будет понижено до 720p.",
   "save": "Сохранить и вернуться",
   "saving": "Сохранение...",
@@ -64,6 +68,9 @@
     "sora-pro": "Sora 2 Pro",
     "runway": "Runway Gen-4 Turbo",
     "runway-gen4": "Runway Gen-4",
-    "seedance": "Seedance"
+    "seedance": "Seedance 1.5 Pro",
+    "seedance-lite": "Seedance 1.0 Lite",
+    "seedance-1-pro": "Seedance 1.0 Pro",
+    "seedance-fast": "Seedance 1.0 Fast"
   }
 }

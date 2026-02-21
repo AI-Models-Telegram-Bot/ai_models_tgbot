@@ -6,6 +6,7 @@ import {
   getVeoModelsKeyboard,
   getSoraModelsKeyboard,
   getRunwayModelsKeyboard,
+  getSeedanceModelsKeyboard,
   getVideoModelMenuKeyboard,
 } from '../keyboards/videoKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -61,8 +62,7 @@ const VIDEO_FAMILIES: Record<VideoFamily, VideoFamilyConfig> = {
   },
   seedance: {
     descriptionKey: 'videoSeedanceFamilyDesc',
-    getKeyboard: () => null,
-    singleModel: 'seedance',
+    getKeyboard: getSeedanceModelsKeyboard,
   },
 };
 
@@ -136,6 +136,24 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'wan',
     hasSettings: false,
   },
+  'seedance-lite': {
+    modelSlug: 'seedance-lite',
+    descriptionKey: 'videoSeedanceLiteDesc',
+    family: 'seedance',
+    hasSettings: true,
+  },
+  'seedance-1-pro': {
+    modelSlug: 'seedance-1-pro',
+    descriptionKey: 'videoSeedanceProDesc',
+    family: 'seedance',
+    hasSettings: true,
+  },
+  'seedance-fast': {
+    modelSlug: 'seedance-fast',
+    descriptionKey: 'videoSeedanceFastDesc',
+    family: 'seedance',
+    hasSettings: true,
+  },
   'seedance': {
     modelSlug: 'seedance',
     descriptionKey: 'videoSeedanceDesc',
@@ -155,7 +173,10 @@ const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'runway-gen4': { en: 'Runway Gen-4', ru: 'Runway Gen-4' },
   'luma': { en: 'Luma', ru: 'Luma' },
   'wan': { en: 'WAN', ru: 'WAN' },
-  'seedance': { en: 'Seedance', ru: 'Seedance' },
+  'seedance-lite': { en: 'Seedance 1.0 Lite', ru: 'Seedance 1.0 Lite' },
+  'seedance-1-pro': { en: 'Seedance 1.0 Pro', ru: 'Seedance 1.0 Pro' },
+  'seedance-fast': { en: 'Seedance 1.0 Fast', ru: 'Seedance 1.0 Fast' },
+  'seedance': { en: 'Seedance 1.5 Pro', ru: 'Seedance 1.5 Pro' },
 };
 
 // ── Handlers ────────────────────────────────────────────
@@ -330,6 +351,10 @@ export async function getVideoOptionsForFunction(
     // Veo-specific: image processing mode
     if (settings.mode) {
       options.mode = settings.mode;
+    }
+    // Seedance-specific: camera lock
+    if (settings.cameraFixed !== undefined) {
+      options.cameraFixed = settings.cameraFixed;
     }
 
     return options;

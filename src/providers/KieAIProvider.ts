@@ -151,13 +151,19 @@ export class KieAIProvider extends EnhancedProvider {
    * KieAI uses different model IDs for text-to-video vs image-to-video.
    */
   private getImageToVideoModelId(textModel: string): string {
-    const modelMap: Record<string, string> = {
-      'kling-2.6/text-to-video': 'kling-2.6/image-to-video',
-      'sora-2-text-to-video': 'sora-2-image-to-video',
-      'sora-2-pro-text-to-video': 'sora-2-pro-image-to-video',
-      // Seedance uses the same model ID for both text and image-to-video
-    };
-    return modelMap[textModel] || textModel;
+    // Kling: any version — replace text-to-video with image-to-video
+    if (textModel.startsWith('kling-') && textModel.endsWith('/text-to-video')) {
+      return textModel.replace('/text-to-video', '/image-to-video');
+    }
+    // Sora: any variant — replace text-to-video with image-to-video
+    if (textModel.startsWith('sora-') && textModel.includes('text-to-video')) {
+      return textModel.replace('text-to-video', 'image-to-video');
+    }
+    // Seedance: replace text-to-video with image-to-video
+    if (textModel.includes('seedance') && textModel.includes('text-to-video')) {
+      return textModel.replace('text-to-video', 'image-to-video');
+    }
+    return textModel;
   }
 
   /**
@@ -173,6 +179,12 @@ export class KieAIProvider extends EnhancedProvider {
       let model = (options?.model as string) || 'kling-2.6/text-to-video';
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
       const hasImages = inputImageUrls && inputImageUrls.length > 0;
+
+      // Kling: override version in model ID from user settings (e.g. kling-2.6 → kling-1.5)
+      if (model.startsWith('kling-') && options?.version) {
+        const userVersion = String(options.version);
+        model = model.replace(/kling-[\d.]+/, `kling-${userVersion}`);
+      }
 
       // Switch to image-to-video model variant if images are provided
       if (hasImages) {
