@@ -1,18 +1,12 @@
 {
   "title": "Профиль",
-  "creditBalance": "Баланс кредитов",
+  "tokenBalance": "Баланс токенов",
   "currentPlan": "Текущий тариф",
   "viewPlans": "Смотреть тарифы",
   "managePlan": "Управление тарифом",
-  "creditUsage": "Использование кредитов",
-  "buyCredits": "Купить дополнительные кредиты",
+  "tokenUsage": "Использование токенов",
+  "tokens": "Токены",
   "totalSpent": "Всего потрачено",
   "totalRequests": "Запросов",
-  "balances": {
-    "text": "Текст",
-    "image": "Изображения",
-    "video": "Видео",
-    "audio": "Аудио",
-    "money": "Деньги"
-  }
+  "moneyBalance": "Деньги"
 }

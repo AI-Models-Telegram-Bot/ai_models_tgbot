@@ -1,6 +1,6 @@
 {
   "title": "Subscriptions",
-  "credits": "Credits: {{count}}",
+  "tokens": "Tokens: {{count}}",
   "whatsIncluded": "What's Included",
   "features": {
     "allModels": "Access to all neural networks",

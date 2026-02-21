@@ -2,13 +2,6 @@ import { WalletCategory, WalletTransactionType, UserWallet } from '@prisma/clien
 import { prisma } from '../config/database';
 import { logger } from '../utils/logger';
 
-const BALANCE_KEYS: Record<string, keyof Pick<UserWallet, 'textBalance' | 'imageBalance' | 'videoBalance' | 'audioBalance'>> = {
-  TEXT: 'textBalance',
-  IMAGE: 'imageBalance',
-  VIDEO: 'videoBalance',
-  AUDIO: 'audioBalance',
-};
-
 export class WalletService {
   /**
    * Get or create wallet for user
@@ -29,43 +22,24 @@ export class WalletService {
   }
 
   /**
-   * Get balance for a specific category
+   * Get token balance for user
    */
-  async getBalance(userId: string, category: WalletCategory): Promise<number> {
+  async getBalance(userId: string): Promise<number> {
     const wallet = await this.getOrCreateWallet(userId);
-    const key = BALANCE_KEYS[category];
-    if (!key) return 0;
-    return wallet[key];
+    return wallet.tokenBalance;
   }
 
   /**
-   * Get all balances at once
+   * Check if user has enough tokens
    */
-  async getAllBalances(userId: string): Promise<{
-    text: number;
-    image: number;
-    video: number;
-    audio: number;
-  }> {
-    const wallet = await this.getOrCreateWallet(userId);
-    return {
-      text: wallet.textBalance,
-      image: wallet.imageBalance,
-      video: wallet.videoBalance,
-      audio: wallet.audioBalance,
-    };
-  }
-
-  /**
-   * Check if user has enough credits in category
-   */
-  async hasSufficientBalance(userId: string, category: WalletCategory, amount: number): Promise<boolean> {
-    const balance = await this.getBalance(userId, category);
+  async hasSufficientBalance(userId: string, amount: number): Promise<boolean> {
+    const balance = await this.getBalance(userId);
     return balance >= amount;
   }
 
   /**
-   * Add credits (purchase, bonus, refund, admin)
+   * Add credits (purchase, bonus, refund, admin).
+   * Category is kept for analytics tracking on the transaction record.
    */
   async addCredits(
     userId: string,
@@ -80,19 +54,16 @@ export class WalletService {
       metadata?: Record<string, unknown>;
     }
   ) {
-    const key = BALANCE_KEYS[category];
-    if (!key) throw new Error(`Invalid wallet category: ${category}`);
-
     return await prisma.$transaction(async (tx) => {
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet) throw new Error('Wallet not found');
 
-      const currentBalance = wallet[key];
+      const currentBalance = wallet.tokenBalance;
       const newBalance = currentBalance + amount;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { [key]: newBalance },
+        data: { tokenBalance: newBalance },
       });
 
       const transaction = await tx.walletTransaction.create({
@@ -111,7 +82,7 @@ export class WalletService {
         },
       });
 
-      logger.info(`Added ${amount} ${category} credits to user ${userId}`, {
+      logger.info(`Added ${amount} tokens (${category}) to user ${userId}`, {
         transactionId: transaction.id,
         newBalance,
       });
@@ -121,7 +92,8 @@ export class WalletService {
   }
 
   /**
-   * Deduct credits atomically with balance check
+   * Deduct credits atomically with balance check.
+   * Category is kept for analytics tracking on the transaction record.
    */
   async deductCredits(
     userId: string,
@@ -134,23 +106,20 @@ export class WalletService {
       metadata?: Record<string, unknown>;
     }
   ) {
-    const key = BALANCE_KEYS[category];
-    if (!key) throw new Error(`Invalid wallet category: ${category}`);
-
     return await prisma.$transaction(async (tx) => {
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet) throw new Error('Wallet not found');
 
-      const currentBalance = wallet[key];
+      const currentBalance = wallet.tokenBalance;
       if (currentBalance < amount) {
-        throw new Error(`Insufficient ${category} balance. Required: ${amount}, Available: ${currentBalance}`);
+        throw new Error(`Insufficient balance. Required: ${amount}, Available: ${currentBalance}`);
       }
 
       const newBalance = currentBalance - amount;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { [key]: newBalance },
+        data: { tokenBalance: newBalance },
       });
 
       const transaction = await tx.walletTransaction.create({
@@ -168,7 +137,7 @@ export class WalletService {
         },
       });
 
-      logger.info(`Deducted ${amount} ${category} credits from user ${userId}`, {
+      logger.info(`Deducted ${amount} tokens (${category}) from user ${userId}`, {
         transactionId: transaction.id,
         newBalance,
       });
@@ -178,7 +147,8 @@ export class WalletService {
   }
 
   /**
-   * Reserve credits for long-running operations (video)
+   * Reserve credits for long-running operations (video).
+   * Category is kept for analytics tracking on the transaction record.
    */
   async reserveCredits(
     userId: string,
@@ -190,25 +160,22 @@ export class WalletService {
       description?: string;
     }
   ): Promise<string> {
-    const key = BALANCE_KEYS[category];
-    if (!key) throw new Error(`Invalid wallet category: ${category}`);
-
     const reservationId = `rsv_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     await prisma.$transaction(async (tx) => {
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet) throw new Error('Wallet not found');
 
-      const currentBalance = wallet[key];
+      const currentBalance = wallet.tokenBalance;
       if (currentBalance < estimatedAmount) {
-        throw new Error(`Insufficient ${category} balance for reservation. Required: ${estimatedAmount}, Available: ${currentBalance}`);
+        throw new Error(`Insufficient balance for reservation. Required: ${estimatedAmount}, Available: ${currentBalance}`);
       }
 
       const newBalance = currentBalance - estimatedAmount;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { [key]: newBalance },
+        data: { tokenBalance: newBalance },
       });
 
       await tx.walletTransaction.create({
@@ -227,7 +194,7 @@ export class WalletService {
         },
       });
 
-      logger.info(`Reserved ${estimatedAmount} ${category} credits for user ${userId}`, { reservationId });
+      logger.info(`Reserved ${estimatedAmount} tokens (${category}) for user ${userId}`, { reservationId });
     });
 
     return reservationId;
@@ -243,9 +210,6 @@ export class WalletService {
     actualAmount: number,
     meta: { requestId: string; priceItemCode: string }
   ) {
-    const key = BALANCE_KEYS[category];
-    if (!key) throw new Error(`Invalid wallet category: ${category}`);
-
     return await prisma.$transaction(async (tx) => {
       const reservation = await tx.walletTransaction.findFirst({
         where: { userId, reservationId, isReservation: true, transactionType: 'RESERVATION' },
@@ -261,13 +225,13 @@ export class WalletService {
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet) throw new Error('Wallet not found');
 
-      const currentBalance = wallet[key];
+      const currentBalance = wallet.tokenBalance;
       const adjustmentAmount = -difference; // Positive if refunding, negative if charging more
       const newBalance = currentBalance + adjustmentAmount;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { [key]: newBalance },
+        data: { tokenBalance: newBalance },
       });
 
       await tx.walletTransaction.create({
@@ -292,7 +256,8 @@ export class WalletService {
   }
 
   /**
-   * Refund full deduction (for failed operations)
+   * Refund full deduction (for failed operations).
+   * Category is kept for analytics tracking on the transaction record.
    */
   async refundCredits(
     userId: string,
@@ -355,27 +320,16 @@ export class WalletService {
   }
 
   /**
-   * Grant initial credits to new user wallet (signup bonus)
+   * Grant initial tokens to new user wallet (signup bonus)
    */
-  async grantSignupBonus(userId: string, amounts: { text: number; image: number; video: number; audio: number }) {
-    const wallet = await this.getOrCreateWallet(userId);
+  async grantSignupBonus(userId: string, amount: number) {
+    await this.getOrCreateWallet(userId);
 
-    const categories: { cat: WalletCategory; amount: number }[] = [
-      { cat: 'TEXT', amount: amounts.text },
-      { cat: 'IMAGE', amount: amounts.image },
-      { cat: 'VIDEO', amount: amounts.video },
-      { cat: 'AUDIO', amount: amounts.audio },
-    ];
-
-    for (const { cat, amount } of categories) {
-      if (amount > 0) {
-        await this.addCredits(userId, cat, amount, 'BONUS', {
-          description: 'Signup bonus',
-        });
-      }
+    if (amount > 0) {
+      await this.addCredits(userId, 'TEXT', amount, 'BONUS', {
+        description: 'Signup bonus',
+      });
     }
-
-    return wallet;
   }
 }
 

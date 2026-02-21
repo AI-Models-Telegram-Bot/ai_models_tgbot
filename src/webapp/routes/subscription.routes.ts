@@ -86,7 +86,7 @@ router.get('/subscriptions/models/:tier', async (req, res) => {
 
     return res.json({
       tier,
-      credits: planConfig.credits,
+      tokens: planConfig.tokens,
       models,
     });
   } catch (error) {
@@ -125,7 +125,7 @@ router.get('/subscriptions/current/:telegramId', async (req, res) => {
       plan: planConfig
         ? {
             name: planConfig.name,
-            credits: planConfig.credits,
+            tokens: planConfig.tokens,
             features: planConfig.features,
             referralBonus: planConfig.referralBonus,
             modelAccess: planConfig.modelAccess,
@@ -174,7 +174,7 @@ router.post('/subscriptions/upgrade', async (req, res) => {
         currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() || null,
       },
       plan: planConfig
-        ? { name: planConfig.name, credits: planConfig.credits }
+        ? { name: planConfig.name, tokens: planConfig.tokens }
         : null,
     });
   } catch (error: any) {

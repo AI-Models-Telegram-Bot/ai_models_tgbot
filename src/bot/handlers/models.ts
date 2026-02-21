@@ -80,9 +80,9 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
 
   // Skip balance check if user has unlimited access to this model
   if (!access.unlimited) {
-    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
+    const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, creditsCost);
     if (!hasBalance) {
-      const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
+      const currentBalance = await walletService.getBalance(ctx.user.id);
       const message = t(lang, 'messages.errorInsufficientBalance', {
         required: formatCredits(creditsCost),
         current: formatCredits(currentBalance),
@@ -334,9 +334,9 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
 
   // ── Balance check ──
 
-  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, walletCat, creditsCost);
+  const hasBalance = await walletService.hasSufficientBalance(ctx.user.id, creditsCost);
   if (!hasBalance) {
-    const currentBalance = await walletService.getBalance(ctx.user.id, walletCat);
+    const currentBalance = await walletService.getBalance(ctx.user.id);
     const message = t(lang, 'messages.errorInsufficientBalance', {
       required: formatCredits(creditsCost),
       current: formatCredits(currentBalance),

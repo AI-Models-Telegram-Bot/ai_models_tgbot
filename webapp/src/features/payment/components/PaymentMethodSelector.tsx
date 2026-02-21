@@ -66,7 +66,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         {/* Package summary */}
         <div className="text-center pb-3 border-b border-gray-200">
           <p className="text-gray-900 text-lg font-bold">{pkg.name}</p>
-          <p className="text-gray-500 text-sm">{pkg.credits} credits</p>
+          <p className="text-gray-500 text-sm">{pkg.credits} tokens</p>
         </div>
 
         {/* Payment methods */}

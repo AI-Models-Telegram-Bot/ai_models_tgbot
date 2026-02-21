@@ -43,7 +43,7 @@ router.get('/user/:telegramId', async (req, res) => {
         name: planConfig?.name || subscription.tier,
         status: subscription.status,
         expiresAt: subscription.currentPeriodEnd?.toISOString() || null,
-        credits: planConfig?.credits ?? { text: 0, image: 0, video: 0, audio: 0 },
+        tokens: planConfig?.tokens ?? 0,
         referralBonus: planConfig?.referralBonus ?? 0,
       };
     } catch (subError) {
@@ -60,10 +60,7 @@ router.get('/user/:telegramId', async (req, res) => {
         language: user.language,
       },
       wallet: {
-        textBalance: wallet.textBalance,
-        imageBalance: wallet.imageBalance,
-        videoBalance: wallet.videoBalance,
-        audioBalance: wallet.audioBalance,
+        tokenBalance: wallet.tokenBalance,
         moneyBalance: wallet.moneyBalance,
         currency: wallet.currency,
       },

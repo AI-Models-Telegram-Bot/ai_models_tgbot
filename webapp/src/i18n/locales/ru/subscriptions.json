@@ -1,7 +1,7 @@
 {
   "title": "Тарифы",
   "choosePlan": "Выберите тариф",
-  "subtitle": "Откройте доступ к новым моделям и кредитам",
+  "subtitle": "Откройте доступ к новым моделям и токенам",
   "compareTitle": "Сравнить тарифы",
   "currentPlan": "Текущий тариф",
   "upgrade": "Улучшить",
@@ -9,9 +9,9 @@
   "includedInCurrent": "Включено",
   "cancel": "Отменить тариф",
   "featuresTitle": "Возможности",
-  "credits": "Кредиты",
-  "creditsShort": "кр",
-  "creditsPerMonth": "Кредитов в месяц",
+  "tokens": "Токены",
+  "tokensShort": "тк",
+  "tokensPerMonth": "Токенов в месяц",
   "unlimited": "Безлимит",
   "perMonth": "/мес",
   "contactUs": "Связаться",
@@ -81,13 +81,13 @@
     "premium": {
       "unlimitedCheapText": "Безлимитные базовые текстовые модели",
       "allModels": "Все ИИ-модели доступны",
-      "largeCredits": "5 000 текст + 5 000 изображения кредитов",
+      "largeCredits": "10 800 токенов на все модели",
       "referralBonus": "12% реферальный бонус",
       "priorityChat": "Приоритетный чат-саппорт"
     },
     "business": {
       "unlimitedTextImage": "Безлимитные базовые текст и изображения",
-      "massiveCredits": "15 000 текст + 10 000 изображения кредитов",
+      "massiveCredits": "27 000 токенов на все модели",
       "referralBonus": "16% реферальный бонус",
       "support247": "Приоритетная поддержка 24/7",
       "fineTuning": "Дообучение моделей",

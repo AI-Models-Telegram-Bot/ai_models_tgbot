@@ -201,11 +201,8 @@ function formatResultCaption(opts: {
 
   // Balance line
   lines.push('');
-  const categoryLabel = lang === 'ru'
-    ? { TEXT: 'Текст', IMAGE: 'Изображ.', VIDEO: 'Видео', AUDIO: 'Аудио' }[category] || category
-    : category.charAt(0) + category.slice(1).toLowerCase();
   const balanceLabel = lang === 'ru' ? 'Баланс' : 'Balance';
-  lines.push(`💰 -${creditsCost} ⚡ · ${balanceLabel}: <b>${remainingBalance} ⚡</b> <i>(${categoryLabel})</i>`);
+  lines.push(`💰 -${creditsCost} ⚡ · ${balanceLabel}: <b>${remainingBalance} ⚡</b>`);
 
   // Continue hint — let user know they can send another prompt
   const hint = t(lang, 'messages.continueHint', { modelName: escapeHtml(modelName) });
@@ -344,7 +341,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       // Fetch remaining balance for the result message
       let remainingBalance = 0;
       try {
-        remainingBalance = await walletService.getBalance(userId, walletCategory as WalletCategory);
+        remainingBalance = await walletService.getBalance(userId);
       } catch {
         // Non-critical; balance will show as 0
       }

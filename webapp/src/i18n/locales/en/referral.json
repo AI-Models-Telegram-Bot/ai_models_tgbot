@@ -1,16 +1,16 @@
 {
   "title": "Referral Program",
-  "description": "Share your referral link with friends and earn bonus credits when they join!",
+  "description": "Share your referral link with friends and earn bonus tokens when they join!",
   "yourLink": "Your Referral Link",
   "share": "Share",
-  "shareText": "Join me on AI Models Bot and get free credits!",
+  "shareText": "Join me on AI Models Bot and get free tokens!",
   "copyLink": "Copy Link",
   "benefits": "Benefits",
-  "bonusDescription": "{{percentage}}% bonus credits per referral",
+  "bonusDescription": "{{percentage}}% bonus tokens per referral",
   "stats": {
     "invited": "Invited",
     "earned": "Earned",
-    "earnedUnit": "credits",
+    "earnedUnit": "tokens",
     "bonus": "Bonus"
   }
 }

@@ -11,10 +11,7 @@ export interface User {
 }
 
 export interface UserWallet {
-  textBalance: number;
-  imageBalance: number;
-  videoBalance: number;
-  audioBalance: number;
+  tokenBalance: number;
   moneyBalance: number;
   currency: string;
 }
@@ -28,12 +25,7 @@ export interface CurrentPlan {
   name: string;
   status: SubscriptionStatus;
   expiresAt: string | null;
-  credits: {
-    text: number | null;    // null = unlimited
-    image: number | null;
-    video: number | null;
-    audio: number | null;
-  };
+  tokens: number | null; // null = unlimited
   referralBonus: number;
 }
 

@@ -65,7 +65,7 @@ router.post('/payment/create', async (req, res) => {
       // For Telegram Stars (XTR), provider_token must be empty string
       const invoiceLink = await telegram.createInvoiceLink({
         title: `${planConfig.name} Subscription`,
-        description: `${planConfig.name} plan - Monthly subscription with ${planConfig.credits.text === null ? 'unlimited' : planConfig.credits.text} text credits, ${planConfig.credits.image === null ? 'unlimited' : planConfig.credits.image} image credits, and more.`,
+        description: `${planConfig.name} plan - Monthly subscription with ${planConfig.tokens === null ? 'unlimited' : planConfig.tokens} tokens.`,
         payload: JSON.stringify({
           userId: user.id,
           tier: tier,

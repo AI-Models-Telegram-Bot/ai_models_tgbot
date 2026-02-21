@@ -94,18 +94,15 @@ Use the menu below to navigate.`,
 
 <b>Username:</b> @{username}
 
-💰 <b>Balances</b>
-🤖 Text: {textBalance} credits
-🖼 Image: {imageBalance} credits
-🎬 Video: {videoBalance} credits
-🎵 Audio: {audioBalance} credits
+💰 <b>Balance</b>
+⚡ {tokenBalance} tokens
 
 <b>Total spent:</b> ${'{totalSpent}'} USD
 
 🔗 <b>Referral Program</b>
 Your code: <code>{referralCode}</code>
 Referrals: {referralCount}
-Credits earned: {referralBonus} ⚡
+Tokens earned: {referralBonus} ⚡
 
 Share your link:
 <code>https://t.me/{botUsername}?start={referralCode}</code>`,

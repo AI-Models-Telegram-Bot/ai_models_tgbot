@@ -75,11 +75,11 @@ export class ChatService {
 
     // Check and deduct wallet balance (skip if unlimited)
     if (!access.unlimited) {
-      const hasBalance = await walletService.hasSufficientBalance(userId, walletCat, creditsCost);
+      const hasBalance = await walletService.hasSufficientBalance(userId, creditsCost);
       if (!hasBalance) {
-        const currentBalance = await walletService.getBalance(userId, walletCat);
+        const currentBalance = await walletService.getBalance(userId);
         throw new Error(
-          `Insufficient ${walletCat} balance. Required: ${creditsCost}, Available: ${currentBalance}`
+          `Insufficient balance. Required: ${creditsCost}, Available: ${currentBalance}`
         );
       }
     }

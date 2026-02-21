@@ -20,7 +20,7 @@
   "generatedImage": "Сгенерированное изображение",
   "noGenerationsYet": "Пока нет генераций",
   "tryExample": "Попробуйте пример:",
-  "credits": "кр",
+  "tokens": "тк",
   "modelSettings": "Настройки модели",
   "categories": {
     "TEXT": "Текст ИИ",

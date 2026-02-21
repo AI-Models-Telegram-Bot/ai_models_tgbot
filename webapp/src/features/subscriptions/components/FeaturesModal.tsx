@@ -56,8 +56,7 @@ const categoryColors = {
 const ModelList: React.FC<{
   category: 'text' | 'image' | 'video' | 'audio';
   models: TierModel[];
-  credits: number | null;
-}> = ({ category, models, credits }) => {
+}> = ({ category, models }) => {
   const { t } = useTranslation('subscriptions');
   const colors = categoryColors[category];
   const categoryLabels: Record<string, string> = {
@@ -73,16 +72,11 @@ const ModelList: React.FC<{
 
   return (
     <div className={`rounded-xl ${colors.bg} border ${colors.border} p-4`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center" style={{ columnGap: 8 }}>
-          <span className={colors.text}>
-            <CategoryIcon category={category} />
-          </span>
-          <span className="text-white text-sm font-semibold">{categoryLabels[category]}</span>
-        </div>
-        <span className={`text-xs font-mono font-bold ${credits === null ? 'text-brand-accent' : 'text-content-secondary'}`}>
-          {formatCredits(credits)} {t('credits', 'credits')}
+      <div className="flex items-center mb-3" style={{ columnGap: 8 }}>
+        <span className={colors.text}>
+          <CategoryIcon category={category} />
         </span>
+        <span className="text-white text-sm font-semibold">{categoryLabels[category]}</span>
       </div>
       <div className="space-y-2">
         {models.map((model) => (
@@ -100,7 +94,7 @@ const ModelList: React.FC<{
             </div>
             {!model.isUnlimited && (
               <span className="shrink-0 text-content-tertiary text-xs font-mono ml-2">
-                {model.creditCost} {t('creditsShort', 'cr')}
+                {model.creditCost} {t('tokensShort', 'tk')}
               </span>
             )}
           </div>
@@ -148,28 +142,16 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={plan.name} size="lg">
       <div className="p-5 space-y-4 pb-8">
-        {/* Credits overview */}
+        {/* Token overview */}
         <div>
           <h4 className="text-xs font-medium text-content-tertiary uppercase tracking-wider mb-3">
-            {t('subscriptions:creditsPerMonth', 'Monthly Credits')}
+            {t('subscriptions:tokensPerMonth', 'Monthly Tokens')}
           </h4>
-          <div className="grid grid-cols-3" style={{ rowGap: 8, columnGap: 8 }}>
-            {[
-              { key: 'text' as const, label: t('profile:balances.text', 'Text'), value: plan.credits.text, color: 'bg-cyan-500' },
-              { key: 'image' as const, label: t('profile:balances.image', 'Image'), value: plan.credits.image, color: 'bg-pink-500' },
-              { key: 'video' as const, label: t('profile:balances.video', 'Video'), value: plan.credits.video, color: 'bg-purple-500' },
-            ].map((item) => (
-              <div
-                key={item.key}
-                className="rounded-xl bg-white/5 border border-white/10 p-2.5 text-center"
-              >
-                <div className={`w-2 h-2 rounded-full ${item.color} mx-auto mb-1`} />
-                <p className={`text-sm font-bold font-mono ${item.value === null ? 'text-brand-accent' : 'text-white'}`}>
-                  {formatCredits(item.value)}
-                </p>
-                <p className="text-content-tertiary text-[10px]">{item.label}</p>
-              </div>
-            ))}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-3 text-center">
+            <p className={`text-lg font-bold font-mono ${plan.tokens === null ? 'text-brand-accent' : 'text-white'}`}>
+              {formatCredits(plan.tokens)}
+            </p>
+            <p className="text-content-tertiary text-xs">{t('subscriptions:tokensLabel', 'tokens')}</p>
           </div>
         </div>
 
@@ -199,9 +181,9 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
             </div>
           ) : modelsData ? (
             <div className="space-y-3">
-              <ModelList category="text" models={modelsData.models.text} credits={plan.credits.text} />
-              <ModelList category="image" models={modelsData.models.image} credits={plan.credits.image} />
-              <ModelList category="video" models={modelsData.models.video} credits={plan.credits.video} />
+              <ModelList category="text" models={modelsData.models.text} />
+              <ModelList category="image" models={modelsData.models.image} />
+              <ModelList category="video" models={modelsData.models.video} />
 
               {modelsData.models.text.length === 0 &&
                 modelsData.models.image.length === 0 &&

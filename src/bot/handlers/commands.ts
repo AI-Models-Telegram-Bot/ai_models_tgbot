@@ -92,14 +92,11 @@ export async function handleProfile(ctx: BotContext): Promise<void> {
 
   const stats = await userService.getReferralStats(ctx.user.id);
   const botInfo = await ctx.telegram.getMe();
-  const balances = await walletService.getAllBalances(ctx.user.id);
+  const tokenBalance = await walletService.getBalance(ctx.user.id);
 
   const message = t(lang, 'messages.profile', {
     username: ctx.user.username || 'not set',
-    textBalance: balances.text,
-    imageBalance: balances.image,
-    videoBalance: balances.video,
-    audioBalance: balances.audio,
+    tokenBalance,
     totalSpent: ctx.user.totalSpent.toFixed(2),
     referralCode: ctx.user.referralCode,
     referralCount: stats.count,

@@ -136,7 +136,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                       'shrink-0 ml-2 px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums',
                       colors.bg, colors.text,
                     )}>
-                      {model.isUnlimited ? '∞' : `${model.tokenCost} ${t('create:credits')}`}
+                      {model.isUnlimited ? '∞' : `${model.tokenCost} ${t('create:tokens')}`}
                     </span>
                   </div>
 

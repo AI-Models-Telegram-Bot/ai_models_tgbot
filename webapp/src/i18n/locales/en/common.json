@@ -30,10 +30,7 @@
   "custom": "Custom",
   "free": "Free",
   "somethingWentWrong": "Something went wrong",
-  "textCredits": "Text Credits",
-  "imageCredits": "Image Credits",
-  "videoCredits": "Video Credits",
-  "audioCredits": "Audio Credits",
+  "tokens": "Tokens",
   "prioritySupport": "Priority Support",
   "referralBonus": "Referral Bonus"
 }
