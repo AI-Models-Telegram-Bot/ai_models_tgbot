@@ -7,7 +7,7 @@ import { getAudioOptionsForFunction } from './audio';
 import { getImageOptionsForFunction } from './image';
 import { getVideoOptionsForFunction } from './video';
 import { logger } from '../../utils/logger';
-import { sendTrackedMessage } from '../utils';
+import { sendTrackedMessage, deleteMessage } from '../utils';
 import { Language, t, getLocale } from '../../locales';
 import { enqueueGeneration } from '../../queues/producer';
 import { config } from '../../config';
@@ -121,8 +121,25 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     imageFunction: ctx.session?.imageFunction,
   });
   if (!ctx.user || !ctx.session) return;
-  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) {
+    // User uploaded a photo but no model is selected — give feedback instead of silently ignoring
+    if (ctx.session?.videoFamily || ctx.session?.imageFamily) {
+      const lang = getLang(ctx);
+      const msg = lang === 'ru'
+        ? '⚠️ Сначала выберите модель, затем загрузите изображение.'
+        : '⚠️ Please select a model first, then upload an image.';
+      await ctx.reply(msg);
+    }
+    return;
+  }
   if (!ctx.message || !('photo' in ctx.message) || !ctx.message.photo) return;
+
+  // Clean up previous bot navigation message (moved from middleware to here so we don't
+  // lose the menu if session guards fail)
+  if (ctx.session.lastBotMessageId) {
+    await deleteMessage(ctx, ctx.session.lastBotMessageId);
+    ctx.session.lastBotMessageId = undefined;
+  }
 
   const lang = getLang(ctx);
 
@@ -248,7 +265,19 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
  */
 export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session) return;
-  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) {
+    // Same feedback as handlePhotoInput — tell user to pick a model first
+    if (ctx.message && 'document' in ctx.message && ctx.message.document?.mime_type?.startsWith('image/')) {
+      if (ctx.session?.videoFamily || ctx.session?.imageFamily) {
+        const lang = getLang(ctx);
+        const msg = lang === 'ru'
+          ? '⚠️ Сначала выберите модель, затем загрузите изображение.'
+          : '⚠️ Please select a model first, then upload an image.';
+        await ctx.reply(msg);
+      }
+    }
+    return;
+  }
   if (!ctx.message || !('document' in ctx.message) || !ctx.message.document) return;
 
   const doc = ctx.message.document;
@@ -256,6 +285,12 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
   // Only handle image files
   if (!mime.startsWith('image/')) return;
+
+  // Clean up previous bot navigation message
+  if (ctx.session.lastBotMessageId) {
+    await deleteMessage(ctx, ctx.session.lastBotMessageId);
+    ctx.session.lastBotMessageId = undefined;
+  }
 
   const lang = getLang(ctx);
 
