@@ -107,6 +107,13 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
       : 'Model temporarily unavailable. Please try again later.';
   }
 
+  // File too big for Telegram (should be handled by compression, but just in case)
+  if (lower.includes('too big for a photo') || lower.includes('file is too big')) {
+    return lang === 'ru'
+      ? 'Сгенерированное изображение слишком большое. Попробуйте уменьшить разрешение.'
+      : 'Generated image is too large. Try reducing the resolution.';
+  }
+
   // Bad request / validation
   if (lower.includes('status code 400') || lower.includes('bad request') || lower.includes('validation')) {
     return lang === 'ru'
