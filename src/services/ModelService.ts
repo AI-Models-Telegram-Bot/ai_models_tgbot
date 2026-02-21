@@ -38,6 +38,10 @@ const SLUG_TO_PRICE: Record<string, string> = {
   'seedream-4.5': 'IMAGE_SEEDREAM_45',
   'sora-pro': 'VIDEO_SORA_PRO',
   'runway-gen4': 'VIDEO_RUNWAY_GEN4',
+  'seedance': 'VIDEO_SEEDANCE',
+  'seedance-lite': 'VIDEO_SEEDANCE_LITE',
+  'seedance-1-pro': 'VIDEO_SEEDANCE_PRO',
+  'seedance-fast': 'VIDEO_SEEDANCE_FAST',
   'fish-speech': 'AUDIO_FISH_SPEECH',
 };
 
@@ -119,7 +123,10 @@ export class ModelService {
 
       // Video models
       { name: 'Wan 2.1', slug: 'wan', provider: 'replicate', category: 'VIDEO', tokenCost: 10, priceItemCode: 'VIDEO_WAN', description: 'Wan AI video generation (~$0.25)' },
-      { name: 'Seedance 1.5', slug: 'seedance', provider: 'kieai', category: 'VIDEO', tokenCost: 10, priceItemCode: 'VIDEO_SEEDANCE', description: 'ByteDance Seedance 1.5 Pro text-to-video (~$0.20)' },
+      { name: 'Seedance 1.0 Lite', slug: 'seedance-lite', provider: 'fal', category: 'VIDEO', tokenCost: 8, priceItemCode: 'VIDEO_SEEDANCE_LITE', description: 'ByteDance Seedance 1.0 Lite — affordable 720p video (~$0.18)' },
+      { name: 'Seedance 1.0 Fast', slug: 'seedance-fast', provider: 'fal', category: 'VIDEO', tokenCost: 12, priceItemCode: 'VIDEO_SEEDANCE_FAST', description: 'ByteDance Seedance 1.0 Pro Fast — fast 1080p video (~$0.245)' },
+      { name: 'Seedance 1.5 Pro', slug: 'seedance', provider: 'fal', category: 'VIDEO', tokenCost: 15, priceItemCode: 'VIDEO_SEEDANCE', description: 'ByteDance Seedance 1.5 Pro — latest model (~$0.26)' },
+      { name: 'Seedance 1.0 Pro', slug: 'seedance-1-pro', provider: 'fal', category: 'VIDEO', tokenCost: 30, priceItemCode: 'VIDEO_SEEDANCE_PRO', description: 'ByteDance Seedance 1.0 Pro — highest quality 1080p (~$0.74)' },
       { name: 'Kling', slug: 'kling', provider: 'piapi', category: 'VIDEO', tokenCost: 12, priceItemCode: 'VIDEO_KLING', description: 'Kling 5s video (~$0.26)' },
       { name: 'Runway Gen-4 Turbo', slug: 'runway', provider: 'kieai', category: 'VIDEO', tokenCost: 15, priceItemCode: 'VIDEO_RUNWAY', description: 'Runway Gen-4 Turbo — fast video generation (~$0.30)' },
       { name: 'Runway Gen-4', slug: 'runway-gen4', provider: 'kieai', category: 'VIDEO', tokenCost: 20, priceItemCode: 'VIDEO_RUNWAY_GEN4', description: 'Runway Gen-4 — standard quality video (~$0.40)' },

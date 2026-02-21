@@ -275,12 +275,36 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Seedance — ByteDance video (fal.ai primary, kieai has issues)
+  // Seedance 1.0 Lite — ByteDance video (cheapest, 720p)
+  'seedance-lite': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1/lite/text-to-video' },    // ~$0.18
+    ],
+  },
+
+  // Seedance 1.0 Pro — ByteDance video (best quality, 1080p)
+  'seedance-1-pro': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1/pro/text-to-video' },     // ~$0.74
+    ],
+  },
+
+  // Seedance 1.0 Fast — ByteDance video (fast + affordable 1080p)
+  'seedance-fast': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1/pro/fast/text-to-video' }, // ~$0.245
+    ],
+  },
+
+  // Seedance 1.5 Pro — ByteDance video (latest)
   'seedance': {
     category: 'VIDEO',
     providers: [
       { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1.5/pro/text-to-video' },  // ~$0.26
-      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },                       // ~$0.20 (currently broken)
+      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },                       // ~$0.20 (fallback)
     ],
   },
 

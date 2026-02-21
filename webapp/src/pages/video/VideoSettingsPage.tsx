@@ -31,6 +31,9 @@ const MODEL_ASPECTS: Record<string, string[]> = {
   'runway': ['16:9', '9:16'],
   'runway-gen4': ['16:9', '9:16'],
   'seedance': ['16:9', '9:16', '1:1'],
+  'seedance-lite': ['16:9', '9:16', '1:1'],
+  'seedance-1-pro': ['16:9', '9:16', '1:1'],
+  'seedance-fast': ['16:9', '9:16', '1:1'],
 };
 
 interface DurationOption {
@@ -82,6 +85,18 @@ const MODEL_DURATIONS: Record<string, DurationOption[]> = {
     { value: 8, labelKey: 'duration8s' },
     { value: 12, labelKey: 'duration12s' },
   ],
+  'seedance-lite': [
+    { value: 4, labelKey: 'duration4s' },
+    { value: 8, labelKey: 'duration8s' },
+  ],
+  'seedance-1-pro': [
+    { value: 4, labelKey: 'duration4s' },
+    { value: 8, labelKey: 'duration8s' },
+  ],
+  'seedance-fast': [
+    { value: 4, labelKey: 'duration4s' },
+    { value: 8, labelKey: 'duration8s' },
+  ],
 };
 
 interface ResolutionOption {
@@ -117,6 +132,18 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
   ],
   'runway-gen4': [
+    { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+  ],
+  'seedance': [
+    { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+  ],
+  'seedance-1-pro': [
+    { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+  ],
+  'seedance-fast': [
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
   ],

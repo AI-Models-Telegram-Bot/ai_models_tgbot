@@ -20,7 +20,10 @@ const DYNAMIC_PRICING: Record<string, DynamicPricingConfig> = {
   'sora-pro': { defaultDuration: 4, defaultResolution: '720p' },
   'runway':   { defaultDuration: 5, defaultResolution: '720p' },
   'runway-gen4': { defaultDuration: 5, defaultResolution: '720p' },
-  'seedance': { defaultDuration: 8 }, // duration-only scaling
+  'seedance':      { defaultDuration: 4 }, // duration-only scaling
+  'seedance-lite':  { defaultDuration: 4 },
+  'seedance-1-pro': { defaultDuration: 4 },
+  'seedance-fast':  { defaultDuration: 4 },
 };
 
 const RESOLUTION_MULT: Record<string, number> = {

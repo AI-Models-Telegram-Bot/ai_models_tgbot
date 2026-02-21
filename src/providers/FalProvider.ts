@@ -134,13 +134,19 @@ export class FalProvider extends EnhancedProvider {
    * Switch model ID from text-to-video to image-to-video variant when images are provided.
    */
   private getImageToVideoModel(textModel: string): string {
-    const modelMap: Record<string, string> = {
-      'fal-ai/bytedance/seedance/v1.5/pro/text-to-video': 'fal-ai/bytedance/seedance/v1.5/pro/image-to-video',
-      'fal-ai/kling-video/v2.5/standard': 'fal-ai/kling-video/v2.5/standard/image-to-video',
-      'fal-ai/kling-video/v2.5/pro': 'fal-ai/kling-video/v2.5/pro/image-to-video',
-      'fal-ai/wan/v2.5/text-to-video': 'fal-ai/wan/v2.5/image-to-video',
-    };
-    return modelMap[textModel] || textModel;
+    // Seedance: text-to-video → image-to-video
+    if (textModel.includes('seedance') && textModel.endsWith('/text-to-video')) {
+      return textModel.replace('/text-to-video', '/image-to-video');
+    }
+    // Kling: append /image-to-video (fal kling IDs don't have /text-to-video suffix)
+    if (textModel.includes('kling-video') && !textModel.endsWith('/image-to-video')) {
+      return `${textModel}/image-to-video`;
+    }
+    // Wan: text-to-video → image-to-video
+    if (textModel.includes('/wan/') && textModel.endsWith('/text-to-video')) {
+      return textModel.replace('/text-to-video', '/image-to-video');
+    }
+    return textModel;
   }
 
   async generateVideo(

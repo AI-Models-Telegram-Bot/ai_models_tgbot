@@ -61,6 +61,18 @@ export function getRunwayModelsKeyboard(lang: Language) {
 }
 
 /**
+ * Reply keyboard: Seedance family models + back/main
+ */
+export function getSeedanceModelsKeyboard(lang: Language) {
+  const l = getLocale(lang);
+  return Markup.keyboard([
+    [l.buttons.videoSeedanceLite, l.buttons.videoSeedancePro],
+    [l.buttons.videoSeedanceFast, l.buttons.videoSeedance15Pro],
+    [l.buttons.back, l.buttons.mainMenu],
+  ]).resize();
+}
+
+/**
  * Reply keyboard for a selected video model (with optional webapp settings button + back/main)
  */
 export function getVideoModelMenuKeyboard(lang: Language, modelSlug: string, hasSettings: boolean, telegramId?: number) {
