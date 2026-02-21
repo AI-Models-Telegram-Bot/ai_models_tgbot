@@ -7,6 +7,7 @@ export interface VideoModelSettings {
   resolution?: string;
   generateAudio?: boolean;
   mode?: string;           // 'text' | 'frames' | 'ingredients' (Veo only)
+  cameraFixed?: boolean;   // Seedance camera lock
   // Kling-specific fields
   version?: string;        // e.g. '2.6', '2.5', '2.1', '2.1-master', '1.6', '1.5'
   negativePrompt?: string;

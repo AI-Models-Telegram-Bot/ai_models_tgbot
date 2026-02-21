@@ -233,6 +233,123 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   }
 }
 
+/**
+ * Handle document uploads (files sent as .png, .jpg, .webp, etc.)
+ * Delegates to handlePhotoInput after extracting the file as a photo-like object.
+ */
+export async function handleDocumentInput(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+  if (!ctx.message || !('document' in ctx.message) || !ctx.message.document) return;
+
+  const doc = ctx.message.document;
+  const mime = doc.mime_type || '';
+
+  // Only handle image files
+  if (!mime.startsWith('image/')) return;
+
+  const lang = getLang(ctx);
+
+  // Image models that support reference image input
+  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
+  const TEXT_ONLY_VIDEO_MODELS: string[] = [];
+
+  const isVideoModel = !!ctx.session.videoFunction;
+  const isImageModelWithInput = !!ctx.session.imageFunction &&
+    IMAGE_MODELS_WITH_IMAGE_INPUT.includes(ctx.session.imageFunction);
+
+  if (!isVideoModel && !isImageModelWithInput) {
+    if (ctx.session.imageFunction) {
+      const msg = lang === 'ru'
+        ? '⚠️ Эта модель поддерживает только текстовые запросы — референсные изображения не поддерживаются. Отправьте ✍️ текстовый запрос.'
+        : '⚠️ This model is text-only — reference images are not supported. Please send ✍️ a text prompt.';
+      await ctx.reply(msg);
+    } else {
+      const msg = lang === 'ru'
+        ? 'Загрузка изображений поддерживается только для видео и некоторых моделей изображений. Отправьте текстовый запрос.'
+        : 'Image uploads are only supported for video and select image models. Please send a text prompt.';
+      await ctx.reply(msg);
+    }
+    return;
+  }
+
+  if (isVideoModel && TEXT_ONLY_VIDEO_MODELS.includes(ctx.session.videoFunction!)) {
+    const msg = lang === 'ru'
+      ? '⚠️ Эта модель поддерживает только текстовые запросы. Отправьте ✍️ текстовый запрос.'
+      : '⚠️ This model is text-only. Please send ✍️ a text prompt.';
+    await ctx.reply(msg);
+    return;
+  }
+
+  if (isImageModelWithInput && ctx.session.uploadedImageUrls?.length) {
+    const msg = lang === 'ru'
+      ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
+      : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.';
+    await ctx.reply(msg);
+    return;
+  }
+
+  try {
+    const fileLink = await ctx.telegram.getFileLink(doc.file_id);
+    const imageUrl = fileLink.href;
+
+    if (!ctx.session.uploadedImageUrls) {
+      ctx.session.uploadedImageUrls = [];
+    }
+    ctx.session.uploadedImageUrls.push(imageUrl);
+
+    const count = ctx.session.uploadedImageUrls.length;
+
+    // If caption is provided, treat it as the prompt and enqueue immediately
+    if (ctx.message.caption) {
+      await cleanUpImageUploadMessages(ctx);
+      return processGeneration(ctx, ctx.message.caption);
+    }
+
+    await cleanUpImageUploadMessages(ctx);
+
+    let msg: string;
+    if (isImageModelWithInput) {
+      msg = lang === 'ru'
+        ? `✅ 1 изображение добавлено.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос, или отправьте ✍️ текстовый запрос описывающий редактирование 👇`
+        : `✅ 1 image added.\nYou can press "Configure" to adjust settings and send a prompt, or send ✍️ a text prompt describing the edit 👇`;
+    } else {
+      msg = lang === 'ru'
+        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос или загрузить ещё изображения для работы с кадрами 👇`
+        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nYou can press "Configure" to adjust settings and send a prompt, or upload more images for start/end frames 👇`;
+    }
+
+    const buttons: any[][] = [];
+    buttons.push([
+      Markup.button.callback(lang === 'ru' ? '🗑 Удалить' : '🗑 Delete', `delete_image:${count - 1}`),
+    ]);
+
+    const webappUrl = config.webapp?.url;
+    const modelSlug = ctx.session.videoFunction || ctx.session.imageFunction;
+    if (webappUrl && ctx.from && modelSlug) {
+      const settingsPath = isImageModelWithInput ? 'image' : 'video';
+      const configureUrl = `${webappUrl}/${settingsPath}/settings?model=${encodeURIComponent(modelSlug)}&tgid=${ctx.from.id}`;
+      buttons.push([
+        Markup.button.webApp(lang === 'ru' ? '⚙️ Настроить' : '⚙️ Configure', configureUrl),
+      ]);
+    }
+
+    const sentMsg = await ctx.reply(msg, {
+      reply_parameters: { message_id: ctx.message.message_id },
+      ...Markup.inlineKeyboard(buttons),
+    });
+
+    if (!ctx.session.imageUploadMsgIds) ctx.session.imageUploadMsgIds = [];
+    ctx.session.imageUploadMsgIds.push(sentMsg.message_id);
+  } catch (error) {
+    logger.error('Failed to get file link for document:', error);
+    const msg = lang === 'ru'
+      ? 'Не удалось загрузить изображение. Попробуйте снова.'
+      : 'Failed to upload image. Please try again.';
+    await ctx.reply(msg);
+  }
+}
+
 export async function handleUserInput(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session) return;
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;

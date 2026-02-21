@@ -153,6 +153,8 @@ const AUDIO_MODELS = ['veo-fast', 'veo'];
 
 const VEO_MODELS = ['veo-fast', 'veo'];
 
+const SEEDANCE_MODELS = ['seedance', 'seedance-lite', 'seedance-1-pro', 'seedance-fast'];
+
 interface ModeOption {
   value: string;
   labelKey: string;
@@ -247,6 +249,7 @@ export default function VideoSettingsPage() {
   const hasAudio = AUDIO_MODELS.includes(modelSlug);
   const isVeo = VEO_MODELS.includes(modelSlug);
   const isRunway = modelSlug === 'runway' || modelSlug === 'runway-gen4';
+  const isSeedance = SEEDANCE_MODELS.includes(modelSlug);
   const isKling = KLING_MODELS.includes(modelSlug);
   const klingMode: 'std' | 'pro' = modelSlug === 'kling-pro' ? 'pro' : 'std';
   const availableVersions = modelSlug === 'kling-pro' ? KLING_VERSIONS_PRO : KLING_VERSIONS_STD;
@@ -262,6 +265,8 @@ export default function VideoSettingsPage() {
   const [generateAudio, setGenerateAudio] = useState(true);
   // Veo mode state
   const [mode, setMode] = useState('text');
+  // Seedance-specific state
+  const [cameraFixed, setCameraFixed] = useState(false);
   // Kling-specific state
   const [version, setVersion] = useState('2.6');
   const [negativePrompt, setNegativePrompt] = useState('');
@@ -287,6 +292,9 @@ export default function VideoSettingsPage() {
       if (isVeo) {
         setMode(modelSettings.mode || 'text');
       }
+      if (isSeedance) {
+        setCameraFixed(modelSettings.cameraFixed ?? false);
+      }
       if (isKling) {
         setVersion(modelSettings.version || '2.6');
         setNegativePrompt(modelSettings.negativePrompt || '');
@@ -295,7 +303,7 @@ export default function VideoSettingsPage() {
         setDuration(modelSettings.duration ?? 5);
       }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isKling, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -321,6 +329,7 @@ export default function VideoSettingsPage() {
     if (hasResolution && resolution !== (modelSettings?.resolution || '720p')) return true;
     if (hasAudio && generateAudio !== (modelSettings?.generateAudio ?? true)) return true;
     if (isVeo && mode !== (modelSettings?.mode || 'text')) return true;
+    if (isSeedance && cameraFixed !== (modelSettings?.cameraFixed ?? false)) return true;
     if (isKling) {
       if (version !== (modelSettings?.version || '2.6')) return true;
       if (negativePrompt !== (modelSettings?.negativePrompt || '')) return true;
@@ -344,6 +353,7 @@ export default function VideoSettingsPage() {
       if (hasResolution) updates.resolution = resolution;
       if (hasAudio) updates.generateAudio = generateAudio;
       if (isVeo) updates.mode = mode;
+      if (isSeedance) updates.cameraFixed = cameraFixed;
       if (isKling) {
         updates.version = version;
         updates.duration = duration;
@@ -700,6 +710,56 @@ export default function VideoSettingsPage() {
                 </p>
               </motion.div>
             )}
+          </motion.div>
+        )}
+
+        {/* Seedance: Camera Lock */}
+        {isSeedance && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('cameraLock')}
+            </div>
+            <div
+              onClick={() => {
+                hapticImpact('light');
+                setCameraFixed(!cameraFixed);
+              }}
+              className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                cameraFixed
+                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center" style={{ columnGap: 10 }}>
+                  <span className="text-lg">{cameraFixed ? '🔒' : '🔓'}</span>
+                  <div>
+                    <span className="font-semibold text-content-primary text-sm">
+                      {cameraFixed ? t('cameraLockOn') : t('cameraLockOff')}
+                    </span>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      {t('cameraLockDesc')}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
+                    cameraFixed ? 'bg-video-primary' : 'bg-white/10'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${
+                      cameraFixed ? 'left-6' : 'left-1'
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
           </motion.div>
         )}
 

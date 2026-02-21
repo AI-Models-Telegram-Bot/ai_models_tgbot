@@ -180,6 +180,12 @@ export class KieAIProvider extends EnhancedProvider {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
       const hasImages = inputImageUrls && inputImageUrls.length > 0;
 
+      // Kling: override version in model ID from user settings (e.g. kling-2.6 → kling-1.5)
+      if (model.startsWith('kling-') && options?.version) {
+        const userVersion = String(options.version);
+        model = model.replace(/kling-[\d.]+/, `kling-${userVersion}`);
+      }
+
       // Switch to image-to-video model variant if images are provided
       if (hasImages) {
         model = this.getImageToVideoModelId(model);

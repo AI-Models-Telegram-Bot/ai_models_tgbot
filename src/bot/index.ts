@@ -24,6 +24,7 @@ import {
   handleImageFunctionSelection,
   handleUserInput,
   handlePhotoInput,
+  handleDocumentInput,
   handleCallbackQuery,
   handleWebAppData,
   handlePreCheckoutQuery,
@@ -245,6 +246,9 @@ export function createBot(): Telegraf<BotContext> {
 
   // Photo messages (image upload for video models)
   bot.on('photo', handlePhotoInput);
+
+  // Document messages (file uploads — .png, .jpg, etc.)
+  bot.on('document', handleDocumentInput);
 
   // Text messages (user input for models)
   bot.on('text', handleUserInput);

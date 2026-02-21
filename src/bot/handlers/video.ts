@@ -352,6 +352,10 @@ export async function getVideoOptionsForFunction(
     if (settings.mode) {
       options.mode = settings.mode;
     }
+    // Seedance-specific: camera lock
+    if (settings.cameraFixed !== undefined) {
+      options.cameraFixed = settings.cameraFixed;
+    }
 
     return options;
   } catch (error) {

@@ -10,6 +10,7 @@ export interface VideoModelSettings {
   cfgScale?: number;
   enableAudio?: boolean;
   mode?: string;
+  cameraFixed?: boolean;
 }
 
 export interface VideoSettingsResponse {

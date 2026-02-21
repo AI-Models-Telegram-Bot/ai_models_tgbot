@@ -181,10 +181,19 @@ export class FalProvider extends EnhancedProvider {
       // Add image URL for image-to-video
       if (hasImages) {
         input.image_url = inputImageUrls[0];
+        // Pass second image as end frame (Seedance, Kling support this)
+        if (inputImageUrls.length >= 2) {
+          input.end_image_url = inputImageUrls[1];
+        }
+      }
+
+      // Seedance-specific: camera_fixed
+      if (model.includes('seedance') && options?.cameraFixed !== undefined) {
+        input.camera_fixed = options.cameraFixed;
       }
 
       // Submit to queue
-      logger.info('Fal.ai video payload:', { model, aspect_ratio: input.aspect_ratio, resolution: input.resolution, duration: input.duration, hasImage: !!input.image_url });
+      logger.info('Fal.ai video payload:', { model, aspect_ratio: input.aspect_ratio, resolution: input.resolution, duration: input.duration, hasImage: !!input.image_url, hasEndImage: !!input.end_image_url, cameraFixed: input.camera_fixed });
       const submitResponse = await this.client.post(
         `https://queue.fal.run/${model}`,
         input
