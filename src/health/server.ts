@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import rateLimit from 'express-rate-limit';
 import { createBullBoard } from '@bull-board/api';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
@@ -10,6 +11,7 @@ import { logger } from '../utils/logger';
 import providerRoutes from '../routes/providers.routes';
 import authRoutes from '../routes/auth.routes';
 import chatRoutes from '../routes/chat.routes';
+import uploadRoutes from '../routes/upload.routes';
 import webappRoutes from '../webapp/routes';
 import { unifiedAuth } from '../webapp/middleware/auth.middleware';
 import { yookassaService } from '../services/YooKassaService';
@@ -173,6 +175,13 @@ export function createHealthServer(port: number = 3000): express.Application {
   // --- WebApp API endpoints (authenticated + rate limited) ---
   app.use('/api/webapp', apiLimiter, unifiedAuth, webappRoutes);
   logger.info('WebApp API routes mounted at /api/webapp/*');
+
+  // --- File upload endpoint (authenticated + rate limited) ---
+  app.use('/api/web/upload', apiLimiter, unifiedAuth, uploadRoutes);
+  logger.info('Upload routes mounted at /api/web/upload');
+
+  // --- Serve uploaded files statically ---
+  app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
   // --- Bull Board Admin UI ---
   try {

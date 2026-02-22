@@ -26,6 +26,46 @@ interface AuthState {
 const TOKEN_KEY = 'vseonix_access_token';
 const REFRESH_KEY = 'vseonix_refresh_token';
 
+// Proactive refresh timer — refresh access token before it expires
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+function parseJwtExp(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+function scheduleProactiveRefresh(accessToken: string) {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+
+  const expiresAt = parseJwtExp(accessToken);
+  if (!expiresAt) return;
+
+  // Refresh 2 minutes before expiry
+  const refreshIn = expiresAt - Date.now() - 2 * 60 * 1000;
+  if (refreshIn <= 0) return;
+
+  refreshTimer = setTimeout(() => {
+    const store = useAuthStore.getState();
+    if (store.isAuthenticated && store.refreshToken) {
+      store.refreshAccessToken();
+    }
+  }, refreshIn);
+}
+
+function clearRefreshTimer() {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+}
+
 function saveTokens(tokens: AuthTokens) {
   localStorage.setItem(TOKEN_KEY, tokens.accessToken);
   localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
@@ -58,6 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       refreshToken: tokens.refreshToken,
       isAuthenticated: true,
     });
+    scheduleProactiveRefresh(tokens.accessToken);
   },
 
   clearError: () => set({ error: null }),
@@ -112,6 +153,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     const { refreshToken } = get();
+    clearRefreshTimer();
     if (refreshToken) {
       try {
         await authApi.logout(refreshToken);
@@ -139,6 +181,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return data.accessToken;
     } catch {
       // Refresh failed — clear auth
+      clearRefreshTimer();
       clearTokens();
       set({
         user: null,
@@ -178,6 +221,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data } = await authApi.getMe();
       set({ user: data, isAuthenticated: true, isLoading: false });
+      // Schedule proactive refresh for existing token
+      if (accessToken) {
+        scheduleProactiveRefresh(accessToken);
+      }
     } catch {
       // Token might be expired, try refresh
       if (refreshToken) {

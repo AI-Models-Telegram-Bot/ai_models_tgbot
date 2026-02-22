@@ -37,7 +37,8 @@ interface CreateState {
   fetchModels: () => Promise<void>;
   selectCategory: (cat: Category) => void;
   selectModel: (model: ChatModel) => void;
-  generate: (prompt: string) => Promise<void>;
+  switchModel: (model: ChatModel) => void;
+  generate: (prompt: string, fileUrl?: string) => Promise<void>;
   reset: () => void;
   goBack: () => void;
   fetchHistory: () => Promise<void>;
@@ -96,7 +97,23 @@ export const useCreateStore = create<CreateState>((set, get) => ({
     set({ selectedModel: model, step: 'prompt', ...INITIAL_RESULT });
   },
 
-  generate: async (prompt: string) => {
+  switchModel: (model) => {
+    const { step } = get();
+    // Switch model without changing step or resetting results (unless generating)
+    const updates: Partial<CreateState> = {
+      selectedModel: model,
+      selectedCategory: model.category as Category,
+    };
+    // If switching during prompt/result, keep current step
+    if (step === 'prompt' || step === 'result') {
+      set(updates);
+    } else {
+      // If on category/model selection steps, jump to prompt
+      set({ ...updates, step: 'prompt', ...INITIAL_RESULT });
+    }
+  },
+
+  generate: async (prompt: string, fileUrl?: string) => {
     const { selectedModel } = get();
     if (!selectedModel) return;
 
@@ -117,7 +134,7 @@ export const useCreateStore = create<CreateState>((set, get) => ({
       set({ conversationId: conversation.id });
 
       // 2. Send the message to trigger generation
-      const resp = await chatApi.sendMessage(conversation.id, prompt);
+      const resp = await chatApi.sendMessage(conversation.id, prompt, fileUrl);
       set({ resultMessageId: resp.assistantMessageId });
 
       // SSE hook will pick up conversationId and stream results
