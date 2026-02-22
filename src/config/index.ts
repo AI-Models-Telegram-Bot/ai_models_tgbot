@@ -73,7 +73,7 @@ export const config = {
     accessSecret: process.env.JWT_ACCESS_SECRET || 'dev-access-secret-change-in-production',
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production',
     accessExpiresIn: '15m',
-    refreshExpiresIn: '7d',
+    refreshExpiresIn: '30d',
   },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',

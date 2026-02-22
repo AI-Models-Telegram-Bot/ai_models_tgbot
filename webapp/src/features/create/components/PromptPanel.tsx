@@ -5,8 +5,11 @@ import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import { getModelIcon } from '../constants/modelIcons';
 import { ModelSettingsPanel } from './ModelSettingsPanel';
+import { ModelSwitcherModal } from './ModelSwitcherModal';
+import { FileUpload } from './FileUpload';
 import type { ChatModel } from '@/services/api/chat.api';
-import type { Category } from '../store/useCreateStore';
+
+type Category = 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO';
 
 const CATEGORY_COLORS: Record<Category, { ring: string; text: string; bg: string }> = {
   TEXT: { ring: 'focus-within:ring-cyan-400/30', text: 'text-cyan-400', bg: 'bg-cyan-500/10' },
@@ -19,8 +22,10 @@ interface PromptPanelProps {
   category: Category;
   model: ChatModel;
   isGenerating: boolean;
-  onGenerate: (prompt: string) => void;
+  onGenerate: (prompt: string, fileUrl?: string) => void;
   onBack: () => void;
+  models?: ChatModel[];
+  onSwitchModel?: (model: ChatModel) => void;
 }
 
 export const PromptPanel: React.FC<PromptPanelProps> = ({
@@ -29,11 +34,18 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
   isGenerating,
   onGenerate,
   onBack,
+  models: propModels,
+  onSwitchModel,
 }) => {
   const { t } = useTranslation(['create', 'common']);
   const [prompt, setPrompt] = useState('');
+  const [showModelSwitcher, setShowModelSwitcher] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const colors = CATEGORY_COLORS[category];
+
+  const models = propModels || [];
+  const switchModel = onSwitchModel;
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -50,7 +62,7 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
   const handleSubmit = () => {
     const text = prompt.trim();
     if (!text || isGenerating) return;
-    onGenerate(text);
+    onGenerate(text, uploadedFileUrl || undefined);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -83,7 +95,12 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
           <span className="text-sm">{t('common:back')}</span>
         </button>
 
-        <div className="flex items-center" style={{ columnGap: 12 }}>
+        {/* Clickable model header — opens model switcher */}
+        <button
+          onClick={() => setShowModelSwitcher(true)}
+          className="flex items-center w-full text-left group rounded-xl p-2 -m-2 hover:bg-white/[0.03] transition-colors"
+          style={{ columnGap: 12 }}
+        >
           {/* Model icon */}
           <div className={cn(
             'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl',
@@ -109,11 +126,25 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
               </p>
             )}
           </div>
-        </div>
+          {/* Switch indicator */}
+          <div className="shrink-0 text-content-tertiary group-hover:text-content-secondary transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+            </svg>
+          </div>
+        </button>
       </motion.div>
 
       {/* Model settings (image/video/audio only) */}
       <ModelSettingsPanel category={category} model={model} />
+
+      {/* File upload (image/video/audio only) */}
+      <FileUpload
+        category={category}
+        onFileUploaded={setUploadedFileUrl}
+        onFileClear={() => setUploadedFileUrl(null)}
+        uploadedFileUrl={uploadedFileUrl}
+      />
 
       {/* Example prompts — shown when textarea is empty */}
       {!prompt && Array.isArray(examples) && examples.length > 0 && (
@@ -185,6 +216,18 @@ export const PromptPanel: React.FC<PromptPanelProps> = ({
           </div>
         </div>
       </motion.div>
+
+      {/* Model switcher modal */}
+      {switchModel && (
+        <ModelSwitcherModal
+          isOpen={showModelSwitcher}
+          onClose={() => setShowModelSwitcher(false)}
+          models={models}
+          currentModel={model}
+          currentCategory={category}
+          onSelect={switchModel}
+        />
+      )}
     </div>
   );
 };

@@ -39,7 +39,7 @@ interface ModelSelectorProps {
   models: ChatModel[];
   isLoading: boolean;
   onSelect: (model: ChatModel) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export const ModelSelector: React.FC<ModelSelectorProps> = ({
@@ -69,16 +69,18 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
         transition={{ duration: 0.25 }}
         className="mb-6"
       >
-        <button
-          onClick={onBack}
-          className="flex items-center text-content-secondary hover:text-white transition-colors mb-4"
-          style={{ columnGap: 6 }}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <span className="text-sm">{t('common:back')}</span>
-        </button>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center text-content-secondary hover:text-white transition-colors mb-4"
+            style={{ columnGap: 6 }}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="text-sm">{t('common:back')}</span>
+          </button>
+        )}
 
         <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-1">
           {t('create:chooseModel')}

@@ -92,7 +92,7 @@ function createResponseInterceptor(client: typeof apiClient) {
           try {
             const { data } = await axios.post('/api/auth/refresh', {
               refreshToken,
-            });
+            }, { timeout: 10000 });
 
             localStorage.setItem(TOKEN_KEY, data.accessToken);
             localStorage.setItem(REFRESH_KEY, data.refreshToken);

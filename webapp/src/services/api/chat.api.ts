@@ -84,11 +84,11 @@ export const chatApi = {
     rootApiClient.delete(`/api/web/chat/conversations/${id}`),
 
   /** Send a message inside a conversation */
-  sendMessage: (conversationId: string, content: string) =>
+  sendMessage: (conversationId: string, content: string, fileUrl?: string) =>
     rootApiClient
       .post<SendMessageResponse>(
         `/api/web/chat/conversations/${conversationId}/messages`,
-        { content },
+        { content, ...(fileUrl ? { fileUrl } : {}) },
       )
       .then((r) => r.data),
 

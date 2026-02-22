@@ -2,7 +2,7 @@ import { config, validateConfig } from './config';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { connectRedis, disconnectRedis } from './config/redis';
 import { createBot } from './bot';
-import { modelService } from './services';
+import { modelService, authService } from './services';
 import { setupQueueEvents, shutdownQueues } from './queues';
 import { startWorkers } from './queues/workers';
 import { createHealthServer } from './health/server';
@@ -62,6 +62,12 @@ async function main(): Promise<void> {
 
     logger.info(`Environment: ${config.app.nodeEnv}`);
     logger.info(`Health server: http://localhost:${config.health.port}/health`);
+
+    // Cleanup expired auth tokens on startup and every 24 hours
+    authService.cleanupExpiredTokens().catch(() => {});
+    setInterval(() => {
+      authService.cleanupExpiredTokens().catch(() => {});
+    }, 24 * 60 * 60 * 1000);
 
     // Enable graceful stop
     const shutdown = async (signal: string) => {
