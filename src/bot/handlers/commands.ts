@@ -133,6 +133,7 @@ export async function handleMainMenu(ctx: BotContext): Promise<void> {
     ctx.session.videoFunction = undefined;
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
+    ctx.session.activeConversationId = undefined;
   }
 
   await sendTrackedMessage(ctx, l.messages.chooseOption, getMainKeyboard(lang));
