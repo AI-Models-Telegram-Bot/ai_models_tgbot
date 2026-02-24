@@ -2,7 +2,7 @@ export * from './commands';
 export * from './categories';
 export * from './models';
 export * from './callbacks';
-export { handleTextAI, handleChatMessage, handleChatCallback } from './chat';
+export { handleTextAI, handleNewChat, handleMyChatsList, handleChatMessage, handleChatCallback } from './chat';
 export { handleAudioFunctionSelection } from './audio';
 export { handleImageFamilyMenu, handleImageFamilySelection, handleImageFunctionSelection, isSingleModelFamily } from './image';
 export { handleVideoFamilyMenu, handleVideoFamilySelection, handleVideoFunctionSelection, isSingleVideoFamily } from './video';

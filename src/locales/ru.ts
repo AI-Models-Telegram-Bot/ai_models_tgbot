@@ -74,6 +74,9 @@ export const ru: Locale = {
     videoSeedanceFast: '⚡ 1.0 Fast (⚡12–36)',
     videoSeedance15Pro: '🌱 1.5 Pro (⚡15–45)',
     videoSettings: '🎛️ Настройки видео',
+    // Chat
+    chatNewChat: '➕ Новый чат',
+    chatMyChats: '📋 Мои чаты',
   },
 
   // Messages
