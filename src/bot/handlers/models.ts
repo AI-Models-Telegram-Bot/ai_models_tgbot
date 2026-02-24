@@ -17,6 +17,10 @@ import { calculateDynamicCost } from '../../utils/videoPricing';
 /** Image models that accept a reference image for editing (not just text prompt) */
 const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
 
+/** Image models that support multiple reference images (up to 4). Others accept only 1. */
+const MULTI_IMAGE_MODELS = ['nano-banana', 'nano-banana-pro', 'seedream', 'seedream-4.5'];
+const MAX_REFERENCE_IMAGES = 4;
+
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
 }
@@ -180,13 +184,21 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // For image editing models, limit to 1 reference image
+  // For image editing models, enforce per-model image limits
   if (isImageModelWithInput && ctx.session.uploadedImageUrls?.length) {
-    const msg = lang === 'ru'
-      ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
-      : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.';
-    await ctx.reply(msg);
-    return;
+    const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
+    const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
+    if (ctx.session.uploadedImageUrls.length >= maxImages) {
+      const msg = maxImages === 1
+        ? (lang === 'ru'
+            ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
+            : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.')
+        : (lang === 'ru'
+            ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
+            : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
+      await ctx.reply(msg);
+      return;
+    }
   }
 
   // Get the largest photo (last element in the array)
@@ -215,9 +227,18 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     // Otherwise acknowledge and wait for text prompt
     let msg: string;
     if (isImageModelWithInput) {
-      msg = lang === 'ru'
-        ? `✅ 1 изображение добавлено.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос, или отправьте ✍️ текстовый запрос для редактирования 👇`
-        : `✅ 1 image added.\nYou can press "Configure" to adjust settings and send a prompt, or send ✍️ a text prompt describing the edit 👇`;
+      const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
+      const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
+      const remaining = maxImages - count;
+      if (supportsMultiple && remaining > 0) {
+        msg = lang === 'ru'
+          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
+      } else {
+        msg = lang === 'ru'
+          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
+          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
+      }
     } else {
       msg = lang === 'ru'
         ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос или загрузить ещё изображения для работы с кадрами 👇`
@@ -324,11 +345,19 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   }
 
   if (isImageModelWithInput && ctx.session.uploadedImageUrls?.length) {
-    const msg = lang === 'ru'
-      ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
-      : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.';
-    await ctx.reply(msg);
-    return;
+    const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
+    const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
+    if (ctx.session.uploadedImageUrls.length >= maxImages) {
+      const msg = maxImages === 1
+        ? (lang === 'ru'
+            ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
+            : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.')
+        : (lang === 'ru'
+            ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
+            : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
+      await ctx.reply(msg);
+      return;
+    }
   }
 
   try {
@@ -352,9 +381,18 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
     let msg: string;
     if (isImageModelWithInput) {
-      msg = lang === 'ru'
-        ? `✅ 1 изображение добавлено.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос, или отправьте ✍️ текстовый запрос описывающий редактирование 👇`
-        : `✅ 1 image added.\nYou can press "Configure" to adjust settings and send a prompt, or send ✍️ a text prompt describing the edit 👇`;
+      const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
+      const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
+      const remaining = maxImages - count;
+      if (supportsMultiple && remaining > 0) {
+        msg = lang === 'ru'
+          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
+      } else {
+        msg = lang === 'ru'
+          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
+          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
+      }
     } else {
       msg = lang === 'ru'
         ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос или загрузить ещё изображения для работы с кадрами 👇`
