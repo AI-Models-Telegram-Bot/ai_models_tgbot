@@ -72,6 +72,9 @@ export const en = {
     videoSeedanceFast: '⚡ 1.0 Fast (⚡12–36)',
     videoSeedance15Pro: '🌱 1.5 Pro (⚡15–45)',
     videoSettings: '🎛️ Video Settings',
+    // Chat
+    chatNewChat: '➕ New Chat',
+    chatMyChats: '📋 My Chats',
   },
 
   // Messages

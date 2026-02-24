@@ -119,24 +119,24 @@ function getModelActiveKeyboardMarkup(opts: {
 }
 
 /**
- * Build inline keyboard for bot chat result messages.
- * [New] [Chats] [App] / [Menu]
+ * Build reply keyboard markup for bot chat result messages.
+ * [➕ New Chat] [📋 My Chats]
+ * [⬅️ Back] [🏠 Main menu]
  */
 function getBotChatKeyboardMarkup(lang: Language) {
-  const webappUrl = config.webapp?.url;
-  const row1: any[] = [
-    { text: lang === 'ru' ? '➕ Новый' : '➕ New', callback_data: 'chat:new' },
-    { text: lang === 'ru' ? '📋 Чаты' : '📋 Chats', callback_data: 'chat:list' },
-  ];
-  if (webappUrl) {
-    row1.push({ text: lang === 'ru' ? '🌐 Приложение' : '🌐 App', web_app: { url: `${webappUrl}/chat` } });
-  }
   return {
     reply_markup: {
-      inline_keyboard: [
-        row1,
-        [{ text: lang === 'ru' ? '🏠 Меню' : '🏠 Menu', callback_data: 'chat:menu' }],
+      keyboard: [
+        [
+          { text: lang === 'ru' ? '➕ Новый чат' : '➕ New Chat' },
+          { text: lang === 'ru' ? '📋 Мои чаты' : '📋 My Chats' },
+        ],
+        [
+          { text: lang === 'ru' ? '⬅️ Назад' : '⬅️ Back' },
+          { text: lang === 'ru' ? '🏠 Главное меню' : '🏠 Main menu' },
+        ],
       ],
+      resize_keyboard: true,
     },
   };
 }

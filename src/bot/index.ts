@@ -34,6 +34,8 @@ import {
   handleVideoFamilySelection,
   handleVideoFunctionSelection,
   isSingleVideoFamily,
+  handleNewChat,
+  handleMyChatsList,
 } from './handlers';
 import { deleteMessage } from './utils';
 import { logger } from '../utils/logger';
@@ -82,6 +84,10 @@ export function createBot(): Telegraf<BotContext> {
   bot.command('start', handleStart);
   bot.command('help', handleHelp);
   bot.command('profile', handleProfile);
+
+  // Chat reply-keyboard buttons (EN & RU)
+  bot.hears([en.buttons.chatNewChat, ru.buttons.chatNewChat], handleNewChat);
+  bot.hears([en.buttons.chatMyChats, ru.buttons.chatMyChats], handleMyChatsList);
 
   // Main Menu buttons (EN & RU)
   bot.hears([en.buttons.textAi, ru.buttons.textAi], handleTextCategory);
