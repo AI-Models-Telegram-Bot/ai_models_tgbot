@@ -19,8 +19,8 @@ export interface GenerationJobData {
   modelName?: string; // Display name (e.g. "Seedance 1.5", "Kling")
   telegramId?: number; // User's Telegram ID (for webapp settings URL)
   settingsApplied?: Record<string, unknown>; // Snapshot of settings at enqueue time
-  source?: 'telegram' | 'web'; // Origin of the request (default: telegram for backward compat)
-  webMessageId?: string; // ChatMessage ID for web delivery (only when source='web')
+  source?: 'telegram' | 'web' | 'bot_chat'; // Origin of the request
+  webMessageId?: string; // ChatMessage ID for web/bot_chat delivery
 }
 
 export interface GenerationJobResult {

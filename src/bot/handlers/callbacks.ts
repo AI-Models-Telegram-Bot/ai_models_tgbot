@@ -1,6 +1,7 @@
 import { BotContext } from '../types';
 import { handleCategorySelection } from './categories';
 import { handleModelSelection } from './models';
+import { handleChatCallback } from './chat';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { getVideoModelMenuKeyboard } from '../keyboards/videoKeyboards';
 import { getImageModelMenuKeyboard } from '../keyboards/imageKeyboards';
@@ -63,6 +64,12 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
     }
     await ctx.reply(promptMsg, kb);
     return;
+  }
+
+  // ── Chat callbacks — route before deleting the message ──
+  if (data.startsWith('chat:')) {
+    await deleteMessage(ctx, ctx.callbackQuery.message?.message_id);
+    return handleChatCallback(ctx, data);
   }
 
   // Delete the message with inline keyboard to keep chat clean

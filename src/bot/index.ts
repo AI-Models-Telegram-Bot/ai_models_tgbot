@@ -159,6 +159,11 @@ export function createBot(): Telegraf<BotContext> {
 
   // Back button - context-aware navigation
   bot.hears([en.buttons.back, ru.buttons.back], async (ctx) => {
+    // Chat: active conversation → main menu
+    if (ctx.session?.activeConversationId) {
+      ctx.session.activeConversationId = undefined;
+      return handleMainMenu(ctx);
+    }
     // Audio: function → audio menu (only if audio enabled)
     if (config.features.audioEnabled && ctx.session?.audioFunction) {
       ctx.session.audioFunction = undefined;

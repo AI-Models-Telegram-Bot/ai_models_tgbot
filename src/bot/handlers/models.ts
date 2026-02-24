@@ -440,6 +440,13 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
 export async function handleUserInput(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session) return;
+
+  // Route to multi-turn chat handler if active conversation exists
+  if (ctx.session.activeConversationId) {
+    const { handleChatMessage } = await import('./chat');
+    return handleChatMessage(ctx);
+  }
+
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
   if (!('text' in ctx.message!) || !ctx.message.text) return;
 

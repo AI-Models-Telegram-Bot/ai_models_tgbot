@@ -118,6 +118,29 @@ function getModelActiveKeyboardMarkup(opts: {
   };
 }
 
+/**
+ * Build inline keyboard for bot chat result messages.
+ * [New] [Chats] [App] / [Menu]
+ */
+function getBotChatKeyboardMarkup(lang: Language) {
+  const webappUrl = config.webapp?.url;
+  const row1: any[] = [
+    { text: lang === 'ru' ? '➕ Новый' : '➕ New', callback_data: 'chat:new' },
+    { text: lang === 'ru' ? '📋 Чаты' : '📋 Chats', callback_data: 'chat:list' },
+  ];
+  if (webappUrl) {
+    row1.push({ text: lang === 'ru' ? '🌐 Приложение' : '🌐 App', web_app: { url: `${webappUrl}/chat` } });
+  }
+  return {
+    reply_markup: {
+      inline_keyboard: [
+        row1,
+        [{ text: lang === 'ru' ? '🏠 Меню' : '🏠 Menu', callback_data: 'chat:menu' }],
+      ],
+    },
+  };
+}
+
 /** Aspect ratio → video pixel dimensions (720p base) for Telegram previews */
 const VIDEO_DIMS: Record<string, { width: number; height: number }> = {
   '16:9': { width: 1280, height: 720 },
@@ -288,9 +311,10 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     }
 
     const isWeb = job.data.source === 'web';
+    const isBotChat = job.data.source === 'bot_chat';
 
-    if (isWeb) {
-      // ── Web delivery: update ChatMessage + publish via Redis pub/sub ──
+    if (isWeb || isBotChat) {
+      // ── DB delivery: update ChatMessage + publish via Redis pub/sub ──
       const webMessageId = job.data.webMessageId;
       let contentValue: string | null = null;
       let fileUrlValue: string | null = null;
@@ -308,7 +332,6 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         fileUrlValue = videoResult.videoUrl;
         await requestService.markCompleted(requestId, { fileUrl: videoResult.videoUrl, actualProvider });
       } else if ('audioBuffer' in result && result.audioBuffer) {
-        // audioBuffer has no URL; mark completed without fileUrl
         await requestService.markCompleted(requestId, { actualProvider });
         contentValue = '[Audio generated - buffer only]';
       } else if ('audioUrl' in result && result.audioUrl) {
@@ -340,7 +363,45 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
           status: 'COMPLETED',
         }));
       } catch (pubErr) {
-        logger.error('Failed to publish web chat update to Redis', { pubErr });
+        logger.error('Failed to publish chat update to Redis', { pubErr });
+      }
+
+      // ── Bot chat: also send result to Telegram ──
+      if (isBotChat && contentValue) {
+        try {
+          await telegram.deleteMessage(chatId, processingMsgId);
+        } catch { /* already deleted */ }
+
+        const displayName = job.data.modelName || model.name;
+        const formattedText = markdownToTelegramHtml(contentValue);
+
+        let remainingBalance = 0;
+        try {
+          remainingBalance = await walletService.getBalance(userId);
+        } catch { /* non-critical */ }
+
+        const footer = `\n\n📊 <i>${escapeHtml(displayName)}</i>\n💰 <i>-${creditsCost} ⚡ · ${lang === 'ru' ? 'Баланс' : 'Balance'}: ${remainingBalance} ⚡</i>`;
+
+        // Build chat inline keyboard
+        const chatKb = getBotChatKeyboardMarkup(lang);
+        const maxLength = 4000 - footer.length;
+
+        if (formattedText.length > maxLength) {
+          const parts = splitMessage(formattedText, maxLength);
+          for (let i = 0; i < parts.length; i++) {
+            const isLast = i === parts.length - 1;
+            const partText = isLast ? `${parts[i]}${footer}` : parts[i];
+            await telegram.sendMessage(chatId, partText, {
+              parse_mode: 'HTML',
+              ...(isLast ? chatKb : {}),
+            });
+          }
+        } else {
+          await telegram.sendMessage(chatId, `${formattedText}${footer}`, {
+            parse_mode: 'HTML',
+            ...chatKb,
+          });
+        }
       }
     } else {
       // ── Telegram delivery: existing flow ──
@@ -460,7 +521,8 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     }
 
     // ── Final attempt failed: refund credits and notify user ──
-    const isWeb = job.data.source === 'web';
+    const isWebErr = job.data.source === 'web';
+    const isBotChatErr = job.data.source === 'bot_chat';
 
     // Mark request as failed
     try {
@@ -480,11 +542,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       logger.error('Failed to refund credits', { refundError });
     }
 
-    if (isWeb) {
-      // ── Web error delivery ──
+    if (isWebErr || isBotChatErr) {
+      // ── Web/Bot chat error delivery ──
       const webMessageId = job.data.webMessageId;
-
-      // Sanitize error for web users too
       const webUserError = sanitizeErrorForUser(errorMsg, lang);
 
       // Update ChatMessage to FAILED
@@ -495,7 +555,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
             data: { content: webUserError, status: 'FAILED' },
           });
         } catch (dbErr) {
-          logger.error('Failed to update web ChatMessage to FAILED', { dbErr });
+          logger.error('Failed to update ChatMessage to FAILED', { dbErr });
         }
       }
 
@@ -510,18 +570,27 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
           status: 'FAILED',
         }));
       } catch (pubErr) {
-        logger.error('Failed to publish web chat error to Redis', { pubErr });
+        logger.error('Failed to publish chat error to Redis', { pubErr });
+      }
+
+      // Bot chat: also send error to Telegram
+      if (isBotChatErr) {
+        try {
+          await telegram.deleteMessage(chatId, processingMsgId);
+        } catch { /* ignore */ }
+
+        const errorMessage = t(lang, 'messages.errorRefunded', { error: webUserError });
+        await telegram.sendMessage(chatId, errorMessage, {
+          parse_mode: 'HTML',
+          ...getBotChatKeyboardMarkup(lang),
+        }).catch(() => {});
       }
     } else {
       // ── Telegram error delivery ──
-      // Delete processing message on error too
       try {
         await telegram.deleteMessage(chatId, processingMsgId);
-      } catch {
-        // Ignore
-      }
+      } catch { /* ignore */ }
 
-      // Notify user with sanitized error message + model-active keyboard (so they can retry)
       const userFriendlyError = sanitizeErrorForUser(errorMsg, lang);
       const errorMessage = t(lang, 'messages.errorRefunded', {
         error: userFriendlyError,
