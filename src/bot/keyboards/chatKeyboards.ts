@@ -21,7 +21,7 @@ interface ChatConversation {
 export function getChatReplyKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
-    [l.buttons.chatNewChat, l.buttons.chatMyChats],
+    [l.buttons.chatNewChat, l.buttons.chatChangeModel, l.buttons.chatMyChats],
     [l.buttons.back, l.buttons.mainMenu],
   ]).resize();
 }

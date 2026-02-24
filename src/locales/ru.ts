@@ -76,6 +76,7 @@ export const ru: Locale = {
     videoSettings: '🎛️ Настройки видео',
     // Chat
     chatNewChat: '➕ Новый чат',
+    chatChangeModel: '🔄 Модель',
     chatMyChats: '📋 Мои чаты',
   },
 

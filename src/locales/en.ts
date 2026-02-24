@@ -74,6 +74,7 @@ export const en = {
     videoSettings: '🎛️ Video Settings',
     // Chat
     chatNewChat: '➕ New Chat',
+    chatChangeModel: '🔄 Model',
     chatMyChats: '📋 My Chats',
   },
 

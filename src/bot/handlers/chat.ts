@@ -84,6 +84,38 @@ export async function handleNewChat(ctx: BotContext): Promise<void> {
 }
 
 /**
+ * "🔄 Model" reply button → show inline model picker to switch model.
+ */
+export async function handleChangeModel(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+
+  const lang = getLang(ctx);
+  const models = await modelService.getByCategory('TEXT');
+  const activeModels = models.filter((m) => m.isActive);
+
+  if (activeModels.length === 0) {
+    const msg = lang === 'ru' ? 'Нет доступных моделей.' : 'No models available.';
+    await sendTrackedMessage(ctx, msg, getChatReplyKeyboard(lang));
+    return;
+  }
+
+  const chatModels = activeModels.map((m) => ({
+    slug: m.slug,
+    name: m.name,
+    tokenCost: m.tokenCost,
+  }));
+
+  const message = lang === 'ru'
+    ? '🔄 <b>Сменить модель</b>\n\nВыберите модель:'
+    : '🔄 <b>Change Model</b>\n\nPick a model:';
+
+  await sendTrackedMessage(ctx, message, {
+    parse_mode: 'HTML',
+    ...getChatModelPickerKeyboard(chatModels, lang),
+  });
+}
+
+/**
  * "📋 My Chats" reply button → show inline conversation list.
  */
 export async function handleMyChatsList(ctx: BotContext): Promise<void> {

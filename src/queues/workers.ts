@@ -120,7 +120,7 @@ function getModelActiveKeyboardMarkup(opts: {
 
 /**
  * Build reply keyboard markup for bot chat result messages.
- * [➕ New Chat] [📋 My Chats]
+ * [➕ New Chat] [🔄 Model] [📋 My Chats]
  * [⬅️ Back] [🏠 Main menu]
  */
 function getBotChatKeyboardMarkup(lang: Language) {
@@ -129,6 +129,7 @@ function getBotChatKeyboardMarkup(lang: Language) {
       keyboard: [
         [
           { text: lang === 'ru' ? '➕ Новый чат' : '➕ New Chat' },
+          { text: lang === 'ru' ? '🔄 Модель' : '🔄 Model' },
           { text: lang === 'ru' ? '📋 Мои чаты' : '📋 My Chats' },
         ],
         [
