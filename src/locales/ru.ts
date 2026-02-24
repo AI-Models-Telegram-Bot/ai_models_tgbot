@@ -37,7 +37,8 @@ export const ru: Locale = {
     imageFluxFamily: '🔥 Семейство Flux',
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
-    imageGoogleAIFamily: '🍌 Nano Banana',
+    imageNanoBananaFamily: '🍌 Nano Banana (⚡6)',
+    imageNanoBananaProFamily: '🍌 Nano Banana Pro (⚡20)',
     imageSeedreamFamily: '🌱 Seedream',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
@@ -247,11 +248,6 @@ export const ru: Locale = {
 
 Выберите модель:`,
 
-    imageGoogleAIFamilyDesc: `🍌 <b>Nano Banana</b>
-
-Генерация изображений на базе Google Gemini — от быстрых черновиков до премиум 4K качества.
-
-Выберите модель:`,
 
     imageSeedreamFamilyDesc: `🌱 <b>Seedream</b>
 
@@ -574,6 +570,9 @@ OpenAI Sora 2 Pro — премиум генерация видео с повыш
 
     // Processing
     processing: '⏳ Обработка с {modelName}...',
+    processingStart: '🚀 <b>{modelName}</b>\n\n⏳ Начинаю генерацию...',
+    processingGenerating: '🎨 <b>{modelName}</b>\n\n⏳ Генерация, это может занять несколько минут...',
+    processingAlmostDone: '🎨 <b>{modelName}</b>\n\n✨ Почти готово...',
     done: '✅ Готово! Отправьте ещё запрос или выберите другую модель:',
     continueHint: '💡 Отправьте ещё запрос для <b>{modelName}</b> или выберите другой пункт меню.',
     cancelled: 'Отменено.',

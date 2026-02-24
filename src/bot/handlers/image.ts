@@ -4,7 +4,6 @@ import {
   getImageFamiliesKeyboard,
   getFluxModelsKeyboard,
   getDalleModelsKeyboard,
-  getGoogleAIModelsKeyboard,
   getSeedreamModelsKeyboard,
   getImageModelMenuKeyboard,
 } from '../keyboards/imageKeyboards';
@@ -46,9 +45,15 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
     getKeyboard: () => null,
     singleModel: 'midjourney',
   },
-  'google-ai': {
-    descriptionKey: 'imageGoogleAIFamilyDesc',
-    getKeyboard: getGoogleAIModelsKeyboard,
+  'nano-banana': {
+    descriptionKey: 'imageNanoBananaDesc',
+    getKeyboard: () => null,
+    singleModel: 'nano-banana',
+  },
+  'nano-banana-pro': {
+    descriptionKey: 'imageNanoBananaProDesc',
+    getKeyboard: () => null,
+    singleModel: 'nano-banana-pro',
   },
   seedream: {
     descriptionKey: 'imageSeedreamFamilyDesc',
@@ -103,12 +108,12 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
   'nano-banana': {
     modelSlug: 'nano-banana',
     descriptionKey: 'imageNanoBananaDesc',
-    family: 'google-ai',
+    family: 'nano-banana',
   },
   'nano-banana-pro': {
     modelSlug: 'nano-banana-pro',
     descriptionKey: 'imageNanoBananaProDesc',
-    family: 'google-ai',
+    family: 'nano-banana-pro',
   },
   'seedream': {
     modelSlug: 'seedream',

@@ -14,6 +14,9 @@ import { config } from '../../config';
 import { resizeImageForAspectRatio } from '../../utils/imageResize';
 import { calculateDynamicCost } from '../../utils/videoPricing';
 
+/** Image models that accept a reference image for editing (not just text prompt) */
+const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
+
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
 }
@@ -143,10 +146,7 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
 
   const lang = getLang(ctx);
 
-  // Image models that support reference image input
-  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
   // Text-only video models — no image-to-video support
-  // Note: Veo supports image modes (frames/ingredients) via settings, so not text-only anymore
   const TEXT_ONLY_VIDEO_MODELS: string[] = [];
 
   const isVideoModel = !!ctx.session.videoFunction;
@@ -294,8 +294,6 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
   const lang = getLang(ctx);
 
-  // Image models that support reference image input
-  const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
   const TEXT_ONLY_VIDEO_MODELS: string[] = [];
 
   const isVideoModel = !!ctx.session.videoFunction;
@@ -535,9 +533,9 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     return;
   }
 
-  // Send processing message
-  const processingMessage = t(lang, 'messages.processing', { modelName: model.name });
-  const processingMsg = await ctx.reply(processingMessage, getMainKeyboard(lang));
+  // Send processing message (Stage 1: Starting)
+  const processingMessage = t(lang, 'messages.processingStart', { modelName: model.name });
+  const processingMsg = await ctx.reply(processingMessage, { parse_mode: 'HTML', ...getMainKeyboard(lang) });
 
   // Collect uploaded image URLs for image-to-video or image editing.
   // If user set an aspect ratio, resize/crop images to match before sending to provider
@@ -545,7 +543,9 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   let inputImageUrls: string[] | undefined;
   if (ctx.session.uploadedImageUrls?.length) {
     const targetAR = (videoOptions?.aspectRatio || imageOptions?.aspectRatio) as string | undefined;
-    if (targetAR && ctx.chat) {
+    // Skip resize for image-editing models — provider needs the full original image
+    const isImageEdit = IMAGE_MODELS_WITH_IMAGE_INPUT.includes(ctx.session.imageFunction || '');
+    if (targetAR && ctx.chat && !isImageEdit) {
       const resized: string[] = [];
       for (const originalUrl of ctx.session.uploadedImageUrls) {
         try {

@@ -35,7 +35,8 @@ export const en = {
     imageFluxFamily: '🔥 Flux Family',
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
-    imageGoogleAIFamily: '🍌 Nano Banana',
+    imageNanoBananaFamily: '🍌 Nano Banana (⚡6)',
+    imageNanoBananaProFamily: '🍌 Nano Banana Pro (⚡20)',
     imageSeedreamFamily: '🌱 Seedream',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
@@ -245,11 +246,6 @@ Artistic image generation — stunning, creative, highly detailed.
 
 Select a model:`,
 
-    imageGoogleAIFamilyDesc: `🍌 <b>Nano Banana</b>
-
-Image generation powered by Google Gemini — from fast drafts to premium 4K quality.
-
-Select a model:`,
 
     imageSeedreamFamilyDesc: `🌱 <b>Seedream</b>
 
@@ -572,6 +568,9 @@ Send your prompt:
 
     // Processing
     processing: '⏳ Processing with {modelName}...',
+    processingStart: '🚀 <b>{modelName}</b>\n\n⏳ Starting generation...',
+    processingGenerating: '🎨 <b>{modelName}</b>\n\n⏳ Generating, this may take a few minutes...',
+    processingAlmostDone: '🎨 <b>{modelName}</b>\n\n✨ Almost done...',
     done: '✅ Done! Send another prompt or choose a new model:',
     continueHint: '💡 Send another prompt for <b>{modelName}</b> or choose from the menu.',
     cancelled: 'Cancelled.',
