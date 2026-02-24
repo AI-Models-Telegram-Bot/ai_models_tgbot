@@ -77,7 +77,7 @@ export const ru: Locale = {
     // Chat
     chatNewChat: '➕ Новый чат',
     chatChangeModel: '🔄 Модель',
-    chatMyChats: '📋 Мои чаты',
+    chatApp: '🌐 Приложение',
   },
 
   // Messages

@@ -75,7 +75,7 @@ export const en = {
     // Chat
     chatNewChat: '➕ New Chat',
     chatChangeModel: '🔄 Model',
-    chatMyChats: '📋 My Chats',
+    chatApp: '🌐 App',
   },
 
   // Messages

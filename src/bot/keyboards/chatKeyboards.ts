@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf';
 import { Language, getLocale } from '../../locales';
+import { config } from '../../config';
 
 interface ChatModel {
   slug: string;
@@ -7,65 +8,44 @@ interface ChatModel {
   tokenCost: number;
 }
 
-interface ChatConversation {
-  id: string;
-  title: string;
-  modelSlug: string;
-}
-
 /**
  * Persistent reply keyboard for active chat mode.
- * [➕ New Chat] [📋 My Chats]
+ * [➕ New Chat] [🔄 Model] [🌐 App]
  * [⬅️ Back] [🏠 Main menu]
  */
 export function getChatReplyKeyboard(lang: Language) {
   const l = getLocale(lang);
+  const webappUrl = config.webapp?.url;
+
+  const topRow: any[] = [l.buttons.chatNewChat, l.buttons.chatChangeModel];
+  if (webappUrl) {
+    topRow.push(Markup.button.webApp(l.buttons.chatApp, `${webappUrl}/chat`));
+  }
+
   return Markup.keyboard([
-    [l.buttons.chatNewChat, l.buttons.chatChangeModel, l.buttons.chatMyChats],
+    topRow,
     [l.buttons.back, l.buttons.mainMenu],
   ]).resize();
 }
 
 /**
- * Inline model picker — shown when user taps "➕ New Chat".
+ * Reply keyboard for model picker.
+ * Shows model buttons in 2-column grid + [⬅️ Back].
  */
 export function getChatModelPickerKeyboard(models: ChatModel[], lang: Language) {
-  const rows: any[][] = [];
+  const l = getLocale(lang);
+  const rows: string[][] = [];
 
   for (let i = 0; i < models.length; i += 2) {
-    const row: any[] = [];
-    row.push(
-      Markup.button.callback(
-        `${models[i].name} (⚡${models[i].tokenCost})`,
-        `chat:model:${models[i].slug}`,
-      ),
-    );
+    const row: string[] = [];
+    row.push(`${models[i].name} (⚡${models[i].tokenCost})`);
     if (models[i + 1]) {
-      row.push(
-        Markup.button.callback(
-          `${models[i + 1].name} (⚡${models[i + 1].tokenCost})`,
-          `chat:model:${models[i + 1].slug}`,
-        ),
-      );
+      row.push(`${models[i + 1].name} (⚡${models[i + 1].tokenCost})`);
     }
     rows.push(row);
   }
 
-  return Markup.inlineKeyboard(rows);
-}
+  rows.push([l.buttons.back]);
 
-/**
- * Inline conversation list — shown when user taps "📋 My Chats".
- */
-export function getChatListKeyboard(conversations: ChatConversation[], lang: Language) {
-  const rows: any[][] = [];
-
-  for (const conv of conversations.slice(0, 8)) {
-    const label = conv.title.length > 35 ? conv.title.slice(0, 32) + '...' : conv.title;
-    rows.push([
-      Markup.button.callback(`💬 ${label}`, `chat:select:${conv.id}`),
-    ]);
-  }
-
-  return Markup.inlineKeyboard(rows);
+  return Markup.keyboard(rows).resize();
 }
