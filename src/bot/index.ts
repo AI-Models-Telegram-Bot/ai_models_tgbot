@@ -172,6 +172,8 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.imageFunction = undefined;
       ctx.session.awaitingInput = false;
       ctx.session.selectedModel = undefined;
+      ctx.session.uploadedImageUrls = undefined;
+      ctx.session.imageUploadMsgIds = undefined;
       if (family && isSingleModelFamily(family)) {
         ctx.session.imageFamily = undefined;
         return handleImageFamilyMenu(ctx);

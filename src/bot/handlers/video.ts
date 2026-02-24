@@ -200,6 +200,8 @@ export async function handleVideoFamilyMenu(ctx: BotContext): Promise<void> {
     ctx.session.videoFamily = undefined;
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
+    ctx.session.uploadedImageUrls = undefined;
+    ctx.session.imageUploadMsgIds = undefined;
     ctx.session.inVideoMenu = true;
   }
 
@@ -295,11 +297,13 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
     }
   }
 
-  // Set session state
+  // Set session state — clear any leftover images from previous model
   ctx.session.videoFunction = functionId as VideoFunction;
   ctx.session.videoFamily = func.family;
   ctx.session.selectedModel = func.modelSlug;
   ctx.session.awaitingInput = true;
+  ctx.session.uploadedImageUrls = undefined;
+  ctx.session.imageUploadMsgIds = undefined;
 
   // Send function description + reply keyboard
   const description = (l.messages as any)[func.descriptionKey] || '';
