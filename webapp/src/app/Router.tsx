@@ -21,6 +21,9 @@ const SoundGeneratorPage = lazy(() => import('@/pages/audio/SoundGeneratorPage')
 const ImageSettingsPage = lazy(() => import('@/pages/image/ImageSettingsPage'));
 const VideoSettingsPage = lazy(() => import('@/pages/video/VideoSettingsPage'));
 
+// Chat page (Telegram mini app)
+const TelegramChatPage = lazy(() => import('@/pages/TelegramChatPage'));
+
 // New web pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const CreatePage = lazy(() => import('@/pages/CreatePage'));
@@ -108,6 +111,9 @@ export function Router() {
               <Route path="/referral" element={<ReferralPage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
             </Route>
+            {/* Chat — full-screen, no layout/BottomNav */}
+            <Route path="/chat" element={<TelegramChatPage />} />
+            <Route path="/chat/:conversationId" element={<TelegramChatPage />} />
             <Route element={<AudioLayout />}>
               <Route path="/audio/elevenlabs-voice" element={<ElevenLabsVoicePage />} />
               <Route path="/audio/suno" element={<SunoSettingsPage />} />

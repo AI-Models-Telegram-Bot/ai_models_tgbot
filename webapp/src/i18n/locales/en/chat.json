@@ -31,5 +31,19 @@
   "untitledChat": "New conversation",
   "today": "Today",
   "yesterday": "Yesterday",
-  "previous": "Previous"
+  "previous": "Previous",
+  "backToChats": "Back",
+  "chats": "Chats",
+  "selectModelForChat": "Choose a model",
+  "tokenCost": "{{cost}} credits",
+  "noAccessUpgrade": "Upgrade plan",
+  "startFirstChat": "Start your first chat",
+  "startFirstChatDesc": "Tap the button above to begin a conversation with an AI model.",
+  "textModels": "Text Models",
+  "modelLocked": "Available on higher plans",
+  "deleteConfirmTitle": "Delete conversation?",
+  "deleteConfirmDesc": "This will permanently delete this conversation and all its messages.",
+  "confirmDelete": "Delete",
+  "cancelDelete": "Cancel",
+  "credits": "credits"
 }

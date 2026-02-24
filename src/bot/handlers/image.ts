@@ -162,6 +162,8 @@ export async function handleImageFamilyMenu(ctx: BotContext): Promise<void> {
     ctx.session.imageFamily = undefined;
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
+    ctx.session.uploadedImageUrls = undefined;
+    ctx.session.imageUploadMsgIds = undefined;
     ctx.session.inImageMenu = true;
   }
 
@@ -256,11 +258,13 @@ export async function handleImageFunctionSelection(ctx: BotContext, functionId: 
     }
   }
 
-  // Set session state
+  // Set session state — clear any leftover images from previous model
   ctx.session.imageFunction = functionId as ImageFunction;
   ctx.session.imageFamily = func.family;
   ctx.session.selectedModel = func.modelSlug;
   ctx.session.awaitingInput = true;
+  ctx.session.uploadedImageUrls = undefined;
+  ctx.session.imageUploadMsgIds = undefined;
 
   // Send function description + reply keyboard
   const description = (l.messages as any)[func.descriptionKey] || '';

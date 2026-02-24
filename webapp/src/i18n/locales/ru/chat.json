@@ -31,5 +31,19 @@
   "untitledChat": "Новый диалог",
   "today": "Сегодня",
   "yesterday": "Вчера",
-  "previous": "Ранее"
+  "previous": "Ранее",
+  "backToChats": "Назад",
+  "chats": "Чаты",
+  "selectModelForChat": "Выберите модель",
+  "tokenCost": "{{cost}} кредитов",
+  "noAccessUpgrade": "Улучшить план",
+  "startFirstChat": "Начните первый чат",
+  "startFirstChatDesc": "Нажмите кнопку выше, чтобы начать диалог с AI моделью.",
+  "textModels": "Текстовые модели",
+  "modelLocked": "Доступно на более высоких планах",
+  "deleteConfirmTitle": "Удалить диалог?",
+  "deleteConfirmDesc": "Диалог и все сообщения будут удалены безвозвратно.",
+  "confirmDelete": "Удалить",
+  "cancelDelete": "Отмена",
+  "credits": "кредитов"
 }
