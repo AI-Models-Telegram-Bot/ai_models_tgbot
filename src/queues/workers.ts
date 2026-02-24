@@ -232,6 +232,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     await requestService.markProcessing(requestId);
     await job.progress(10);
 
+    // Edit processing message to stage 2 (Generating) — Telegram only
+    if (job.data.source !== 'web') {
+      try {
+        const displayName = job.data.modelName || model.name;
+        const stage2 = t(lang, 'messages.processingGenerating', { modelName: displayName });
+        await telegram.editMessageText(chatId, processingMsgId, undefined, stage2, { parse_mode: 'HTML' });
+      } catch { /* message may already be deleted */ }
+    }
+
     // Use ProviderManager for automatic fallback across multiple providers
     const manager = getProviderManager();
     let generationResponse: { result: GenerationResult; provider: string };
@@ -268,6 +277,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
     logger.info(`Request ${requestId} served by provider: ${actualProvider}`);
     await job.progress(80);
+
+    // Edit processing message to stage 3 (Almost done) — Telegram only
+    if (job.data.source !== 'web') {
+      try {
+        const displayName = job.data.modelName || model.name;
+        const stage3 = t(lang, 'messages.processingAlmostDone', { modelName: displayName });
+        await telegram.editMessageText(chatId, processingMsgId, undefined, stage3, { parse_mode: 'HTML' });
+      } catch { /* message may already be deleted */ }
+    }
 
     const isWeb = job.data.source === 'web';
 

@@ -100,7 +100,8 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageFluxFamily, ru.buttons.imageFluxFamily], (ctx) => handleImageFamilySelection(ctx, 'flux'));
   bot.hears([en.buttons.imageDalleFamily, ru.buttons.imageDalleFamily], (ctx) => handleImageFamilySelection(ctx, 'dall-e'));
   bot.hears([en.buttons.imageMidjourneyFamily, ru.buttons.imageMidjourneyFamily], (ctx) => handleImageFamilySelection(ctx, 'midjourney'));
-  bot.hears([en.buttons.imageGoogleAIFamily, ru.buttons.imageGoogleAIFamily], (ctx) => handleImageFamilySelection(ctx, 'google-ai'));
+  bot.hears([en.buttons.imageNanoBananaFamily, ru.buttons.imageNanoBananaFamily], (ctx) => handleImageFamilySelection(ctx, 'nano-banana'));
+  bot.hears([en.buttons.imageNanoBananaProFamily, ru.buttons.imageNanoBananaProFamily], (ctx) => handleImageFamilySelection(ctx, 'nano-banana-pro'));
   bot.hears([en.buttons.imageSeedreamFamily, ru.buttons.imageSeedreamFamily], (ctx) => handleImageFamilySelection(ctx, 'seedream'));
 
   // Image model buttons (EN & RU)

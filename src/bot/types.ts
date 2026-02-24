@@ -3,7 +3,7 @@ import { User } from '@prisma/client';
 
 export type AudioFunction = 'elevenlabs_voice' | 'voice_cloning' | 'suno' | 'sound_generator';
 
-export type ImageFamily = 'flux' | 'dall-e' | 'midjourney' | 'google-ai' | 'seedream';
+export type ImageFamily = 'flux' | 'dall-e' | 'midjourney' | 'nano-banana' | 'nano-banana-pro' | 'seedream';
 export type ImageFunction = 'flux-schnell' | 'flux-kontext' | 'flux-dev' | 'flux-pro' | 'dall-e-2' | 'dall-e-3' | 'midjourney' | 'nano-banana' | 'nano-banana-pro' | 'seedream' | 'seedream-4.5';
 
 export type VideoFamily = 'kling' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance';

@@ -10,8 +10,8 @@ export function getImageFamiliesKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.imageFluxFamily, l.buttons.imageDalleFamily],
-    [l.buttons.imageMidjourneyFamily, l.buttons.imageGoogleAIFamily],
-    [l.buttons.imageSeedreamFamily],
+    [l.buttons.imageMidjourneyFamily, l.buttons.imageSeedreamFamily],
+    [l.buttons.imageNanoBananaFamily, l.buttons.imageNanoBananaProFamily],
     [l.buttons.mainMenu],
   ]).resize();
 }
@@ -35,17 +35,6 @@ export function getDalleModelsKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.imageDallE2, l.buttons.imageDallE3],
-    [l.buttons.back, l.buttons.mainMenu],
-  ]).resize();
-}
-
-/**
- * Reply keyboard: Google AI (Nano Banana) family models + back/main
- */
-export function getGoogleAIModelsKeyboard(lang: Language) {
-  const l = getLocale(lang);
-  return Markup.keyboard([
-    [l.buttons.imageNanoBanana, l.buttons.imageNanoBananaPro],
     [l.buttons.back, l.buttons.mainMenu],
   ]).resize();
 }
