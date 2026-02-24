@@ -17,9 +17,36 @@ import { calculateDynamicCost } from '../../utils/videoPricing';
 /** Image models that accept a reference image for editing (not just text prompt) */
 const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
 
-/** Image models that support multiple reference images (up to 4). Others accept only 1. */
-const MULTI_IMAGE_MODELS = ['nano-banana', 'nano-banana-pro', 'seedream', 'seedream-4.5'];
-const MAX_REFERENCE_IMAGES = 4;
+/**
+ * Per-model maximum image upload limits.
+ * Based on provider API capabilities:
+ * - KieAI market endpoint (kling/sora): image_urls array → up to 4
+ * - KieAI runway: imageUrl single string → 1
+ * - KieAI veo: frames (2) / ingredients (3) → 3
+ * - FAL (seedance/wan/luma): image_url + end_image_url → 2
+ * - Image editing (nano-banana/seedream): array → 4
+ * - Image editing (flux-kontext/midjourney): single → 1
+ */
+const MODEL_MAX_IMAGES: Record<string, number> = {
+  // Video models
+  'kling': 4, 'kling-pro': 4,
+  'sora': 4, 'sora-pro': 4,
+  'veo': 3, 'veo-fast': 3,
+  'seedance': 2, 'seedance-lite': 2, 'seedance-1-pro': 2, 'seedance-fast': 2,
+  'luma': 2, 'wan': 2,
+  'runway': 1, 'runway-gen4': 1,
+  // Image editing models
+  'nano-banana': 4, 'nano-banana-pro': 4,
+  'seedream': 4, 'seedream-4.5': 4,
+  'flux-kontext': 1, 'midjourney': 1,
+};
+const DEFAULT_MAX_IMAGES = 1;
+
+/** Get the max image upload count for a model */
+function getMaxImages(modelId: string | undefined): number {
+  if (!modelId) return DEFAULT_MAX_IMAGES;
+  return MODEL_MAX_IMAGES[modelId] ?? DEFAULT_MAX_IMAGES;
+}
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -184,21 +211,19 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // For image editing models, enforce per-model image limits
-  if (isImageModelWithInput && ctx.session.uploadedImageUrls?.length) {
-    const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
-    const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
-    if (ctx.session.uploadedImageUrls.length >= maxImages) {
-      const msg = maxImages === 1
-        ? (lang === 'ru'
-            ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
-            : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.')
-        : (lang === 'ru'
-            ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
-            : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
-      await ctx.reply(msg);
-      return;
-    }
+  // Enforce per-model image limits (both image editing and video models)
+  const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
+  const maxImages = getMaxImages(activeModel);
+  if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
+    const msg = maxImages === 1
+      ? (lang === 'ru'
+          ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
+          : '⚠️ This model supports only 1 image. Send ✍️ a text prompt.')
+      : (lang === 'ru'
+          ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
+          : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
+    await ctx.reply(msg);
+    return;
   }
 
   // Get the largest photo (last element in the array)
@@ -225,24 +250,16 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     await cleanUpImageUploadMessages(ctx);
 
     // Otherwise acknowledge and wait for text prompt
+    const remaining = maxImages - count;
     let msg: string;
-    if (isImageModelWithInput) {
-      const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
-      const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
-      const remaining = maxImages - count;
-      if (supportsMultiple && remaining > 0) {
-        msg = lang === 'ru'
-          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
-          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
-      } else {
-        msg = lang === 'ru'
-          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
-          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
-      }
+    if (remaining > 0 && maxImages > 1) {
+      msg = lang === 'ru'
+        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
     } else {
       msg = lang === 'ru'
-        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос или загрузить ещё изображения для работы с кадрами 👇`
-        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nYou can press "Configure" to adjust settings and send a prompt, or upload more images for start/end frames 👇`;
+        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
+        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
     }
 
     // Build inline keyboard: [Delete] [Configure]
@@ -344,20 +361,19 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     return;
   }
 
-  if (isImageModelWithInput && ctx.session.uploadedImageUrls?.length) {
-    const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
-    const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
-    if (ctx.session.uploadedImageUrls.length >= maxImages) {
-      const msg = maxImages === 1
-        ? (lang === 'ru'
-            ? '⚠️ Для редактирования поддерживается только 1 изображение. Отправьте ✍️ текстовый запрос для редактирования загруженного изображения.'
-            : '⚠️ Only 1 reference image is supported for editing. Send ✍️ a text prompt to edit the uploaded image.')
-        : (lang === 'ru'
-            ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
-            : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
-      await ctx.reply(msg);
-      return;
-    }
+  // Enforce per-model image limits (both image editing and video models)
+  const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
+  const maxImages = getMaxImages(activeModel);
+  if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
+    const msg = maxImages === 1
+      ? (lang === 'ru'
+          ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
+          : '⚠️ This model supports only 1 image. Send ✍️ a text prompt.')
+      : (lang === 'ru'
+          ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
+          : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
+    await ctx.reply(msg);
+    return;
   }
 
   try {
@@ -379,24 +395,16 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
     await cleanUpImageUploadMessages(ctx);
 
+    const remaining = maxImages - count;
     let msg: string;
-    if (isImageModelWithInput) {
-      const supportsMultiple = MULTI_IMAGE_MODELS.includes(ctx.session.imageFunction || '');
-      const maxImages = supportsMultiple ? MAX_REFERENCE_IMAGES : 1;
-      const remaining = maxImages - count;
-      if (supportsMultiple && remaining > 0) {
-        msg = lang === 'ru'
-          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
-          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
-      } else {
-        msg = lang === 'ru'
-          ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
-          : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
-      }
+    if (remaining > 0 && maxImages > 1) {
+      msg = lang === 'ru'
+        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
     } else {
       msg = lang === 'ru'
-        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nВы можете нажать «Настроить» чтобы установить параметры и отправить запрос или загрузить ещё изображения для работы с кадрами 👇`
-        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nYou can press "Configure" to adjust settings and send a prompt, or upload more images for start/end frames 👇`;
+        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
+        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
     }
 
     const buttons: any[][] = [];
