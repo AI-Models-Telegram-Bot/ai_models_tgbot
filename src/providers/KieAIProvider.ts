@@ -10,7 +10,8 @@ import {
 import { logger } from '../utils/logger';
 
 const POLL_INTERVAL_MS = 5000;
-const IMAGE_POLL_TIMEOUT_MS = 180000; // 3 minutes for images
+const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
+const IMAGE_POLL_TIMEOUT_MS = 120000; // 2 minutes for images
 const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes for video (leaves room for fallback providers)
 
 /**
@@ -486,7 +487,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       const input: Record<string, unknown> = {
         prompt,
-        aspect_ratio: (options?.aspectRatio as string) || '1:1',
+        aspect_ratio: hasImage ? 'match_input_image' : ((options?.aspectRatio as string) || '1:1'),
         output_format: 'png',
       };
 
@@ -514,7 +515,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI ${modelId}: task created, taskId=${taskId}`);
 
-      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS, IMAGE_POLL_INTERVAL_MS);
 
       const time = Date.now() - start;
       const cost = modelId === 'nano-banana-pro' ? 0.09 : 0.02;
@@ -590,7 +591,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Seedream: task created, taskId=${taskId}`);
 
-      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS, IMAGE_POLL_INTERVAL_MS);
 
       const time = Date.now() - start;
       const cost = 0.0175;
@@ -651,7 +652,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Seedream 4.5: task created, taskId=${taskId}`);
 
-      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS);
+      const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS, IMAGE_POLL_INTERVAL_MS);
 
       const time = Date.now() - start;
       const cost = resolution === '1K' ? 0.03 : 0.06;
@@ -823,11 +824,15 @@ export class KieAIProvider extends EnhancedProvider {
    * state: waiting, queuing, generating, success, fail
    * result in resultJson (JSON string) → { resultUrls: [...] }
    */
-  private async pollMarketTaskResult(taskId: string, timeoutMs: number = VIDEO_POLL_TIMEOUT_MS): Promise<string> {
+  private async pollMarketTaskResult(
+    taskId: string,
+    timeoutMs: number = VIDEO_POLL_TIMEOUT_MS,
+    intervalMs: number = POLL_INTERVAL_MS,
+  ): Promise<string> {
     const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {
-      await this.sleep(POLL_INTERVAL_MS);
+      await this.sleep(intervalMs);
 
       const response = await this.client.get('/jobs/recordInfo', {
         params: { taskId },
@@ -836,7 +841,7 @@ export class KieAIProvider extends EnhancedProvider {
       const data = response.data?.data;
       const state = data?.state;
 
-      logger.debug(`KieAI video poll: state=${state}, taskId=${taskId}`);
+      logger.debug(`KieAI poll: state=${state}, taskId=${taskId}`);
 
       if (state === 'success') {
         // resultJson is a JSON string: {"resultUrls":["https://..."]}
@@ -850,18 +855,18 @@ export class KieAIProvider extends EnhancedProvider {
         }
 
         if (!resultUrl) {
-          throw new Error('KieAI video: success but no result URL in resultJson');
+          throw new Error('KieAI task: success but no result URL in resultJson');
         }
         return resultUrl;
       }
 
       if (state === 'fail') {
         const errorMsg = data?.failMsg || 'Generation failed';
-        throw new Error(`KieAI video task failed: ${errorMsg}`);
+        throw new Error(`KieAI task failed: ${errorMsg}`);
       }
     }
 
-    throw new Error('KieAI video: polling timed out after 5 minutes');
+    throw new Error(`KieAI task: polling timed out after ${timeoutMs / 1000}s`);
   }
 
   private sleep(ms: number): Promise<void> {
