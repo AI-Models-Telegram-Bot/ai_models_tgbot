@@ -15,6 +15,7 @@ import uploadRoutes from '../routes/upload.routes';
 import webappRoutes from '../webapp/routes';
 import { unifiedAuth } from '../webapp/middleware/auth.middleware';
 import { yookassaService } from '../services/YooKassaService';
+import adminRoutes from '../admin/routes';
 import net from 'net';
 
 // YooKassa webhook source IP ranges (from official docs)
@@ -54,6 +55,7 @@ export function createHealthServer(port: number = 3000): express.Application {
     'https://webapp-dev.vseonix.com',
     'https://dev.webapp.vseonix.com',
     'https://web.telegram.org',
+    'https://admin.vseonix.com',
   ];
   if (process.env.WEBAPP_URL) {
     allowedOrigins.push(process.env.WEBAPP_URL.replace(/\/$/, ''));
@@ -182,6 +184,10 @@ export function createHealthServer(port: number = 3000): express.Application {
 
   // --- Serve uploaded files statically ---
   app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
+  // --- Admin Panel API ---
+  app.use('/admin/api', adminRoutes);
+  logger.info('Admin panel routes mounted at /admin/api/*');
 
   // --- Bull Board Admin UI ---
   try {

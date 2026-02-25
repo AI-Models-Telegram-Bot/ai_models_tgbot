@@ -93,6 +93,13 @@ export const config = {
     pass: process.env.SMTP_PASS || '',
     from: process.env.SMTP_FROM || 'noreply@vseonix.com',
   },
+  admin: {
+    jwtSecret: process.env.ADMIN_JWT_SECRET || 'dev-admin-secret-change-in-production',
+    jwtExpiresIn: '24h',
+    otpTtl: 300, // 5 minutes in seconds
+    maxFailedAttempts: 5,
+    lockoutDuration: 15 * 60 * 1000, // 15 minutes in ms
+  },
 };
 
 export function validateConfig(): void {

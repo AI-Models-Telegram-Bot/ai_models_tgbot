@@ -121,6 +121,7 @@ services:
       - /var/www/certbot:/var/www/certbot:ro
       - ./webapp-dist:/var/www/webapp:ro
       - ./webapp-dev-dist:/var/www/webapp-dev:ro
+      - ./admin/dist:/var/www/admin:ro
     depends_on:
       - bot1
       - dev-bot

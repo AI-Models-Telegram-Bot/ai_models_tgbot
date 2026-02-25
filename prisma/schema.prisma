@@ -492,3 +492,106 @@ model Payment {
   @@index([externalId])
   @@map("payments")
 }
+
+// ── Admin Panel ────────────────────────────────────────
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  VIEWER
+}
+
+enum BroadcastTargetType {
+  ALL
+  BY_PLAN
+  BY_STATUS
+  SELECTED_USERS
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+model AdminUser {
+  id              String        @id @default(cuid())
+  username        String        @unique
+  passwordHash    String        @map("password_hash")
+  role            AdminRole     @default(ADMIN)
+  telegramId      BigInt        @unique @map("telegram_id")
+  isActive        Boolean       @default(true) @map("is_active")
+  failedAttempts  Int           @default(0) @map("failed_attempts")
+  lockedUntil     DateTime?     @map("locked_until")
+  lastLoginAt     DateTime?     @map("last_login_at")
+  lastLoginIp     String?       @map("last_login_ip")
+
+  sessions        AdminSession[]
+  auditLogs       AdminAuditLog[]
+  broadcasts      Broadcast[]
+
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  adminId     String    @map("admin_id")
+  admin       AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  expiresAt   DateTime  @map("expires_at")
+  lastUsedAt  DateTime  @default(now()) @map("last_used_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([adminId])
+  @@map("admin_sessions")
+}
+
+model AdminAuditLog {
+  id          String    @id @default(cuid())
+  adminId     String    @map("admin_id")
+  admin       AdminUser @relation(fields: [adminId], references: [id])
+  action      String
+  targetType  String?   @map("target_type")
+  targetId    String?   @map("target_id")
+  details     Json?
+  ipAddress   String?   @map("ip_address")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([action, createdAt])
+  @@index([targetId])
+  @@index([adminId])
+  @@map("admin_audit_logs")
+}
+
+model Broadcast {
+  id              String              @id @default(cuid())
+  name            String
+  message         String
+  parseMode       String              @default("HTML") @map("parse_mode")
+  targetType      BroadcastTargetType @map("target_type")
+  targetPlans     String[]            @map("target_plans")
+  targetStatuses  String[]            @map("target_statuses")
+  targetUserIds   String[]            @map("target_user_ids")
+  status          BroadcastStatus     @default(DRAFT)
+  scheduledFor    DateTime?           @map("scheduled_for")
+  totalRecipients Int                 @default(0) @map("total_recipients")
+  sentCount       Int                 @default(0) @map("sent_count")
+  failedCount     Int                 @default(0) @map("failed_count")
+  startedAt       DateTime?           @map("started_at")
+  completedAt     DateTime?           @map("completed_at")
+  adminId         String              @map("admin_id")
+  admin           AdminUser           @relation(fields: [adminId], references: [id])
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([adminId])
+  @@map("broadcasts")
+}
