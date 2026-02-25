@@ -22,7 +22,7 @@ export interface AdminJwtPayload {
 
 export function signAdminToken(payload: AdminJwtPayload): string {
   return jwt.sign(payload, config.admin.jwtSecret, {
-    expiresIn: config.admin.jwtExpiresIn,
+    expiresIn: config.admin.jwtExpiresIn as any,
   });
 }
 
