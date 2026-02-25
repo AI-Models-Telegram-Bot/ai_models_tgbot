@@ -1,5 +1,6 @@
 export interface TextGenerationResult {
   text: string;
+  thinking?: string;
 }
 
 export interface ImageGenerationResult {

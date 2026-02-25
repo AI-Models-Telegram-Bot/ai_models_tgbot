@@ -268,7 +268,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
       if ('text' in result) {
         const textResult = result as TextGenerationResult;
-        contentValue = textResult.text;
+        contentValue = textResult.thinking
+          ? `💭 **Thinking:**\n${textResult.thinking}\n\n📝 **Answer:**\n${textResult.text}`
+          : textResult.text;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
@@ -320,7 +322,16 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         } catch { /* already deleted */ }
 
         const displayName = job.data.modelName || model.name;
-        const formattedText = markdownToTelegramHtml(contentValue);
+        const textResult = 'text' in result ? result as TextGenerationResult : null;
+        let formattedText: string;
+        if (textResult?.thinking) {
+          const thinkingSummary = textResult.thinking.length > 300
+            ? textResult.thinking.slice(0, 300) + '…'
+            : textResult.thinking;
+          formattedText = `💭 <b>Thinking:</b>\n<blockquote>${escapeHtml(thinkingSummary)}</blockquote>\n\n📝 <b>Answer:</b>\n${markdownToTelegramHtml(textResult.text)}`;
+        } else {
+          formattedText = markdownToTelegramHtml(contentValue);
+        }
 
         let remainingBalance = 0;
         try {
@@ -387,7 +398,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         const textResult = result as TextGenerationResult;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
 
-        const formattedText = markdownToTelegramHtml(textResult.text);
+        let formattedText: string;
+        if (textResult.thinking) {
+          const thinkingSummary = textResult.thinking.length > 300
+            ? textResult.thinking.slice(0, 300) + '…'
+            : textResult.thinking;
+          formattedText = `💭 <b>Thinking:</b>\n<blockquote>${escapeHtml(thinkingSummary)}</blockquote>\n\n📝 <b>Answer:</b>\n${markdownToTelegramHtml(textResult.text)}`;
+        } else {
+          formattedText = markdownToTelegramHtml(textResult.text);
+        }
         const continueHint = t(lang, 'messages.continueHint', { modelName: escapeHtml(displayName) });
         const footer = `\n\n📊 <i>${displayName}</i>\n💰 <i>${lang === 'ru' ? 'Списано' : 'Deducted'}: ⚡-${creditsCost}. ${lang === 'ru' ? 'Баланс' : 'Balance'}: ⚡${remainingBalance}</i>\n\n${continueHint}`;
         const maxLength = 4000 - footer.length;

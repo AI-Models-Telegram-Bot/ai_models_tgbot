@@ -5,7 +5,12 @@ import { prisma } from '../config/database';
 const SLUG_TO_PRICE: Record<string, string> = {
   'gpt-4o': 'TEXT_GPT4O',
   'gpt-4o-mini': 'TEXT_GPT4O_MINI',
+  'claude-haiku': 'TEXT_CLAUDE_HAIKU',
   'claude-sonnet': 'TEXT_CLAUDE_SONNET',
+  'claude-sonnet-thinking': 'TEXT_CLAUDE_SONNET_THINKING',
+  'claude-opus': 'TEXT_CLAUDE_OPUS',
+  'claude-opus-thinking': 'TEXT_CLAUDE_OPUS_THINKING',
+  'deep-research': 'TEXT_DEEP_RESEARCH',
   'grok': 'TEXT_GROK',
   'dall-e-3': 'IMAGE_DALLE3',
   'dall-e-2': 'IMAGE_DALLE2',
@@ -102,7 +107,12 @@ export class ModelService {
       // Text models
       { name: 'GPT-4o', slug: 'gpt-4o', provider: 'openai', category: 'TEXT', tokenCost: 5, priceItemCode: 'TEXT_GPT4O', description: 'OpenAI GPT-4o - fast and capable' },
       { name: 'GPT-4o Mini', slug: 'gpt-4o-mini', provider: 'openai', category: 'TEXT', tokenCost: 3, priceItemCode: 'TEXT_GPT4O_MINI', description: 'OpenAI GPT-4o Mini - efficient' },
-      { name: 'Claude Sonnet 4', slug: 'claude-sonnet', provider: 'anthropic', category: 'TEXT', tokenCost: 5, priceItemCode: 'TEXT_CLAUDE_SONNET', description: 'Anthropic Claude Sonnet 4 - latest' },
+      { name: 'Claude Haiku 4.5', slug: 'claude-haiku', provider: 'anthropic', category: 'TEXT', tokenCost: 2, priceItemCode: 'TEXT_CLAUDE_HAIKU', description: 'Anthropic Claude Haiku — fast & cheap' },
+      { name: 'Claude Sonnet 4', slug: 'claude-sonnet', provider: 'anthropic', category: 'TEXT', tokenCost: 5, priceItemCode: 'TEXT_CLAUDE_SONNET', description: 'Anthropic Claude Sonnet 4 — balanced' },
+      { name: 'Claude Sonnet 💭', slug: 'claude-sonnet-thinking', provider: 'anthropic', category: 'TEXT', tokenCost: 8, priceItemCode: 'TEXT_CLAUDE_SONNET_THINKING', description: 'Claude Sonnet with extended thinking — deeper reasoning' },
+      { name: 'Claude Opus 4', slug: 'claude-opus', provider: 'anthropic', category: 'TEXT', tokenCost: 10, priceItemCode: 'TEXT_CLAUDE_OPUS', description: 'Anthropic Claude Opus 4 — most capable' },
+      { name: 'Claude Opus 💭', slug: 'claude-opus-thinking', provider: 'anthropic', category: 'TEXT', tokenCost: 15, priceItemCode: 'TEXT_CLAUDE_OPUS_THINKING', description: 'Claude Opus with extended thinking — best reasoning' },
+      { name: '🔬 Deep Research', slug: 'deep-research', provider: 'anthropic', category: 'TEXT', tokenCost: 25, priceItemCode: 'TEXT_DEEP_RESEARCH', description: 'AI-powered web research — searches, reads, and writes a report' },
       { name: 'Grok', slug: 'grok', provider: 'xai', category: 'TEXT', tokenCost: 5, priceItemCode: 'TEXT_GROK', description: 'xAI Grok model' },
 
       // Image models

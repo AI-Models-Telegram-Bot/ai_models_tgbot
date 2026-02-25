@@ -95,7 +95,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     tokens: 850,
     modelAccess: {
       text: {
-        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok', 'gemini-flash', 'fast-text'],
+        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'claude-haiku', 'grok', 'gemini-flash', 'fast-text'],
         unlimited: ['fast-text', 'gemini-flash'],
       },
       image: {
@@ -139,7 +139,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     tokens: 4700,
     modelAccess: {
       text: {
-        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'grok', 'gemini-flash', 'gemini-pro', 'fast-text', 'deepseek-r1'],
+        allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'claude-haiku', 'claude-opus', 'claude-sonnet-thinking', 'claude-opus-thinking', 'grok', 'gemini-flash', 'gemini-pro', 'fast-text', 'deepseek-r1', 'deep-research'],
         unlimited: ['fast-text', 'gemini-flash', 'gpt-4o-mini'],
       },
       image: {
