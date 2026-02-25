@@ -256,7 +256,7 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     // Clean up previous image-upload message (if user uploads another image)
     await cleanUpImageUploadMessages(ctx);
 
-    // Otherwise acknowledge and wait for text prompt
+    // Acknowledge and wait for text prompt
     const remaining = maxImages - count;
     let msg: string;
     if (remaining > 0 && maxImages > 1) {
