@@ -36,6 +36,21 @@ const CrownIcon = () => (
   </svg>
 );
 
+const ChatIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="chatGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#60a5fa" />
+        <stop offset="1" stopColor="#3b82f6" />
+      </linearGradient>
+    </defs>
+    <path d="M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.96L3 20l1.338-3.123C3.49 15.509 3 13.813 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" fill="url(#chatGrad)" opacity="0.85" />
+    <circle cx="9" cy="12" r="1.2" fill="white" opacity="0.9" />
+    <circle cx="12" cy="12" r="1.2" fill="white" opacity="0.9" />
+    <circle cx="15" cy="12" r="1.2" fill="white" opacity="0.9" />
+  </svg>
+);
+
 const HandshakeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <defs>
@@ -53,6 +68,7 @@ const HandshakeIcon = () => (
 );
 
 const navItems: NavItem[] = [
+  { path: '/chat', labelKey: 'chat:chats', icon: <ChatIcon /> },
   { path: '/', labelKey: 'subscriptions:title', icon: <CrownIcon /> },
   { path: '/profile', labelKey: 'profile:title', icon: <UserIcon /> },
   { path: '/referral', labelKey: 'referral:title', icon: <HandshakeIcon /> },
@@ -67,7 +83,9 @@ export const BottomNav: React.FC = () => {
     <nav className="fixed bottom-0 inset-x-0 bg-surface-bg/80 backdrop-blur-xl border-t border-white/10 safe-area-bottom z-50">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = item.path === '/chat'
+            ? location.pathname.startsWith('/chat')
+            : location.pathname === item.path;
           return (
             <button
               key={item.path}
