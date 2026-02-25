@@ -248,6 +248,12 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
       return processGeneration(ctx, ctx.message.caption);
     }
 
+    // Auto-generate: if image-editing model and user already has a lastPrompt, reuse it
+    if (isImageModelWithInput && ctx.session.lastPrompt) {
+      await cleanUpImageUploadMessages(ctx);
+      return processGeneration(ctx, ctx.session.lastPrompt);
+    }
+
     // Clean up previous image-upload message (if user uploads another image)
     await cleanUpImageUploadMessages(ctx);
 
@@ -393,6 +399,12 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     if (ctx.message.caption) {
       await cleanUpImageUploadMessages(ctx);
       return processGeneration(ctx, ctx.message.caption);
+    }
+
+    // Auto-generate: if image-editing model and user already has a lastPrompt, reuse it
+    if (isImageModelWithInput && ctx.session.lastPrompt) {
+      await cleanUpImageUploadMessages(ctx);
+      return processGeneration(ctx, ctx.session.lastPrompt);
     }
 
     await cleanUpImageUploadMessages(ctx);
@@ -700,6 +712,8 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   }
 
   // Keep model context active so user can send consecutive prompts.
+  // Save last prompt so bare photo uploads can auto-reuse it.
+  ctx.session.lastPrompt = input;
   // Only clear uploaded images and their tracked messages — they were consumed by this generation.
   ctx.session.uploadedImageUrls = undefined;
   ctx.session.imageUploadMsgIds = undefined;
