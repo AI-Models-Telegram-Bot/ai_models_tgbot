@@ -65,12 +65,12 @@ function getMainKeyboardMarkup(lang: Language) {
 function getBotChatKeyboardMarkup(lang: Language) {
   const webappUrl = config.webapp?.url;
   const topRow: any[] = [
-    { text: lang === 'ru' ? '➕ Новый чат' : '➕ New Chat' },
+    { text: lang === 'ru' ? '🆕 Чат' : '🆕 Chat' },
     { text: lang === 'ru' ? '🔄 Модель' : '🔄 Model' },
   ];
   if (webappUrl) {
     topRow.push({
-      text: lang === 'ru' ? '🌐 Приложение' : '🌐 App',
+      text: lang === 'ru' ? '💬 Чаты' : '💬 Chats',
       web_app: { url: `${webappUrl}/chat` },
     });
   }

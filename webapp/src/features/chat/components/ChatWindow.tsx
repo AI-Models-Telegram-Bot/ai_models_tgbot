@@ -5,16 +5,143 @@ import { useChatStore } from '@/features/chat/store/useChatStore';
 import type { Message } from '@/services/api/chat.api';
 
 /* ------------------------------------------------------------------ */
-/*  Simple markdown-like text renderer                                 */
+/*  Rich markdown renderer                                             */
 /* ------------------------------------------------------------------ */
 
-function renderTextContent(text: string): React.ReactNode {
-  // Split into lines, process basic markdown:
-  // **bold**, *italic*, `code`, ```code blocks```
-  const parts: React.ReactNode[] = [];
-  let key = 0;
+let _key = 0;
+function k() { return _key++; }
 
-  // Handle code blocks first
+/** Apply inline formatting: **bold**, *italic*, ~~strike~~, `code`, [link](url) */
+function renderInline(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  // Order matters: bold before italic, links before other patterns
+  const regex = /(\[([^\]]+)\]\(([^)]+)\)|\*\*(.+?)\*\*|__(.+?)__|\*(.+?)\*|_(.+?)_|~~(.+?)~~|`([^`]+)`)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) {
+      parts.push(text.slice(last, m.index));
+    }
+
+    if (m[2] && m[3]) {
+      // [text](url) — link
+      parts.push(
+        <a key={k()} href={m[3]} target="_blank" rel="noopener noreferrer"
+          className="text-brand-primary underline decoration-brand-primary/40 hover:decoration-brand-primary transition-colors">
+          {m[2]}
+        </a>,
+      );
+    } else if (m[4] || m[5]) {
+      // **bold** or __bold__
+      parts.push(<strong key={k()} className="font-semibold text-content-primary">{m[4] || m[5]}</strong>);
+    } else if (m[6] || m[7]) {
+      // *italic* or _italic_
+      parts.push(<em key={k()} className="italic text-content-secondary">{m[6] || m[7]}</em>);
+    } else if (m[8]) {
+      // ~~strikethrough~~
+      parts.push(<del key={k()} className="text-content-tertiary line-through">{m[8]}</del>);
+    } else if (m[9]) {
+      // `inline code`
+      parts.push(
+        <code key={k()} className="rounded-md bg-white/5 border border-white/10 px-1.5 py-0.5 text-[13px] font-mono text-brand-primary">
+          {m[9]}
+        </code>,
+      );
+    }
+
+    last = m.index + m[0].length;
+  }
+
+  if (last < text.length) {
+    parts.push(text.slice(last));
+  }
+
+  return parts.length > 0 ? parts : [text];
+}
+
+/** Parse a single line and return the appropriate block element */
+function renderLine(line: string, idx: number): React.ReactNode {
+  // Heading: # ## ### ####
+  const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+  if (headingMatch) {
+    const level = headingMatch[1].length;
+    const content = renderInline(headingMatch[2]);
+    const cls = [
+      'text-lg font-bold text-content-primary mt-4 mb-1',    // h1
+      'text-base font-bold text-content-primary mt-3 mb-1',  // h2
+      'text-sm font-semibold text-content-primary mt-2 mb-1', // h3
+      'text-sm font-medium text-content-primary mt-2 mb-0.5', // h4
+    ][level - 1];
+    return <div key={idx} className={cls}>{content}</div>;
+  }
+
+  // Horizontal rule: --- or *** or ___
+  if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+    return <hr key={idx} className="my-3 border-white/10" />;
+  }
+
+  // Blockquote: > text
+  const quoteMatch = line.match(/^>\s?(.*)$/);
+  if (quoteMatch) {
+    return (
+      <div key={idx} className="my-1 border-l-2 border-brand-primary/40 pl-3 text-content-secondary italic">
+        {renderInline(quoteMatch[1])}
+      </div>
+    );
+  }
+
+  // Unordered list: - or * or •
+  const ulMatch = line.match(/^[\s]*[-*•]\s+(.+)$/);
+  if (ulMatch) {
+    return (
+      <div key={idx} className="flex my-0.5" style={{ paddingLeft: 4 }}>
+        <span className="mr-2 text-brand-primary/60 select-none">•</span>
+        <span className="flex-1">{renderInline(ulMatch[1])}</span>
+      </div>
+    );
+  }
+
+  // Ordered list: 1. 2. etc
+  const olMatch = line.match(/^[\s]*(\d+)[.)]\s+(.+)$/);
+  if (olMatch) {
+    return (
+      <div key={idx} className="flex my-0.5" style={{ paddingLeft: 4 }}>
+        <span className="mr-2 text-content-tertiary font-mono text-xs select-none min-w-[1.2rem] text-right">{olMatch[1]}.</span>
+        <span className="flex-1">{renderInline(olMatch[2])}</span>
+      </div>
+    );
+  }
+
+  // Empty line
+  if (line.trim() === '') {
+    return <div key={idx} className="h-2" />;
+  }
+
+  // Regular text
+  return <div key={idx} className="my-0.5">{renderInline(line)}</div>;
+}
+
+/**
+ * Full markdown renderer with support for:
+ * - Code blocks (```lang ... ```)
+ * - Headings (# ## ### ####)
+ * - Bold (**text** / __text__)
+ * - Italic (*text* / _text_)
+ * - Strikethrough (~~text~~)
+ * - Inline code (`code`)
+ * - Links ([text](url))
+ * - Unordered lists (- / * / •)
+ * - Ordered lists (1. 2. 3.)
+ * - Blockquotes (> text)
+ * - Horizontal rules (---)
+ * - Thinking sections (💭 **Thinking:** ... 📝 **Answer:**)
+ */
+function renderTextContent(text: string): React.ReactNode {
+  _key = 0;
+  const result: React.ReactNode[] = [];
+
+  // Split code blocks from text
   const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -34,61 +161,36 @@ function renderTextContent(text: string): React.ReactNode {
 
   for (const seg of segments) {
     if (seg.type === 'codeblock') {
-      parts.push(
-        <pre
-          key={key++}
-          className="my-2 overflow-x-auto rounded-lg bg-surface-bg/80 p-3 text-xs text-content-secondary"
-        >
-          <code>{seg.content}</code>
-        </pre>,
+      result.push(
+        <div key={k()} className="my-3 overflow-hidden rounded-xl border border-white/10">
+          {seg.lang && (
+            <div className="flex items-center justify-between bg-white/5 px-4 py-1.5 text-[10px] font-medium uppercase tracking-wider text-content-tertiary">
+              <span>{seg.lang}</span>
+              <button
+                onClick={() => navigator.clipboard?.writeText(seg.content)}
+                className="text-content-tertiary hover:text-content-primary transition-colors"
+                title="Copy"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+          )}
+          <pre className="overflow-x-auto bg-black/20 p-4 text-[13px] leading-relaxed font-mono text-content-secondary">
+            <code>{seg.content}</code>
+          </pre>
+        </div>,
       );
     } else {
-      // Inline formatting
-      const inlineRegex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
-      let inlineLast = 0;
-      let inlineMatch: RegExpExecArray | null;
-      const inlineParts: React.ReactNode[] = [];
-
-      while ((inlineMatch = inlineRegex.exec(seg.content)) !== null) {
-        if (inlineMatch.index > inlineLast) {
-          inlineParts.push(seg.content.slice(inlineLast, inlineMatch.index));
-        }
-
-        if (inlineMatch[2]) {
-          // **bold**
-          inlineParts.push(
-            <strong key={key++} className="font-semibold">
-              {inlineMatch[2]}
-            </strong>,
-          );
-        } else if (inlineMatch[3]) {
-          // *italic*
-          inlineParts.push(
-            <em key={key++}>{inlineMatch[3]}</em>,
-          );
-        } else if (inlineMatch[4]) {
-          // `code`
-          inlineParts.push(
-            <code
-              key={key++}
-              className="rounded bg-surface-bg/60 px-1 py-0.5 text-xs text-brand-primary"
-            >
-              {inlineMatch[4]}
-            </code>,
-          );
-        }
-
-        inlineLast = inlineMatch.index + inlineMatch[0].length;
-      }
-      if (inlineLast < seg.content.length) {
-        inlineParts.push(seg.content.slice(inlineLast));
-      }
-
-      parts.push(<span key={key++}>{inlineParts}</span>);
+      // Process text line by line
+      const lines = seg.content.split('\n');
+      result.push(...lines.map((line) => renderLine(line, k())));
     }
   }
 
-  return <>{parts}</>;
+  return <>{result}</>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -144,7 +246,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, category }) => {
 
         {/* Text content */}
         {message.content && (
-          <div className="whitespace-pre-wrap break-words leading-relaxed">
+          <div className="break-words leading-relaxed">
             {renderTextContent(message.content)}
           </div>
         )}
