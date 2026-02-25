@@ -73,9 +73,9 @@ export const en = {
     videoSeedance15Pro: '🌱 1.5 Pro (⚡15–45)',
     videoSettings: '🎛️ Video Settings',
     // Chat
-    chatNewChat: '➕ New Chat',
+    chatNewChat: '🆕 Chat',
     chatChangeModel: '🔄 Model',
-    chatApp: '🌐 App',
+    chatApp: '💬 Chats',
   },
 
   // Messages
