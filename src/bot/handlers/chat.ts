@@ -1,5 +1,5 @@
 import { BotContext } from '../types';
-import { getChatReplyKeyboard, getChatModelPickerKeyboard, getChatListKeyboard } from '../keyboards/chatKeyboards';
+import { getChatReplyKeyboard, getChatModelPickerKeyboard } from '../keyboards/chatKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { modelService, walletService } from '../../services';
 import { chatService } from '../../services/ChatService';
@@ -21,7 +21,6 @@ export async function handleTextAI(ctx: BotContext): Promise<void> {
 
   const lang = getLang(ctx);
 
-  // Get the default (cheapest) TEXT model
   const defaultModel = await modelService.getDefaultByCategory('TEXT');
   if (!defaultModel) {
     const msg = lang === 'ru' ? 'В этой категории пока нет моделей.' : 'No models available in this category.';
@@ -30,9 +29,9 @@ export async function handleTextAI(ctx: BotContext): Promise<void> {
   }
 
   try {
-    // Auto-create conversation
     const conversation = await chatService.createConversation(ctx.user.id, defaultModel.slug);
     ctx.session.activeConversationId = conversation.id;
+    ctx.session.chatModelPicker = false;
     ctx.session.selectedModel = undefined;
     ctx.session.awaitingInput = false;
 
@@ -52,17 +51,31 @@ export async function handleTextAI(ctx: BotContext): Promise<void> {
 }
 
 /**
- * "➕ New Chat" reply button → show inline model picker.
+ * "➕ New Chat" reply button → show model picker reply keyboard.
  */
 export async function handleNewChat(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session) return;
+  await showModelPicker(ctx);
+}
 
+/**
+ * "🔄 Model" reply button → show model picker reply keyboard.
+ */
+export async function handleChangeModel(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  await showModelPicker(ctx);
+}
+
+/**
+ * Show model picker as reply keyboard buttons.
+ */
+async function showModelPicker(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const models = await modelService.getByCategory('TEXT');
   const activeModels = models.filter((m) => m.isActive);
 
   if (activeModels.length === 0) {
-    const msg = lang === 'ru' ? 'В этой категории пока нет моделей.' : 'No models available in this category.';
+    const msg = lang === 'ru' ? 'Нет доступных моделей.' : 'No models available.';
     await sendTrackedMessage(ctx, msg, getChatReplyKeyboard(lang));
     return;
   }
@@ -73,9 +86,11 @@ export async function handleNewChat(ctx: BotContext): Promise<void> {
     tokenCost: m.tokenCost,
   }));
 
+  ctx.session!.chatModelPicker = true;
+
   const message = lang === 'ru'
-    ? '➕ <b>Новый чат</b>\n\nВыберите модель:'
-    : '➕ <b>New Chat</b>\n\nPick a model:';
+    ? '🔄 <b>Выберите модель:</b>'
+    : '🔄 <b>Pick a model:</b>';
 
   await sendTrackedMessage(ctx, message, {
     parse_mode: 'HTML',
@@ -84,57 +99,41 @@ export async function handleNewChat(ctx: BotContext): Promise<void> {
 }
 
 /**
- * "📋 My Chats" reply button → show inline conversation list.
+ * Handle model selection from reply keyboard button.
+ * Button text format: "ModelName (⚡Cost)"
  */
-export async function handleMyChatsList(ctx: BotContext): Promise<void> {
-  if (!ctx.user || !ctx.session) return;
-
+async function handleModelPickerSelection(ctx: BotContext, input: string): Promise<void> {
   const lang = getLang(ctx);
-  const conversations = await chatService.getConversations(ctx.user.id, 8, 0);
-  const textConversations = conversations.filter((c) => c.category === 'TEXT');
 
-  if (textConversations.length === 0) {
-    const msg = lang === 'ru'
-      ? '📋 У вас ещё нет чатов.\nВыберите модель, чтобы начать:'
-      : '📋 No chats yet.\nPick a model to start:';
-    await sendTrackedMessage(ctx, msg, getChatReplyKeyboard(lang));
-    return;
+  // Parse model name from button text
+  const match = input.match(/^(.+?)\s*\(⚡\d+\)$/);
+  if (!match) {
+    // Not a model button — treat as chat message
+    ctx.session!.chatModelPicker = false;
+    return sendChatMessage(ctx, input);
   }
 
-  const convList = textConversations.map((c) => ({
-    id: c.id,
-    title: c.title || 'Untitled',
-    modelSlug: c.modelSlug,
-  }));
+  const modelName = match[1].trim();
+  const models = await modelService.getByCategory('TEXT');
+  const model = models.find((m) => m.name === modelName && m.isActive);
 
-  const message = lang === 'ru'
-    ? '📋 <b>Ваши чаты:</b>'
-    : '📋 <b>Your chats:</b>';
-
-  await sendTrackedMessage(ctx, message, {
-    parse_mode: 'HTML',
-    ...getChatListKeyboard(convList, lang),
-  });
-}
-
-/**
- * Handle callback: user selected a model → create conversation.
- */
-async function handleModelSelect(ctx: BotContext, modelSlug: string): Promise<void> {
-  if (!ctx.user || !ctx.session) return;
-
-  const lang = getLang(ctx);
-  const model = await modelService.getBySlug(modelSlug);
   if (!model) {
-    await ctx.reply(lang === 'ru' ? 'Модель не найдена.' : 'Model not found.');
+    ctx.session!.chatModelPicker = false;
+    const msg = lang === 'ru' ? 'Модель не найдена.' : 'Model not found.';
+    await ctx.reply(msg);
     return;
   }
+
+  ctx.session!.chatModelPicker = false;
 
   try {
-    const conversation = await chatService.createConversation(ctx.user.id, modelSlug);
-    ctx.session.activeConversationId = conversation.id;
-    ctx.session.selectedModel = undefined;
-    ctx.session.awaitingInput = false;
+    // Delete the user's model button press
+    try { await ctx.deleteMessage(); } catch { /* ignore */ }
+
+    const conversation = await chatService.createConversation(ctx.user!.id, model.slug);
+    ctx.session!.activeConversationId = conversation.id;
+    ctx.session!.selectedModel = undefined;
+    ctx.session!.awaitingInput = false;
 
     const message = lang === 'ru'
       ? `💬 Чат создан с <b>${model.name}</b> (⚡${model.tokenCost})\n\nОтправьте ваше сообщение:`
@@ -151,49 +150,30 @@ async function handleModelSelect(ctx: BotContext, modelSlug: string): Promise<vo
 }
 
 /**
- * Handle callback: select an existing conversation.
- */
-async function handleChatSelect(ctx: BotContext, conversationId: string): Promise<void> {
-  if (!ctx.user || !ctx.session) return;
-
-  const lang = getLang(ctx);
-
-  try {
-    await chatService.getMessages(conversationId, ctx.user.id, 1, 0);
-    ctx.session.activeConversationId = conversationId;
-    ctx.session.selectedModel = undefined;
-    ctx.session.awaitingInput = false;
-
-    const conversations = await chatService.getConversations(ctx.user.id, 20, 0);
-    const conv = conversations.find((c) => c.id === conversationId);
-    const title = conv?.title || (lang === 'ru' ? 'Чат' : 'Chat');
-    const modelSlug = conv?.modelSlug || '';
-    const model = modelSlug ? await modelService.getBySlug(modelSlug) : null;
-    const modelName = model?.name || modelSlug;
-
-    const message = lang === 'ru'
-      ? `💬 <b>${title}</b>\n<i>${modelName}</i>\n\nОтправьте ваше сообщение:`
-      : `💬 <b>${title}</b>\n<i>${modelName}</i>\n\nSend your message:`;
-
-    await sendTrackedMessage(ctx, message, {
-      parse_mode: 'HTML',
-      ...getChatReplyKeyboard(lang),
-    });
-  } catch (error) {
-    logger.error('Failed to select conversation:', error);
-    await ctx.reply(lang === 'ru' ? 'Чат не найден.' : 'Chat not found.');
-  }
-}
-
-/**
  * Handle text message when activeConversationId is set.
+ * Checks for model picker state first.
  */
 export async function handleChatMessage(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session || !ctx.session.activeConversationId) return;
   if (!ctx.message || !('text' in ctx.message) || !ctx.message.text) return;
 
-  const lang = getLang(ctx);
   const input = ctx.message.text;
+
+  // If model picker is active, handle model selection
+  if (ctx.session.chatModelPicker) {
+    return handleModelPickerSelection(ctx, input);
+  }
+
+  return sendChatMessage(ctx, input);
+}
+
+/**
+ * Send a chat message to the active conversation.
+ */
+async function sendChatMessage(ctx: BotContext, input: string): Promise<void> {
+  if (!ctx.user || !ctx.session || !ctx.session.activeConversationId) return;
+
+  const lang = getLang(ctx);
 
   const processingMsg = await ctx.reply(
     lang === 'ru' ? '⏳ Генерация...' : '⏳ Generating...',
@@ -238,22 +218,15 @@ export async function handleChatMessage(ctx: BotContext): Promise<void> {
 }
 
 /**
- * Route all chat: callback queries.
+ * Route all chat: callback queries (legacy inline button support).
  */
 export async function handleChatCallback(ctx: BotContext, data: string): Promise<void> {
-  if (data.startsWith('chat:model:')) {
-    const slug = data.replace('chat:model:', '');
-    await handleModelSelect(ctx, slug);
-  } else if (data === 'chat:list') {
-    await handleMyChatsList(ctx);
-  } else if (data.startsWith('chat:select:')) {
-    const id = data.replace('chat:select:', '');
-    await handleChatSelect(ctx, id);
-  } else if (data === 'chat:new') {
+  if (data === 'chat:new') {
     await handleNewChat(ctx);
   } else if (data === 'chat:menu') {
     const lang = getLang(ctx);
     ctx.session!.activeConversationId = undefined;
+    ctx.session!.chatModelPicker = false;
     const msg = lang === 'ru' ? 'Выберите опцию:' : 'Choose an option:';
     await sendTrackedMessage(ctx, msg, getMainKeyboard(lang));
   }

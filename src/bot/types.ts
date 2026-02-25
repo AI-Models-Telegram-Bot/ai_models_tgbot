@@ -27,5 +27,6 @@ export interface BotContext extends Context {
     uploadedImageUrls?: string[]; // Stored image URLs for image-to-video generation
     imageUploadMsgIds?: number[]; // Message IDs of "image added" messages to clean up
     activeConversationId?: string; // Active multi-turn chat conversation ID
+    chatModelPicker?: boolean; // Showing model picker reply keyboard
   };
 }

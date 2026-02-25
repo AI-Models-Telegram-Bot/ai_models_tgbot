@@ -120,17 +120,25 @@ function getModelActiveKeyboardMarkup(opts: {
 
 /**
  * Build reply keyboard markup for bot chat result messages.
- * [➕ New Chat] [📋 My Chats]
+ * [➕ New Chat] [🔄 Model] [🌐 App]
  * [⬅️ Back] [🏠 Main menu]
  */
 function getBotChatKeyboardMarkup(lang: Language) {
+  const webappUrl = config.webapp?.url;
+  const topRow: any[] = [
+    { text: lang === 'ru' ? '➕ Новый чат' : '➕ New Chat' },
+    { text: lang === 'ru' ? '🔄 Модель' : '🔄 Model' },
+  ];
+  if (webappUrl) {
+    topRow.push({
+      text: lang === 'ru' ? '🌐 Приложение' : '🌐 App',
+      web_app: { url: `${webappUrl}/chat` },
+    });
+  }
   return {
     reply_markup: {
       keyboard: [
-        [
-          { text: lang === 'ru' ? '➕ Новый чат' : '➕ New Chat' },
-          { text: lang === 'ru' ? '📋 Мои чаты' : '📋 My Chats' },
-        ],
+        topRow,
         [
           { text: lang === 'ru' ? '⬅️ Назад' : '⬅️ Back' },
           { text: lang === 'ru' ? '🏠 Главное меню' : '🏠 Main menu' },

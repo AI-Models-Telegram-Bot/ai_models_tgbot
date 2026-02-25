@@ -35,7 +35,7 @@ import {
   handleVideoFunctionSelection,
   isSingleVideoFamily,
   handleNewChat,
-  handleMyChatsList,
+  handleChangeModel,
 } from './handlers';
 import { deleteMessage } from './utils';
 import { logger } from '../utils/logger';
@@ -87,7 +87,7 @@ export function createBot(): Telegraf<BotContext> {
 
   // Chat reply-keyboard buttons (EN & RU)
   bot.hears([en.buttons.chatNewChat, ru.buttons.chatNewChat], handleNewChat);
-  bot.hears([en.buttons.chatMyChats, ru.buttons.chatMyChats], handleMyChatsList);
+  bot.hears([en.buttons.chatChangeModel, ru.buttons.chatChangeModel], handleChangeModel);
 
   // Main Menu buttons (EN & RU)
   bot.hears([en.buttons.textAi, ru.buttons.textAi], handleTextCategory);
@@ -165,9 +165,19 @@ export function createBot(): Telegraf<BotContext> {
 
   // Back button - context-aware navigation
   bot.hears([en.buttons.back, ru.buttons.back], async (ctx) => {
+    // Chat model picker → back to chat reply keyboard
+    if (ctx.session?.chatModelPicker) {
+      ctx.session.chatModelPicker = false;
+      const { getChatReplyKeyboard } = await import('./keyboards/chatKeyboards');
+      const lang = (ctx.user?.language as 'en' | 'ru') || 'en';
+      const msg = lang === 'ru' ? 'Отправьте ваше сообщение:' : 'Send your message:';
+      const { sendTrackedMessage } = await import('./utils');
+      return sendTrackedMessage(ctx, msg, { parse_mode: 'HTML', ...getChatReplyKeyboard(lang) });
+    }
     // Chat: active conversation → main menu
     if (ctx.session?.activeConversationId) {
       ctx.session.activeConversationId = undefined;
+      ctx.session.chatModelPicker = false;
       return handleMainMenu(ctx);
     }
     // Audio: function → audio menu (only if audio enabled)
