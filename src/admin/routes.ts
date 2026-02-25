@@ -1,4 +1,5 @@
-// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
+// @ts-nocheck — admin panel: suppress query-string type mismatches
 import { Router, Request, Response } from 'express';
 import { prisma } from '../config/database';
 import { config } from '../config';
