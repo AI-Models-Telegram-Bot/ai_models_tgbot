@@ -13,13 +13,14 @@ interface ChatModel {
  * [➕ New Chat] [🔄 Model] [🌐 App]
  * [⬅️ Back] [🏠 Main menu]
  */
-export function getChatReplyKeyboard(lang: Language) {
+export function getChatReplyKeyboard(lang: Language, telegramId?: number) {
   const l = getLocale(lang);
   const webappUrl = config.webapp?.url;
 
   const topRow: any[] = [l.buttons.chatNewChat, l.buttons.chatChangeModel];
   if (webappUrl) {
-    topRow.push(Markup.button.webApp(l.buttons.chatApp, `${webappUrl}/chat`));
+    const chatUrl = telegramId ? `${webappUrl}/chat?tgid=${telegramId}` : `${webappUrl}/chat`;
+    topRow.push(Markup.button.webApp(l.buttons.chatApp, chatUrl));
   }
 
   return Markup.keyboard([

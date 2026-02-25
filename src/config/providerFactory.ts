@@ -5,6 +5,7 @@ import { PROVIDER_CONFIGS } from './providers.config';
 import { OpenAIAdapter } from '../providers/adapters/OpenAIAdapter';
 import { AnthropicAdapter } from '../providers/adapters/AnthropicAdapter';
 import { XAIAdapter } from '../providers/adapters/XAIAdapter';
+import { OpenAICompatibleAdapter } from '../providers/adapters/OpenAICompatibleAdapter';
 import { ReplicateAdapter } from '../providers/adapters/ReplicateAdapter';
 import { ElevenLabsAdapter } from '../providers/adapters/ElevenLabsAdapter';
 
@@ -29,24 +30,51 @@ export function initProviders(): ProviderManager {
   manager = new ProviderManager();
 
   // ============ TEXT PROVIDERS ============
-  // OpenAI (1) → Anthropic (2) → XAI (3)
+  // Groq (1) → Together (2) → Google (3) → OpenAI (4) → XAI (5) → Anthropic (6) → OpenRouter (7)
+  if (PROVIDER_CONFIGS.text_groq.apiKey) {
+    manager.register('TEXT', new OpenAICompatibleAdapter({
+      ...PROVIDER_CONFIGS.text_groq,
+      baseURL: 'https://api.groq.com/openai/v1',
+    }));
+  }
+  if (PROVIDER_CONFIGS.text_together.apiKey) {
+    manager.register('TEXT', new OpenAICompatibleAdapter({
+      ...PROVIDER_CONFIGS.text_together,
+      baseURL: 'https://api.together.xyz/v1',
+    }));
+  }
+  if (PROVIDER_CONFIGS.text_google.apiKey) {
+    manager.register('TEXT', new OpenAICompatibleAdapter({
+      ...PROVIDER_CONFIGS.text_google,
+      baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    }));
+  }
   if (PROVIDER_CONFIGS.text_openai.apiKey) {
     manager.register('TEXT', new OpenAIAdapter(PROVIDER_CONFIGS.text_openai));
-  }
-  if (PROVIDER_CONFIGS.text_anthropic.apiKey) {
-    manager.register('TEXT', new AnthropicAdapter(PROVIDER_CONFIGS.text_anthropic));
   }
   if (PROVIDER_CONFIGS.text_xai.apiKey) {
     manager.register('TEXT', new XAIAdapter(PROVIDER_CONFIGS.text_xai));
   }
+  if (PROVIDER_CONFIGS.text_anthropic.apiKey) {
+    manager.register('TEXT', new AnthropicAdapter(PROVIDER_CONFIGS.text_anthropic));
+  }
+  if (PROVIDER_CONFIGS.text_openrouter.apiKey) {
+    manager.register('TEXT', new OpenAICompatibleAdapter({
+      ...PROVIDER_CONFIGS.text_openrouter,
+      baseURL: 'https://openrouter.ai/api/v1',
+    }));
+  }
 
   // ============ IMAGE PROVIDERS ============
-  // Runware (1) → PiAPI (2) → Replicate (3) → KieAI (4) → OpenAI (5)
+  // Runware (1) → PiAPI (2) → Fal.ai (3) → Replicate (4) → KieAI (5) → OpenAI (6)
   if (PROVIDER_CONFIGS.image_runware.apiKey) {
     manager.register('IMAGE', new RunwareProvider(PROVIDER_CONFIGS.image_runware));
   }
   if (PROVIDER_CONFIGS.image_piapi.apiKey) {
     manager.register('IMAGE', new PiAPIProvider(PROVIDER_CONFIGS.image_piapi));
+  }
+  if (PROVIDER_CONFIGS.image_fal.apiKey) {
+    manager.register('IMAGE', new FalProvider(PROVIDER_CONFIGS.image_fal));
   }
   if (PROVIDER_CONFIGS.image_replicate.apiKey) {
     manager.register('IMAGE', new ReplicateAdapter(PROVIDER_CONFIGS.image_replicate));

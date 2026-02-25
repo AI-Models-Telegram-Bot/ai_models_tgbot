@@ -62,16 +62,17 @@ function getMainKeyboardMarkup(lang: Language) {
  * [➕ New Chat] [🔄 Model] [🌐 App]
  * [⬅️ Back] [🏠 Main menu]
  */
-function getBotChatKeyboardMarkup(lang: Language) {
+function getBotChatKeyboardMarkup(lang: Language, telegramId?: number) {
   const webappUrl = config.webapp?.url;
   const topRow: any[] = [
     { text: lang === 'ru' ? '🆕 Чат' : '🆕 Chat' },
     { text: lang === 'ru' ? '🔄 Модель' : '🔄 Model' },
   ];
   if (webappUrl) {
+    const chatUrl = telegramId ? `${webappUrl}/chat?tgid=${telegramId}` : `${webappUrl}/chat`;
     topRow.push({
       text: lang === 'ru' ? '💬 Чаты' : '💬 Chats',
-      web_app: { url: `${webappUrl}/chat` },
+      web_app: { url: chatUrl },
     });
   }
   return {
@@ -341,7 +342,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         const footer = `\n\n📊 <i>${escapeHtml(displayName)}</i>\n💰 <i>-${creditsCost} ⚡ · ${lang === 'ru' ? 'Баланс' : 'Balance'}: ${remainingBalance} ⚡</i>`;
 
         // Build chat inline keyboard
-        const chatKb = getBotChatKeyboardMarkup(lang);
+        const chatKb = getBotChatKeyboardMarkup(lang, job.data.telegramId);
         const maxLength = 4000 - footer.length;
 
         if (formattedText.length > maxLength) {
@@ -557,7 +558,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         const errorMessage = t(lang, 'messages.errorRefunded', { error: webUserError });
         await telegram.sendMessage(chatId, errorMessage, {
           parse_mode: 'HTML',
-          ...getBotChatKeyboardMarkup(lang),
+          ...getBotChatKeyboardMarkup(lang, job.data.telegramId),
         }).catch(() => {});
       }
     } else {

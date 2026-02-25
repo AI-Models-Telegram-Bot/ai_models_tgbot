@@ -77,7 +77,7 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     name: 'openrouter',
     enabled: true,
     priority: 7,
-    apiKey: process.env.OPENROUTER_API_KEY || '',
+    apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || '',
   },
 
   // ============ IMAGE PROVIDERS ============
