@@ -340,7 +340,7 @@ export default function TelegramChatPage() {
   /* ---- render ---- */
 
   return (
-    <div className="flex flex-col bg-surface-bg" style={{ height: 'calc(100dvh - 5rem)' }}>
+    <div className="flex flex-col bg-surface-bg" style={{ height: '100dvh' }}>
       <AnimatePresence mode="wait">
         {screen === 'list' ? (
           /* ============================================================

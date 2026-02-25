@@ -191,19 +191,49 @@ export class ChatService {
 
   /**
    * Auto-title a conversation from the first user message content.
-   * Only updates if the title is the default "Chat with ..." pattern.
+   * Uses AI to generate a short, descriptive title.
+   * Falls back to first 50 chars if AI fails.
    */
   private async autoTitleIfNeeded(conversation: { id: string; title: string | null }, content: string) {
     if (!conversation.title || !conversation.title.startsWith('Chat with ')) return;
-    const title = content.slice(0, 50).replace(/\n/g, ' ').trim();
-    if (!title) return;
-    try {
-      await prisma.conversation.update({
+
+    // Immediately set a basic title from content (fallback)
+    const fallbackTitle = content.slice(0, 50).replace(/\n/g, ' ').trim();
+    if (!fallbackTitle) return;
+
+    // Try AI-generated title asynchronously
+    this.generateSmartTitle(conversation.id, content).catch(() => {
+      // If AI title fails, use fallback
+      prisma.conversation.update({
         where: { id: conversation.id },
-        data: { title },
-      });
+        data: { title: fallbackTitle },
+      }).catch((err) => logger.warn('Failed to set fallback title', { err }));
+    });
+  }
+
+  /**
+   * Generate a concise chat title using a fast AI model.
+   */
+  private async generateSmartTitle(conversationId: string, content: string): Promise<void> {
+    try {
+      const { getProviderManager } = await import('../config/providerFactory');
+      const manager = getProviderManager();
+      const prompt = `Generate a very short title (3-6 words, no quotes) summarizing this message:\n\n${content.slice(0, 200)}`;
+      const { result } = await manager.generateWithModel('TEXT', 'generateText', 'fast-text', prompt);
+      const title = (result as { text: string }).text
+        .replace(/^["']|["']$/g, '')
+        .replace(/\n/g, ' ')
+        .trim()
+        .slice(0, 60);
+      if (title) {
+        await prisma.conversation.update({
+          where: { id: conversationId },
+          data: { title },
+        });
+      }
     } catch (err) {
-      logger.warn('Failed to auto-title conversation', { err });
+      logger.warn('AI title generation failed, using fallback', { err });
+      throw err; // Let caller use fallback
     }
   }
 

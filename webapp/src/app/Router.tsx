@@ -110,9 +110,10 @@ export function Router() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/referral" element={<ReferralPage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
-              <Route path="/chat" element={<TelegramChatPage />} />
-              <Route path="/chat/:conversationId" element={<TelegramChatPage />} />
             </Route>
+            {/* Chat routes — full-screen, no bottom nav (accessed via bot 🌐 App button) */}
+            <Route path="/chat" element={<TelegramChatPage />} />
+            <Route path="/chat/:conversationId" element={<TelegramChatPage />} />
             <Route element={<AudioLayout />}>
               <Route path="/audio/elevenlabs-voice" element={<ElevenLabsVoicePage />} />
               <Route path="/audio/suno" element={<SunoSettingsPage />} />
