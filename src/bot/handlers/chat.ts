@@ -41,7 +41,7 @@ export async function handleTextAI(ctx: BotContext): Promise<void> {
 
     await sendTrackedMessage(ctx, message, {
       parse_mode: 'HTML',
-      ...getChatReplyKeyboard(lang),
+      ...getChatReplyKeyboard(lang, ctx.from?.id),
     });
   } catch (error) {
     logger.error('Failed to auto-create conversation:', error);
@@ -76,7 +76,7 @@ async function showModelPicker(ctx: BotContext): Promise<void> {
 
   if (activeModels.length === 0) {
     const msg = lang === 'ru' ? 'Нет доступных моделей.' : 'No models available.';
-    await sendTrackedMessage(ctx, msg, getChatReplyKeyboard(lang));
+    await sendTrackedMessage(ctx, msg, getChatReplyKeyboard(lang, ctx.from?.id));
     return;
   }
 
@@ -141,7 +141,7 @@ async function handleModelPickerSelection(ctx: BotContext, input: string): Promi
 
     await sendTrackedMessage(ctx, message, {
       parse_mode: 'HTML',
-      ...getChatReplyKeyboard(lang),
+      ...getChatReplyKeyboard(lang, ctx.from?.id),
     });
   } catch (error) {
     logger.error('Failed to create conversation:', error);

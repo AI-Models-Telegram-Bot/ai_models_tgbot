@@ -172,7 +172,7 @@ export function createBot(): Telegraf<BotContext> {
       const lang = (ctx.user?.language as 'en' | 'ru') || 'en';
       const msg = lang === 'ru' ? 'Отправьте ваше сообщение:' : 'Send your message:';
       const { sendTrackedMessage } = await import('./utils');
-      return sendTrackedMessage(ctx, msg, { parse_mode: 'HTML', ...getChatReplyKeyboard(lang) });
+      return sendTrackedMessage(ctx, msg, { parse_mode: 'HTML', ...getChatReplyKeyboard(lang, ctx.from?.id) });
     }
     // Chat: active conversation → main menu
     if (ctx.session?.activeConversationId) {
