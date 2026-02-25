@@ -61,12 +61,56 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Claude Sonnet — premium Anthropic
+  // Claude Haiku — fast & cheap Anthropic
+  'claude-haiku': {
+    category: 'TEXT',
+    providers: [
+      { name: 'anthropic', modelId: 'claude-haiku-4-5-20251001' },   // $1/$5 per 1M tok
+      { name: 'openrouter', modelId: 'anthropic/claude-haiku-4-5' }, // fallback
+    ],
+  },
+
+  // Claude Sonnet — balanced Anthropic
   'claude-sonnet': {
     category: 'TEXT',
     providers: [
       { name: 'anthropic', modelId: 'claude-sonnet-4-20250514' },    // $3/$15 per 1M tok
       { name: 'openrouter', modelId: 'anthropic/claude-sonnet-4' },  // fallback
+    ],
+  },
+
+  // Claude Sonnet with Extended Thinking
+  'claude-sonnet-thinking': {
+    category: 'TEXT',
+    providers: [
+      { name: 'anthropic', modelId: 'claude-sonnet-4-20250514', extraOptions: { thinking: true } },
+      { name: 'openrouter', modelId: 'anthropic/claude-sonnet-4', extraOptions: { thinking: true } },
+    ],
+  },
+
+  // Claude Opus — most capable Anthropic
+  'claude-opus': {
+    category: 'TEXT',
+    providers: [
+      { name: 'anthropic', modelId: 'claude-opus-4-20250514' },      // $15/$75 per 1M tok
+      { name: 'openrouter', modelId: 'anthropic/claude-opus-4' },    // fallback
+    ],
+  },
+
+  // Claude Opus with Extended Thinking
+  'claude-opus-thinking': {
+    category: 'TEXT',
+    providers: [
+      { name: 'anthropic', modelId: 'claude-opus-4-20250514', extraOptions: { thinking: true } },
+      { name: 'openrouter', modelId: 'anthropic/claude-opus-4', extraOptions: { thinking: true } },
+    ],
+  },
+
+  // Deep Research — agentic web research powered by Claude
+  'deep-research': {
+    category: 'TEXT',
+    providers: [
+      { name: 'anthropic', modelId: 'claude-sonnet-4-20250514', extraOptions: { deepResearch: true } },
     ],
   },
 

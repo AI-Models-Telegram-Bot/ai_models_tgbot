@@ -13,6 +13,7 @@ import { markdownToTelegramHtml, truncateText, sanitizeErrorForUser } from '../u
 import { logger } from '../utils/logger';
 import { t } from '../locales';
 import type { Language } from '../locales';
+import { getModelActiveKeyboardMarkup } from '../bot/keyboards/modelKeyboards';
 
 // Create Telegram API instance per job using the originating bot's token.
 // This ensures responses go to the correct bot (dev vs prod) when
@@ -51,68 +52,6 @@ function getMainKeyboardMarkup(lang: Language) {
   return {
     reply_markup: {
       keyboard: buttons,
-      resize_keyboard: true,
-    },
-  };
-}
-
-/**
- * Build model-active keyboard for result messages.
- * Shows Settings (webapp) + Back + Main menu so user can tweak settings
- * and send another prompt without navigating back through menus.
- */
-function getModelActiveKeyboardMarkup(opts: {
-  lang: Language;
-  modelCategory: string;
-  modelSlug: string;
-  telegramId?: number;
-}) {
-  const { lang, modelCategory, modelSlug, telegramId } = opts;
-  const webappUrl = config.webapp?.url;
-  const back = lang === 'ru' ? '⬅️ Назад' : '⬅️ Back';
-  const mainMenu = lang === 'ru' ? '🏠 Главное меню' : '🏠 Main menu';
-
-  const rows: any[][] = [];
-
-  if (webappUrl && telegramId) {
-    let settingsUrl: string | null = null;
-    let settingsLabel: string | null = null;
-
-    if (modelCategory === 'IMAGE') {
-      settingsUrl = `${webappUrl}/image/settings?model=${encodeURIComponent(modelSlug)}&tgid=${telegramId}`;
-      settingsLabel = lang === 'ru' ? '🎛️ Настройки изображения' : '🎛️ Image Settings';
-    } else if (modelCategory === 'VIDEO') {
-      settingsUrl = `${webappUrl}/video/settings?model=${encodeURIComponent(modelSlug)}&tgid=${telegramId}`;
-      settingsLabel = lang === 'ru' ? '🎛️ Настройки видео' : '🎛️ Video Settings';
-    } else if (modelCategory === 'AUDIO') {
-      // Derive audio settings page from model slug
-      const audioSettingsMap: Record<string, string> = {
-        'elevenlabs-voice': 'elevenlabs-voice',
-        'suno': 'suno',
-        'sound-generator': 'sound-generator',
-      };
-      const audioPage = audioSettingsMap[modelSlug];
-      if (audioPage) {
-        settingsUrl = `${webappUrl}/audio/${audioPage}?tgid=${telegramId}`;
-        const audioLabels: Record<string, Record<string, string>> = {
-          'elevenlabs-voice': { en: '🎛️ Voice Settings', ru: '🎛️ Настройки голоса' },
-          'suno': { en: '🎛️ SUNO Settings', ru: '🎛️ Настройки SUNO' },
-          'sound-generator': { en: '🎛️ Sound Settings', ru: '🎛️ Настройки звука' },
-        };
-        settingsLabel = audioLabels[audioPage]?.[lang] || audioLabels[audioPage]?.en || null;
-      }
-    }
-
-    if (settingsUrl && settingsLabel) {
-      rows.push([{ text: settingsLabel, web_app: { url: settingsUrl } }]);
-    }
-  }
-
-  rows.push([{ text: back }, { text: mainMenu }]);
-
-  return {
-    reply_markup: {
-      keyboard: rows,
       resize_keyboard: true,
     },
   };
@@ -329,7 +268,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
       if ('text' in result) {
         const textResult = result as TextGenerationResult;
-        contentValue = textResult.text;
+        contentValue = textResult.thinking
+          ? `💭 **Thinking:**\n${textResult.thinking}\n\n📝 **Answer:**\n${textResult.text}`
+          : textResult.text;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
       } else if ('imageUrl' in result) {
         const imageResult = result as ImageGenerationResult;
@@ -381,7 +322,16 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         } catch { /* already deleted */ }
 
         const displayName = job.data.modelName || model.name;
-        const formattedText = markdownToTelegramHtml(contentValue);
+        const textResult = 'text' in result ? result as TextGenerationResult : null;
+        let formattedText: string;
+        if (textResult?.thinking) {
+          const thinkingSummary = textResult.thinking.length > 300
+            ? textResult.thinking.slice(0, 300) + '…'
+            : textResult.thinking;
+          formattedText = `💭 <b>Thinking:</b>\n<blockquote>${escapeHtml(thinkingSummary)}</blockquote>\n\n📝 <b>Answer:</b>\n${markdownToTelegramHtml(textResult.text)}`;
+        } else {
+          formattedText = markdownToTelegramHtml(contentValue);
+        }
 
         let remainingBalance = 0;
         try {
@@ -448,7 +398,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         const textResult = result as TextGenerationResult;
         await requestService.markCompleted(requestId, { text: textResult.text, actualProvider });
 
-        const formattedText = markdownToTelegramHtml(textResult.text);
+        let formattedText: string;
+        if (textResult.thinking) {
+          const thinkingSummary = textResult.thinking.length > 300
+            ? textResult.thinking.slice(0, 300) + '…'
+            : textResult.thinking;
+          formattedText = `💭 <b>Thinking:</b>\n<blockquote>${escapeHtml(thinkingSummary)}</blockquote>\n\n📝 <b>Answer:</b>\n${markdownToTelegramHtml(textResult.text)}`;
+        } else {
+          formattedText = markdownToTelegramHtml(textResult.text);
+        }
         const continueHint = t(lang, 'messages.continueHint', { modelName: escapeHtml(displayName) });
         const footer = `\n\n📊 <i>${displayName}</i>\n💰 <i>${lang === 'ru' ? 'Списано' : 'Deducted'}: ⚡-${creditsCost}. ${lang === 'ru' ? 'Баланс' : 'Balance'}: ⚡${remainingBalance}</i>\n\n${continueHint}`;
         const maxLength = 4000 - footer.length;

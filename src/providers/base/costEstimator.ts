@@ -31,6 +31,7 @@ const TOKEN_PRICING: Record<string, Record<string, number>> = {
     'claude-3-haiku-20240307': 0.00075,         // $0.25/1M in + $1.25/1M out → avg ~$0.75/1M
     'claude-haiku-4-5-20251001': 0.003,         // $1/1M in + $5/1M out → avg ~$3/1M
     'claude-sonnet-4-20250514': 0.009,          // $3/1M in + $15/1M out → avg ~$9/1M
+    'claude-opus-4-20250514': 0.045,            // $15/1M in + $75/1M out → avg ~$45/1M
   },
   xai: {
     'grok-3-mini': 0.0004,                     // $0.30/1M in + $0.50/1M out → avg ~$0.40/1M
@@ -40,7 +41,9 @@ const TOKEN_PRICING: Record<string, Record<string, number>> = {
     // OpenRouter adds small markup; use base provider pricing + ~5%
     'openai/gpt-4o': 0.006563,
     'openai/gpt-4o-mini': 0.000394,
+    'anthropic/claude-haiku-4-5': 0.00315,
     'anthropic/claude-sonnet-4': 0.00945,
+    'anthropic/claude-opus-4': 0.04725,
     'meta-llama/llama-3.3-70b-instruct': 0.00072,
     'google/gemini-2.5-flash-preview': 0.000394,
     'google/gemini-2.5-pro-preview': 0.005906,

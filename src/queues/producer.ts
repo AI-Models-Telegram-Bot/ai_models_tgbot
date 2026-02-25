@@ -34,8 +34,15 @@ export async function enqueueGeneration(data: GenerationJobData): Promise<Job<Ge
     );
   }
 
-  return queue.add(data, {
+  // Deep research needs longer timeout (up to 10 search iterations)
+  const isDeepResearch = data.modelSlug === 'deep-research';
+  const jobOpts: Record<string, unknown> = {
     // Text gets highest priority (fastest to process)
     priority: data.modelCategory === 'TEXT' ? 1 : data.modelCategory === 'VIDEO' ? 10 : 5,
-  });
+  };
+  if (isDeepResearch) {
+    jobOpts.timeout = 600000; // 10 min for deep research
+  }
+
+  return queue.add(data, jobOpts);
 }

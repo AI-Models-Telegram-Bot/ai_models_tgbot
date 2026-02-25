@@ -2,6 +2,7 @@ import { Markup } from 'telegraf';
 import { WalletCategory } from '@prisma/client';
 import { BotContext } from '../types';
 import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
+import { getModelActiveKeyboardMarkup } from '../keyboards/modelKeyboards';
 import { modelService, requestService, walletService, modelAccessService, subscriptionService } from '../../services';
 import { getAudioOptionsForFunction } from './audio';
 import { getImageOptionsForFunction } from './image';
@@ -620,7 +621,10 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
 
   // Send processing message (Stage 1: Starting)
   const processingMessage = t(lang, 'messages.processingStart', { modelName: model.name });
-  const processingMsg = await ctx.reply(processingMessage, { parse_mode: 'HTML', ...getMainKeyboard(lang) });
+  const activeKb = getModelActiveKeyboardMarkup({
+    lang, modelCategory: model.category, modelSlug: model.slug, telegramId: ctx.from?.id,
+  });
+  const processingMsg = await ctx.reply(processingMessage, { parse_mode: 'HTML', ...activeKb });
 
   // Collect uploaded image URLs for image-to-video or image editing.
   // If user set an aspect ratio, resize/crop images to match before sending to provider
