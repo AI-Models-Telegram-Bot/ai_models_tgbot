@@ -508,6 +508,15 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     }
 
     await job.progress(100);
+
+    // Decrement concurrent generation counter
+    try {
+      const redis = getRedis();
+      const concurrentKey = `gen:active:${userId}`;
+      const val = await redis.decr(concurrentKey);
+      if (val < 0) await redis.set(concurrentKey, '0', 'EX', 600);
+    } catch { /* non-critical */ }
+
     return { requestId, success: true };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -610,6 +619,14 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         }),
       }).catch(() => {});
     }
+
+    // Decrement concurrent generation counter on final failure
+    try {
+      const redis = getRedis();
+      const concurrentKey = `gen:active:${userId}`;
+      const val = await redis.decr(concurrentKey);
+      if (val < 0) await redis.set(concurrentKey, '0', 'EX', 600);
+    } catch { /* non-critical */ }
 
     // On final attempt: return failure (don't re-throw) to prevent further retries.
     return { requestId, success: false, error: errorMsg };

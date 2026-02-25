@@ -38,6 +38,7 @@ export interface SubscriptionPlanConfig {
   modelAccess: ModelAccessConfig;
   rateLimits: TierRateLimits;
 
+  maxConcurrentGenerations: number;
   features: string[];
   referralBonus: number;
   prioritySupport: boolean;
@@ -73,6 +74,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerHour: 2,
       videoPerDay: 5,
     },
+    maxConcurrentGenerations: 2,
     features: [
       'features.free.basicModels',
       'features.free.communitySupport',
@@ -113,6 +115,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerHour: 5,
       videoPerDay: 20,
     },
+    maxConcurrentGenerations: 3,
     features: [
       'features.starter.gpt4Claude',
       'features.starter.allImageModels',
@@ -156,6 +159,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerHour: 10,
       videoPerDay: 60,
     },
+    maxConcurrentGenerations: 5,
     features: [
       'features.pro.allStarter',
       'features.pro.unlimitedGptMini',
@@ -201,6 +205,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerHour: 15,
       videoPerDay: 100,
     },
+    maxConcurrentGenerations: 8,
     features: [
       'features.premium.unlimitedCheapText',
       'features.premium.allModels',
@@ -243,6 +248,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerHour: 30,
       videoPerDay: 200,
     },
+    maxConcurrentGenerations: 8,
     features: [
       'features.business.unlimitedTextImage',
       'features.business.massiveCredits',
@@ -287,6 +293,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
       videoPerHour: 100,
       videoPerDay: 1000,
     },
+    maxConcurrentGenerations: 8,
     features: [
       'features.enterprise.unlimitedEverything',
       'features.enterprise.allModelsUnlimited',

@@ -2,7 +2,7 @@ import { Markup } from 'telegraf';
 import { WalletCategory } from '@prisma/client';
 import { BotContext } from '../types';
 import { getCancelKeyboard, getMainKeyboard } from '../keyboards/mainKeyboard';
-import { modelService, requestService, walletService, modelAccessService } from '../../services';
+import { modelService, requestService, walletService, modelAccessService, subscriptionService } from '../../services';
 import { getAudioOptionsForFunction } from './audio';
 import { getImageOptionsForFunction } from './image';
 import { getVideoOptionsForFunction } from './video';
@@ -13,6 +13,8 @@ import { enqueueGeneration } from '../../queues/producer';
 import { config } from '../../config';
 import { resizeImageForAspectRatio } from '../../utils/imageResize';
 import { calculateDynamicCost } from '../../utils/videoPricing';
+import { getRedis } from '../../config/redis';
+import { getPlanByTier } from '../../config/subscriptions';
 
 /** Image models that accept a reference image for editing (not just text prompt) */
 const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
@@ -241,9 +243,14 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
 
     // If caption is provided, treat it as the prompt and enqueue immediately
     if (ctx.message.caption) {
-      // Clean up any previous image-upload messages before generation
       await cleanUpImageUploadMessages(ctx);
       return processGeneration(ctx, ctx.message.caption);
+    }
+
+    // Auto-generate: if image-editing model and user already has a lastPrompt, reuse it
+    if (isImageModelWithInput && ctx.session.lastPrompt) {
+      await cleanUpImageUploadMessages(ctx);
+      return processGeneration(ctx, ctx.session.lastPrompt);
     }
 
     // Clean up previous image-upload message (if user uploads another image)
@@ -393,6 +400,12 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
       return processGeneration(ctx, ctx.message.caption);
     }
 
+    // Auto-generate: if image-editing model and user already has a lastPrompt, reuse it
+    if (isImageModelWithInput && ctx.session.lastPrompt) {
+      await cleanUpImageUploadMessages(ctx);
+      return processGeneration(ctx, ctx.session.lastPrompt);
+    }
+
     await cleanUpImageUploadMessages(ctx);
 
     const remaining = maxImages - count;
@@ -480,11 +493,30 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
 async function processGeneration(ctx: BotContext, input: string): Promise<void> {
   if (!ctx.user || !ctx.session) return;
 
-  // Clean up "image added" messages — no longer needed once generation starts
-  await cleanUpImageUploadMessages(ctx);
-
   const lang = getLang(ctx);
   const l = getLocale(lang);
+
+  // ── Concurrent generation limit ──
+  const concurrentKey = `gen:active:${ctx.user.id}`;
+  try {
+    const redis = getRedis();
+    const activeCount = parseInt(await redis.get(concurrentKey) || '0', 10);
+    const sub = await subscriptionService.getUserSubscription(ctx.user.id);
+    const plan = getPlanByTier(sub.tier as any);
+    const maxConcurrent = plan?.maxConcurrentGenerations ?? 2;
+    if (activeCount >= maxConcurrent) {
+      const msg = lang === 'ru'
+        ? `⏳ У вас уже ${activeCount} активных генераций (макс. ${maxConcurrent}). Дождитесь завершения.`
+        : `⏳ You have ${activeCount} active generations (max ${maxConcurrent}). Please wait for one to finish.`;
+      await ctx.reply(msg);
+      return;
+    }
+  } catch (err) {
+    logger.warn('Concurrent generation check failed, proceeding', { err });
+  }
+
+  // Clean up "image added" messages — no longer needed once generation starts
+  await cleanUpImageUploadMessages(ctx);
 
   const model = await modelService.getBySlug(ctx.session.selectedModel!);
   if (!model) {
@@ -650,6 +682,14 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     });
 
     logger.info('Job enqueued', { requestId: request.id, model: model.slug, creditsCost, hasImages: !!inputImageUrls });
+
+    // Increment concurrent generation counter (TTL 10min as safety net)
+    try {
+      const redis = getRedis();
+      const concurrentKey = `gen:active:${ctx.user!.id}`;
+      await redis.incr(concurrentKey);
+      await redis.expire(concurrentKey, 600);
+    } catch { /* non-critical */ }
   } catch (error) {
     logger.error('Failed to enqueue job:', error);
 
@@ -668,6 +708,8 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   }
 
   // Keep model context active so user can send consecutive prompts.
+  // Save last prompt so bare photo uploads can auto-reuse it.
+  ctx.session.lastPrompt = input;
   // Only clear uploaded images and their tracked messages — they were consumed by this generation.
   ctx.session.uploadedImageUrls = undefined;
   ctx.session.imageUploadMsgIds = undefined;
