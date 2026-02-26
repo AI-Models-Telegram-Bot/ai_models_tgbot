@@ -487,7 +487,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       const input: Record<string, unknown> = {
         prompt,
-        aspect_ratio: hasImage ? 'match_input_image' : ((options?.aspectRatio as string) || '1:1'),
+        aspect_ratio: (options?.aspectRatio as string) || '1:1',
         output_format: 'png',
       };
 

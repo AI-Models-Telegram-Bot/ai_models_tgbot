@@ -58,7 +58,7 @@ export class ReplicateProvider extends BaseProvider {
       const input: Record<string, unknown> = {
         prompt,
         output_format: 'png',
-        aspect_ratio: hasImage ? 'match_input_image' : ((ar && SUPPORTED_RATIOS.has(ar)) ? ar : '1:1'),
+        aspect_ratio: (ar && SUPPORTED_RATIOS.has(ar)) ? ar : (hasImage ? 'match_input_image' : '1:1'),
       };
 
       if (hasImage) {
