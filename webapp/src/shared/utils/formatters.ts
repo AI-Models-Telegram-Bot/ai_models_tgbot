@@ -1,7 +1,10 @@
 export function formatCredits(amount: number): string {
+  // Show decimals only when needed (0.2, 1.5) but keep whole numbers clean (3, 24)
+  const fractionDigits = amount % 1 === 0 ? 0 : 1;
   return new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 0,
-  }).format(Math.floor(amount));
+    minimumFractionDigits: 0,
+    maximumFractionDigits: fractionDigits,
+  }).format(amount);
 }
 
 export function formatMoney(amount: number, currency = 'USD'): string {

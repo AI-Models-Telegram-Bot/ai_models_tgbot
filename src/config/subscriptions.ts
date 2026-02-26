@@ -53,7 +53,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 0,
     priceRUB: 0,
     duration: 'lifetime',
-    tokens: 160,
+    tokens: 10,
     modelAccess: {
       text: {
         allowed: ['gpt-4o-mini', 'gemini-flash', 'fast-text'],
@@ -92,7 +92,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 5.99,
     priceRUB: 549,
     duration: 'monthly',
-    tokens: 850,
+    tokens: 250,
     modelAccess: {
       text: {
         allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'claude-haiku', 'grok', 'gemini-flash', 'fast-text'],
@@ -136,7 +136,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 14.99,
     priceRUB: 1399,
     duration: 'monthly',
-    tokens: 4700,
+    tokens: 650,
     modelAccess: {
       text: {
         allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'claude-haiku', 'claude-opus', 'claude-sonnet-thinking', 'claude-opus-thinking', 'grok', 'gemini-flash', 'gemini-pro', 'fast-text', 'deepseek-r1', 'deep-research'],
@@ -182,7 +182,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 34.99,
     priceRUB: 3199,
     duration: 'monthly',
-    tokens: 10800,
+    tokens: 1500,
     modelAccess: {
       text: {
         allowed: ['*'],
@@ -225,7 +225,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 79.99,
     priceRUB: 7299,
     duration: 'monthly',
-    tokens: 27000,
+    tokens: 3000,
     modelAccess: {
       text: {
         allowed: ['*'],
