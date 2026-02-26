@@ -28,12 +28,25 @@ export async function handleTextAI(ctx: BotContext): Promise<void> {
     return;
   }
 
+  // Clear ALL other category state to prevent stale routing
+  // (e.g. user was in video flow with veo selected, then presses Text AI)
+  ctx.session.inVideoMenu = false;
+  ctx.session.videoFamily = undefined;
+  ctx.session.videoFunction = undefined;
+  ctx.session.inImageMenu = false;
+  ctx.session.imageFamily = undefined;
+  ctx.session.imageFunction = undefined;
+  ctx.session.inAudioMenu = false;
+  ctx.session.audioFunction = undefined;
+  ctx.session.selectedModel = undefined;
+  ctx.session.awaitingInput = false;
+  ctx.session.uploadedImageUrls = undefined;
+  ctx.session.imageUploadMsgIds = undefined;
+
   try {
     const conversation = await chatService.createConversation(ctx.user.id, defaultModel.slug);
     ctx.session.activeConversationId = conversation.id;
     ctx.session.chatModelPicker = false;
-    ctx.session.selectedModel = undefined;
-    ctx.session.awaitingInput = false;
 
     const message = lang === 'ru'
       ? `🤖 <b>Текст AI — ${defaultModel.name}</b> (⚡${defaultModel.tokenCost})\n\nОтправьте ваше сообщение:`
@@ -126,14 +139,26 @@ async function handleModelPickerSelection(ctx: BotContext, input: string): Promi
 
   ctx.session!.chatModelPicker = false;
 
+  // Clear all other category state
+  ctx.session!.inVideoMenu = false;
+  ctx.session!.videoFamily = undefined;
+  ctx.session!.videoFunction = undefined;
+  ctx.session!.inImageMenu = false;
+  ctx.session!.imageFamily = undefined;
+  ctx.session!.imageFunction = undefined;
+  ctx.session!.inAudioMenu = false;
+  ctx.session!.audioFunction = undefined;
+  ctx.session!.selectedModel = undefined;
+  ctx.session!.awaitingInput = false;
+  ctx.session!.uploadedImageUrls = undefined;
+  ctx.session!.imageUploadMsgIds = undefined;
+
   try {
     // Delete the user's model button press
     try { await ctx.deleteMessage(); } catch { /* ignore */ }
 
     const conversation = await chatService.createConversation(ctx.user!.id, model.slug);
     ctx.session!.activeConversationId = conversation.id;
-    ctx.session!.selectedModel = undefined;
-    ctx.session!.awaitingInput = false;
 
     const message = lang === 'ru'
       ? `💬 Чат создан с <b>${model.name}</b> (⚡${model.tokenCost})\n\nОтправьте ваше сообщение:`

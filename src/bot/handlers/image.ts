@@ -151,7 +151,9 @@ export async function handleImageFamilyMenu(ctx: BotContext): Promise<void> {
   const l = getLocale(lang);
 
   if (ctx.session) {
-    // Clear other category state
+    // Clear other category state (including chat)
+    ctx.session.activeConversationId = undefined;
+    ctx.session.chatModelPicker = false;
     ctx.session.inVideoMenu = false;
     ctx.session.videoFamily = undefined;
     ctx.session.videoFunction = undefined;
