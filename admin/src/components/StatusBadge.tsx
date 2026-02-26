@@ -34,6 +34,12 @@ const statusColors: Record<string, string> = {
   // User status
   blocked: 'bg-red-600/20 text-red-400',
   active: 'bg-emerald-600/20 text-emerald-400',
+
+  // Provider categories
+  TEXT: 'bg-blue-600/20 text-blue-400',
+  IMAGE: 'bg-purple-600/20 text-purple-400',
+  VIDEO: 'bg-yellow-600/20 text-yellow-400',
+  AUDIO: 'bg-emerald-600/20 text-emerald-400',
 };
 
 interface StatusBadgeProps {
