@@ -17,6 +17,20 @@ import { calculateDynamicCost } from '../../utils/videoPricing';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 
+/**
+ * Media-group debounce: when user sends multiple photos at once (album),
+ * Telegram delivers them as separate messages sharing the same media_group_id.
+ * We collect all URLs silently and send ONE acknowledgment after a short delay.
+ */
+interface PendingMediaGroup {
+  timer: ReturnType<typeof setTimeout>;
+  count: number; // how many photos were added in this batch
+  ctx: BotContext; // last ctx — used for sending the reply
+  caption?: string; // caption from any photo in the group (Telegram only attaches caption to the first)
+}
+const pendingMediaGroups = new Map<string, PendingMediaGroup>();
+const MEDIA_GROUP_DEBOUNCE_MS = 600;
+
 /** Image models that accept a reference image for editing (not just text prompt) */
 const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
 
@@ -218,7 +232,11 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   // Enforce per-model image limits (both image editing and video models)
   const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
   const maxImages = getMaxImages(activeModel);
+  const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
+
   if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
+    // If part of a media group, silently skip excess images (the batched reply will show the capped count)
+    if (mediaGroupId) return;
     const msg = maxImages === 1
       ? (lang === 'ru'
           ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
@@ -241,56 +259,34 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     }
     ctx.session.uploadedImageUrls.push(imageUrl);
 
-    const count = ctx.session.uploadedImageUrls.length;
+    // Media-group batching: if this photo is part of an album, debounce the reply
+    const caption = ctx.message.caption;
 
-    // If caption is provided, treat it as the prompt and enqueue immediately
-    if (ctx.message.caption) {
-      await cleanUpImageUploadMessages(ctx);
-      return processGeneration(ctx, ctx.message.caption);
+    if (mediaGroupId) {
+      const existing = pendingMediaGroups.get(mediaGroupId);
+      if (existing) {
+        clearTimeout(existing.timer);
+        existing.count += 1;
+        existing.ctx = ctx; // use latest ctx for reply
+        if (caption) existing.caption = caption;
+      }
+      const entry: PendingMediaGroup = existing || {
+        count: 1,
+        ctx,
+        caption,
+        timer: undefined as any,
+      };
+      entry.timer = setTimeout(() => {
+        pendingMediaGroups.delete(mediaGroupId);
+        sendImageAcknowledgment(entry.ctx, isImageModelWithInput, entry.caption)
+          .catch((err: any) => logger.error('Media group ack failed', { err }));
+      }, MEDIA_GROUP_DEBOUNCE_MS);
+      if (!existing) pendingMediaGroups.set(mediaGroupId, entry);
+      return; // don't send reply yet — wait for debounce
     }
 
-    // Clean up previous image-upload message (if user uploads another image)
-    await cleanUpImageUploadMessages(ctx);
-
-    // Acknowledge and wait for text prompt
-    const remaining = maxImages - count;
-    let msg: string;
-    if (remaining > 0 && maxImages > 1) {
-      msg = lang === 'ru'
-        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
-        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
-    } else {
-      msg = lang === 'ru'
-        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
-        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
-    }
-
-    // Build inline keyboard: [Delete] [Configure]
-    const buttons: any[][] = [];
-    buttons.push([
-      Markup.button.callback(lang === 'ru' ? '🗑 Удалить' : '🗑 Delete', `delete_image:${count - 1}`),
-    ]);
-
-    // Configure button — opens webapp settings for the current model
-    const webappUrl = config.webapp?.url;
-    const modelSlug = ctx.session.videoFunction || ctx.session.imageFunction;
-    if (webappUrl && ctx.from && modelSlug) {
-      const settingsPath = isImageModelWithInput ? 'image' : 'video';
-      const configureUrl = `${webappUrl}/${settingsPath}/settings?model=${encodeURIComponent(modelSlug)}&tgid=${ctx.from.id}`;
-      buttons.push([
-        Markup.button.webApp(lang === 'ru' ? '⚙️ Настроить' : '⚙️ Configure', configureUrl),
-      ]);
-    }
-
-    logger.info('handlePhotoInput: sending image-added reply', { count, modelSlug: ctx.session.videoFunction || ctx.session.imageFunction });
-    const sentMsg = await ctx.reply(msg, {
-      reply_parameters: { message_id: ctx.message.message_id },
-      ...Markup.inlineKeyboard(buttons),
-    });
-
-    // Track this message for cleanup when user sends a prompt
-    if (!ctx.session.imageUploadMsgIds) ctx.session.imageUploadMsgIds = [];
-    ctx.session.imageUploadMsgIds.push(sentMsg.message_id);
+    // Single photo (no media group) — respond immediately
+    await sendImageAcknowledgment(ctx, isImageModelWithInput, caption);
   } catch (error) {
     logger.error('Failed to get file link for photo:', error);
     const msg = lang === 'ru'
@@ -298,6 +294,67 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
       : 'Failed to upload image. Please try again.';
     await ctx.reply(msg);
   }
+}
+
+/**
+ * Send a single acknowledgment after one or more images have been added to the session.
+ * Used by both single-photo and media-group flows.
+ */
+async function sendImageAcknowledgment(
+  ctx: BotContext,
+  isImageModelWithInput: boolean,
+  caption?: string,
+): Promise<void> {
+  if (!ctx.session) return;
+  const lang = getLang(ctx);
+
+  const count = ctx.session.uploadedImageUrls?.length || 0;
+
+  // If caption is provided, treat it as the prompt and enqueue immediately
+  if (caption) {
+    await cleanUpImageUploadMessages(ctx);
+    return processGeneration(ctx, caption);
+  }
+
+  // Clean up previous image-upload messages
+  await cleanUpImageUploadMessages(ctx);
+
+  const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
+  const maxImages = getMaxImages(activeModel);
+  const remaining = maxImages - count;
+  let msg: string;
+  if (remaining > 0 && maxImages > 1) {
+    msg = lang === 'ru'
+      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
+  } else {
+    msg = lang === 'ru'
+      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
+      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
+  }
+
+  // Build inline keyboard: [Delete] [Configure]
+  const buttons: any[][] = [];
+  buttons.push([
+    Markup.button.callback(lang === 'ru' ? '🗑 Удалить' : '🗑 Delete', 'delete_all_images'),
+  ]);
+
+  const webappUrl = config.webapp?.url;
+  const modelSlug = ctx.session.videoFunction || ctx.session.imageFunction;
+  if (webappUrl && ctx.from && modelSlug) {
+    const settingsPath = isImageModelWithInput ? 'image' : 'video';
+    const configureUrl = `${webappUrl}/${settingsPath}/settings?model=${encodeURIComponent(modelSlug)}&tgid=${ctx.from.id}`;
+    buttons.push([
+      Markup.button.webApp(lang === 'ru' ? '⚙️ Настроить' : '⚙️ Configure', configureUrl),
+    ]);
+  }
+
+  logger.info('sendImageAcknowledgment', { count, modelSlug });
+  const sentMsg = await ctx.reply(msg, Markup.inlineKeyboard(buttons));
+
+  // Track this message for cleanup when user sends a prompt
+  if (!ctx.session.imageUploadMsgIds) ctx.session.imageUploadMsgIds = [];
+  ctx.session.imageUploadMsgIds.push(sentMsg.message_id);
 }
 
 /**
@@ -367,7 +424,10 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   // Enforce per-model image limits (both image editing and video models)
   const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
   const maxImages = getMaxImages(activeModel);
+  const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
+
   if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
+    if (mediaGroupId) return; // silently skip excess in album
     const msg = maxImages === 1
       ? (lang === 'ru'
           ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
@@ -388,50 +448,33 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     }
     ctx.session.uploadedImageUrls.push(imageUrl);
 
-    const count = ctx.session.uploadedImageUrls.length;
+    // Media-group batching (same as handlePhotoInput)
+    const caption = ctx.message.caption;
 
-    // If caption is provided, treat it as the prompt and enqueue immediately
-    if (ctx.message.caption) {
-      await cleanUpImageUploadMessages(ctx);
-      return processGeneration(ctx, ctx.message.caption);
+    if (mediaGroupId) {
+      const existing = pendingMediaGroups.get(mediaGroupId);
+      if (existing) {
+        clearTimeout(existing.timer);
+        existing.count += 1;
+        existing.ctx = ctx;
+        if (caption) existing.caption = caption;
+      }
+      const entry: PendingMediaGroup = existing || {
+        count: 1,
+        ctx,
+        caption,
+        timer: undefined as any,
+      };
+      entry.timer = setTimeout(() => {
+        pendingMediaGroups.delete(mediaGroupId);
+        sendImageAcknowledgment(entry.ctx, isImageModelWithInput, entry.caption)
+          .catch((err: any) => logger.error('Media group ack failed', { err }));
+      }, MEDIA_GROUP_DEBOUNCE_MS);
+      if (!existing) pendingMediaGroups.set(mediaGroupId, entry);
+      return;
     }
 
-    await cleanUpImageUploadMessages(ctx);
-
-    const remaining = maxImages - count;
-    let msg: string;
-    if (remaining > 0 && maxImages > 1) {
-      msg = lang === 'ru'
-        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
-        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
-    } else {
-      msg = lang === 'ru'
-        ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
-        : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
-    }
-
-    const buttons: any[][] = [];
-    buttons.push([
-      Markup.button.callback(lang === 'ru' ? '🗑 Удалить' : '🗑 Delete', `delete_image:${count - 1}`),
-    ]);
-
-    const webappUrl = config.webapp?.url;
-    const modelSlug = ctx.session.videoFunction || ctx.session.imageFunction;
-    if (webappUrl && ctx.from && modelSlug) {
-      const settingsPath = isImageModelWithInput ? 'image' : 'video';
-      const configureUrl = `${webappUrl}/${settingsPath}/settings?model=${encodeURIComponent(modelSlug)}&tgid=${ctx.from.id}`;
-      buttons.push([
-        Markup.button.webApp(lang === 'ru' ? '⚙️ Настроить' : '⚙️ Configure', configureUrl),
-      ]);
-    }
-
-    const sentMsg = await ctx.reply(msg, {
-      reply_parameters: { message_id: ctx.message.message_id },
-      ...Markup.inlineKeyboard(buttons),
-    });
-
-    if (!ctx.session.imageUploadMsgIds) ctx.session.imageUploadMsgIds = [];
-    ctx.session.imageUploadMsgIds.push(sentMsg.message_id);
+    await sendImageAcknowledgment(ctx, isImageModelWithInput, caption);
   } catch (error) {
     logger.error('Failed to get file link for document:', error);
     const msg = lang === 'ru'

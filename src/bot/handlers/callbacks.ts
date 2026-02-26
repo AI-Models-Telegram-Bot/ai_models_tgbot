@@ -21,13 +21,19 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
   const l = getLocale(lang);
   await ctx.answerCbQuery();
 
-  // ── Image delete callback — edit message in-place, restore reply keyboard ──
-  if (data.startsWith('delete_image:')) {
-    const idx = parseInt(data.split(':')[1], 10);
-    if (ctx.session?.uploadedImageUrls?.length) {
-      ctx.session.uploadedImageUrls.splice(idx, 1);
-      if (ctx.session.uploadedImageUrls.length === 0) {
+  // ── Image delete callbacks — edit message in-place, restore reply keyboard ──
+  if (data === 'delete_all_images' || data.startsWith('delete_image:')) {
+    if (data === 'delete_all_images') {
+      if (ctx.session) {
         ctx.session.uploadedImageUrls = undefined;
+      }
+    } else {
+      const idx = parseInt(data.split(':')[1], 10);
+      if (ctx.session?.uploadedImageUrls?.length) {
+        ctx.session.uploadedImageUrls.splice(idx, 1);
+        if (ctx.session.uploadedImageUrls.length === 0) {
+          ctx.session.uploadedImageUrls = undefined;
+        }
       }
     }
 
@@ -42,8 +48,8 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
 
     const remaining = ctx.session?.uploadedImageUrls?.length || 0;
     const deleteMsg = lang === 'ru'
-      ? `🗑 Изображение удалено.${remaining > 0 ? ` Осталось: ${remaining}` : ''}`
-      : `🗑 Image removed.${remaining > 0 ? ` Remaining: ${remaining}` : ''}`;
+      ? `🗑 ${data === 'delete_all_images' ? 'Все изображения удалены.' : 'Изображение удалено.'}${remaining > 0 ? ` Осталось: ${remaining}` : ''}`
+      : `🗑 ${data === 'delete_all_images' ? 'All images removed.' : 'Image removed.'}${remaining > 0 ? ` Remaining: ${remaining}` : ''}`;
     try {
       await ctx.editMessageText(deleteMsg);
     } catch {
