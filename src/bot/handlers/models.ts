@@ -232,7 +232,11 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   // Enforce per-model image limits (both image editing and video models)
   const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
   const maxImages = getMaxImages(activeModel);
+  const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
+
   if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
+    // If part of a media group, silently skip excess images (the batched reply will show the capped count)
+    if (mediaGroupId) return;
     const msg = maxImages === 1
       ? (lang === 'ru'
           ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
@@ -256,7 +260,6 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     ctx.session.uploadedImageUrls.push(imageUrl);
 
     // Media-group batching: if this photo is part of an album, debounce the reply
-    const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
     const caption = ctx.message.caption;
 
     if (mediaGroupId) {
@@ -421,7 +424,10 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   // Enforce per-model image limits (both image editing and video models)
   const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
   const maxImages = getMaxImages(activeModel);
+  const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
+
   if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
+    if (mediaGroupId) return; // silently skip excess in album
     const msg = maxImages === 1
       ? (lang === 'ru'
           ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
@@ -443,7 +449,6 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     ctx.session.uploadedImageUrls.push(imageUrl);
 
     // Media-group batching (same as handlePhotoInput)
-    const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
     const caption = ctx.message.caption;
 
     if (mediaGroupId) {
