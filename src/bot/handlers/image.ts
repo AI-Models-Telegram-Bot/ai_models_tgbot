@@ -20,7 +20,8 @@ function getLang(ctx: BotContext): Language {
 }
 
 function formatCredits(amount: number): string {
-  return `${amount} credits`;
+  const formatted = amount % 1 === 0 ? String(amount) : amount.toFixed(1);
+  return `${formatted} token${amount === 1 ? '' : 's'}`;
 }
 
 // ── Family configs ──────────────────────────────────────

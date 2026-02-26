@@ -68,7 +68,8 @@ async function cleanUpImageUploadMessages(ctx: BotContext): Promise<void> {
 }
 
 function formatCredits(amount: number): string {
-  return `${amount} credits`;
+  const formatted = amount % 1 === 0 ? String(amount) : amount.toFixed(1);
+  return `${formatted} token${amount === 1 ? '' : 's'}`;
 }
 
 /** Map ModelCategory to WalletCategory */

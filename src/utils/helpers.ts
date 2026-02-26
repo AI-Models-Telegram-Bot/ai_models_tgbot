@@ -5,7 +5,8 @@ export function generateReferralCode(): string {
 }
 
 export function formatTokens(amount: number): string {
-  return `${amount} token${amount !== 1 ? 's' : ''}`;
+  const formatted = amount % 1 === 0 ? String(amount) : amount.toFixed(1);
+  return `${formatted} token${amount === 1 ? '' : 's'}`;
 }
 
 export function escapeHtml(text: string): string {

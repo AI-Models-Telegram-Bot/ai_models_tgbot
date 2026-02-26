@@ -39,19 +39,19 @@ const RESOLUTION_MULT: Record<string, number> = {
 
 const KLING_CREDIT_TABLE: Record<string, number> = {
   // Standard mode (std)
-  'std:new:5':  12,   // v2.5/2.6, 5s
-  'std:new:10': 24,   // v2.5/2.6, 10s
-  'std:old:5':  16,   // v1.5/1.6/2.1, 5s
-  'std:old:10': 32,   // v1.5/1.6/2.1, 10s
+  'std:new:5':  16,   // v2.5/2.6, 5s
+  'std:new:10': 32,   // v2.5/2.6, 10s
+  'std:old:5':  20,   // v1.5/1.6/2.1, 5s
+  'std:old:10': 40,   // v1.5/1.6/2.1, 10s
   // Professional mode (pro)
-  'pro:new:5':  20,   // v2.5/2.6, 5s
-  'pro:new:10': 40,   // v2.5/2.6, 10s
-  'pro:new:5:audio':  40,  // v2.6 + audio, 5s
-  'pro:new:10:audio': 80,  // v2.6 + audio, 10s
-  'pro:old:5':  28,   // v1.5/1.6/2.1, 5s
-  'pro:old:10': 56,   // v1.5/1.6/2.1, 10s
-  'pro:master:5':  58,  // v2.1-master, 5s
-  'pro:master:10': 116, // v2.1-master, 10s
+  'pro:new:5':  27,   // v2.5/2.6, 5s
+  'pro:new:10': 54,   // v2.5/2.6, 10s
+  'pro:new:5:audio':  54,   // v2.6 + audio, 5s
+  'pro:new:10:audio': 108,  // v2.6 + audio, 10s
+  'pro:old:5':  36,   // v1.5/1.6/2.1, 5s
+  'pro:old:10': 72,   // v1.5/1.6/2.1, 10s
+  'pro:master:5':  72,  // v2.1-master, 5s
+  'pro:master:10': 144, // v2.1-master, 10s
 };
 
 function getKlingVersionGroup(version: string): string {
@@ -77,39 +77,50 @@ export function calculateKlingCost(
   }
 
   const key = `${mode}:${group}:${duration}`;
-  return KLING_CREDIT_TABLE[key] || (mode === 'pro' ? 20 : 12);
+  return KLING_CREDIT_TABLE[key] || (mode === 'pro' ? 27 : 16);
 }
 
 // ── Midjourney pricing table ─────────────────────────────────
 // Credits per image based on speed mode
 
 const MJ_SPEED_CREDITS: Record<string, number> = {
-  relax: 8,
-  fast: 15,
-  turbo: 22,
+  relax: 2,
+  fast: 3,
+  turbo: 5,
 };
 
 function calculateMidjourneyCost(speed?: string): number {
-  return MJ_SPEED_CREDITS[speed || 'fast'] || 15;
+  return MJ_SPEED_CREDITS[speed || 'fast'] || 3;
 }
 
 // ── Seedream 4.5 pricing (resolution-based) ─────────────────
-// 1K = base (8), 2K = 1.5x (12), 4K = ~1.9x (15)
 
 const SEEDREAM_RES_CREDITS: Record<string, number> = {
-  '1K': 8,
-  '2K': 12,
-  '4K': 15,
+  '1K': 2.5,
+  '2K': 3.5,
+  '4K': 5,
 };
 
 function calculateSeedreamCost(resolution?: string): number {
-  return SEEDREAM_RES_CREDITS[resolution || '1K'] || 8;
+  return SEEDREAM_RES_CREDITS[resolution || '1K'] || 2.5;
+}
+
+// ── Nano Banana Pro pricing (resolution-based) ──────────────
+
+const NANO_BANANA_PRO_RES_CREDITS: Record<string, number> = {
+  '1K': 5,
+  '2K': 6,
+  '4K': 8,
+};
+
+function calculateNanoBananaProCost(resolution?: string): number {
+  return NANO_BANANA_PRO_RES_CREDITS[resolution || '1K'] || 5;
 }
 
 // ── Public API ───────────────────────────────────────────────
 
 export function hasDynamicPricing(slug: string): boolean {
-  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney' || slug === 'seedream-4.5';
+  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro';
 }
 
 export function calculateDynamicCost(
@@ -135,6 +146,10 @@ export function calculateDynamicCost(
     return calculateSeedreamCost(settings?.resolution);
   }
 
+  // Nano Banana Pro pricing by resolution
+  if (slug === 'nano-banana-pro') {
+    return calculateNanoBananaProCost(settings?.resolution);
+  }
 
   const cfg = DYNAMIC_PRICING[slug];
   if (!cfg || !settings) return baseCost;

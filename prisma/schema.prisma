@@ -155,7 +155,7 @@ model AIModel {
   provider          String
   category          ModelCategory
   description       String?
-  tokenCost         Int       @map("token_cost")
+  tokenCost         Float     @map("token_cost")
   priceItemCode     String?   @map("price_item_code")
   isActive          Boolean   @default(true) @map("is_active")
   config            Json?

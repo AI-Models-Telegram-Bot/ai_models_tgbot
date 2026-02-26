@@ -2,11 +2,11 @@
  * Pricing Configuration
  *
  * Maps model slugs to credit costs (what we charge users per request).
- * Credits are internal units — 1 credit is roughly $0.01 of value.
+ * Tokens are internal units — revenue per token ~$0.023.
  *
  * MARGIN STRATEGY:
  * - Loss leaders (unlimited models): Flux Schnell, SDXL, Fast Text, Gemini Flash, Deepgram TTS
- *   → Cost us $0.0006-$0.003 per request → charge 1-2 credits → ~0% margin but drives engagement
+ *   → Cost us $0.0003-$0.003 per request → charge 0.2-0.5 tokens → ~0% margin but drives engagement
  * - Standard models: GPT-4o, Claude, DALL-E 3, Kling, ElevenLabs
  *   → Target 60-80% margin
  * - Premium models: Veo 3 Quality, Midjourney, Sora
@@ -26,66 +26,101 @@ export interface ModelPricing {
 // ── TEXT MODEL PRICING ──────────────────────────────────
 export const TEXT_PRICING: Record<string, ModelPricing> = {
   'fast-text': {
-    creditsPerUnit: 1,
+    creditsPerUnit: 0.2,
     unitType: '1_request',
-    baseCostUSD: 0.0003,        // Groq Llama 3.3 70B avg request ~300 tok
+    baseCostUSD: 0.0003,
     marginPercent: 97,
     isLossLeader: true,
   },
-  'gpt-4o-mini': {
-    creditsPerUnit: 2,
-    unitType: '1_request',
-    baseCostUSD: 0.0002,        // $0.375/1M tok × ~500 tok avg
-    marginPercent: 90,
-    isLossLeader: true,
-  },
   'gemini-flash': {
-    creditsPerUnit: 1,
+    creditsPerUnit: 0.2,
     unitType: '1_request',
-    baseCostUSD: 0.0002,        // $0.375/1M tok × ~500 tok avg
+    baseCostUSD: 0.0002,
     marginPercent: 95,
     isLossLeader: true,
   },
-  'gemini-pro': {
-    creditsPerUnit: 4,
+  'gpt-4o-mini': {
+    creditsPerUnit: 0.3,
     unitType: '1_request',
-    baseCostUSD: 0.003,         // $5.625/1M tok × ~500 tok avg
+    baseCostUSD: 0.0002,
+    marginPercent: 90,
+    isLossLeader: true,
+  },
+  'grok': {
+    creditsPerUnit: 0.3,
+    unitType: '1_request',
+    baseCostUSD: 0.0002,
+    marginPercent: 90,
+    isLossLeader: false,
+  },
+  'llama-4-maverick': {
+    creditsPerUnit: 0.3,
+    unitType: '1_request',
+    baseCostUSD: 0.0004,
+    marginPercent: 85,
+    isLossLeader: false,
+  },
+  'claude-haiku': {
+    creditsPerUnit: 0.5,
+    unitType: '1_request',
+    baseCostUSD: 0.001,
+    marginPercent: 80,
+    isLossLeader: false,
+  },
+  'deepseek-r1': {
+    creditsPerUnit: 0.5,
+    unitType: '1_request',
+    baseCostUSD: 0.002,
+    marginPercent: 75,
+    isLossLeader: false,
+  },
+  'gemini-pro': {
+    creditsPerUnit: 0.8,
+    unitType: '1_request',
+    baseCostUSD: 0.003,
     marginPercent: 75,
     isLossLeader: false,
   },
   'gpt-4o': {
-    creditsPerUnit: 5,
+    creditsPerUnit: 0.8,
     unitType: '1_request',
-    baseCostUSD: 0.003,         // $6.25/1M tok × ~500 tok avg
+    baseCostUSD: 0.003,
     marginPercent: 70,
     isLossLeader: false,
   },
   'claude-sonnet': {
-    creditsPerUnit: 5,
+    creditsPerUnit: 1,
     unitType: '1_request',
-    baseCostUSD: 0.005,         // $9/1M tok × ~500 tok avg
+    baseCostUSD: 0.005,
     marginPercent: 60,
     isLossLeader: false,
   },
-  'grok': {
-    creditsPerUnit: 2,
+  'claude-sonnet-thinking': {
+    creditsPerUnit: 3,
     unitType: '1_request',
-    baseCostUSD: 0.0002,        // $0.40/1M tok × ~500 tok avg
-    marginPercent: 90,
+    baseCostUSD: 0.015,
+    marginPercent: 55,
     isLossLeader: false,
   },
-  'deepseek-r1': {
-    creditsPerUnit: 4,
+  'claude-opus': {
+    creditsPerUnit: 5,
     unitType: '1_request',
-    baseCostUSD: 0.002,         // Together $3/1M × ~700 tok avg
-    marginPercent: 75,
+    baseCostUSD: 0.03,
+    marginPercent: 50,
     isLossLeader: false,
   },
-  'llama-4-maverick': {
-    creditsPerUnit: 2,
+  'deep-research': {
+    creditsPerUnit: 5,
     unitType: '1_request',
-    baseCostUSD: 0.0004,        // Together $0.56/1M × ~700 tok avg
-    marginPercent: 85,
+    baseCostUSD: 0.03,
+    marginPercent: 50,
+    isLossLeader: false,
+  },
+  'claude-opus-thinking': {
+    creditsPerUnit: 12,
+    unitType: '1_request',
+    baseCostUSD: 0.08,
+    marginPercent: 45,
     isLossLeader: false,
   },
 };
@@ -93,210 +128,203 @@ export const TEXT_PRICING: Record<string, ModelPricing> = {
 // ── IMAGE MODEL PRICING ─────────────────────────────────
 export const IMAGE_PRICING: Record<string, ModelPricing> = {
   'flux-schnell': {
-    creditsPerUnit: 1,
+    creditsPerUnit: 0.2,
     unitType: '1_image',
-    baseCostUSD: 0.0006,        // Runware
+    baseCostUSD: 0.0006,
     marginPercent: 90,
     isLossLeader: true,
   },
   'sdxl-lightning': {
-    creditsPerUnit: 1,
+    creditsPerUnit: 0.2,
     unitType: '1_image',
-    baseCostUSD: 0.0006,        // Runware
+    baseCostUSD: 0.0006,
     marginPercent: 90,
     isLossLeader: true,
   },
   'sdxl': {
-    creditsPerUnit: 2,
+    creditsPerUnit: 0.5,
     unitType: '1_image',
-    baseCostUSD: 0.0026,        // Runware
+    baseCostUSD: 0.0026,
     marginPercent: 85,
     isLossLeader: true,
   },
   'flux-dev': {
-    creditsPerUnit: 5,
+    creditsPerUnit: 0.8,
     unitType: '1_image',
-    baseCostUSD: 0.0038,        // Runware
+    baseCostUSD: 0.0038,
     marginPercent: 85,
-    isLossLeader: true,          // Unlimited on Premium+
+    isLossLeader: true,
   },
-  'flux-2-turbo': {
-    creditsPerUnit: 3,
+  'playground-v2-5': {
+    creditsPerUnit: 1,
     unitType: '1_image',
-    baseCostUSD: 0.008,         // Fal.ai
-    marginPercent: 75,
-    isLossLeader: false,
-  },
-  'flux-kontext': {
-    creditsPerUnit: 5,
-    unitType: '1_image',
-    baseCostUSD: 0.01,          // KieAI
+    baseCostUSD: 0.01,
     marginPercent: 70,
     isLossLeader: false,
   },
   'seedream': {
-    creditsPerUnit: 5,
+    creditsPerUnit: 1.5,
     unitType: '1_image',
-    baseCostUSD: 0.0175,        // KieAI
+    baseCostUSD: 0.0175,
     marginPercent: 65,
     isLossLeader: false,
   },
-  'seedream-4.5': {
-    creditsPerUnit: 8,
+  'flux-kontext': {
+    creditsPerUnit: 1.5,
     unitType: '1_image',
-    baseCostUSD: 0.03,          // KieAI (basic), up to $0.06 (high/4K)
-    marginPercent: 63,
+    baseCostUSD: 0.01,
+    marginPercent: 70,
     isLossLeader: false,
   },
   'nano-banana': {
-    creditsPerUnit: 6,
+    creditsPerUnit: 1.5,
     unitType: '1_image',
-    baseCostUSD: 0.02,          // KieAI
+    baseCostUSD: 0.02,
     marginPercent: 60,
     isLossLeader: false,
   },
-  'nano-banana-pro': {
-    creditsPerUnit: 20,
+  'dall-e-2': {
+    creditsPerUnit: 2,
     unitType: '1_image',
-    baseCostUSD: 0.09,          // KieAI
+    baseCostUSD: 0.02,
     marginPercent: 70,
     isLossLeader: false,
   },
-  'playground-v2-5': {
+  'seedream-4.5': {
+    creditsPerUnit: 2.5,
+    unitType: '1_image',
+    baseCostUSD: 0.03,
+    marginPercent: 63,
+    isLossLeader: false,
+  },
+  'midjourney': {
     creditsPerUnit: 3,
     unitType: '1_image',
-    baseCostUSD: 0.01,          // Replicate
-    marginPercent: 70,
-    isLossLeader: false,
-  },
-  'dall-e-2': {
-    creditsPerUnit: 8,
-    unitType: '1_image',
-    baseCostUSD: 0.02,          // OpenAI
-    marginPercent: 70,
-    isLossLeader: false,
-  },
-  'flux-pro': {
-    creditsPerUnit: 15,
-    unitType: '1_image',
-    baseCostUSD: 0.04,          // Fal/Replicate
+    baseCostUSD: 0.04,
     marginPercent: 65,
     isLossLeader: false,
   },
   'dall-e-3': {
-    creditsPerUnit: 20,
+    creditsPerUnit: 3,
     unitType: '1_image',
-    baseCostUSD: 0.04,          // OpenAI
+    baseCostUSD: 0.04,
     marginPercent: 65,
     isLossLeader: false,
   },
-  'midjourney': {
-    creditsPerUnit: 15,
+  'flux-pro': {
+    creditsPerUnit: 3,
     unitType: '1_image',
-    baseCostUSD: 0.04,          // KieAI (Fast mode)
+    baseCostUSD: 0.04,
     marginPercent: 65,
+    isLossLeader: false,
+  },
+  'nano-banana-pro': {
+    creditsPerUnit: 5,
+    unitType: '1_image',
+    baseCostUSD: 0.09,
+    marginPercent: 70,
     isLossLeader: false,
   },
 };
 
 // ── VIDEO MODEL PRICING ─────────────────────────────────
 export const VIDEO_PRICING: Record<string, ModelPricing> = {
-  'wan': {
-    creditsPerUnit: 50,
-    unitType: '1_video',
-    baseCostUSD: 0.25,          // Fal $0.05/s × 5s
-    marginPercent: 50,
-    isLossLeader: true,          // Unlimited on Business+
-  },
-  'seedance': {
-    creditsPerUnit: 15,
-    unitType: '1_video',
-    baseCostUSD: 0.26,          // Fal.ai 1.5 Pro
-    marginPercent: 42,
-    isLossLeader: true,
-  },
   'seedance-lite': {
-    creditsPerUnit: 8,
+    creditsPerUnit: 9,
     unitType: '1_video',
-    baseCostUSD: 0.18,          // Fal.ai 1.0 Lite (720p)
-    marginPercent: 56,
-    isLossLeader: false,
-  },
-  'seedance-1-pro': {
-    creditsPerUnit: 30,
-    unitType: '1_video',
-    baseCostUSD: 0.74,          // Fal.ai 1.0 Pro (1080p)
-    marginPercent: 60,
+    baseCostUSD: 0.18,
+    marginPercent: 30,
     isLossLeader: false,
   },
   'seedance-fast': {
-    creditsPerUnit: 12,
+    creditsPerUnit: 13,
     unitType: '1_video',
-    baseCostUSD: 0.245,         // Fal.ai 1.0 Pro Fast (1080p)
-    marginPercent: 51,
+    baseCostUSD: 0.245,
+    marginPercent: 30,
     isLossLeader: false,
   },
-  'kling': {
-    creditsPerUnit: 80,
+  'seedance': {
+    creditsPerUnit: 13,
     unitType: '1_video',
-    baseCostUSD: 0.26,          // PiAPI
-    marginPercent: 55,
-    isLossLeader: true,          // Unlimited on Business+
+    baseCostUSD: 0.26,
+    marginPercent: 28,
+    isLossLeader: false,
   },
-  'kling-pro': {
-    creditsPerUnit: 150,
+  'wan': {
+    creditsPerUnit: 15,
     unitType: '1_video',
-    baseCostUSD: 0.46,          // PiAPI 10s
-    marginPercent: 55,
+    baseCostUSD: 0.25,
+    marginPercent: 32,
+    isLossLeader: true,
+  },
+  'kling': {
+    creditsPerUnit: 16,
+    unitType: '1_video',
+    baseCostUSD: 0.26,
+    marginPercent: 30,
     isLossLeader: false,
   },
   'runway': {
-    creditsPerUnit: 80,
+    creditsPerUnit: 18,
     unitType: '1_video',
-    baseCostUSD: 0.30,          // KieAI Gen-4 Turbo
-    marginPercent: 55,
-    isLossLeader: false,
-  },
-  'runway-gen4': {
-    creditsPerUnit: 100,
-    unitType: '1_video',
-    baseCostUSD: 0.40,          // KieAI Gen-4
-    marginPercent: 55,
+    baseCostUSD: 0.30,
+    marginPercent: 30,
     isLossLeader: false,
   },
   'luma': {
-    creditsPerUnit: 100,
+    creditsPerUnit: 24,
     unitType: '1_video',
-    baseCostUSD: 0.40,          // Fal/Replicate
-    marginPercent: 55,
-    isLossLeader: true,          // Unlimited on Business+
+    baseCostUSD: 0.40,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
+  'runway-gen4': {
+    creditsPerUnit: 24,
+    unitType: '1_video',
+    baseCostUSD: 0.40,
+    marginPercent: 30,
+    isLossLeader: false,
   },
   'veo-fast': {
-    creditsPerUnit: 100,
+    creditsPerUnit: 24,
     unitType: '1_video',
-    baseCostUSD: 0.40,          // KieAI
-    marginPercent: 55,
+    baseCostUSD: 0.40,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
+  'kling-pro': {
+    creditsPerUnit: 27,
+    unitType: '1_video',
+    baseCostUSD: 0.46,
+    marginPercent: 28,
     isLossLeader: false,
   },
   'sora': {
-    creditsPerUnit: 120,
+    creditsPerUnit: 30,
     unitType: '1_video',
-    baseCostUSD: 0.50,          // KieAI
-    marginPercent: 55,
+    baseCostUSD: 0.50,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
+  'seedance-1-pro': {
+    creditsPerUnit: 35,
+    unitType: '1_video',
+    baseCostUSD: 0.74,
+    marginPercent: 25,
     isLossLeader: false,
   },
   'sora-pro': {
-    creditsPerUnit: 200,
+    creditsPerUnit: 47,
     unitType: '1_video',
-    baseCostUSD: 0.80,          // KieAI Sora 2 Pro
-    marginPercent: 55,
+    baseCostUSD: 0.80,
+    marginPercent: 30,
     isLossLeader: false,
   },
   'veo': {
-    creditsPerUnit: 500,
+    creditsPerUnit: 116,
     unitType: '1_video',
-    baseCostUSD: 2.00,          // KieAI Veo 3 Quality
-    marginPercent: 55,
+    baseCostUSD: 2.00,
+    marginPercent: 25,
     isLossLeader: false,
   },
 };
@@ -304,58 +332,58 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
 // ── AUDIO MODEL PRICING ─────────────────────────────────
 export const AUDIO_PRICING: Record<string, ModelPricing> = {
   'deepgram-tts': {
-    creditsPerUnit: 1,
+    creditsPerUnit: 0.5,
     unitType: '1_request',
-    baseCostUSD: 0.001,         // OpenAI TTS cheapest
+    baseCostUSD: 0.001,
     marginPercent: 90,
     isLossLeader: true,
   },
-  'openai-tts': {
-    creditsPerUnit: 3,
-    unitType: '1_request',
-    baseCostUSD: 0.003,         // $15/1M chars × ~200 chars
-    marginPercent: 80,
-    isLossLeader: true,
-  },
   'fish-speech': {
-    creditsPerUnit: 5,
+    creditsPerUnit: 1,
     unitType: '1_request',
-    baseCostUSD: 0.03,          // Replicate
+    baseCostUSD: 0.03,
     marginPercent: 70,
     isLossLeader: false,
   },
   'xtts-v2': {
-    creditsPerUnit: 8,
+    creditsPerUnit: 2,
     unitType: '1_request',
-    baseCostUSD: 0.05,          // Replicate
+    baseCostUSD: 0.05,
     marginPercent: 65,
     isLossLeader: false,
   },
   'bark': {
-    creditsPerUnit: 8,
+    creditsPerUnit: 2.5,
     unitType: '1_request',
-    baseCostUSD: 0.07,          // Replicate
+    baseCostUSD: 0.07,
     marginPercent: 60,
     isLossLeader: false,
   },
-  'elevenlabs-tts': {
-    creditsPerUnit: 12,
+  'openai-tts': {
+    creditsPerUnit: 2.5,
     unitType: '1_request',
-    baseCostUSD: 0.06,          // ElevenLabs
+    baseCostUSD: 0.003,
+    marginPercent: 80,
+    isLossLeader: false,
+  },
+  'elevenlabs-tts': {
+    creditsPerUnit: 4,
+    unitType: '1_request',
+    baseCostUSD: 0.06,
     marginPercent: 55,
     isLossLeader: false,
   },
   'suno': {
-    creditsPerUnit: 60,
+    creditsPerUnit: 20,
     unitType: '1_song',
-    baseCostUSD: 0.10,          // Replicate
+    baseCostUSD: 0.10,
     marginPercent: 45,
     isLossLeader: false,
   },
   'whisper': {
-    creditsPerUnit: 3,
+    creditsPerUnit: 0.3,
     unitType: '1_request',
-    baseCostUSD: 0.001,         // Groq Whisper (~30s audio)
+    baseCostUSD: 0.001,
     marginPercent: 90,
     isLossLeader: true,
   },
@@ -366,7 +394,7 @@ export const AUDIO_PRICING: Record<string, ModelPricing> = {
  */
 export function getModelCredits(slug: string): number {
   const all = { ...TEXT_PRICING, ...IMAGE_PRICING, ...VIDEO_PRICING, ...AUDIO_PRICING };
-  return all[slug]?.creditsPerUnit ?? 5; // Default 5 credits for unknown models
+  return all[slug]?.creditsPerUnit ?? 1; // Default 1 token for unknown models
 }
 
 /**
