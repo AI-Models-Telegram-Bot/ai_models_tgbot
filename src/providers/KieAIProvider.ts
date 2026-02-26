@@ -278,8 +278,14 @@ export class KieAIProvider extends EnhancedProvider {
     const start = Date.now();
     try {
       const model = (options?.model as string) || 'veo3_fast';
-      const mode = (options?.mode as string) || 'text';
+      let mode = (options?.mode as string) || 'text';
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+
+      // Auto-select image mode when images are uploaded but mode is still default 'text'
+      if (inputImageUrls?.length && mode === 'text') {
+        mode = inputImageUrls.length >= 2 ? 'frames' : 'ingredients';
+      }
+
       logger.info(`KieAI Veo: starting generation (${model}, mode: ${mode})`);
 
       const veoPayload: Record<string, unknown> = {
