@@ -121,6 +121,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'xai', modelId: 'grok-3-mini' },                      // $0.30/$0.50 per 1M tok
       { name: 'openrouter', modelId: 'x-ai/grok-3-mini' },          // fallback
+      { name: 'openai', modelId: 'gpt-4o-mini' },                   // ultimate fallback
     ],
   },
 
