@@ -40,6 +40,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'groq', modelId: 'llama-3.3-70b-versatile' },        // $0.59/$0.79 per 1M tok, ~250 tok/s
       { name: 'together', modelId: 'meta-llama/Llama-3.3-70B-Instruct-Turbo' }, // $0.88/1M tok
       { name: 'openrouter', modelId: 'meta-llama/llama-3.3-70b-instruct' },     // fallback
+      { name: 'openai', modelId: 'gpt-4o-mini' },                   // ultimate fallback
     ],
   },
 
@@ -120,6 +121,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'xai', modelId: 'grok-3-mini' },                      // $0.30/$0.50 per 1M tok
       { name: 'openrouter', modelId: 'x-ai/grok-3-mini' },          // fallback
+      { name: 'openai', modelId: 'gpt-4o-mini' },                   // ultimate fallback
     ],
   },
 
@@ -129,6 +131,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'google', modelId: 'gemini-2.5-flash' },              // $0.15/$0.60 per 1M tok
       { name: 'openrouter', modelId: 'google/gemini-2.5-flash-preview' }, // fallback
+      { name: 'openai', modelId: 'gpt-4o-mini' },                   // ultimate fallback
     ],
   },
 
@@ -138,6 +141,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     providers: [
       { name: 'google', modelId: 'gemini-2.5-pro' },                // $1.25/$10 per 1M tok
       { name: 'openrouter', modelId: 'google/gemini-2.5-pro-preview' },  // fallback
+      { name: 'openai', modelId: 'gpt-4o' },                        // ultimate fallback
     ],
   },
 
@@ -148,6 +152,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'together', modelId: 'deepseek-ai/DeepSeek-R1' },     // $3.00/1M tok
       { name: 'groq', modelId: 'deepseek-r1-distill-llama-70b' },   // $0.75/1M tok (distilled)
       { name: 'openrouter', modelId: 'deepseek/deepseek-r1' },      // fallback
+      { name: 'openai', modelId: 'gpt-4o' },                        // ultimate fallback
     ],
   },
 
@@ -158,6 +163,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
       { name: 'together', modelId: 'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8' }, // $0.27/$0.85
       { name: 'groq', modelId: 'meta-llama/llama-4-maverick-17b-128e-instruct' },          // if available
       { name: 'openrouter', modelId: 'meta-llama/llama-4-maverick' },                       // fallback
+      { name: 'openai', modelId: 'gpt-4o-mini' },                   // ultimate fallback
     ],
   },
 
