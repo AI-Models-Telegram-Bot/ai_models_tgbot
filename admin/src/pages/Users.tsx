@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
@@ -11,6 +12,7 @@ const STATUSES = ['', 'active', 'blocked'];
 
 export default function Users() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -32,7 +34,7 @@ export default function Users() {
 
   const exportCsv = () => {
     if (!data?.users) return;
-    const headers = ['Username', 'Name', 'Email', 'Plan', 'Balance', 'Requests', 'Joined'];
+    const headers = [t('users.csvUsername'), t('users.csvName'), t('users.csvEmail'), t('users.plan'), t('users.balance'), t('users.requests'), t('users.joined')];
     const rows = data.users.map((u: any) => [
       u.username || '',
       `${u.firstName || ''} ${u.lastName || ''}`.trim(),
@@ -55,11 +57,11 @@ export default function Users() {
   const columns = [
     {
       key: 'user',
-      header: 'User',
+      header: t('users.user'),
       render: (u: any) => (
         <div>
           <div className="text-white font-medium">
-            {u.firstName || u.username || 'Unknown'}
+            {u.firstName || u.username || t('common.unknown')}
             {u.lastName ? ` ${u.lastName}` : ''}
           </div>
           <div className="text-xs text-gray-500">{u.email || `@${u.username || '—'}`}</div>
@@ -68,29 +70,29 @@ export default function Users() {
     },
     {
       key: 'plan',
-      header: 'Plan',
+      header: t('users.plan'),
       render: (u: any) => <StatusBadge status={u.subscription?.tier || 'FREE'} />,
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('users.status'),
       render: (u: any) => <StatusBadge status={u.isBlocked ? 'blocked' : 'active'} />,
     },
     {
       key: 'balance',
-      header: 'Balance',
+      header: t('users.balance'),
       render: (u: any) => (
         <span className="text-white">{(u.wallet?.tokenBalance || 0).toFixed(1)}</span>
       ),
     },
     {
       key: 'requests',
-      header: 'Requests',
+      header: t('users.requests'),
       render: (u: any) => <span className="text-gray-400">{u._count?.requests || 0}</span>,
     },
     {
       key: 'createdAt',
-      header: 'Joined',
+      header: t('users.joined'),
       render: (u: any) => (
         <span className="text-gray-400 text-xs">
           {new Date(u.createdAt).toLocaleDateString()}
@@ -102,12 +104,12 @@ export default function Users() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Users</h1>
+        <h1 className="text-2xl font-bold text-white">{t('users.title')}</h1>
         <button
           onClick={exportCsv}
           className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
         >
-          <Download size={16} /> Export CSV
+          <Download size={16} /> {t('users.exportCsv')}
         </button>
       </div>
 
@@ -119,7 +121,7 @@ export default function Users() {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search users..."
+            placeholder={t('users.searchPlaceholder')}
             className="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
           />
         </form>
@@ -128,7 +130,7 @@ export default function Users() {
           onChange={(e) => { setPlan(e.target.value); setPage(1); }}
           className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
         >
-          <option value="">All Plans</option>
+          <option value="">{t('common.allPlans')}</option>
           {PLANS.filter(Boolean).map((p) => (
             <option key={p} value={p}>{p}</option>
           ))}
@@ -138,7 +140,7 @@ export default function Users() {
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
         >
-          <option value="">All Statuses</option>
+          <option value="">{t('common.allStatuses')}</option>
           {STATUSES.filter(Boolean).map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}

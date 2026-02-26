@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import { RefreshCw } from 'lucide-react';
 
@@ -7,6 +8,7 @@ const SERVICES = ['api', 'bot', 'worker', 'webapp', 'admin'];
 const LINE_COUNTS = [50, 100, 200, 500];
 
 export default function Logs() {
+  const { t } = useTranslation();
   const [service, setService] = useState('api');
   const [type, setType] = useState<'out' | 'stderr'>('out');
   const [lines, setLines] = useState(100);
@@ -19,7 +21,6 @@ export default function Logs() {
     refetchInterval: autoRefresh ? 10_000 : false,
   });
 
-  // Auto-scroll to bottom
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -36,11 +37,9 @@ export default function Logs() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">System Logs</h1>
+      <h1 className="text-2xl font-bold text-white">{t('logs.title')}</h1>
 
-      {/* Controls */}
       <div className="flex flex-wrap gap-3 items-center">
-        {/* Service tabs */}
         <div className="flex gap-1 bg-gray-900 rounded-lg p-1 border border-gray-800">
           {SERVICES.map((s) => (
             <button
@@ -55,7 +54,6 @@ export default function Logs() {
           ))}
         </div>
 
-        {/* stdout / stderr */}
         <div className="flex gap-1 bg-gray-900 rounded-lg p-1 border border-gray-800">
           <button
             onClick={() => setType('out')}
@@ -63,7 +61,7 @@ export default function Logs() {
               type === 'out' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
-            stdout
+            {t('logs.stdout')}
           </button>
           <button
             onClick={() => setType('stderr')}
@@ -71,22 +69,20 @@ export default function Logs() {
               type === 'stderr' ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
-            stderr
+            {t('logs.stderr')}
           </button>
         </div>
 
-        {/* Lines */}
         <select
           value={lines}
           onChange={(e) => setLines(Number(e.target.value))}
           className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white"
         >
           {LINE_COUNTS.map((n) => (
-            <option key={n} value={n}>{n} lines</option>
+            <option key={n} value={n}>{t('logs.lines', { count: n })}</option>
           ))}
         </select>
 
-        {/* Auto-refresh toggle */}
         <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
           <input
             type="checkbox"
@@ -94,7 +90,7 @@ export default function Logs() {
             onChange={(e) => setAutoRefresh(e.target.checked)}
             className="rounded bg-gray-700 border-gray-600"
           />
-          Auto-refresh (10s)
+          {t('logs.autoRefresh')}
         </label>
 
         <button
@@ -106,14 +102,13 @@ export default function Logs() {
         </button>
       </div>
 
-      {/* Log Output */}
       <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
         <pre
           ref={containerRef}
           className="p-4 overflow-auto max-h-[600px] text-xs font-mono leading-5"
         >
           {isLoading ? (
-            <span className="text-gray-500">Loading logs...</span>
+            <span className="text-gray-500">{t('logs.loadingLogs')}</span>
           ) : data?.logs ? (
             data.logs.split('\n').map((line: string, i: number) => (
               <div key={i} className={colorize(line)}>
@@ -121,7 +116,7 @@ export default function Logs() {
               </div>
             ))
           ) : (
-            <span className="text-gray-500">No logs available</span>
+            <span className="text-gray-500">{t('logs.noLogs')}</span>
           )}
         </pre>
       </div>

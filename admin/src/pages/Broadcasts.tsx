@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
@@ -10,6 +11,7 @@ const STATUSES = ['', 'DRAFT', 'SCHEDULED', 'SENDING', 'COMPLETED', 'CANCELLED',
 
 export default function Broadcasts() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
 
@@ -23,21 +25,21 @@ export default function Broadcasts() {
   const columns = [
     {
       key: 'name',
-      header: 'Name',
+      header: t('broadcasts.name'),
       render: (b: any) => (
         <div>
           <div className="text-white font-medium">{b.name}</div>
           <div className="text-xs text-gray-500">
-            Target: {b.targetType}
+            {t('broadcasts.target')}: {b.targetType}
             {b.targetPlans?.length > 0 && ` (${b.targetPlans.join(', ')})`}
           </div>
         </div>
       ),
     },
-    { key: 'status', header: 'Status', render: (b: any) => <StatusBadge status={b.status} /> },
+    { key: 'status', header: t('broadcasts.status'), render: (b: any) => <StatusBadge status={b.status} /> },
     {
       key: 'delivery',
-      header: 'Delivery',
+      header: t('broadcasts.delivery'),
       render: (b: any) => {
         if (b.totalRecipients === 0) return <span className="text-gray-500">—</span>;
         const pct = Math.round((b.sentCount / b.totalRecipients) * 100);
@@ -50,8 +52,8 @@ export default function Broadcasts() {
               <span className="text-xs text-gray-400">{pct}%</span>
             </div>
             <div className="text-xs text-gray-500 mt-0.5">
-              {b.sentCount}/{b.totalRecipients} sent
-              {b.failedCount > 0 && <span className="text-red-400 ml-1">({b.failedCount} failed)</span>}
+              {b.sentCount}/{b.totalRecipients} {t('common.sent')}
+              {b.failedCount > 0 && <span className="text-red-400 ml-1">({b.failedCount} {t('common.failed')})</span>}
             </div>
           </div>
         );
@@ -59,12 +61,12 @@ export default function Broadcasts() {
     },
     {
       key: 'admin',
-      header: 'Admin',
+      header: t('broadcasts.admin'),
       render: (b: any) => <span className="text-gray-400">{b.admin?.username || '—'}</span>,
     },
     {
       key: 'date',
-      header: 'Date',
+      header: t('broadcasts.date'),
       render: (b: any) => <span className="text-gray-500 text-xs">{new Date(b.createdAt).toLocaleString()}</span>,
     },
   ];
@@ -72,14 +74,14 @@ export default function Broadcasts() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Broadcasts</h1>
+        <h1 className="text-2xl font-bold text-white">{t('broadcasts.title')}</h1>
         <div className="flex gap-3">
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
             className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
           >
-            <option value="">All Statuses</option>
+            <option value="">{t('common.allStatuses')}</option>
             {STATUSES.filter(Boolean).map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -88,7 +90,7 @@ export default function Broadcasts() {
             onClick={() => navigate('/broadcasts/new')}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
           >
-            <Plus size={16} /> New Broadcast
+            <Plus size={16} /> {t('broadcasts.newBroadcast')}
           </button>
         </div>
       </div>

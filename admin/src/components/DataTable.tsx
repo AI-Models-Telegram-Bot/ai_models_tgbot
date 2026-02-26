@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Column<T> {
@@ -28,6 +29,8 @@ export default function DataTable<T extends Record<string, unknown>>({
   onRowClick,
   isLoading,
 }: DataTableProps<T>) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
       <div className="overflow-x-auto">
@@ -48,13 +51,13 @@ export default function DataTable<T extends Record<string, unknown>>({
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
-                  Loading...
+                  {t('common.loading')}
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
-                  No data found
+                  {t('common.noData')}
                 </td>
               </tr>
             ) : (
@@ -83,7 +86,7 @@ export default function DataTable<T extends Record<string, unknown>>({
       {/* Pagination */}
       <div className="px-4 py-3 border-t border-gray-800 flex items-center justify-between">
         <span className="text-sm text-gray-400">
-          {total} total result{total !== 1 ? 's' : ''}
+          {t('common.totalResults', { count: total })}
         </span>
         <div className="flex items-center gap-2">
           <button
@@ -94,7 +97,7 @@ export default function DataTable<T extends Record<string, unknown>>({
             <ChevronLeft size={18} />
           </button>
           <span className="text-sm text-gray-400">
-            {page} / {totalPages || 1}
+            {t('common.page', { current: page, total: totalPages || 1 })}
           </span>
           <button
             onClick={() => onPageChange(page + 1)}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
@@ -13,6 +14,7 @@ const RANGES = ['24h', '7d', '30d', 'all'] as const;
 const PIE_COLORS = ['#6366f1', '#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444'];
 
 export default function Dashboard() {
+  const { t, i18n } = useTranslation();
   const [range, setRange] = useState<string>('30d');
 
   const { data: stats } = useQuery({
@@ -54,7 +56,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-white">{t('dashboard.title')}</h1>
         <div className="flex gap-1 bg-gray-900 rounded-lg p-1 border border-gray-800">
           {RANGES.map((r) => (
             <button
@@ -72,22 +74,22 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard title="Total Users" value={stats?.totalUsers ?? 0} icon={Users} color="blue" />
-        <StatCard title="New Users" value={stats?.newUsers ?? 0} icon={Users} color="emerald" />
-        <StatCard title="Requests" value={stats?.recentRequests ?? 0} icon={Zap} color="purple" />
-        <StatCard title="Revenue" value={`${(stats?.recentRevenue ?? 0).toLocaleString()} ₽`} icon={DollarSign} color="yellow" />
-        <StatCard title="Active Subs" value={stats?.activeSubscriptions ?? 0} icon={CreditCard} color="emerald" />
+        <StatCard title={t('dashboard.totalUsers')} value={stats?.totalUsers ?? 0} icon={Users} color="blue" />
+        <StatCard title={t('dashboard.newUsers')} value={stats?.newUsers ?? 0} icon={Users} color="emerald" />
+        <StatCard title={t('dashboard.requests')} value={stats?.recentRequests ?? 0} icon={Zap} color="purple" />
+        <StatCard title={t('dashboard.revenue')} value={`${(stats?.recentRevenue ?? 0).toLocaleString()} ₽`} icon={DollarSign} color="yellow" />
+        <StatCard title={t('dashboard.activeSubs')} value={stats?.activeSubscriptions ?? 0} icon={CreditCard} color="emerald" />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Growth */}
         <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">User Growth (30 days)</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-4">{t('dashboard.userGrowth')}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={charts?.userGrowth || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString('en', { month: 'short', day: 'numeric' })} />
+              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
               <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }} labelStyle={{ color: '#9ca3af' }} />
               <Area type="monotone" dataKey="count" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} />
@@ -97,11 +99,11 @@ export default function Dashboard() {
 
         {/* Revenue Chart */}
         <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">Daily Revenue (30 days)</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-4">{t('dashboard.dailyRevenue')}</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={charts?.revenueByDay || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString('en', { month: 'short', day: 'numeric' })} />
+              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
               <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }} labelStyle={{ color: '#9ca3af' }} />
               <Bar dataKey="total" fill="#f59e0b" radius={[4, 4, 0, 0]} />
@@ -114,7 +116,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Subscription Breakdown */}
         <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">Subscriptions by Plan</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-4">{t('dashboard.subscriptionsByPlan')}</h3>
           {subscriptions?.byTier && (
             <>
               <ResponsiveContainer width="100%" height={180}>
@@ -136,13 +138,13 @@ export default function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="mt-2 space-y-1">
-                {subscriptions.byTier.map((t: { tier: string; count: number }, i: number) => (
-                  <div key={t.tier} className="flex items-center justify-between text-sm">
+                {subscriptions.byTier.map((tier: { tier: string; count: number }, i: number) => (
+                  <div key={tier.tier} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
-                      <span className="text-gray-400">{t.tier}</span>
+                      <span className="text-gray-400">{tier.tier}</span>
                     </div>
-                    <span className="text-white font-medium">{t.count}</span>
+                    <span className="text-white font-medium">{tier.count}</span>
                   </div>
                 ))}
               </div>
@@ -151,12 +153,12 @@ export default function Dashboard() {
           {subscriptions && (
             <div className="mt-4 pt-4 border-t border-gray-800">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-400">MRR</span>
+                <span className="text-gray-400">{t('dashboard.mrr')}</span>
                 <span className="text-white font-bold">{(subscriptions.mrr || 0).toLocaleString()} ₽</span>
               </div>
               {subscriptions.pastDue > 0 && (
                 <div className="flex justify-between text-sm mt-1">
-                  <span className="text-yellow-400">Past Due</span>
+                  <span className="text-yellow-400">{t('dashboard.pastDue')}</span>
                   <span className="text-yellow-400 font-medium">{subscriptions.pastDue}</span>
                 </div>
               )}
@@ -166,30 +168,30 @@ export default function Dashboard() {
 
         {/* Processing Analytics */}
         <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">Processing Analytics</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-4">{t('dashboard.processingAnalytics')}</h3>
           <div className="space-y-4">
             <div className="bg-gray-800/50 rounded-xl p-3">
               <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
                 <Clock size={14} />
-                Avg Processing Time
+                {t('dashboard.avgProcessingTime')}
               </div>
               <div className="text-xl font-bold text-white">
                 {processing ? formatTime(Math.round(processing.avgProcessingTime / 1000)) : '—'}
               </div>
             </div>
             <div className="bg-gray-800/50 rounded-xl p-3">
-              <div className="text-gray-400 text-xs mb-1">Error Rate (24h)</div>
+              <div className="text-gray-400 text-xs mb-1">{t('dashboard.errorRate24h')}</div>
               <div className="text-xl font-bold text-white">
                 {processing?.errorRate24h?.total
                   ? `${((processing.errorRate24h.failed / processing.errorRate24h.total) * 100).toFixed(1)}%`
                   : '0%'}
               </div>
               <div className="text-xs text-gray-500">
-                {processing?.errorRate24h?.failed ?? 0} / {processing?.errorRate24h?.total ?? 0} failed
+                {t('dashboard.failedOf', { failed: processing?.errorRate24h?.failed ?? 0, total: processing?.errorRate24h?.total ?? 0 })}
               </div>
             </div>
             <div className="bg-gray-800/50 rounded-xl p-3">
-              <div className="text-gray-400 text-xs mb-1">Error Rate (7d)</div>
+              <div className="text-gray-400 text-xs mb-1">{t('dashboard.errorRate7d')}</div>
               <div className="text-xl font-bold text-white">
                 {processing?.errorRate7d?.total
                   ? `${((processing.errorRate7d.failed / processing.errorRate7d.total) * 100).toFixed(1)}%`
@@ -201,29 +203,29 @@ export default function Dashboard() {
 
         {/* System Health */}
         <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">System Health</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-4">{t('dashboard.systemHealth')}</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Database size={14} /> Database
+                <Database size={14} /> {t('dashboard.database')}
               </div>
               <StatusBadge status={health?.database ? 'ACTIVE' : 'FAILED'} />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Database size={14} /> Redis
+                <Database size={14} /> {t('dashboard.redis')}
               </div>
               <StatusBadge status={health?.redis ? 'ACTIVE' : 'FAILED'} />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Cpu size={14} /> Memory
+                <Cpu size={14} /> {t('dashboard.memory')}
               </div>
               <span className="text-sm text-white">{health?.memory?.usagePercent ?? 0}%</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Activity size={14} /> Uptime
+                <Activity size={14} /> {t('dashboard.uptime')}
               </div>
               <span className="text-sm text-white">{health ? formatTime(health.uptime) : '—'}</span>
             </div>
@@ -231,7 +233,7 @@ export default function Dashboard() {
             {/* Queue Status */}
             {health?.queues && (
               <div className="mt-4 pt-3 border-t border-gray-800">
-                <div className="text-xs text-gray-500 mb-2">Queue Status</div>
+                <div className="text-xs text-gray-500 mb-2">{t('dashboard.queueStatus')}</div>
                 {health.queues.map((q: { name: string; waiting: number; active: number; failed: number }) => (
                   <div key={q.name} className="flex items-center justify-between text-sm py-1">
                     <span className="text-gray-400 capitalize">{q.name}</span>
