@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -8,18 +9,25 @@ import { useToastStore } from '../stores/toastStore';
 import { ArrowLeft, Ban, ShieldCheck, CreditCard, Save } from 'lucide-react';
 
 const TIERS = ['FREE', 'STARTER', 'PRO', 'PREMIUM', 'BUSINESS', 'ENTERPRISE'];
-const TABS = ['Requests', 'Payments', 'Transactions'] as const;
+const TAB_KEYS = ['requests', 'payments', 'transactions'] as const;
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addToast } = useToastStore();
-  const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Requests');
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<typeof TAB_KEYS[number]>('requests');
   const [confirmAction, setConfirmAction] = useState<null | 'ban' | 'unban'>(null);
   const [planDialog, setPlanDialog] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [editBalance, setEditBalance] = useState<string | null>(null);
+
+  const tabLabels: Record<typeof TAB_KEYS[number], string> = {
+    requests: t('userDetail.requests'),
+    payments: t('userDetail.payments'),
+    transactions: t('userDetail.transactions'),
+  };
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['admin-user', id],
@@ -36,9 +44,9 @@ export default function UserDetail() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin-user', id] });
         queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-        addToast('User updated', 'success');
+        addToast(t('userDetail.userUpdated'), 'success');
       },
-      onError: (err: any) => addToast(err.response?.data?.error || 'Failed', 'error'),
+      onError: (err: any) => addToast(err.response?.data?.error || t('userDetail.actionFailed'), 'error'),
     });
 
   const banMutation = mutation('ban');
@@ -46,8 +54,8 @@ export default function UserDetail() {
   const planMutation = mutation('update-plan');
   const updateMutation = mutation('update');
 
-  if (isLoading) return <div className="text-gray-400">Loading...</div>;
-  if (!user) return <div className="text-gray-400">User not found</div>;
+  if (isLoading) return <div className="text-gray-400">{t('common.loading')}</div>;
+  if (!user) return <div className="text-gray-400">{t('userDetail.userNotFound')}</div>;
 
   const handlePlanChange = () => {
     if (selectedTier) {
@@ -67,7 +75,7 @@ export default function UserDetail() {
     <div className="space-y-6">
       {/* Back button */}
       <button onClick={() => navigate('/users')} className="flex items-center gap-2 text-gray-400 hover:text-white text-sm">
-        <ArrowLeft size={16} /> Back to Users
+        <ArrowLeft size={16} /> {t('userDetail.backToUsers')}
       </button>
 
       {/* Profile Card */}
@@ -76,7 +84,7 @@ export default function UserDetail() {
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-bold text-white">
-                {user.firstName || user.username || 'Unknown'}
+                {user.firstName || user.username || t('common.unknown')}
                 {user.lastName ? ` ${user.lastName}` : ''}
               </h2>
               <StatusBadge status={user.isBlocked ? 'blocked' : 'active'} />
@@ -95,21 +103,21 @@ export default function UserDetail() {
               onClick={() => setPlanDialog(true)}
               className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 rounded-lg"
             >
-              <CreditCard size={14} /> Change Plan
+              <CreditCard size={14} /> {t('userDetail.changePlan')}
             </button>
             {user.isBlocked ? (
               <button
                 onClick={() => setConfirmAction('unban')}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 rounded-lg"
               >
-                <ShieldCheck size={14} /> Unban
+                <ShieldCheck size={14} /> {t('userDetail.unban')}
               </button>
             ) : (
               <button
                 onClick={() => setConfirmAction('ban')}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg"
               >
-                <Ban size={14} /> Ban
+                <Ban size={14} /> {t('userDetail.ban')}
               </button>
             )}
           </div>
@@ -118,7 +126,7 @@ export default function UserDetail() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-gray-800/50 rounded-xl p-3">
-            <div className="text-xs text-gray-500">Token Balance</div>
+            <div className="text-xs text-gray-500">{t('userDetail.tokenBalance')}</div>
             <div className="flex items-center gap-2 mt-1">
               {editBalance !== null ? (
                 <>
@@ -143,15 +151,15 @@ export default function UserDetail() {
             </div>
           </div>
           <div className="bg-gray-800/50 rounded-xl p-3">
-            <div className="text-xs text-gray-500">Total Spent</div>
+            <div className="text-xs text-gray-500">{t('userDetail.totalSpent')}</div>
             <div className="text-lg font-bold text-white mt-1">{(user.totalSpent || 0).toLocaleString()} ₽</div>
           </div>
           <div className="bg-gray-800/50 rounded-xl p-3">
-            <div className="text-xs text-gray-500">Total Requests</div>
+            <div className="text-xs text-gray-500">{t('userDetail.totalRequests')}</div>
             <div className="text-lg font-bold text-white mt-1">{user.requests?.length || 0}</div>
           </div>
           <div className="bg-gray-800/50 rounded-xl p-3">
-            <div className="text-xs text-gray-500">Joined</div>
+            <div className="text-xs text-gray-500">{t('userDetail.joined')}</div>
             <div className="text-lg font-bold text-white mt-1">{new Date(user.createdAt).toLocaleDateString()}</div>
           </div>
         </div>
@@ -159,7 +167,7 @@ export default function UserDetail() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-900 rounded-lg p-1 border border-gray-800 w-fit">
-        {TABS.map((tab) => (
+        {TAB_KEYS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -167,7 +175,7 @@ export default function UserDetail() {
               activeTab === tab ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
             }`}
           >
-            {tab}
+            {tabLabels[tab]}
           </button>
         ))}
       </div>
@@ -177,37 +185,37 @@ export default function UserDetail() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-800">
-              {activeTab === 'Requests' && (
+              {activeTab === 'requests' && (
                 <>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Model</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Input</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Credits</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.model')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.input')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.status')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.credits')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.date')}</th>
                 </>
               )}
-              {activeTab === 'Payments' && (
+              {activeTab === 'payments' && (
                 <>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Provider</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Tier</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.amount')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.provider')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.status')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.tier')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.date')}</th>
                 </>
               )}
-              {activeTab === 'Transactions' && (
+              {activeTab === 'transactions' && (
                 <>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Category</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Balance After</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.type')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.category')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.amount')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.balanceAfter')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.date')}</th>
                 </>
               )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">
-            {activeTab === 'Requests' && user.requests?.map((r: any) => (
+            {activeTab === 'requests' && user.requests?.map((r: any) => (
               <tr key={r.id}>
                 <td className="px-4 py-3 text-sm text-white">{r.model?.name || '—'}</td>
                 <td className="px-4 py-3 text-sm text-gray-400 max-w-xs truncate">{r.inputText || '—'}</td>
@@ -216,7 +224,7 @@ export default function UserDetail() {
                 <td className="px-4 py-3 text-sm text-gray-500">{new Date(r.createdAt).toLocaleString()}</td>
               </tr>
             ))}
-            {activeTab === 'Payments' && user.payments?.map((p: any) => (
+            {activeTab === 'payments' && user.payments?.map((p: any) => (
               <tr key={p.id}>
                 <td className="px-4 py-3 text-sm text-white">{p.amount} {p.currency}</td>
                 <td className="px-4 py-3 text-sm text-gray-400">{p.provider}</td>
@@ -225,17 +233,17 @@ export default function UserDetail() {
                 <td className="px-4 py-3 text-sm text-gray-500">{new Date(p.createdAt).toLocaleString()}</td>
               </tr>
             ))}
-            {activeTab === 'Transactions' && user.walletTransactions?.map((t: any) => (
-              <tr key={t.id}>
-                <td className="px-4 py-3"><StatusBadge status={t.transactionType} /></td>
-                <td className="px-4 py-3"><StatusBadge status={t.category} /></td>
+            {activeTab === 'transactions' && user.walletTransactions?.map((txn: any) => (
+              <tr key={txn.id}>
+                <td className="px-4 py-3"><StatusBadge status={txn.transactionType} /></td>
+                <td className="px-4 py-3"><StatusBadge status={txn.category} /></td>
                 <td className="px-4 py-3 text-sm">
-                  <span className={t.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                    {t.amount >= 0 ? '+' : ''}{t.amount.toFixed(2)}
+                  <span className={txn.amount >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                    {txn.amount >= 0 ? '+' : ''}{txn.amount.toFixed(2)}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-400">{t.balanceAfter?.toFixed(2)}</td>
-                <td className="px-4 py-3 text-sm text-gray-500">{new Date(t.createdAt).toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm text-gray-400">{txn.balanceAfter?.toFixed(2)}</td>
+                <td className="px-4 py-3 text-sm text-gray-500">{new Date(txn.createdAt).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -245,13 +253,13 @@ export default function UserDetail() {
       {/* Confirm Ban/Unban Dialog */}
       <ConfirmDialog
         open={confirmAction !== null}
-        title={confirmAction === 'ban' ? 'Ban User' : 'Unban User'}
+        title={confirmAction === 'ban' ? t('userDetail.banUser') : t('userDetail.unbanUser')}
         message={
           confirmAction === 'ban'
-            ? 'This will block the user from using the bot. Are you sure?'
-            : 'This will restore the user\'s access. Are you sure?'
+            ? t('userDetail.banConfirmMessage')
+            : t('userDetail.unbanConfirmMessage')
         }
-        confirmLabel={confirmAction === 'ban' ? 'Ban User' : 'Unban User'}
+        confirmLabel={confirmAction === 'ban' ? t('userDetail.banUser') : t('userDetail.unbanUser')}
         danger={confirmAction === 'ban'}
         onConfirm={() => {
           if (confirmAction === 'ban') banMutation.mutate({});
@@ -266,15 +274,15 @@ export default function UserDetail() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setPlanDialog(false)} />
           <div className="relative bg-gray-900 rounded-2xl border border-gray-800 p-6 w-full max-w-sm">
-            <h3 className="text-lg font-semibold text-white mb-4">Change Subscription Plan</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">{t('userDetail.changeSubscriptionPlan')}</h3>
             <select
               value={selectedTier}
               onChange={(e) => setSelectedTier(e.target.value)}
               className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm mb-4"
             >
-              <option value="">Select plan...</option>
-              {TIERS.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              <option value="">{t('common.selectPlan')}</option>
+              {TIERS.map((tier) => (
+                <option key={tier} value={tier}>{tier}</option>
               ))}
             </select>
             <div className="flex justify-end gap-3">
@@ -282,14 +290,14 @@ export default function UserDetail() {
                 onClick={() => setPlanDialog(false)}
                 className="px-4 py-2 text-sm text-gray-400 bg-gray-800 rounded-lg hover:bg-gray-700"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handlePlanChange}
                 disabled={!selectedTier}
                 className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-500 disabled:opacity-50"
               >
-                Update Plan
+                {t('userDetail.updatePlan')}
               </button>
             </div>
           </div>

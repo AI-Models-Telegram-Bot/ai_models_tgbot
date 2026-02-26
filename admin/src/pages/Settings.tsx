@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
@@ -8,6 +9,7 @@ import { User, Lock } from 'lucide-react';
 export default function Settings() {
   const { admin } = useAuthStore();
   const { addToast } = useToastStore();
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -16,22 +18,22 @@ export default function Settings() {
     mutationFn: (data: { currentPassword: string; newPassword: string }) =>
       api.post('/settings/change-password', data),
     onSuccess: () => {
-      addToast('Password changed successfully', 'success');
+      addToast(t('settings.passwordChanged'), 'success');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     },
-    onError: (err: any) => addToast(err.response?.data?.error || 'Failed to change password', 'error'),
+    onError: (err: any) => addToast(err.response?.data?.error || t('settings.passwordChangeFailed'), 'error'),
   });
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      addToast('Passwords do not match', 'error');
+      addToast(t('settings.passwordsDoNotMatch'), 'error');
       return;
     }
     if (newPassword.length < 12) {
-      addToast('Password must be at least 12 characters', 'error');
+      addToast(t('settings.passwordTooShort'), 'error');
       return;
     }
     changePasswordMutation.mutate({ currentPassword, newPassword });
@@ -39,21 +41,21 @@ export default function Settings() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-white">Settings</h1>
+      <h1 className="text-2xl font-bold text-white">{t('settings.title')}</h1>
 
       {/* Account Info */}
       <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
         <div className="flex items-center gap-3 mb-4">
           <User size={18} className="text-gray-400" />
-          <h2 className="text-lg font-semibold text-white">Account Info</h2>
+          <h2 className="text-lg font-semibold text-white">{t('settings.accountInfo')}</h2>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Username</label>
+            <label className="block text-xs text-gray-500 mb-1">{t('settings.username')}</label>
             <div className="bg-gray-800/50 rounded-xl px-4 py-2.5 text-white text-sm">{admin?.username}</div>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Role</label>
+            <label className="block text-xs text-gray-500 mb-1">{t('settings.role')}</label>
             <div className="bg-gray-800/50 rounded-xl px-4 py-2.5 text-white text-sm">{admin?.role}</div>
           </div>
         </div>
@@ -63,11 +65,11 @@ export default function Settings() {
       <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
         <div className="flex items-center gap-3 mb-4">
           <Lock size={18} className="text-gray-400" />
-          <h2 className="text-lg font-semibold text-white">Change Password</h2>
+          <h2 className="text-lg font-semibold text-white">{t('settings.changePassword')}</h2>
         </div>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Current Password</label>
+            <label className="block text-sm text-gray-400 mb-1.5">{t('settings.currentPassword')}</label>
             <input
               type="password"
               value={currentPassword}
@@ -77,7 +79,7 @@ export default function Settings() {
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">New Password</label>
+            <label className="block text-sm text-gray-400 mb-1.5">{t('settings.newPassword')}</label>
             <input
               type="password"
               value={newPassword}
@@ -86,10 +88,10 @@ export default function Settings() {
               minLength={12}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">Minimum 12 characters</p>
+            <p className="text-xs text-gray-500 mt-1">{t('settings.minCharacters')}</p>
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Confirm New Password</label>
+            <label className="block text-sm text-gray-400 mb-1.5">{t('settings.confirmNewPassword')}</label>
             <input
               type="password"
               value={confirmPassword}
@@ -104,7 +106,7 @@ export default function Settings() {
             disabled={changePasswordMutation.isPending}
             className="px-6 py-2.5 text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors disabled:opacity-50"
           >
-            {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+            {changePasswordMutation.isPending ? t('settings.changingPassword') : t('settings.changePasswordButton')}
           </button>
         </form>
       </div>

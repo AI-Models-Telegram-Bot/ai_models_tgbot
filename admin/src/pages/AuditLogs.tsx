@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import DataTable from '../components/DataTable';
 
@@ -23,6 +24,7 @@ const actionColors: Record<string, string> = {
 };
 
 export default function AuditLogs() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [action, setAction] = useState('');
 
@@ -36,19 +38,19 @@ export default function AuditLogs() {
   const columns = [
     {
       key: 'time',
-      header: 'Time',
+      header: t('auditLogs.time'),
       render: (l: any) => (
         <span className="text-gray-400 text-xs">{new Date(l.createdAt).toLocaleString()}</span>
       ),
     },
     {
       key: 'admin',
-      header: 'Admin',
+      header: t('auditLogs.admin'),
       render: (l: any) => <span className="text-white">{l.admin?.username || '—'}</span>,
     },
     {
       key: 'action',
-      header: 'Action',
+      header: t('auditLogs.action'),
       render: (l: any) => (
         <span className={`font-medium text-sm ${actionColors[l.action] || 'text-gray-400'}`}>
           {l.action}
@@ -57,7 +59,7 @@ export default function AuditLogs() {
     },
     {
       key: 'target',
-      header: 'Target',
+      header: t('auditLogs.target'),
       render: (l: any) => (
         <div className="text-gray-400 text-xs">
           {l.targetType && <span>{l.targetType}: </span>}
@@ -67,7 +69,7 @@ export default function AuditLogs() {
     },
     {
       key: 'details',
-      header: 'Details',
+      header: t('auditLogs.details'),
       render: (l: any) => (
         <span className="text-gray-500 text-xs font-mono max-w-xs truncate block">
           {l.details ? JSON.stringify(l.details) : '—'}
@@ -76,7 +78,7 @@ export default function AuditLogs() {
     },
     {
       key: 'ip',
-      header: 'IP',
+      header: t('auditLogs.ip'),
       render: (l: any) => <span className="text-gray-500 text-xs font-mono">{l.ipAddress || '—'}</span>,
     },
   ];
@@ -84,13 +86,13 @@ export default function AuditLogs() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Audit Logs</h1>
+        <h1 className="text-2xl font-bold text-white">{t('auditLogs.title')}</h1>
         <select
           value={action}
           onChange={(e) => { setAction(e.target.value); setPage(1); }}
           className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
         >
-          <option value="">All Actions</option>
+          <option value="">{t('common.allActions')}</option>
           {ACTIONS.filter(Boolean).map((a) => (
             <option key={a} value={a}>{a}</option>
           ))}

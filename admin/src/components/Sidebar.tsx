@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import {
   LayoutDashboard,
@@ -13,21 +14,23 @@ import {
   LogOut,
   Shield,
 } from 'lucide-react';
-
-const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/users', icon: Users, label: 'Users' },
-  { to: '/generations', icon: Zap, label: 'Generations' },
-  { to: '/revenue', icon: DollarSign, label: 'Revenue' },
-  { to: '/providers', icon: Server, label: 'Providers' },
-  { to: '/audit-logs', icon: FileText, label: 'Audit Logs' },
-  { to: '/broadcasts', icon: Send, label: 'Broadcasts' },
-  { to: '/logs', icon: Terminal, label: 'System Logs' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
-];
+import LanguageToggle from './LanguageToggle';
 
 export default function Sidebar() {
   const { admin, logout } = useAuthStore();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { to: '/', icon: LayoutDashboard, label: t('sidebar.dashboard') },
+    { to: '/users', icon: Users, label: t('sidebar.users') },
+    { to: '/generations', icon: Zap, label: t('sidebar.generations') },
+    { to: '/revenue', icon: DollarSign, label: t('sidebar.revenue') },
+    { to: '/providers', icon: Server, label: t('sidebar.providers') },
+    { to: '/audit-logs', icon: FileText, label: t('sidebar.auditLogs') },
+    { to: '/broadcasts', icon: Send, label: t('sidebar.broadcasts') },
+    { to: '/logs', icon: Terminal, label: t('sidebar.systemLogs') },
+    { to: '/settings', icon: Settings, label: t('sidebar.settings') },
+  ];
 
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col h-screen sticky top-0">
@@ -38,8 +41,8 @@ export default function Sidebar() {
             <Shield size={20} />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white">Admin Panel</h1>
-            <p className="text-xs text-gray-500">AI Models Bot</p>
+            <h1 className="text-sm font-bold text-white">{t('sidebar.adminPanel')}</h1>
+            <p className="text-xs text-gray-500">{t('sidebar.aiModelsBot')}</p>
           </div>
         </div>
       </div>
@@ -76,12 +79,13 @@ export default function Sidebar() {
             <p className="text-xs text-gray-500">{admin?.role}</p>
           </div>
         </div>
+        <LanguageToggle />
         <button
           onClick={() => logout()}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors mt-1"
         >
           <LogOut size={16} />
-          Sign out
+          {t('sidebar.signOut')}
         </button>
       </div>
     </aside>

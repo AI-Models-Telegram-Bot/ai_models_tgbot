@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import DataTable from '../components/DataTable';
 import StatusBadge from '../components/StatusBadge';
@@ -9,6 +10,7 @@ const CATEGORIES = ['', 'TEXT', 'IMAGE', 'VIDEO', 'AUDIO'];
 const STATUSES = ['', 'PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'];
 
 export default function Generations() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -32,14 +34,14 @@ export default function Generations() {
   const columns = [
     {
       key: 'input',
-      header: 'Input',
+      header: t('generations.input'),
       render: (r: any) => (
-        <div className="max-w-xs truncate text-white">{r.inputText || '(no text)'}</div>
+        <div className="max-w-xs truncate text-white">{r.inputText || t('common.noText')}</div>
       ),
     },
     {
       key: 'user',
-      header: 'User',
+      header: t('generations.user'),
       render: (r: any) => (
         <div className="text-gray-400 text-xs">
           {r.user?.firstName || r.user?.username || r.user?.email || '—'}
@@ -48,7 +50,7 @@ export default function Generations() {
     },
     {
       key: 'model',
-      header: 'Model',
+      header: t('generations.model'),
       render: (r: any) => (
         <div>
           <div className="text-white text-xs">{r.model?.name || '—'}</div>
@@ -58,24 +60,24 @@ export default function Generations() {
     },
     {
       key: 'category',
-      header: 'Category',
+      header: t('generations.category'),
       render: (r: any) => <StatusBadge status={r.model?.category || '—'} />,
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('generations.status'),
       render: (r: any) => <StatusBadge status={r.status} />,
     },
     {
       key: 'credits',
-      header: 'Credits',
+      header: t('generations.credits'),
       render: (r: any) => (
         <span className="text-gray-400">{r.creditsCharged?.toFixed(2) || '—'}</span>
       ),
     },
     {
       key: 'time',
-      header: 'Time',
+      header: t('generations.time'),
       render: (r: any) => (
         <span className="text-gray-400 text-xs">
           {r.processingTime ? `${(r.processingTime / 1000).toFixed(1)}s` : '—'}
@@ -84,7 +86,7 @@ export default function Generations() {
     },
     {
       key: 'createdAt',
-      header: 'Created',
+      header: t('generations.created'),
       render: (r: any) => (
         <span className="text-gray-500 text-xs">{new Date(r.createdAt).toLocaleString()}</span>
       ),
@@ -93,7 +95,7 @@ export default function Generations() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Generations</h1>
+      <h1 className="text-2xl font-bold text-white">{t('generations.title')}</h1>
 
       <div className="flex flex-wrap gap-3">
         <form onSubmit={handleSearch} className="relative flex-1 min-w-[200px]">
@@ -102,7 +104,7 @@ export default function Generations() {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by input text..."
+            placeholder={t('generations.searchPlaceholder')}
             className="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
           />
         </form>
@@ -111,7 +113,7 @@ export default function Generations() {
           onChange={(e) => { setCategory(e.target.value); setPage(1); }}
           className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
         >
-          <option value="">All Categories</option>
+          <option value="">{t('common.allCategories')}</option>
           {CATEGORIES.filter(Boolean).map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -121,7 +123,7 @@ export default function Generations() {
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
           className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none"
         >
-          <option value="">All Statuses</option>
+          <option value="">{t('common.allStatuses')}</option>
           {STATUSES.filter(Boolean).map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
