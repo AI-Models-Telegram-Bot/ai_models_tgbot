@@ -35,20 +35,20 @@ export const en = {
     imageFluxFamily: '🔥 Flux Family',
     imageDalleFamily: '✨ DALL-E',
     imageMidjourneyFamily: '🎨 Midjourney',
-    imageNanoBananaFamily: '🍌 Nano Banana (⚡6)',
-    imageNanoBananaProFamily: '🍌 Nano Banana Pro (⚡20)',
+    imageNanoBananaFamily: '🍌 Nano Banana (⚡1.5)',
+    imageNanoBananaProFamily: '🍌 Nano Banana Pro (⚡5–8)',
     imageSeedreamFamily: '🌱 Seedream',
     // Image Models
-    imageFluxSchnell: '⚡ Flux Schnell (⚡2)',
-    imageFluxKontext: '🎨 Flux Kontext (⚡5)',
-    imageFluxDev: '🔧 Flux Dev (⚡12)',
-    imageFluxPro: '💎 Flux Pro (⚡20)',
-    imageDallE2: '🎨 DALL-E 2 (⚡10)',
-    imageDallE3: '✨ DALL-E 3 (⚡25)',
-    imageNanoBanana: '🍌 Nano Banana (⚡6)',
-    imageNanoBananaPro: '🍌 Nano Banana Pro (⚡20)',
-    imageSeedream: '🌱 Seedream 4.0 (⚡5)',
-    imageSeedream45: '🌱 Seedream 4.5 β (⚡8-15)',
+    imageFluxSchnell: '⚡ Flux Schnell (⚡0.2)',
+    imageFluxKontext: '🎨 Flux Kontext (⚡1.5)',
+    imageFluxDev: '🔧 Flux Dev (⚡0.8)',
+    imageFluxPro: '💎 Flux Pro (⚡3)',
+    imageDallE2: '🎨 DALL-E 2 (⚡2)',
+    imageDallE3: '✨ DALL-E 3 (⚡3)',
+    imageNanoBanana: '🍌 Nano Banana (⚡1.5)',
+    imageNanoBananaPro: '🍌 Nano Banana Pro (⚡5–8)',
+    imageSeedream: '🌱 Seedream 4.0 (⚡1.5)',
+    imageSeedream45: '🌱 Seedream 4.5 β (⚡2.5–5)',
     imageSettings: '🎛️ Image Settings',
     // Video Families
     videoKlingFamily: '🎥 Kling',
@@ -59,18 +59,18 @@ export const en = {
     videoWanFamily: '🌊 WAN',
     videoSeedanceFamily: '🌱 Seedance',
     // Video Models
-    videoKling: '🎥 Kling Standard (⚡12–32)',
-    videoKlingPro: '💎 Kling Pro (⚡20–116)',
-    videoVeoFast: '⚡ Veo Fast (⚡9–20)',
-    videoVeoQuality: '💎 Veo Quality (⚡34–80)',
-    videoSora: '🎬 Sora 2 (⚡9–57)',
-    videoSoraPro: '💎 Sora 2 Pro (⚡40–150)',
-    videoRunwayGen4: '✈️ Runway Gen-4 (⚡20–60)',
-    videoRunwayTurbo: '⚡ Runway Gen-4 Turbo (⚡15–45)',
-    videoSeedanceLite: '🌱 1.0 Lite (⚡8–24)',
-    videoSeedancePro: '💎 1.0 Pro (⚡30–90)',
-    videoSeedanceFast: '⚡ 1.0 Fast (⚡12–36)',
-    videoSeedance15Pro: '🌱 1.5 Pro (⚡15–45)',
+    videoKling: '🎥 Kling Standard (⚡16–40)',
+    videoKlingPro: '💎 Kling Pro (⚡27–144)',
+    videoVeoFast: '⚡ Veo Fast (⚡6–32)',
+    videoVeoQuality: '💎 Veo Quality (⚡28–155)',
+    videoSora: '🎬 Sora 2 (⚡21–113)',
+    videoSoraPro: '💎 Sora 2 Pro (⚡33–177)',
+    videoRunwayGen4: '✈️ Runway Gen-4 (⚡17–72)',
+    videoRunwayTurbo: '⚡ Runway Gen-4 Turbo (⚡13–54)',
+    videoSeedanceLite: '🌱 1.0 Lite (⚡9–23)',
+    videoSeedancePro: '💎 1.0 Pro (⚡35–88)',
+    videoSeedanceFast: '⚡ 1.0 Fast (⚡13–33)',
+    videoSeedance15Pro: '🌱 1.5 Pro (⚡13–33)',
     videoSettings: '🎛️ Video Settings',
     // Chat
     chatNewChat: '🆕 Chat',
@@ -130,13 +130,13 @@ Press the corresponding button to contact support, ensure the safety of your dat
 4️⃣ Wait for the result
 
 <b>Token Costs:</b>
-• Text: 1 token
-• Image: 1-2 tokens
-• Audio: 1-3 tokens
-• Video: 5 tokens
+• Text: 0.2–12 tokens
+• Image: 0.2–5 tokens
+• Audio: 0.5–20 tokens
+• Video: 9–116 tokens
 
-<b>Get Free Credits:</b>
-• Refer friends and earn bonus credits
+<b>Get Free Tokens:</b>
+• Refer friends and earn bonus tokens
 • Use promo codes`,
 
     support: `🆘 <b>Support</b>
@@ -196,7 +196,7 @@ Premium text-to-speech synthesis with hundreds of natural voices in 29 languages
 
 💡 Select your preferred voice in Voice Settings, then send any text to convert to speech.
 
-Fee: ⚡15 credits per generation`,
+Fee: ⚡4 tokens per generation`,
 
     audioVoiceCloningDesc: `👥 <b>Voice Cloning</b>
 
@@ -205,7 +205,7 @@ Clone any voice from an audio sample and use it for speech synthesis.
 📎 Send a voice message or audio file (5 sec – 5 min) to set the reference voice
 ✍️ Then send text to generate speech with the cloned voice
 
-Fee: ⚡8 credits per generation`,
+Fee: ⚡2 tokens per generation`,
 
     audioSunoDesc: `🎸 <b>SUNO — Music Generator</b>
 
@@ -213,7 +213,7 @@ Create original songs, covers, and instrumentals powered by AI.
 
 💡 Set your generation mode and music style in SUNO Settings, then describe the song you want.
 
-Fee: ⚡80 credits (you'll receive 2 variations)`,
+Fee: ⚡20 tokens (you'll receive 2 variations)`,
 
     audioSoundGenDesc: `🥁 <b>Sound Generator</b>
 
@@ -222,7 +222,7 @@ Create sound effects, ambient audio, and short compositions from text descriptio
 💡 Fine-tune creativity parameters in Sound Settings, then describe the sound you need.
 Example: "birds singing in a forest at dawn"
 
-Fee: ⚡10 credits per generation`,
+Fee: ⚡2.5 tokens per generation`,
 
     audioAccessDenied: 'is not available on your current plan.',
     audioUpgradeHint: 'Upgrade your subscription to access this feature.',
@@ -263,7 +263,7 @@ Fast and affordable image generation by Black Forest Labs. Great for quick itera
 
 💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
 
-Fee: ⚡2 credits per image`,
+Fee: ⚡0.2 tokens per image`,
 
     imageFluxKontextDesc: `🎨 <b>Flux Kontext</b>
 
@@ -274,7 +274,7 @@ Context-aware image generation and editing with Flux Kontext Pro.
 
 💡 Adjust aspect ratio in Image Settings.
 
-Fee: ⚡5 credits per image`,
+Fee: ⚡1.5 tokens per image`,
 
     imageFluxDevDesc: `🔧 <b>Flux Dev</b>
 
@@ -282,7 +282,7 @@ High-quality image generation for development and creative work. Great balance o
 
 💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
 
-Fee: ⚡12 credits per image`,
+Fee: ⚡0.8 tokens per image`,
 
     imageFluxProDesc: `💎 <b>Flux Pro</b>
 
@@ -290,7 +290,7 @@ Premium Flux Pro v1.1 — the best quality in the Flux family. Ideal for final p
 
 💡 Adjust aspect ratio in Image Settings, then send a text prompt to generate.
 
-Fee: ⚡20 credits per image`,
+Fee: ⚡3 tokens per image`,
 
     imageDallE2Desc: `🎨 <b>DALL-E 2</b>
 
@@ -298,7 +298,7 @@ OpenAI's fast and affordable image model. Good for simple illustrations and quic
 
 💡 Generates square images (1024×1024). Send a text prompt to generate.
 
-Fee: ⚡10 credits per image`,
+Fee: ⚡2 tokens per image`,
 
     imageDallE3Desc: `✨ <b>DALL-E 3</b>
 
@@ -306,7 +306,7 @@ OpenAI's premium image model with excellent prompt understanding and high qualit
 
 💡 Adjust aspect ratio, quality, and style in Image Settings, then send a text prompt.
 
-Fee: ⚡25 credits per image`,
+Fee: ⚡3 tokens per image`,
 
     imageMidjourneyDesc: `🎨 <b>Midjourney</b>
 
@@ -317,7 +317,7 @@ Artistic image generation with one of the most popular AI art tools.
 
 💡 Adjust aspect ratio, version, stylize, speed, and weirdness in Image Settings.
 
-Fee: ⚡8–22 credits (depends on speed mode)`,
+Fee: ⚡2–5 tokens (depends on speed mode)`,
 
     imageNanoBananaDesc: `🍌 <b>Nano Banana</b>
 
@@ -328,7 +328,7 @@ Google Gemini 2.5 Flash — fast and affordable image generation.
 
 💡 Adjust aspect ratio in Image Settings.
 
-Fee: ⚡6 credits per image`,
+Fee: ⚡1.5 tokens per image`,
 
     imageNanoBananaProDesc: `🍌 <b>Nano Banana Pro</b>
 
@@ -339,7 +339,7 @@ Google Gemini image generation — powerful quality with excellent detail.
 
 💡 Adjust aspect ratio and resolution in Image Settings.
 
-Fee: ⚡20 credits per image`,
+Fee: ⚡5–8 tokens (depends on resolution)`,
 
     imageSeedreamDesc: `🌱 <b>Seedream 4.0</b>
 
@@ -350,7 +350,7 @@ ByteDance Seedream — high-quality image generation and editing with excellent 
 
 💡 Adjust aspect ratio in Image Settings.
 
-Fee: ⚡5 credits per image`,
+Fee: ⚡1.5 tokens per image`,
 
     imageSeedream45Desc: `🌱 <b>Seedream 4.5 Beta</b>
 
@@ -361,7 +361,7 @@ ByteDance's latest image model — improved quality, creativity, and resolution 
 
 💡 Adjust aspect ratio and resolution (1K/2K/4K) in Image Settings.
 
-Fee: ⚡8–15 credits (depends on resolution)`,
+Fee: ⚡2.5–5 tokens (depends on resolution)`,
 
     imageAccessDenied: 'is not available on your current plan.',
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',
@@ -401,7 +401,7 @@ Fast AI video generation with stunning visual quality. Supports text prompts and
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡18 credits`,
+Fee: ⚡24 tokens`,
 
     videoWanFamilyDesc: `🌊 <b>WAN 2.5</b>
 
@@ -409,17 +409,17 @@ Open-source video generation model — affordable and versatile. Great for quick
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡10 credits`,
+Fee: ⚡15 tokens`,
 
     videoSeedanceFamilyDesc: `🌱 <b>Seedance</b>
 
 ByteDance's advanced video generation family. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
 Choose a version:
-• <b>1.0 Lite</b> — affordable 720p (⚡8–24)
-• <b>1.0 Pro</b> — highest quality 1080p (⚡30–90)
-• <b>1.0 Fast</b> — fast 1080p generation (⚡12–36)
-• <b>1.5 Pro</b> — latest model (⚡15–45)`,
+• <b>1.0 Lite</b> — affordable 720p (⚡9–23)
+• <b>1.0 Pro</b> — highest quality 1080p (⚡35–88)
+• <b>1.0 Fast</b> — fast 1080p generation (⚡13–33)
+• <b>1.5 Pro</b> — latest model (⚡13–33)`,
 
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
@@ -429,7 +429,7 @@ Professional video generation with smooth motion and natural dynamics. Choose fr
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡12–32 credits (depends on settings)`,
+Fee: ⚡16–40 tokens (depends on settings)`,
 
     videoKlingProDesc: `💎 <b>Kling Pro</b>
 
@@ -439,7 +439,7 @@ Premium Kling model — higher quality, all versions including 2.1-Master, with 
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡20–116 credits (depends on settings)`,
+Fee: ⚡27–144 tokens (depends on settings)`,
 
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 
@@ -450,7 +450,7 @@ Google Veo fast mode — quick video generation with great quality and optional 
 
 Send ✍️ a text prompt to get started, or 🌄 upload images for Frames/Ingredients mode 👇
 
-Fee: ⚡9–40 credits (depends on settings)`,
+Fee: ⚡6–32 tokens (depends on settings)`,
 
     videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
 
@@ -461,7 +461,7 @@ Google Veo quality mode — maximum fidelity, photorealism, and optional audio g
 
 Send ✍️ a text prompt to get started, or 🌄 upload images for Frames/Ingredients mode 👇
 
-Fee: ⚡34–160 credits (depends on settings)`,
+Fee: ⚡28–155 tokens (depends on settings)`,
 
     videoSoraDesc: `🎬 <b>Sora 2</b>
 
@@ -471,7 +471,7 @@ OpenAI Sora 2 — text-to-video and image-to-video with resolutions up to 1080p 
 
 Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
-Fee: ⚡9–57 credits (depends on settings)`,
+Fee: ⚡21–113 tokens (depends on settings)`,
 
     videoSoraProDesc: `💎 <b>Sora 2 Pro</b>
 
@@ -481,7 +481,7 @@ OpenAI Sora 2 Pro — premium quality video generation with higher fidelity and 
 
 Send ✍️ a text prompt or 🌄 upload an image to create a video 👇
 
-Fee: ⚡40–150 credits (depends on settings)`,
+Fee: ⚡33–177 tokens (depends on settings)`,
 
     videoRunwayDesc: `⚡ <b>Runway Gen-4 Turbo</b>
 
@@ -492,7 +492,7 @@ Fast video generation with cinematic output. Optimized for speed while maintaini
 Send ✍️ a text prompt or 🌄 upload images to get started 👇
 ⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
-Fee: ⚡15–45 credits (depends on settings)`,
+Fee: ⚡13–54 tokens (depends on settings)`,
 
     videoRunwayGen4Desc: `✈️ <b>Runway Gen-4</b>
 
@@ -503,7 +503,7 @@ Professional-grade Gen-4 video generation — standard quality with enhanced det
 Send ✍️ a text prompt or 🌄 upload images to get started 👇
 ⚠️ Note: 10s videos at 1080p are not supported (auto-downgrades to 720p).
 
-Fee: ⚡20–60 credits (depends on settings)`,
+Fee: ⚡17–72 tokens (depends on settings)`,
 
     videoLumaDesc: `💫 <b>Luma Dream Machine</b>
 
@@ -511,7 +511,7 @@ Fast AI video generation with stunning visual quality. Supports text-to-video an
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡18 credits`,
+Fee: ⚡24 tokens`,
 
     videoWanDesc: `🌊 <b>WAN 2.5</b>
 
@@ -519,7 +519,7 @@ Open-source video generation — affordable and versatile. Great for quick itera
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡10 credits`,
+Fee: ⚡15 tokens`,
 
     videoSeedanceLiteDesc: `🌱 <b>Seedance 1.0 Lite</b>
 
@@ -529,7 +529,7 @@ Affordable 720p video generation from ByteDance. Great for quick iterations and 
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡8–24 credits (depends on duration)`,
+Fee: ⚡9–23 tokens (depends on duration)`,
 
     videoSeedanceProDesc: `💎 <b>Seedance 1.0 Pro</b>
 
@@ -539,7 +539,7 @@ Highest quality 1080p video from ByteDance. Best for final renders and premium c
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡30–90 credits (depends on duration)`,
+Fee: ⚡35–88 tokens (depends on duration)`,
 
     videoSeedanceFastDesc: `⚡ <b>Seedance 1.0 Fast</b>
 
@@ -549,7 +549,7 @@ Fast 1080p video generation — great balance of speed and quality.
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡12–36 credits (depends on duration)`,
+Fee: ⚡13–33 tokens (depends on duration)`,
 
     videoSeedanceDesc: `🌱 <b>Seedance 1.5 Pro</b>
 
@@ -559,7 +559,7 @@ Latest Seedance model from ByteDance. Multi-scene storytelling, high-quality ani
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡15–45 credits (depends on duration)`,
+Fee: ⚡13–33 tokens (depends on duration)`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',
@@ -587,7 +587,7 @@ Send your prompt:
 
 {error}
 
-💰 Your credits have been refunded.`,
+💰 Your tokens have been refunded.`,
 
     // No models
     noModels: 'No models available in this category yet.',

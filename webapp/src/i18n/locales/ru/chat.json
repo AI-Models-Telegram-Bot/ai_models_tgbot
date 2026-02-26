@@ -35,7 +35,7 @@
   "backToChats": "Назад",
   "chats": "Чаты",
   "selectModelForChat": "Выберите модель",
-  "tokenCost": "{{cost}} кредитов",
+  "tokenCost": "{{cost}} токенов",
   "noAccessUpgrade": "Улучшить план",
   "startFirstChat": "Начните первый чат",
   "startFirstChatDesc": "Нажмите кнопку выше, чтобы начать диалог с AI моделью.",
@@ -45,5 +45,5 @@
   "deleteConfirmDesc": "Диалог и все сообщения будут удалены безвозвратно.",
   "confirmDelete": "Удалить",
   "cancelDelete": "Отмена",
-  "credits": "кредитов"
+  "credits": "токенов"
 }

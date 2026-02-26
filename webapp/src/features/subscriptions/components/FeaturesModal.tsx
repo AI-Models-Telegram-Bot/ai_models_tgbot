@@ -56,7 +56,8 @@ const categoryColors = {
 const ModelList: React.FC<{
   category: 'text' | 'image' | 'video' | 'audio';
   models: TierModel[];
-}> = ({ category, models }) => {
+  planTokens: number | null;
+}> = ({ category, models, planTokens }) => {
   const { t } = useTranslation('subscriptions');
   const colors = categoryColors[category];
   const categoryLabels: Record<string, string> = {
@@ -93,9 +94,16 @@ const ModelList: React.FC<{
               )}
             </div>
             {!model.isUnlimited && (
-              <span className="shrink-0 text-content-tertiary text-xs font-mono ml-2">
-                {model.creditCost} {t('tokensShort', 'tk')}
-              </span>
+              <div className="shrink-0 flex items-center ml-2" style={{ columnGap: 6 }}>
+                <span className="text-content-tertiary text-xs font-mono">
+                  {model.creditCost} {t('tokensShort', 'tk')}
+                </span>
+                {planTokens !== null && model.creditCost > 0 && (
+                  <span className="text-content-tertiary/60 text-[10px]">
+                    ~{Math.floor(planTokens / model.creditCost)} {t('generations', 'gens')}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         ))}
@@ -181,9 +189,9 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
             </div>
           ) : modelsData ? (
             <div className="space-y-3">
-              <ModelList category="text" models={modelsData.models.text} />
-              <ModelList category="image" models={modelsData.models.image} />
-              <ModelList category="video" models={modelsData.models.video} />
+              <ModelList category="text" models={modelsData.models.text} planTokens={plan.tokens} />
+              <ModelList category="image" models={modelsData.models.image} planTokens={plan.tokens} />
+              <ModelList category="video" models={modelsData.models.video} planTokens={plan.tokens} />
 
               {modelsData.models.text.length === 0 &&
                 modelsData.models.image.length === 0 &&

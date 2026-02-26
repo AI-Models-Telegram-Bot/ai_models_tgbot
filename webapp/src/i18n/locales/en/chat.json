@@ -35,7 +35,7 @@
   "backToChats": "Back",
   "chats": "Chats",
   "selectModelForChat": "Choose a model",
-  "tokenCost": "{{cost}} credits",
+  "tokenCost": "{{cost}} tokens",
   "noAccessUpgrade": "Upgrade plan",
   "startFirstChat": "Start your first chat",
   "startFirstChatDesc": "Tap the button above to begin a conversation with an AI model.",
@@ -45,5 +45,5 @@
   "deleteConfirmDesc": "This will permanently delete this conversation and all its messages.",
   "confirmDelete": "Delete",
   "cancelDelete": "Cancel",
-  "credits": "credits"
+  "credits": "tokens"
 }
