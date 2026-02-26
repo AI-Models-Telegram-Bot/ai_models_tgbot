@@ -21,6 +21,7 @@ import axios from 'axios';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import os from 'os';
+import { getProviderManager } from '../config/providerFactory';
 
 const execFileAsync = promisify(execFile);
 
@@ -984,6 +985,126 @@ router.post('/settings/change-password', async (req: Request, res: Response) => 
     return res.json({ ok: true });
   } catch {
     return res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// ── Provider Stats ──────────────────────────────────────
+
+router.get('/providers/stats', async (_req: Request, res: Response) => {
+  try {
+    const pm = getProviderManager();
+    const stats = pm.getStats();
+    const circuitBreakers = pm.getCircuitBreakerStatus();
+
+    const totalProviders = stats.length;
+    const totalRequests = stats.reduce((sum, s) => sum + s.requests, 0);
+    const totalSuccesses = stats.reduce((sum, s) => sum + s.successes, 0);
+    const estimatedTotalSpend = stats.reduce((sum, s) => sum + s.totalCost, 0);
+    const activeProviders = stats.filter(
+      (s) => s.enabled && !circuitBreakers[s.provider]?.isOpen
+    ).length;
+
+    const costByProvider: Record<string, number> = {};
+    for (const s of stats) {
+      costByProvider[s.provider] = (costByProvider[s.provider] || 0) + s.totalCost;
+    }
+    const costBreakdown = Object.entries(costByProvider)
+      .map(([provider, totalCost]) => ({ provider, totalCost }))
+      .filter((e) => e.totalCost > 0)
+      .sort((a, b) => b.totalCost - a.totalCost);
+
+    return res.json({
+      stats,
+      circuitBreakers,
+      aggregates: {
+        totalProviders,
+        totalRequests,
+        totalSuccesses,
+        totalFailures: totalRequests - totalSuccesses,
+        estimatedTotalSpend,
+        activeProviders,
+        overallSuccessRate: totalRequests > 0
+          ? Math.round((totalSuccesses / totalRequests) * 1000) / 10
+          : 100,
+      },
+      costBreakdown,
+    });
+  } catch (err: any) {
+    logger.error('Provider stats error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch provider stats' });
+  }
+});
+
+router.get('/providers/balances', async (_req: Request, res: Response) => {
+  try {
+    const balances: Array<{
+      provider: string;
+      status: 'ok' | 'error';
+      error?: string;
+      data?: Record<string, unknown>;
+    }> = [];
+
+    const results = await Promise.allSettled([
+      config.ai.openrouter.apiKey
+        ? axios.get('https://openrouter.ai/api/v1/credits', {
+            headers: { Authorization: `Bearer ${config.ai.openrouter.apiKey}` },
+            timeout: 10_000,
+          })
+        : Promise.reject(new Error('No API key')),
+
+      config.ai.elevenlabs.apiKey
+        ? axios.get('https://api.elevenlabs.io/v1/user/subscription', {
+            headers: { 'xi-api-key': config.ai.elevenlabs.apiKey },
+            timeout: 10_000,
+          })
+        : Promise.reject(new Error('No API key')),
+    ]);
+
+    // OpenRouter
+    if (results[0].status === 'fulfilled') {
+      const d = results[0].value.data?.data || results[0].value.data;
+      balances.push({
+        provider: 'openrouter',
+        status: 'ok',
+        data: {
+          totalCredits: d.total_credits ?? 0,
+          totalUsage: d.total_usage ?? 0,
+          remaining: (d.total_credits ?? 0) - (d.total_usage ?? 0),
+        },
+      });
+    } else {
+      balances.push({
+        provider: 'openrouter',
+        status: 'error',
+        error: results[0].reason?.message || 'Failed to fetch',
+      });
+    }
+
+    // ElevenLabs
+    if (results[1].status === 'fulfilled') {
+      const d = results[1].value.data;
+      balances.push({
+        provider: 'elevenlabs',
+        status: 'ok',
+        data: {
+          characterCount: d.character_count ?? 0,
+          characterLimit: d.character_limit ?? 0,
+          remaining: (d.character_limit ?? 0) - (d.character_count ?? 0),
+          tier: d.tier ?? 'unknown',
+        },
+      });
+    } else {
+      balances.push({
+        provider: 'elevenlabs',
+        status: 'error',
+        error: results[1].reason?.message || 'Failed to fetch',
+      });
+    }
+
+    return res.json({ balances });
+  } catch (err: any) {
+    logger.error('Provider balances error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch provider balances' });
   }
 });
 

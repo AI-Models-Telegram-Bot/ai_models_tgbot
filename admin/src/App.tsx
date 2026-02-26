@@ -12,6 +12,7 @@ import AuditLogs from './pages/AuditLogs';
 import Broadcasts from './pages/Broadcasts';
 import BroadcastCompose from './pages/BroadcastCompose';
 import Logs from './pages/Logs';
+import Providers from './pages/Providers';
 import Settings from './pages/Settings';
 
 const queryClient = new QueryClient({
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/users/:id" element={<UserDetail />} />
             <Route path="/generations" element={<Generations />} />
             <Route path="/revenue" element={<Revenue />} />
+            <Route path="/providers" element={<Providers />} />
             <Route path="/audit-logs" element={<AuditLogs />} />
             <Route path="/broadcasts" element={<Broadcasts />} />
             <Route path="/broadcasts/new" element={<BroadcastCompose />} />
