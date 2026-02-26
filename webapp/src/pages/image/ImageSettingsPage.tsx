@@ -6,6 +6,7 @@ import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useImageSettingsStore } from '@/features/image/store/imageSettingsStore';
 import { Skeleton } from '@/shared/ui';
+import { calculateDynamicCost, hasDynamicPricing, formatCost } from '@/shared/utils/dynamicPricing';
 import toast from 'react-hot-toast';
 
 interface AspectOption {
@@ -190,6 +191,13 @@ export default function ImageSettingsPage() {
     }
     return false;
   })();
+
+  // Dynamic cost preview for models with dynamic pricing
+  const showCost = hasDynamicPricing(modelSlug);
+  const estimatedCost = useMemo(() => {
+    if (!showCost) return 0;
+    return calculateDynamicCost(modelSlug, { speed, resolution });
+  }, [modelSlug, showCost, speed, resolution]);
 
   const handleAspectSelect = (value: string) => {
     hapticImpact('light');
@@ -601,8 +609,17 @@ export default function ImageSettingsPage() {
         )}
       </div>
 
-      {/* Fixed save button */}
+      {/* Fixed bottom area: cost preview + save button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-image-surface via-image-surface to-transparent pt-8">
+        {/* Estimated cost for dynamic pricing models */}
+        {showCost && estimatedCost > 0 && (
+          <div className="mb-3 p-3 rounded-xl bg-image-surface-card border border-white/5 flex items-center justify-between">
+            <span className="text-sm text-content-secondary">{t('estimatedCost')}</span>
+            <span className="text-lg font-bold text-image-primary">
+              ⚡{formatCost(estimatedCost)} {t('tokens')}
+            </span>
+          </div>
+        )}
         <button
           onClick={handleSave}
           disabled={!hasChanged || isSaving}

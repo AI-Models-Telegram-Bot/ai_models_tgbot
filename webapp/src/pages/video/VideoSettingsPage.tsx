@@ -6,6 +6,7 @@ import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { closeTelegramWebApp } from '@/services/telegram/telegram';
 import { useVideoSettingsStore } from '@/features/video/store/videoSettingsStore';
 import { Skeleton } from '@/shared/ui';
+import { calculateDynamicCost, formatCost } from '@/shared/utils/dynamicPricing';
 import toast from 'react-hot-toast';
 
 interface AspectOption {
@@ -174,27 +175,6 @@ const KLING_MODELS = ['kling', 'kling-pro'];
 const KLING_VERSIONS_STD = ['2.6', '2.5', '2.1', '1.6', '1.5'];
 const KLING_VERSIONS_PRO = ['2.6', '2.5', '2.1', '2.1-master', '1.6', '1.5'];
 
-function calculateKlingCreditCost(
-  mode: 'std' | 'pro',
-  version: string,
-  duration: number,
-  enableAudio: boolean,
-): number {
-  const isNew = ['2.5', '2.6'].includes(version);
-  const isMaster = version === '2.1-master';
-
-  if (mode === 'std') {
-    return isNew ? (duration === 5 ? 12 : 24) : (duration === 5 ? 16 : 32);
-  }
-  // Pro mode
-  if (isMaster) return duration === 5 ? 58 : 116;
-  if (isNew) {
-    const base = duration === 5 ? 20 : 40;
-    return (enableAudio && version === '2.6') ? base * 2 : base;
-  }
-  return duration === 5 ? 28 : 56;
-}
-
 // ── Components ─────────────────────────────────────────────
 
 function AspectPreview({ w, h }: { w: number; h: number }) {
@@ -317,10 +297,15 @@ export default function VideoSettingsPage() {
   // Runway constraint: 10s + 1080p not allowed (both Gen-4 and Gen-4 Turbo)
   const showRunwayWarning = isRunway && duration === 10 && resolution === '1080p';
 
-  // Kling cost preview
-  const estimatedCost = isKling
-    ? calculateKlingCreditCost(klingMode, version, duration, enableAudio && version === '2.6' && klingMode === 'pro')
-    : undefined;
+  // Dynamic cost preview for all video models
+  const estimatedCost = useMemo(() => {
+    return calculateDynamicCost(modelSlug, {
+      duration,
+      resolution,
+      version,
+      enableAudio: enableAudio && version === '2.6' && klingMode === 'pro',
+    });
+  }, [modelSlug, duration, resolution, version, enableAudio, klingMode]);
 
   const hasChanged = (() => {
     const origAspect = modelSettings?.aspectRatio || '16:9';
@@ -818,12 +803,12 @@ export default function VideoSettingsPage() {
 
       {/* Fixed bottom area: cost preview + save button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-video-surface via-video-surface to-transparent pt-8">
-        {/* Kling estimated cost */}
-        {estimatedCost !== undefined && (
+        {/* Estimated cost for all video models */}
+        {estimatedCost > 0 && (
           <div className="mb-3 p-3 rounded-xl bg-video-surface-card border border-white/5 flex items-center justify-between">
             <span className="text-sm text-content-secondary">{t('estimatedCost')}</span>
             <span className="text-lg font-bold text-video-primary">
-              ⚡{estimatedCost} {t('tokens')}
+              ⚡{formatCost(estimatedCost)} {t('tokens')}
             </span>
           </div>
         )}
