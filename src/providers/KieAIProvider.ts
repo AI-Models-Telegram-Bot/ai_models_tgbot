@@ -635,7 +635,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       const input: Record<string, unknown> = {
         prompt,
-        image_size: this.toSeedreamImageSize(aspectRatio),
+        aspect_ratio: aspectRatio,  // Seedream 4.5 uses aspect_ratio (e.g. '1:1'), not image_size
         quality: resolution === '1K' ? 'basic' : 'high',
       };
 
@@ -644,7 +644,7 @@ export class KieAIProvider extends EnhancedProvider {
         input.image_urls = inputImageUrls;
       }
 
-      logger.info('KieAI Seedream 4.5 payload:', { model, image_size: input.image_size, quality: input.quality, hasImage });
+      logger.info('KieAI Seedream 4.5 payload:', { model, aspect_ratio: aspectRatio, quality: input.quality, hasImage });
       const createResponse = await this.client.post('/jobs/createTask', {
         model,
         input,
