@@ -37,6 +37,7 @@ export const en = {
     imageMidjourneyFamily: '🎨 Midjourney',
     imageNanoBananaFamily: '🍌 Nano Banana (⚡1.5)',
     imageNanoBananaProFamily: '🍌 Nano Banana Pro (⚡5–8)',
+    imageNanoBanana2Family: '🍌 Nano Banana 2 (⚡2–4)',
     imageSeedreamFamily: '🌱 Seedream',
     // Image Models
     imageFluxSchnell: '⚡ Flux Schnell (⚡0.2)',
@@ -47,6 +48,7 @@ export const en = {
     imageDallE3: '✨ DALL-E 3 (⚡3)',
     imageNanoBanana: '🍌 Nano Banana (⚡1.5)',
     imageNanoBananaPro: '🍌 Nano Banana Pro (⚡5–8)',
+    imageNanoBanana2: '🍌 Nano Banana 2 (⚡2–4)',
     imageSeedream: '🌱 Seedream 4.0 (⚡1.5)',
     imageSeedream45: '🌱 Seedream 4.5 β (⚡2.5–5)',
     imageSettings: '🎛️ Image Settings',
@@ -340,6 +342,17 @@ Google Gemini image generation — powerful quality with excellent detail.
 💡 Adjust aspect ratio and resolution in Image Settings.
 
 Fee: ⚡5–8 tokens (depends on resolution)`,
+
+    imageNanoBanana2Desc: `🍌 <b>Nano Banana 2</b>
+
+Google Gemini 3.1 Flash Image — fast generation with up to 14 reference images.
+
+🌄 Send up to 14 reference images + ✍️ text prompt to edit or combine images.
+✍️ Or just send a text prompt to generate from scratch.
+
+💡 Adjust aspect ratio and resolution (1K/2K/4K) in Image Settings.
+
+Fee: ⚡2–4 tokens (depends on resolution)`,
 
     imageSeedreamDesc: `🌱 <b>Seedream 4.0</b>
 

@@ -25,6 +25,7 @@ const MODEL_DEFAULTS: Record<string, ImageModelSettings> = {
   'midjourney': { aspectRatio: '1:1', version: 'v6.1', stylize: 100, speed: 'fast', weirdness: 0 },
   'nano-banana': { aspectRatio: '1:1' },
   'nano-banana-pro': { aspectRatio: '1:1', resolution: '1K' },
+  'nano-banana-2': { aspectRatio: '1:1', resolution: '1K' },
   'seedream': { aspectRatio: '1:1' },
   'seedream-4.5': { aspectRatio: '1:1', resolution: '1K' },
   'ideogram': { aspectRatio: '1:1' },

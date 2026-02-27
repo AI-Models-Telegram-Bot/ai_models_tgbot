@@ -66,6 +66,7 @@ const IMAGE_PRICING: Record<string, number> = {
   'seedream-4.5': 0.03,             // KieAI
   'nano-banana': 0.02,              // KieAI
   'nano-banana-pro': 0.09,          // KieAI
+  'nano-banana-2': 0.04,            // KieAI Gemini 3.1 Flash
   'playground-v2-5': 0.01,          // Replicate
   'dall-e-2': 0.02,                 // OpenAI
   'flux-pro': 0.04,                 // Fal/Replicate

@@ -67,7 +67,7 @@ export class KieAIProvider extends EnhancedProvider {
       return this.generateMidjourneyImage(prompt, options);
     }
 
-    if (model === 'nano-banana' || model === 'nano-banana-pro') {
+    if (model === 'nano-banana' || model === 'nano-banana-pro' || model === 'nano-banana-2') {
       return this.generateNanoBananaImage(prompt, options);
     }
 
@@ -497,8 +497,8 @@ export class KieAIProvider extends EnhancedProvider {
         output_format: 'png',
       };
 
-      // Add resolution if specified (1K, 2K, 4K) — Pro only
-      if (options?.resolution && modelId === 'nano-banana-pro') {
+      // Add resolution if specified (1K, 2K, 4K) — Pro and Nano Banana 2 support it
+      if (options?.resolution && (modelId === 'nano-banana-pro' || modelId === 'nano-banana-2')) {
         input.resolution = options.resolution;
       }
 
@@ -524,7 +524,7 @@ export class KieAIProvider extends EnhancedProvider {
       const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS, IMAGE_POLL_INTERVAL_MS);
 
       const time = Date.now() - start;
-      const cost = modelId === 'nano-banana-pro' ? 0.09 : 0.02;
+      const cost = modelId === 'nano-banana-pro' ? 0.09 : modelId === 'nano-banana-2' ? 0.04 : 0.02;
       this.updateStats(true, cost, time);
 
       logger.info(`KieAI ${modelId}: success (${time}ms, $${cost})`);

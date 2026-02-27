@@ -59,7 +59,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         allowed: ['gpt-4o-mini', 'gemini-flash', 'fast-text'],
       },
       image: {
-        allowed: ['flux-schnell', 'sdxl', 'sdxl-lightning', 'dall-e-2', 'midjourney', 'seedream-4.5', 'nano-banana-pro'],
+        allowed: ['flux-schnell', 'sdxl', 'sdxl-lightning', 'dall-e-2', 'midjourney', 'seedream-4.5', 'nano-banana-pro', 'nano-banana-2'],
       },
       video: {
         allowed: ['wan'],
