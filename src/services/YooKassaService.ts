@@ -44,6 +44,7 @@ export class YooKassaService {
   constructor() {
     this.client = axios.create({
       baseURL: YOOKASSA_API_URL,
+      timeout: 15000, // 15s — fail fast so frontend (30s) gets a proper error message
       auth: {
         username: config.yookassa.shopId,
         password: config.yookassa.secretKey,
