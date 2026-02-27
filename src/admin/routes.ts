@@ -936,32 +936,56 @@ const SERVICE_CONTAINERS: Record<string, string> = {
   admin:  'aibot_dev',
 };
 
+function getDockerLogs(container: string, tail: number, stdout: boolean, stderr: boolean): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const query = `stdout=${stdout ? 1 : 0}&stderr=${stderr ? 1 : 0}&tail=${tail}&timestamps=0`;
+    const req = require('http').request(
+      {
+        socketPath: '/var/run/docker.sock',
+        path: `/containers/${container}/logs?${query}`,
+        method: 'GET',
+      },
+      (res: any) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => {
+          // Docker multiplexed log format: 8-byte header per frame
+          // Header: byte[0] = stream type, bytes[4-7] = payload size (big-endian)
+          const buf = Buffer.concat(chunks);
+          const lines: string[] = [];
+          let i = 0;
+          while (i + 8 <= buf.length) {
+            const size = buf.readUInt32BE(i + 4);
+            if (i + 8 + size > buf.length) break;
+            lines.push(buf.slice(i + 8, i + 8 + size).toString('utf8'));
+            i += 8 + size;
+          }
+          resolve(lines.join(''));
+        });
+        res.on('error', reject);
+      },
+    );
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 router.get('/logs/:service', async (req: Request, res: Response) => {
   try {
     const service = req.params.service as string;
     const lines = Math.min(500, parseInt(req.query.lines as string) || 100);
     const isStderr = (req.query.type as string) === 'stderr';
 
-    const validServices = Object.keys(SERVICE_CONTAINERS);
-    if (!validServices.includes(service)) {
+    if (!SERVICE_CONTAINERS[service]) {
       return res.status(400).json({ error: 'Invalid service name' });
     }
 
     const container = SERVICE_CONTAINERS[service];
-    const streamFlag = isStderr ? '--stderr' : '--stdout';
-
     try {
-      const { stdout, stderr } = await execFileAsync(
-        'docker',
-        ['logs', '--tail', lines.toString(), streamFlag, container],
-        { maxBuffer: 2 * 1024 * 1024 },
-      );
-      const output = isStderr ? stderr : stdout;
-      return res.json({ logs: output, service, type: isStderr ? 'stderr' : 'out' });
-    } catch (err: any) {
-      // docker logs writes to stderr even for stdout — fallback
-      const output = err.stderr || err.stdout || `No logs found for ${service}`;
-      return res.json({ logs: output, service, type: isStderr ? 'stderr' : 'out' });
+      const output = await getDockerLogs(container, lines, !isStderr, isStderr);
+      return res.json({ logs: output || `No logs found for ${service}`, service, type: isStderr ? 'stderr' : 'out' });
+    } catch {
+      return res.json({ logs: `No logs found for ${service}`, service, type: isStderr ? 'stderr' : 'out' });
     }
   } catch {
     return res.status(500).json({ error: 'Failed to fetch logs' });
