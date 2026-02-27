@@ -928,26 +928,40 @@ router.post('/broadcasts/:id/cancel', async (req: Request, res: Response) => {
 
 // ── System / Logs ───────────────────────────────────────
 
+const SERVICE_CONTAINERS: Record<string, string> = {
+  api:    'aibot_dev',
+  bot:    'aibot_dev',
+  worker: 'aibot_worker',
+  webapp: 'aibot_dev',
+  admin:  'aibot_dev',
+};
+
 router.get('/logs/:service', async (req: Request, res: Response) => {
   try {
     const service = req.params.service as string;
     const lines = Math.min(500, parseInt(req.query.lines as string) || 100);
-    const type = (req.query.type as string) === 'stderr' ? 'error' : 'out';
+    const isStderr = (req.query.type as string) === 'stderr';
 
-    const validServices = ['api', 'bot', 'worker', 'webapp', 'admin'];
+    const validServices = Object.keys(SERVICE_CONTAINERS);
     if (!validServices.includes(service)) {
       return res.status(400).json({ error: 'Invalid service name' });
     }
 
-    // Try to read PM2 log files
-    const logPath = `/home/deployer/.pm2/logs/${service}-${type}.log`;
+    const container = SERVICE_CONTAINERS[service];
+    const streamFlag = isStderr ? '--stderr' : '--stdout';
+
     try {
-      const { stdout } = await execFileAsync('tail', ['-n', lines.toString(), logPath], {
-        maxBuffer: 1024 * 1024,
-      });
-      return res.json({ logs: stdout, service, type });
-    } catch {
-      return res.json({ logs: `No logs found for ${service}`, service, type });
+      const { stdout, stderr } = await execFileAsync(
+        'docker',
+        ['logs', '--tail', lines.toString(), streamFlag, container],
+        { maxBuffer: 2 * 1024 * 1024 },
+      );
+      const output = isStderr ? stderr : stdout;
+      return res.json({ logs: output, service, type: isStderr ? 'stderr' : 'out' });
+    } catch (err: any) {
+      // docker logs writes to stderr even for stdout — fallback
+      const output = err.stderr || err.stdout || `No logs found for ${service}`;
+      return res.json({ logs: output, service, type: isStderr ? 'stderr' : 'out' });
     }
   } catch {
     return res.status(500).json({ error: 'Failed to fetch logs' });
