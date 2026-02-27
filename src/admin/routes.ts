@@ -928,26 +928,64 @@ router.post('/broadcasts/:id/cancel', async (req: Request, res: Response) => {
 
 // ── System / Logs ───────────────────────────────────────
 
+const SERVICE_CONTAINERS: Record<string, string> = {
+  api:    'aibot_dev',
+  bot:    'aibot_dev',
+  worker: 'aibot_worker',
+  webapp: 'aibot_dev',
+  admin:  'aibot_dev',
+};
+
+function getDockerLogs(container: string, tail: number, stdout: boolean, stderr: boolean): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const query = `stdout=${stdout ? 1 : 0}&stderr=${stderr ? 1 : 0}&tail=${tail}&timestamps=0`;
+    const req = require('http').request(
+      {
+        socketPath: '/var/run/docker.sock',
+        path: `/containers/${container}/logs?${query}`,
+        method: 'GET',
+      },
+      (res: any) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => {
+          // Docker multiplexed log format: 8-byte header per frame
+          // Header: byte[0] = stream type, bytes[4-7] = payload size (big-endian)
+          const buf = Buffer.concat(chunks);
+          const lines: string[] = [];
+          let i = 0;
+          while (i + 8 <= buf.length) {
+            const size = buf.readUInt32BE(i + 4);
+            if (i + 8 + size > buf.length) break;
+            lines.push(buf.slice(i + 8, i + 8 + size).toString('utf8'));
+            i += 8 + size;
+          }
+          resolve(lines.join(''));
+        });
+        res.on('error', reject);
+      },
+    );
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 router.get('/logs/:service', async (req: Request, res: Response) => {
   try {
     const service = req.params.service as string;
     const lines = Math.min(500, parseInt(req.query.lines as string) || 100);
-    const type = (req.query.type as string) === 'stderr' ? 'error' : 'out';
+    const isStderr = (req.query.type as string) === 'stderr';
 
-    const validServices = ['api', 'bot', 'worker', 'webapp', 'admin'];
-    if (!validServices.includes(service)) {
+    if (!SERVICE_CONTAINERS[service]) {
       return res.status(400).json({ error: 'Invalid service name' });
     }
 
-    // Try to read PM2 log files
-    const logPath = `/home/deployer/.pm2/logs/${service}-${type}.log`;
+    const container = SERVICE_CONTAINERS[service];
     try {
-      const { stdout } = await execFileAsync('tail', ['-n', lines.toString(), logPath], {
-        maxBuffer: 1024 * 1024,
-      });
-      return res.json({ logs: stdout, service, type });
+      const output = await getDockerLogs(container, lines, !isStderr, isStderr);
+      return res.json({ logs: output || `No logs found for ${service}`, service, type: isStderr ? 'stderr' : 'out' });
     } catch {
-      return res.json({ logs: `No logs found for ${service}`, service, type });
+      return res.json({ logs: `No logs found for ${service}`, service, type: isStderr ? 'stderr' : 'out' });
     }
   } catch {
     return res.status(500).json({ error: 'Failed to fetch logs' });
