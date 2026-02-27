@@ -9,7 +9,7 @@ import { config } from '../../config';
 export function getImageFamiliesKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
-    [l.buttons.imageNanoBananaFamily, l.buttons.imageNanoBananaProFamily],
+    [l.buttons.imageNanoBananaFamily, l.buttons.imageNanoBananaProFamily, l.buttons.imageNanoBanana2Family],
     [l.buttons.imageFluxFamily, l.buttons.imageDalleFamily],
     [l.buttons.imageMidjourneyFamily, l.buttons.imageSeedreamFamily],
     [l.buttons.mainMenu],

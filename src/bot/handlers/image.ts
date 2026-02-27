@@ -56,6 +56,11 @@ const IMAGE_FAMILIES: Record<ImageFamily, ImageFamilyConfig> = {
     getKeyboard: () => null,
     singleModel: 'nano-banana-pro',
   },
+  'nano-banana-2': {
+    descriptionKey: 'imageNanoBanana2Desc',
+    getKeyboard: () => null,
+    singleModel: 'nano-banana-2',
+  },
   seedream: {
     descriptionKey: 'imageSeedreamFamilyDesc',
     getKeyboard: getSeedreamModelsKeyboard,
@@ -116,6 +121,11 @@ const IMAGE_FUNCTIONS: Record<ImageFunction, ImageFunctionConfig> = {
     descriptionKey: 'imageNanoBananaProDesc',
     family: 'nano-banana-pro',
   },
+  'nano-banana-2': {
+    modelSlug: 'nano-banana-2',
+    descriptionKey: 'imageNanoBanana2Desc',
+    family: 'nano-banana-2',
+  },
   'seedream': {
     modelSlug: 'seedream',
     descriptionKey: 'imageSeedreamDesc',
@@ -138,6 +148,7 @@ const FUNCTION_NAMES: Record<ImageFunction, { en: string; ru: string }> = {
   'midjourney': { en: 'Midjourney', ru: 'Midjourney' },
   'nano-banana': { en: 'Nano Banana', ru: 'Nano Banana' },
   'nano-banana-pro': { en: 'Nano Banana Pro', ru: 'Nano Banana Pro' },
+  'nano-banana-2': { en: 'Nano Banana 2', ru: 'Nano Banana 2' },
   'seedream': { en: 'Seedream 4.0', ru: 'Seedream 4.0' },
   'seedream-4.5': { en: 'Seedream 4.5', ru: 'Seedream 4.5' },
 };
@@ -330,8 +341,8 @@ export async function getImageOptionsForFunction(
       if (settings.weirdness !== undefined) options.weirdness = settings.weirdness;
     }
 
-    // Nano Banana Pro specific options
-    if (imageFunction === 'nano-banana-pro') {
+    // Nano Banana Pro / Nano Banana 2 specific options
+    if (imageFunction === 'nano-banana-pro' || imageFunction === 'nano-banana-2') {
       if (settings.resolution) options.resolution = settings.resolution;
     }
 

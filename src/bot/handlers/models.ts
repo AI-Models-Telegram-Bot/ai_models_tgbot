@@ -32,7 +32,7 @@ const pendingMediaGroups = new Map<string, PendingMediaGroup>();
 const MEDIA_GROUP_DEBOUNCE_MS = 600;
 
 /** Image models that accept a reference image for editing (not just text prompt) */
-const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'midjourney', 'seedream', 'seedream-4.5'];
+const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'nano-banana-2', 'midjourney', 'seedream', 'seedream-4.5'];
 
 /**
  * Per-model maximum image upload limits.
@@ -53,7 +53,7 @@ const MODEL_MAX_IMAGES: Record<string, number> = {
   'luma': 2, 'wan': 2,
   'runway': 1, 'runway-gen4': 1,
   // Image editing models
-  'nano-banana': 4, 'nano-banana-pro': 4,
+  'nano-banana': 4, 'nano-banana-pro': 4, 'nano-banana-2': 14,
   'seedream': 4, 'seedream-4.5': 4,
   'flux-kontext': 1, 'midjourney': 1,
 };

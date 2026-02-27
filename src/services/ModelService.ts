@@ -44,6 +44,7 @@ const SLUG_TO_PRICE: Record<string, string> = {
   'midjourney': 'IMAGE_MIDJOURNEY',
   'nano-banana': 'IMAGE_NANO_BANANA',
   'nano-banana-pro': 'IMAGE_NANO_BANANA_PRO',
+  'nano-banana-2': 'IMAGE_NANO_BANANA_2',
   'seedream': 'IMAGE_SEEDREAM',
   'seedream-4.5': 'IMAGE_SEEDREAM_45',
   'sora-pro': 'VIDEO_SORA_PRO',
@@ -140,6 +141,7 @@ export class ModelService {
       { name: 'DALL-E 3', slug: 'dall-e-3', provider: 'openai', category: 'IMAGE', tokenCost: 3, priceItemCode: 'IMAGE_DALLE3', description: 'OpenAI DALL-E 3 - premium quality' },
       { name: 'Flux Pro', slug: 'flux-pro', provider: 'replicate', category: 'IMAGE', tokenCost: 3, priceItemCode: 'IMAGE_FLUX_PRO', description: 'Flux Pro v1.1 - best quality' },
       { name: 'Nano Banana Pro', slug: 'nano-banana-pro', provider: 'kieai', category: 'IMAGE', tokenCost: 5, priceItemCode: 'IMAGE_NANO_BANANA_PRO', description: 'Google Gemini 3 Pro Image — up to 4K (⚡5-8)' },
+      { name: 'Nano Banana 2', slug: 'nano-banana-2', provider: 'kieai', category: 'IMAGE', tokenCost: 2, priceItemCode: 'IMAGE_NANO_BANANA_2', description: 'Google Gemini 3.1 Flash Image — up to 14 refs, 1K/2K/4K (⚡2-4)' },
 
       // Video models
       { name: 'Seedance 1.0 Lite', slug: 'seedance-lite', provider: 'fal', category: 'VIDEO', tokenCost: 9, priceItemCode: 'VIDEO_SEEDANCE_LITE', description: 'ByteDance Seedance 1.0 Lite — affordable 720p video' },

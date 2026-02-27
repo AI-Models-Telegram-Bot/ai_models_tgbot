@@ -117,10 +117,22 @@ function calculateNanoBananaProCost(resolution?: string): number {
   return NANO_BANANA_PRO_RES_CREDITS[resolution || '1K'] || 5;
 }
 
+// ── Nano Banana 2 pricing (resolution-based, Gemini 3.1 Flash) ──
+
+const NANO_BANANA_2_RES_CREDITS: Record<string, number> = {
+  '1K': 2,
+  '2K': 3,
+  '4K': 4,
+};
+
+function calculateNanaBanana2Cost(resolution?: string): number {
+  return NANO_BANANA_2_RES_CREDITS[resolution || '1K'] || 2;
+}
+
 // ── Public API ───────────────────────────────────────────────
 
 export function hasDynamicPricing(slug: string): boolean {
-  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro';
+  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro' || slug === 'nano-banana-2';
 }
 
 export function calculateDynamicCost(
@@ -149,6 +161,11 @@ export function calculateDynamicCost(
   // Nano Banana Pro pricing by resolution
   if (slug === 'nano-banana-pro') {
     return calculateNanoBananaProCost(settings?.resolution);
+  }
+
+  // Nano Banana 2 pricing by resolution
+  if (slug === 'nano-banana-2') {
+    return calculateNanaBanana2Cost(settings?.resolution);
   }
 
   const cfg = DYNAMIC_PRICING[slug];

@@ -277,6 +277,14 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
+  // Nano Banana 2 — Gemini 3.1 Flash (Pro quality at Flash speed, up to 4K)
+  'nano-banana-2': {
+    category: 'IMAGE',
+    providers: [
+      { name: 'kieai', modelId: 'nano-banana-2' },                  // ~$0.04
+    ],
+  },
+
   // Seedream 4.0 — ByteDance image gen
   'seedream': {
     category: 'IMAGE',

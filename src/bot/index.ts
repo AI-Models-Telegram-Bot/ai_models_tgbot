@@ -108,6 +108,7 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageMidjourneyFamily, ru.buttons.imageMidjourneyFamily], (ctx) => handleImageFamilySelection(ctx, 'midjourney'));
   bot.hears([en.buttons.imageNanoBananaFamily, ru.buttons.imageNanoBananaFamily], (ctx) => handleImageFamilySelection(ctx, 'nano-banana'));
   bot.hears([en.buttons.imageNanoBananaProFamily, ru.buttons.imageNanoBananaProFamily], (ctx) => handleImageFamilySelection(ctx, 'nano-banana-pro'));
+  bot.hears([en.buttons.imageNanoBanana2Family, ru.buttons.imageNanoBanana2Family], (ctx) => handleImageFamilySelection(ctx, 'nano-banana-2'));
   bot.hears([en.buttons.imageSeedreamFamily, ru.buttons.imageSeedreamFamily], (ctx) => handleImageFamilySelection(ctx, 'seedream'));
 
   // Image model buttons (EN & RU)
@@ -119,6 +120,7 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageDallE3, ru.buttons.imageDallE3], (ctx) => handleImageFunctionSelection(ctx, 'dall-e-3'));
   bot.hears([en.buttons.imageNanoBanana, ru.buttons.imageNanoBanana], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana'));
   bot.hears([en.buttons.imageNanoBananaPro, ru.buttons.imageNanoBananaPro], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana-pro'));
+  bot.hears([en.buttons.imageNanoBanana2, ru.buttons.imageNanoBanana2], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana-2'));
   bot.hears([en.buttons.imageSeedream, ru.buttons.imageSeedream], (ctx) => handleImageFunctionSelection(ctx, 'seedream'));
   bot.hears([en.buttons.imageSeedream45, ru.buttons.imageSeedream45], (ctx) => handleImageFunctionSelection(ctx, 'seedream-4.5'));
 
