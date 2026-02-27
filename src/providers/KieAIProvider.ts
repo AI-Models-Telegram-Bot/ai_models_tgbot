@@ -477,8 +477,14 @@ export class KieAIProvider extends EnhancedProvider {
   }
 
   /**
-   * Nano Banana Pro (Google Gemini Image) via Market endpoint
+   * Nano Banana family (Google Gemini Image) via Market endpoint
    * POST /jobs/createTask → poll /jobs/recordInfo
+   *
+   * Model ID / field mapping (from KieAI docs):
+   *   nano-banana (text)  → "google/nano-banana",      no image field
+   *   nano-banana (edit)  → "google/nano-banana-edit",  image_urls (array)
+   *   nano-banana-pro     → "nano-banana-pro",           image_input (array, up to 8)
+   *   nano-banana-2       → "nano-banana-2",             image_input (array, up to 14)
    */
   private async generateNanoBananaImage(
     prompt: string,
@@ -488,8 +494,25 @@ export class KieAIProvider extends EnhancedProvider {
     try {
       const inputImageUrls = options?.inputImageUrls as string[] | undefined;
       const hasImage = inputImageUrls && inputImageUrls.length > 0;
-      const modelId = (options?.model as string) || 'nano-banana-pro';
-      logger.info(`KieAI image: starting ${modelId} generation (editing: ${!!hasImage})`);
+      const slug = (options?.model as string) || 'nano-banana-pro';
+
+      // Resolve actual KieAI model ID and image field based on slug and editing mode
+      let kieModelId: string;
+      let imageField: 'image_input' | 'image_urls' | null = null;
+
+      if (slug === 'nano-banana') {
+        kieModelId = hasImage ? 'google/nano-banana-edit' : 'google/nano-banana';
+        imageField = hasImage ? 'image_urls' : null;
+      } else if (slug === 'nano-banana-pro') {
+        kieModelId = 'nano-banana-pro';
+        imageField = 'image_input';
+      } else {
+        // nano-banana-2
+        kieModelId = 'nano-banana-2';
+        imageField = 'image_input';
+      }
+
+      logger.info(`KieAI image: starting ${slug} generation (kieModel: ${kieModelId}, editing: ${!!hasImage})`);
 
       const input: Record<string, unknown> = {
         prompt,
@@ -498,18 +521,18 @@ export class KieAIProvider extends EnhancedProvider {
       };
 
       // Add resolution if specified (1K, 2K, 4K) — Pro and Nano Banana 2 support it
-      if (options?.resolution && (modelId === 'nano-banana-pro' || modelId === 'nano-banana-2')) {
+      if (options?.resolution && (slug === 'nano-banana-pro' || slug === 'nano-banana-2')) {
         input.resolution = options.resolution;
       }
 
-      // Add reference image for editing mode
-      if (hasImage) {
-        input.image_input = inputImageUrls;
+      // Add reference images with the correct field name for this model
+      if (hasImage && imageField) {
+        input[imageField] = inputImageUrls;
       }
 
-      logger.info('KieAI Nano Banana payload:', { aspectRatio: input.aspect_ratio, resolution: input.resolution, hasImage, imageCount: inputImageUrls?.length });
+      logger.info('KieAI Nano Banana payload:', { kieModelId, aspectRatio: input.aspect_ratio, resolution: input.resolution, hasImage, imageCount: inputImageUrls?.length });
       const createResponse = await this.client.post('/jobs/createTask', {
-        model: modelId,
+        model: kieModelId,
         input,
       });
 
@@ -519,15 +542,15 @@ export class KieAIProvider extends EnhancedProvider {
         throw new Error(`KieAI Nano Banana: no taskId in response: ${respData}`);
       }
 
-      logger.info(`KieAI ${modelId}: task created, taskId=${taskId}`);
+      logger.info(`KieAI ${slug}: task created, taskId=${taskId}`);
 
       const imageUrl = await this.pollMarketTaskResult(taskId, IMAGE_POLL_TIMEOUT_MS, IMAGE_POLL_INTERVAL_MS);
 
       const time = Date.now() - start;
-      const cost = modelId === 'nano-banana-pro' ? 0.09 : modelId === 'nano-banana-2' ? 0.04 : 0.02;
+      const cost = slug === 'nano-banana-pro' ? 0.09 : slug === 'nano-banana-2' ? 0.04 : 0.02;
       this.updateStats(true, cost, time);
 
-      logger.info(`KieAI ${modelId}: success (${time}ms, $${cost})`);
+      logger.info(`KieAI ${slug}: success (${time}ms, $${cost})`);
       return { imageUrl };
     } catch (error: any) {
       const time = Date.now() - start;
