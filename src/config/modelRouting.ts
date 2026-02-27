@@ -282,7 +282,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'IMAGE',
     providers: [
       { name: 'kieai', modelId: 'seedream-4.0' },                   // ~$0.0175
-      { name: 'fal', modelId: 'fal-ai/seedream' },                  // fallback
+      { name: 'fal', modelId: 'fal-ai/bytedance/seedream/v4/text-to-image' },  // fallback
     ],
   },
 

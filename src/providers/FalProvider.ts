@@ -56,7 +56,7 @@ export class FalProvider extends EnhancedProvider {
    */
   private getImageEditModel(textModel: string): string {
     const modelMap: Record<string, string> = {
-      'fal-ai/seedream': 'fal-ai/bytedance/seedream/v4/edit',
+      'fal-ai/bytedance/seedream/v4/text-to-image': 'fal-ai/bytedance/seedream/v4/edit',
     };
     return modelMap[textModel] || textModel;
   }
