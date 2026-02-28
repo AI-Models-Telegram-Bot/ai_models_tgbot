@@ -16,6 +16,8 @@ import { resizeImageForAspectRatio } from '../../utils/imageResize';
 import { calculateDynamicCost } from '../../utils/videoPricing';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
+import { convertOgaToMp3 } from '../../utils/audioConvert';
+import axios from 'axios';
 
 /**
  * Per-user image upload debounce.
@@ -393,19 +395,68 @@ async function sendImageAcknowledgment(
   const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
   const maxImages = getMaxImages(activeModel);
   const remaining = maxImages - count;
-  let msg: string;
-  if (remaining > 0 && maxImages > 1) {
-    msg = lang === 'ru'
-      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
-      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
+
+  // Context-aware next-step guidance
+  const videoFunc = ctx.session.videoFunction;
+  let nextStep: string;
+  let showGenerateButton = false;
+  if (videoFunc === 'kling-motion') {
+    // Motion Control needs photo + video
+    const hasVideo = !!ctx.session.uploadedVideoUrl;
+    if (hasVideo) {
+      showGenerateButton = true;
+      nextStep = lang === 'ru'
+        ? 'Фото и видео готовы. Отправьте ✍️ текст или нажмите кнопку ниже 👇'
+        : 'Photo and video ready. Send ✍️ a text prompt or tap the button below 👇';
+    } else {
+      nextStep = lang === 'ru'
+        ? 'Теперь загрузите 🎥 1 видео с движением для анимации.'
+        : 'Now upload 🎥 1 video with the motion to animate.';
+    }
+  } else if (videoFunc === 'kling-avatar-pro' || videoFunc === 'kling-avatar') {
+    // Avatar needs photo + audio
+    const hasAudio = !!ctx.session.uploadedAudioUrl;
+    if (hasAudio) {
+      showGenerateButton = true;
+      nextStep = lang === 'ru'
+        ? 'Фото и аудио готовы. Отправьте ✍️ текст или нажмите кнопку ниже 👇'
+        : 'Photo and audio ready. Send ✍️ a text prompt or tap the button below 👇';
+    } else {
+      nextStep = lang === 'ru'
+        ? 'Теперь загрузите 🎵 1 аудиофайл (mp3, wav, m4a).'
+        : 'Now upload 🎵 1 audio file (mp3, wav, m4a).';
+    }
+  } else if (remaining > 0 && maxImages > 1) {
+    nextStep = lang === 'ru'
+      ? `Можно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+      : `Upload ${remaining} more or send ✍️ a text prompt 👇`;
   } else {
-    msg = lang === 'ru'
-      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
-      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
+    nextStep = lang === 'ru'
+      ? 'Отправьте ✍️ текстовый запрос 👇'
+      : 'Send ✍️ a text prompt 👇';
   }
 
-  // Build inline keyboard: [Delete] [Configure]
+  let msg: string;
+  if (remaining > 0 && maxImages > 1 && videoFunc !== 'kling-motion' && videoFunc !== 'kling-avatar-pro' && videoFunc !== 'kling-avatar') {
+    msg = lang === 'ru'
+      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\n${nextStep}`
+      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\n${nextStep}`;
+  } else {
+    msg = lang === 'ru'
+      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\n${nextStep}`
+      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\n${nextStep}`;
+  }
+
+  // Build inline keyboard
   const buttons: any[][] = [];
+
+  // Show Generate button when all required inputs are ready (Motion Control / Avatar)
+  if (showGenerateButton) {
+    buttons.push([
+      Markup.button.callback(lang === 'ru' ? '▶️ Сгенерировать' : '▶️ Generate', 'generate_now'),
+    ]);
+  }
+
   buttons.push([
     Markup.button.callback(lang === 'ru' ? '🗑 Удалить' : '🗑 Delete', 'delete_all_images'),
   ]);
@@ -451,6 +502,11 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
   const doc = ctx.message.document;
   const mime = doc.mime_type || '';
+
+  // Route audio documents (mp3, wav, etc.) to audio handler
+  if (mime.startsWith('audio/')) {
+    return handleAudioUpload(ctx);
+  }
 
   // Only handle image files
   if (!mime.startsWith('image/')) return;
@@ -692,9 +748,11 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   let inputImageUrls: string[] | undefined;
   if (ctx.session.uploadedImageUrls?.length) {
     const targetAR = (videoOptions?.aspectRatio || imageOptions?.aspectRatio) as string | undefined;
-    // Skip resize for image-editing models — provider needs the full original image
+    // Skip resize for image-editing models and models whose API handles aspect_ratio natively
     const isImageEdit = IMAGE_MODELS_WITH_IMAGE_INPUT.includes(ctx.session.imageFunction || '');
-    if (targetAR && ctx.chat && !isImageEdit) {
+    const SKIP_RESIZE_MODELS = ['kling-3.0', 'kling-motion', 'kling-avatar-pro', 'kling-avatar', 'kling', 'kling-pro', 'sora', 'sora-pro'];
+    const skipResize = isImageEdit || SKIP_RESIZE_MODELS.includes(ctx.session.videoFunction || '');
+    if (targetAR && ctx.chat && !skipResize) {
       const resized: string[] = [];
       for (const originalUrl of ctx.session.uploadedImageUrls) {
         try {
@@ -811,17 +869,19 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
     ctx.session.uploadedVideoUrl = fileLink.href;
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;
-    let msg: string;
     if (hasImage) {
-      msg = lang === 'ru'
-        ? '✅ Видео загружено. Фото и видео готовы. Отправьте ✍️ текстовый запрос (опционально) или просто отправьте "go" для генерации.'
-        : '✅ Video uploaded. Photo and video ready. Send ✍️ a text prompt (optional) or just send "go" to generate.';
+      const msg = lang === 'ru'
+        ? '✅ Видео загружено. Фото и видео готовы.\nОтправьте ✍️ текст или нажмите кнопку ниже 👇'
+        : '✅ Video uploaded. Photo and video ready.\nSend ✍️ a text prompt or tap the button below 👇';
+      await ctx.reply(msg, Markup.inlineKeyboard([
+        [Markup.button.callback(lang === 'ru' ? '▶️ Сгенерировать' : '▶️ Generate', 'generate_now')],
+      ]));
     } else {
-      msg = lang === 'ru'
+      const msg = lang === 'ru'
         ? '✅ Видео загружено. Теперь загрузите 📸 1 фото для анимации.'
         : '✅ Video uploaded. Now upload 📸 1 photo to animate.';
+      await ctx.reply(msg);
     }
-    await ctx.reply(msg);
   } catch (error) {
     logger.error('Failed to get file link for video:', error);
     const msg = lang === 'ru'
@@ -849,32 +909,79 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // Accept both audio files and voice messages
+  // Accept audio files, voice messages, and documents with audio MIME
   let fileId: string | undefined;
+  let isVoiceMessage = false;
   if (ctx.message && 'audio' in ctx.message && ctx.message.audio) {
     fileId = ctx.message.audio.file_id;
   } else if (ctx.message && 'voice' in ctx.message && ctx.message.voice) {
     fileId = ctx.message.voice.file_id;
+    isVoiceMessage = true;
+  } else if (ctx.message && 'document' in ctx.message && ctx.message.document) {
+    const mime = ctx.message.document.mime_type || '';
+    if (mime.startsWith('audio/')) {
+      fileId = ctx.message.document.file_id;
+    }
   }
 
   if (!fileId) return;
 
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);
-    ctx.session.uploadedAudioUrl = fileLink.href;
+    let audioUrl = fileLink.href;
+
+    // Voice messages are OGA (Opus/OGG) — convert to MP3 for API compatibility
+    if (isVoiceMessage) {
+      const convertingMsg = lang === 'ru'
+        ? '🔄 Конвертация голосового сообщения...'
+        : '🔄 Converting voice message...';
+      const statusMsg = await ctx.reply(convertingMsg);
+      try {
+        // Download the OGA file
+        const response = await axios.get(audioUrl, { responseType: 'arraybuffer', timeout: 30000 });
+        const ogaBuffer = Buffer.from(response.data);
+
+        // Convert to MP3
+        const mp3Buffer = convertOgaToMp3(ogaBuffer);
+
+        // Upload the MP3 back to Telegram (as audio to get a file URL)
+        const sentAudio = await ctx.telegram.sendAudio(
+          ctx.chat!.id,
+          { source: mp3Buffer, filename: 'voice.mp3' },
+          { disable_notification: true } as any,
+        );
+        await ctx.telegram.deleteMessage(ctx.chat!.id, sentAudio.message_id).catch(() => {});
+        const audioFileLink = await ctx.telegram.getFileLink(sentAudio.audio.file_id);
+        audioUrl = audioFileLink.href;
+        logger.info('Voice message converted to MP3 and re-uploaded');
+      } catch (convErr) {
+        logger.error('Voice conversion failed:', convErr);
+        const msg = lang === 'ru'
+          ? '⚠️ Не удалось конвертировать голосовое. Попробуйте отправить аудиофайл (mp3, wav).'
+          : '⚠️ Failed to convert voice message. Try sending an audio file (mp3, wav).';
+        await ctx.reply(msg);
+        return;
+      } finally {
+        await ctx.telegram.deleteMessage(ctx.chat!.id, statusMsg.message_id).catch(() => {});
+      }
+    }
+
+    ctx.session.uploadedAudioUrl = audioUrl;
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;
-    let msg: string;
     if (hasImage) {
-      msg = lang === 'ru'
-        ? '✅ Аудио загружено. Фото и аудио готовы. Отправьте ✍️ текстовый запрос (опционально) или просто отправьте "go" для генерации.'
-        : '✅ Audio uploaded. Photo and audio ready. Send ✍️ a text prompt (optional) or just send "go" to generate.';
+      const msg = lang === 'ru'
+        ? '✅ Аудио загружено. Фото и аудио готовы.\nОтправьте ✍️ текст или нажмите кнопку ниже 👇'
+        : '✅ Audio uploaded. Photo and audio ready.\nSend ✍️ a text prompt or tap the button below 👇';
+      await ctx.reply(msg, Markup.inlineKeyboard([
+        [Markup.button.callback(lang === 'ru' ? '▶️ Сгенерировать' : '▶️ Generate', 'generate_now')],
+      ]));
     } else {
-      msg = lang === 'ru'
+      const msg = lang === 'ru'
         ? '✅ Аудио загружено. Теперь загрузите 📸 1 фото.'
         : '✅ Audio uploaded. Now upload 📸 1 photo.';
+      await ctx.reply(msg);
     }
-    await ctx.reply(msg);
   } catch (error) {
     logger.error('Failed to get file link for audio:', error);
     const msg = lang === 'ru'
@@ -882,6 +989,25 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
       : 'Failed to upload audio. Please try again.';
     await ctx.reply(msg);
   }
+}
+
+/**
+ * Handle the "Generate" inline button callback.
+ * Triggers generation without requiring a text prompt.
+ */
+export async function handleGenerateCallback(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+
+  // Delete the message with the Generate button
+  try {
+    const msgId = ctx.callbackQuery && 'message' in ctx.callbackQuery ? ctx.callbackQuery.message?.message_id : undefined;
+    if (msgId && ctx.chat) {
+      await ctx.telegram.deleteMessage(ctx.chat.id, msgId).catch(() => {});
+    }
+  } catch { /* ignore */ }
+
+  return processGeneration(ctx, '');
 }
 
 // Export helpers for use in other handlers (video.ts back navigation, etc.)

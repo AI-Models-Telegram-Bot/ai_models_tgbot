@@ -25,6 +25,7 @@ const ALL_ASPECTS: AspectOption[] = [
 const MODEL_ASPECTS: Record<string, string[]> = {
   'kling': ['16:9', '9:16', '1:1'],
   'kling-pro': ['16:9', '9:16', '1:1'],
+  'kling-3.0': ['16:9', '9:16', '1:1'],
   'veo-fast': ['16:9', '9:16'],
   'veo': ['16:9', '9:16'],
   'sora': ['16:9', '9:16', '1:1'],
@@ -50,6 +51,13 @@ const MODEL_DURATIONS: Record<string, DurationOption[]> = {
   'kling-pro': [
     { value: 5, labelKey: 'duration5s' },
     { value: 10, labelKey: 'duration10s' },
+  ],
+  'kling-3.0': [
+    { value: 3, labelKey: 'duration3s' },
+    { value: 5, labelKey: 'duration5s' },
+    { value: 8, labelKey: 'duration8s' },
+    { value: 10, labelKey: 'duration10s' },
+    { value: 15, labelKey: 'duration15s' },
   ],
   'veo-fast': [
     { value: 5, labelKey: 'duration5s' },
@@ -108,6 +116,10 @@ interface ResolutionOption {
 }
 
 const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
+  'kling-motion': [
+    { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
+  ],
   'veo-fast': [
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
     { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
@@ -172,6 +184,8 @@ const MODE_OPTIONS: ModeOption[] = [
 // ── Kling-specific config ──────────────────────────────────
 
 const KLING_MODELS = ['kling', 'kling-pro'];
+const KLING_30_MODEL = 'kling-3.0';
+const KLING_MOTION_MODEL = 'kling-motion';
 const KLING_VERSIONS_STD = ['2.6', '2.5', '2.1', '1.6', '1.5'];
 const KLING_VERSIONS_PRO = ['2.6', '2.5', '2.1', '2.1-master', '1.6', '1.5'];
 
@@ -231,6 +245,9 @@ export default function VideoSettingsPage() {
   const isRunway = modelSlug === 'runway' || modelSlug === 'runway-gen4';
   const isSeedance = SEEDANCE_MODELS.includes(modelSlug);
   const isKling = KLING_MODELS.includes(modelSlug);
+  const isKling30 = modelSlug === KLING_30_MODEL;
+  const isKlingMotion = modelSlug === KLING_MOTION_MODEL;
+  const hasAspect = !!MODEL_ASPECTS[modelSlug];
   const klingMode: 'std' | 'pro' = modelSlug === 'kling-pro' ? 'pro' : 'std';
   const availableVersions = modelSlug === 'kling-pro' ? KLING_VERSIONS_PRO : KLING_VERSIONS_STD;
 
@@ -252,6 +269,11 @@ export default function VideoSettingsPage() {
   const [negativePrompt, setNegativePrompt] = useState('');
   const [cfgScale, setCfgScale] = useState(0.5);
   const [enableAudio, setEnableAudio] = useState(false);
+  // Kling 3.0 state
+  const [qualityMode, setQualityMode] = useState('std');
+  const [sound, setSound] = useState(true);
+  // Motion Control state
+  const [characterOrientation, setCharacterOrientation] = useState('video');
 
   useEffect(() => {
     fetchModelSettings(modelSlug);
@@ -282,8 +304,16 @@ export default function VideoSettingsPage() {
         setEnableAudio(modelSettings.enableAudio ?? false);
         setDuration(modelSettings.duration ?? 5);
       }
+      if (isKling30) {
+        setQualityMode(modelSettings.qualityMode || 'std');
+        setSound(modelSettings.sound ?? true);
+        setDuration(modelSettings.duration ?? 5);
+      }
+      if (isKlingMotion) {
+        setCharacterOrientation(modelSettings.characterOrientation || 'video');
+      }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -305,13 +335,15 @@ export default function VideoSettingsPage() {
       version,
       enableAudio: enableAudio && version === '2.6' && klingMode === 'pro',
     });
-  }, [modelSlug, duration, resolution, version, enableAudio, klingMode]);
+  }, [modelSlug, duration, resolution, version, enableAudio, klingMode, qualityMode]);
 
   const hasChanged = (() => {
-    const origAspect = modelSettings?.aspectRatio || '16:9';
-    if (aspectRatio !== origAspect) return true;
-    if (hasDuration && !isKling && duration !== (modelSettings?.duration ?? (MODEL_DURATIONS[modelSlug]?.[0]?.value || 5))) return true;
-    if (hasResolution && resolution !== (modelSettings?.resolution || '720p')) return true;
+    if (hasAspect) {
+      const origAspect = modelSettings?.aspectRatio || '16:9';
+      if (aspectRatio !== origAspect) return true;
+    }
+    if (hasDuration && !isKling && !isKling30 && duration !== (modelSettings?.duration ?? (MODEL_DURATIONS[modelSlug]?.[0]?.value || 5))) return true;
+    if (hasResolution && !isKlingMotion && resolution !== (modelSettings?.resolution || '720p')) return true;
     if (hasAudio && generateAudio !== (modelSettings?.generateAudio ?? true)) return true;
     if (isVeo && mode !== (modelSettings?.mode || 'text')) return true;
     if (isSeedance && cameraFixed !== (modelSettings?.cameraFixed ?? false)) return true;
@@ -321,6 +353,15 @@ export default function VideoSettingsPage() {
       if (cfgScale !== (modelSettings?.cfgScale ?? 0.5)) return true;
       if (enableAudio !== (modelSettings?.enableAudio ?? false)) return true;
       if (duration !== (modelSettings?.duration ?? 5)) return true;
+    }
+    if (isKling30) {
+      if (qualityMode !== (modelSettings?.qualityMode || 'std')) return true;
+      if (sound !== (modelSettings?.sound ?? true)) return true;
+      if (duration !== (modelSettings?.duration ?? 5)) return true;
+    }
+    if (isKlingMotion) {
+      if (characterOrientation !== (modelSettings?.characterOrientation || 'video')) return true;
+      if (resolution !== (modelSettings?.resolution || '720p')) return true;
     }
     return false;
   })();
@@ -333,18 +374,30 @@ export default function VideoSettingsPage() {
   const handleSave = async () => {
     hapticImpact('medium');
     try {
-      const updates: Record<string, unknown> = { aspectRatio };
-      if (hasDuration && !isKling) updates.duration = duration;
-      if (hasResolution) updates.resolution = resolution;
+      const updates: Record<string, unknown> = {};
+      if (hasAspect) updates.aspectRatio = aspectRatio;
+      if (hasDuration && !isKling && !isKling30) updates.duration = duration;
+      if (hasResolution && !isKlingMotion) updates.resolution = resolution;
       if (hasAudio) updates.generateAudio = generateAudio;
       if (isVeo) updates.mode = mode;
       if (isSeedance) updates.cameraFixed = cameraFixed;
       if (isKling) {
+        updates.aspectRatio = aspectRatio;
         updates.version = version;
         updates.duration = duration;
         updates.negativePrompt = negativePrompt;
         updates.cfgScale = cfgScale;
         updates.enableAudio = enableAudio;
+      }
+      if (isKling30) {
+        updates.aspectRatio = aspectRatio;
+        updates.duration = duration;
+        updates.qualityMode = qualityMode;
+        updates.sound = sound;
+      }
+      if (isKlingMotion) {
+        updates.resolution = resolution;
+        updates.characterOrientation = characterOrientation;
       }
       await updateModelSettings(modelSlug, updates);
       hapticNotification('success');
@@ -451,36 +504,38 @@ export default function VideoSettingsPage() {
         )}
 
         {/* Aspect Ratio */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: isKling ? 0.15 : 0.05 }}
-          className="mb-5"
-        >
-          <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
-            {t('aspectRatio')}
-          </div>
+        {hasAspect && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: isKling ? 0.15 : 0.05 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('aspectRatio')}
+            </div>
 
-          <div className="rounded-xl bg-video-surface-card border border-white/5 mb-3">
-            <AspectPreview w={selectedAspect.w} h={selectedAspect.h} />
-          </div>
+            <div className="rounded-xl bg-video-surface-card border border-white/5 mb-3">
+              <AspectPreview w={selectedAspect.w} h={selectedAspect.h} />
+            </div>
 
-          <div className="flex flex-wrap" style={{ gap: 8 }}>
-            {availableAspects.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => handleAspectSelect(value)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  aspectRatio === value
-                    ? 'bg-video-primary text-white shadow-video-neon'
-                    : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+            <div className="flex flex-wrap" style={{ gap: 8 }}>
+              {availableAspects.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => handleAspectSelect(value)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    aspectRatio === value
+                      ? 'bg-video-primary text-white shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* ── Kling: Negative Prompt ── */}
         {isKling && (
@@ -583,6 +638,160 @@ export default function VideoSettingsPage() {
                   />
                 </div>
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Kling 3.0: Quality Mode ── */}
+        {isKling30 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('qualityMode')}
+            </div>
+            <div className="space-y-2">
+              {([
+                { value: 'std', labelKey: 'qualityStd', descKey: 'qualityStdDesc', icon: '⚡' },
+                { value: 'pro', labelKey: 'qualityPro', descKey: 'qualityProDesc', icon: '💎' },
+              ] as const).map(({ value, labelKey, descKey, icon }) => (
+                <div
+                  key={value}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setQualityMode(value);
+                  }}
+                  className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                    qualityMode === value
+                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center" style={{ columnGap: 10 }}>
+                    <span className="text-lg">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center" style={{ columnGap: 8 }}>
+                        <span className="font-semibold text-content-primary text-sm">
+                          {t(labelKey as any)}
+                        </span>
+                        {qualityMode === value && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-video-primary/20 text-video-primary font-medium shrink-0">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {t(descKey as any)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Kling 3.0: Sound Toggle ── */}
+        {isKling30 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('soundGeneration')}
+            </div>
+            <div
+              onClick={() => {
+                hapticImpact('light');
+                setSound(!sound);
+              }}
+              className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                sound
+                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center" style={{ columnGap: 10 }}>
+                  <span className="text-lg">{sound ? '🔊' : '🔇'}</span>
+                  <div>
+                    <span className="font-semibold text-content-primary text-sm">
+                      {sound ? t('soundOn') : t('soundOff')}
+                    </span>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      {t('soundDesc')}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
+                    sound ? 'bg-video-primary' : 'bg-white/10'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${
+                      sound ? 'left-6' : 'left-1'
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Motion Control: Character Orientation ── */}
+        {isKlingMotion && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('characterOrientation')}
+            </div>
+            <div className="space-y-2">
+              {([
+                { value: 'image', labelKey: 'orientImage', descKey: 'orientImageDesc', icon: '🖼️' },
+                { value: 'video', labelKey: 'orientVideo', descKey: 'orientVideoDesc', icon: '🎬' },
+              ] as const).map(({ value, labelKey, descKey, icon }) => (
+                <div
+                  key={value}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setCharacterOrientation(value);
+                  }}
+                  className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                    characterOrientation === value
+                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center" style={{ columnGap: 10 }}>
+                    <span className="text-lg">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center" style={{ columnGap: 8 }}>
+                        <span className="font-semibold text-content-primary text-sm">
+                          {t(labelKey as any)}
+                        </span>
+                        {characterOrientation === value && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-video-primary/20 text-video-primary font-medium shrink-0">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {t(descKey as any)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}

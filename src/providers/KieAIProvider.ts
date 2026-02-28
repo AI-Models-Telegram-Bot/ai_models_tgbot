@@ -876,7 +876,10 @@ export class KieAIProvider extends EnhancedProvider {
         prompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         duration: String((options?.duration as number) || 5),
-        sound: true,
+        sound: (options?.sound !== undefined) ? options.sound : true,
+        mode: (options?.qualityMode as string) || 'std',
+        multi_shots: false,
+        multi_prompt: [],
       };
 
       if (inputImageUrls?.length) {
@@ -934,11 +937,11 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         input_urls: [inputImageUrls[0]],
         video_urls: [inputVideoUrl],
-        mode: '720p',
-        character_orientation: 'image',
+        mode: (options?.resolution as string) || '720p',
+        character_orientation: (options?.characterOrientation as string) || 'video',
       };
 
-      if (prompt && prompt.toLowerCase() !== 'go') {
+      if (prompt && prompt.trim()) {
         input.prompt = prompt;
       }
 
@@ -993,11 +996,8 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         image_url: inputImageUrls[0],
         audio_url: inputAudioUrl,
+        prompt: (prompt && prompt.trim()) ? prompt : 'A person speaking naturally',
       };
-
-      if (prompt && prompt.toLowerCase() !== 'go') {
-        input.prompt = prompt;
-      }
 
       logger.info('KieAI Kling Avatar payload:', { model, input });
       const createResponse = await this.client.post('/jobs/createTask', { model, input });

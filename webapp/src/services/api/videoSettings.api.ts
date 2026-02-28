@@ -11,6 +11,9 @@ export interface VideoModelSettings {
   enableAudio?: boolean;
   mode?: string;
   cameraFixed?: boolean;
+  qualityMode?: string;
+  sound?: boolean;
+  characterOrientation?: string;
 }
 
 export interface VideoSettingsResponse {

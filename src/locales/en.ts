@@ -474,7 +474,7 @@ Fee: ⚡20–80 tokens (depends on duration)`,
 
 Animate a photo using motion from a reference video. The character in your photo will repeat the movements from the video.
 
-📸 Upload 1 photo + 🎥 1 video, then send a ✍️ text prompt (optional) 👇
+📸 Upload 1 photo + 🎥 1 video, then tap ▶️ Generate or send a ✍️ text prompt 👇
 
 Fee: ⚡35 tokens`,
 
@@ -482,7 +482,7 @@ Fee: ⚡35 tokens`,
 
 Create a talking-head video from a photo and audio. Premium quality with natural lip sync.
 
-📸 Upload 1 photo + 🎵 1 audio file, then send a ✍️ text prompt (optional) 👇
+📸 Upload 1 photo + 🎵 1 audio file (mp3, wav, m4a), then tap ▶️ Generate or send a ✍️ text prompt 👇
 
 Fee: ⚡40 tokens`,
 
@@ -490,7 +490,7 @@ Fee: ⚡40 tokens`,
 
 Create a talking-head video from a photo and audio. Standard quality, more affordable.
 
-📸 Upload 1 photo + 🎵 1 audio file, then send a ✍️ text prompt (optional) 👇
+📸 Upload 1 photo + 🎵 1 audio file (mp3, wav, m4a), then tap ▶️ Generate or send a ✍️ text prompt 👇
 
 Fee: ⚡25 tokens`,
 
