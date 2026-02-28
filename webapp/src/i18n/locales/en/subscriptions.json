@@ -23,6 +23,8 @@
   "getStarted": "Get Started",
   "prioritySupport": "Priority Support",
   "referralBonus": "Referral Bonus",
+  "tokenReferral": "Token Referral",
+  "cashReferral": "Cash Referral",
   "categories": {
     "text": "Text Models",
     "image": "Image Generation",

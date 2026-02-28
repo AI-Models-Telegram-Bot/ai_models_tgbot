@@ -23,6 +23,8 @@
   "getStarted": "Начать",
   "prioritySupport": "Приоритетная поддержка",
   "referralBonus": "Реферальный бонус",
+  "tokenReferral": "Реферал в токенах",
+  "cashReferral": "Реферал в деньгах",
   "categories": {
     "text": "Текстовые модели",
     "image": "Генерация изображений",

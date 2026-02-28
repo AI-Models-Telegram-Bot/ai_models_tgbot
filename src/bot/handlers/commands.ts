@@ -108,7 +108,7 @@ export async function handleProfile(ctx: BotContext): Promise<void> {
     await sendTrackedMessage(ctx, message, {
       parse_mode: 'HTML',
       ...Markup.inlineKeyboard([
-        Markup.button.webApp('Open Full Profile', config.webapp.url),
+        Markup.button.webApp('Open Full Profile', `${config.webapp.url}?v=2`),
       ]),
     });
   } else {

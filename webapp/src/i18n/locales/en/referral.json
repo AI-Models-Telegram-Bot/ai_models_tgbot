@@ -1,16 +1,36 @@
 {
   "title": "Referral Program",
-  "description": "Share your referral link with friends and earn bonus tokens when they join!",
+  "description": "Invite friends and earn commissions on every subscription they purchase!",
+  "commissionMode": "Commission Mode",
+  "inTokens": "in tokens",
+  "inCash": "in cash",
+  "modeError": "Failed to switch mode",
   "yourLink": "Your Referral Link",
   "share": "Share",
   "shareText": "Join me on AI Models Bot and get free tokens!",
   "copyLink": "Copy Link",
-  "benefits": "Benefits",
+  "benefits": "Signup Bonuses",
   "bonusDescription": "{{percentage}}% bonus tokens per referral",
+  "withdrawSuccess": "Withdrawal request submitted",
+  "withdrawError": "Withdrawal failed",
   "stats": {
     "invited": "Invited",
     "earned": "Earned",
     "earnedUnit": "tokens",
-    "bonus": "Bonus"
+    "bonus": "Bonus",
+    "tokensEarned": "Tokens",
+    "cashEarned": "Cash"
+  },
+  "withdrawal": {
+    "title": "Withdrawal",
+    "available": "Available",
+    "pending": "Pending",
+    "request": "Withdraw",
+    "minimum": "Minimum: {{amount}} {{currency}}",
+    "history": "Withdrawal History",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusPaid": "Paid"
   }
 }

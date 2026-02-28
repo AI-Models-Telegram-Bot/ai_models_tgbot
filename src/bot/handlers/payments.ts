@@ -1,5 +1,6 @@
 import { BotContext } from '../types';
 import { subscriptionService } from '../../services/SubscriptionService';
+import { referralCommissionService } from '../../services/ReferralCommissionService';
 import { logger } from '../../utils/logger';
 import { SubscriptionTier } from '@prisma/client';
 
@@ -75,6 +76,15 @@ export async function handleSuccessfulPayment(ctx: BotContext) {
       };
 
       await ctx.reply(messages[lang], { parse_mode: 'Markdown' });
+
+      // Process referral commission (Stars → USD at ~$0.02/star)
+      const starsUsd = payment.total_amount * 0.02;
+      await referralCommissionService.processCommission({
+        payingUserId: payload.userId,
+        paymentAmount: starsUsd,
+        paymentCurrency: 'USD',
+        tier: payload.tier,
+      });
 
       logger.info('Subscription upgraded after payment', {
         userId: payload.userId,
