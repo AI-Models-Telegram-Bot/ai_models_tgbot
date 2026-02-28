@@ -10,6 +10,7 @@ import {
   Send,
   Terminal,
   Server,
+  Wallet,
   Settings,
   LogOut,
   Shield,
@@ -28,6 +29,7 @@ export default function Sidebar() {
     { to: '/providers', icon: Server, label: t('sidebar.providers') },
     { to: '/audit-logs', icon: FileText, label: t('sidebar.auditLogs') },
     { to: '/broadcasts', icon: Send, label: t('sidebar.broadcasts') },
+    { to: '/withdrawals', icon: Wallet, label: t('sidebar.withdrawals') },
     { to: '/logs', icon: Terminal, label: t('sidebar.systemLogs') },
     { to: '/settings', icon: Settings, label: t('sidebar.settings') },
   ];

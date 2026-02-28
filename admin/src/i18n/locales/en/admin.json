@@ -32,6 +32,7 @@
     "providers": "Providers",
     "auditLogs": "Audit Logs",
     "broadcasts": "Broadcasts",
+    "withdrawals": "Withdrawals",
     "systemLogs": "System Logs",
     "settings": "Settings"
   },
@@ -259,6 +260,27 @@
     "passwordChangeFailed": "Failed to change password",
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 12 characters"
+  },
+  "withdrawals": {
+    "title": "Withdrawal Requests",
+    "pendingRequests": "Pending Requests",
+    "totalPaid": "Total Paid",
+    "totalRequests": "Total Requests",
+    "user": "User",
+    "amount": "Amount",
+    "status": "Status",
+    "adminNote": "Admin Note",
+    "date": "Date",
+    "actions": "Actions",
+    "approve": "Approve",
+    "reject": "Reject",
+    "markPaid": "Mark as Paid",
+    "approveRequest": "Approve Withdrawal",
+    "rejectRequest": "Reject Withdrawal",
+    "markAsPaid": "Mark as Paid",
+    "notePlaceholder": "Admin note (optional)...",
+    "updated": "Withdrawal updated",
+    "actionFailed": "Action failed"
   },
   "language": {
     "en": "EN",

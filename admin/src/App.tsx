@@ -13,6 +13,7 @@ import Broadcasts from './pages/Broadcasts';
 import BroadcastCompose from './pages/BroadcastCompose';
 import Logs from './pages/Logs';
 import Providers from './pages/Providers';
+import Withdrawals from './pages/Withdrawals';
 import Settings from './pages/Settings';
 
 const queryClient = new QueryClient({
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="/broadcasts" element={<Broadcasts />} />
             <Route path="/broadcasts/new" element={<BroadcastCompose />} />
             <Route path="/broadcasts/:id" element={<BroadcastCompose />} />
+            <Route path="/withdrawals" element={<Withdrawals />} />
             <Route path="/logs" element={<Logs />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

@@ -207,15 +207,22 @@ router.get('/stats', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/stats/charts', async (_req: Request, res: Response) => {
+router.get('/stats/charts', async (req: Request, res: Response) => {
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const range = (req.query.range as string) || '30d';
+    let since: Date;
+    switch (range) {
+      case '24h': since = new Date(Date.now() - 24 * 60 * 60 * 1000); break;
+      case '7d': since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); break;
+      case 'all': since = new Date(0); break;
+      default: since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    }
 
     // User growth (daily new users)
     const userGrowth = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
       SELECT DATE(created_at) as date, COUNT(*) as count
       FROM users
-      WHERE created_at >= ${thirtyDaysAgo}
+      WHERE created_at >= ${since}
       GROUP BY DATE(created_at)
       ORDER BY date
     `;
@@ -225,7 +232,7 @@ router.get('/stats/charts', async (_req: Request, res: Response) => {
       SELECT DATE(r.created_at) as date, COUNT(*) as count, m.category
       FROM requests r
       JOIN ai_models m ON r.model_id = m.id
-      WHERE r.created_at >= ${thirtyDaysAgo}
+      WHERE r.created_at >= ${since}
       GROUP BY DATE(r.created_at), m.category
       ORDER BY date
     `;
@@ -234,7 +241,7 @@ router.get('/stats/charts', async (_req: Request, res: Response) => {
     const revenueByDay = await prisma.$queryRaw<{ date: string; total: number }[]>`
       SELECT DATE(created_at) as date, SUM(amount) as total
       FROM payments
-      WHERE status = 'SUCCEEDED' AND created_at >= ${thirtyDaysAgo}
+      WHERE status = 'SUCCEEDED' AND created_at >= ${since}
       GROUP BY DATE(created_at)
       ORDER BY date
     `;
@@ -616,6 +623,110 @@ router.post('/users/:id/update', requireRole('SUPER_ADMIN', 'ADMIN'), async (req
     return res.json({ ok: true });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// ── Withdrawal Requests ──────────────────────────────────
+
+router.get('/withdrawals', async (req: Request, res: Response) => {
+  try {
+    const statusFilter = req.query.status as string | undefined;
+    const where: any = {};
+    if (statusFilter) where.status = statusFilter;
+
+    const [withdrawals, pending, totalPaid] = await Promise.all([
+      prisma.withdrawalRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: 200,
+        include: { user: { select: { id: true, username: true, firstName: true, telegramId: true } } },
+      }),
+      prisma.withdrawalRequest.aggregate({
+        where: { status: 'PENDING' },
+        _count: true,
+        _sum: { amount: true },
+      }),
+      prisma.withdrawalRequest.aggregate({
+        where: { status: 'PAID' },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    return res.json(serializeBigInt({
+      withdrawals,
+      stats: {
+        pending: pending._count,
+        totalPending: pending._sum.amount || 0,
+        totalPaid: totalPaid._sum.amount || 0,
+      },
+    }));
+  } catch (err: any) {
+    logger.error('Withdrawals list error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch withdrawals' });
+  }
+});
+
+router.post('/withdrawals/:id/approve', requireRole('SUPER_ADMIN', 'ADMIN'), async (req: Request, res: Response) => {
+  try {
+    await prisma.withdrawalRequest.update({
+      where: { id: req.params.id },
+      data: { status: 'APPROVED', adminNote: req.body.adminNote || null },
+    });
+    await logAudit(req.adminUser!.id, 'APPROVE_WITHDRAWAL', {
+      targetType: 'withdrawal',
+      targetId: req.params.id,
+      details: { adminNote: req.body.adminNote },
+      ipAddress: getClientIp(req),
+    });
+    return res.json({ ok: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to approve withdrawal' });
+  }
+});
+
+router.post('/withdrawals/:id/reject', requireRole('SUPER_ADMIN', 'ADMIN'), async (req: Request, res: Response) => {
+  try {
+    const wr = await prisma.withdrawalRequest.findUnique({ where: { id: req.params.id } });
+    if (!wr) return res.status(404).json({ error: 'Not found' });
+
+    await prisma.withdrawalRequest.update({
+      where: { id: req.params.id },
+      data: { status: 'REJECTED', adminNote: req.body.adminNote || null },
+    });
+
+    // Refund the money back to user wallet
+    await prisma.userWallet.update({
+      where: { userId: wr.userId },
+      data: { moneyBalance: { increment: wr.amount } },
+    });
+
+    await logAudit(req.adminUser!.id, 'REJECT_WITHDRAWAL', {
+      targetType: 'withdrawal',
+      targetId: req.params.id,
+      details: { amount: wr.amount, adminNote: req.body.adminNote },
+      ipAddress: getClientIp(req),
+    });
+    return res.json({ ok: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to reject withdrawal' });
+  }
+});
+
+router.post('/withdrawals/:id/paid', requireRole('SUPER_ADMIN', 'ADMIN'), async (req: Request, res: Response) => {
+  try {
+    await prisma.withdrawalRequest.update({
+      where: { id: req.params.id },
+      data: { status: 'PAID', paidAt: new Date(), adminNote: req.body.adminNote || null },
+    });
+    await logAudit(req.adminUser!.id, 'PAY_WITHDRAWAL', {
+      targetType: 'withdrawal',
+      targetId: req.params.id,
+      details: { adminNote: req.body.adminNote },
+      ipAddress: getClientIp(req),
+    });
+    return res.json({ ok: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to mark withdrawal as paid' });
   }
 });
 
