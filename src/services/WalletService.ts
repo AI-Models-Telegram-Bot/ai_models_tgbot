@@ -320,6 +320,56 @@ export class WalletService {
   }
 
   /**
+   * Add money to user wallet (cash referral earnings, etc.)
+   * Category is always MONEY for real currency operations.
+   */
+  async addMoney(
+    userId: string,
+    amount: number,
+    currency: string,
+    transactionType: WalletTransactionType,
+    meta?: {
+      description?: string;
+      paymentId?: string;
+      metadata?: Record<string, unknown>;
+    }
+  ) {
+    return await prisma.$transaction(async (tx) => {
+      const wallet = await tx.userWallet.findUnique({ where: { userId } });
+      if (!wallet) throw new Error('Wallet not found');
+
+      const currentBalance = wallet.moneyBalance;
+      const newBalance = currentBalance + amount;
+
+      await tx.userWallet.update({
+        where: { userId },
+        data: { moneyBalance: newBalance, currency },
+      });
+
+      const transaction = await tx.walletTransaction.create({
+        data: {
+          userId,
+          category: 'MONEY',
+          transactionType,
+          amount,
+          balanceBefore: currentBalance,
+          balanceAfter: newBalance,
+          description: meta?.description,
+          paymentId: meta?.paymentId,
+          metadata: meta?.metadata as any,
+        },
+      });
+
+      logger.info(`Added ${amount} ${currency} to user ${userId} money balance`, {
+        transactionId: transaction.id,
+        newBalance,
+      });
+
+      return { wallet, transaction };
+    });
+  }
+
+  /**
    * Grant initial tokens to new user wallet (signup bonus)
    */
   async grantSignupBonus(userId: string, amount: number) {

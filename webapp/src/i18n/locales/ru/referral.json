@@ -1,16 +1,36 @@
 {
   "title": "Партнёрская программа",
-  "description": "Поделитесь реферальной ссылкой с друзьями и получайте бонусные токены!",
+  "description": "Приглашайте друзей и получайте комиссию с каждой их подписки!",
+  "commissionMode": "Режим комиссии",
+  "inTokens": "в токенах",
+  "inCash": "в деньгах",
+  "modeError": "Не удалось сменить режим",
   "yourLink": "Ваша реферальная ссылка",
   "share": "Поделиться",
   "shareText": "Присоединяйся к AI Models Bot и получи бесплатные токены!",
   "copyLink": "Скопировать",
-  "benefits": "Привилегии",
+  "benefits": "Бонусы за регистрацию",
   "bonusDescription": "{{percentage}}% бонусных токенов за реферала",
+  "withdrawSuccess": "Заявка на вывод отправлена",
+  "withdrawError": "Ошибка вывода",
   "stats": {
     "invited": "Приглашено",
     "earned": "Заработано",
     "earnedUnit": "токенов",
-    "bonus": "Бонус"
+    "bonus": "Бонус",
+    "tokensEarned": "Токены",
+    "cashEarned": "Деньги"
+  },
+  "withdrawal": {
+    "title": "Вывод средств",
+    "available": "Доступно",
+    "pending": "В обработке",
+    "request": "Вывести",
+    "minimum": "Минимум: {{amount}} {{currency}}",
+    "history": "История выводов",
+    "statusPending": "В ожидании",
+    "statusApproved": "Одобрено",
+    "statusRejected": "Отклонено",
+    "statusPaid": "Выплачено"
   }
 }

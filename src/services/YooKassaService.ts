@@ -6,6 +6,7 @@ import { prisma } from '../config/database';
 import { config } from '../config';
 import { getPlanByTier } from '../config/subscriptions';
 import { subscriptionService } from './SubscriptionService';
+import { referralCommissionService } from './ReferralCommissionService';
 import { logger } from '../utils/logger';
 
 const YOOKASSA_API_URL = 'https://api.yookassa.ru/v3';
@@ -284,6 +285,21 @@ export class YooKassaService {
           userId,
           tier,
         });
+
+        // Process referral commission for referred users
+        const paymentRecord = await prisma.payment.findUnique({
+          where: { id: paymentId },
+          select: { amount: true, currency: true },
+        });
+        if (paymentRecord) {
+          await referralCommissionService.processCommission({
+            payingUserId: userId,
+            paymentAmount: paymentRecord.amount,
+            paymentCurrency: paymentRecord.currency,
+            tier,
+            paymentId,
+          });
+        }
 
         // Send Telegram notification to the user
         await this.sendPaymentNotification(userId, tier);

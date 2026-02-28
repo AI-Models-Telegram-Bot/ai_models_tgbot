@@ -123,7 +123,7 @@ export async function handleModelSelection(ctx: BotContext, modelSlug: string): 
       const upgradeText = lang === 'ru' ? '⬆️ Улучшить тариф' : '⬆️ Upgrade Plan';
       await ctx.reply(lang === 'ru' ? 'Обновите подписку для доступа к этой модели.' : 'Upgrade your subscription to access this model.', {
         ...Markup.inlineKeyboard([
-          Markup.button.webApp(upgradeText, config.webapp.url),
+          Markup.button.webApp(upgradeText, `${config.webapp.url}?v=2`),
         ]),
       });
     }

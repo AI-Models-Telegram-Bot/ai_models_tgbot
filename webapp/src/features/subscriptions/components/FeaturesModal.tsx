@@ -234,9 +234,14 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
             </span>
           )}
           {plan.referralBonus > 0 && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-secondary/10 text-brand-secondary text-xs font-medium">
-              {plan.referralBonus}% {t('subscriptions:referralBonus', 'Referral Bonus')}
-            </span>
+            <>
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-medium">
+                35% {t('subscriptions:tokenReferral', 'Token Referral')}
+              </span>
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-medium">
+                15% {t('subscriptions:cashReferral', 'Cash Referral')}
+              </span>
+            </>
           )}
         </div>
       </div>

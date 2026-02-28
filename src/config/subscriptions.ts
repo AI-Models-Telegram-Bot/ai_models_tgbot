@@ -1,3 +1,15 @@
+/** Referral commission rates when a referred user pays for a subscription */
+export const REFERRAL_COMMISSION = {
+  TOKEN_PERCENT: 35, // Option A: 35% of plan tokens
+  CASH_PERCENT: 15,  // Option B: 15% of payment amount in cash
+} as const;
+
+/** Minimum withdrawal thresholds */
+export const WITHDRAWAL_THRESHOLDS = {
+  RUB: 500,
+  USD: 5,
+} as const;
+
 export enum SubscriptionTier {
   FREE = 'FREE',
   STARTER = 'STARTER',

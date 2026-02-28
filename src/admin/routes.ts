@@ -1262,4 +1262,110 @@ async function sendBroadcastAsync(
   }
 }
 
+// ── Withdrawal Management ──────────────────────────────────
+
+router.get('/withdrawals', adminAuth, async (req: Request, res: Response) => {
+  try {
+    const status = req.query.status as string | undefined;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 50));
+
+    const where: any = {};
+    if (status) where.status = status;
+
+    const [withdrawals, total] = await Promise.all([
+      prisma.withdrawalRequest.findMany({
+        where,
+        include: {
+          user: { select: { id: true, username: true, firstName: true, email: true, telegramId: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip: (page - 1) * limit,
+      }),
+      prisma.withdrawalRequest.count({ where }),
+    ]);
+
+    res.json({
+      withdrawals: withdrawals.map((w) => ({
+        ...w,
+        user: w.user ? { ...w.user, telegramId: w.user.telegramId?.toString() } : null,
+      })),
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/withdrawals/:id', adminAuth, requireRole('SUPER_ADMIN'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { action, adminNote } = req.body as { action: 'approve' | 'reject' | 'paid'; adminNote?: string };
+
+    if (!['approve', 'reject', 'paid'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Use approve, reject, or paid.' });
+    }
+
+    const withdrawal = await prisma.withdrawalRequest.findUnique({ where: { id } });
+    if (!withdrawal) {
+      return res.status(404).json({ error: 'Withdrawal request not found' });
+    }
+
+    if (action === 'approve') {
+      if (withdrawal.status !== 'PENDING') {
+        return res.status(400).json({ error: 'Can only approve PENDING requests' });
+      }
+      await prisma.withdrawalRequest.update({
+        where: { id },
+        data: { status: 'APPROVED', adminNote },
+      });
+    } else if (action === 'reject') {
+      if (!['PENDING', 'APPROVED'].includes(withdrawal.status)) {
+        return res.status(400).json({ error: 'Can only reject PENDING or APPROVED requests' });
+      }
+      // Refund the money back to user wallet
+      await prisma.$transaction(async (tx) => {
+        const wallet = await tx.userWallet.findUnique({ where: { userId: withdrawal.userId } });
+        if (wallet) {
+          await tx.userWallet.update({
+            where: { userId: withdrawal.userId },
+            data: { moneyBalance: wallet.moneyBalance + withdrawal.amount },
+          });
+          await tx.walletTransaction.create({
+            data: {
+              userId: withdrawal.userId,
+              category: 'MONEY',
+              transactionType: 'REFUND',
+              amount: withdrawal.amount,
+              balanceBefore: wallet.moneyBalance,
+              balanceAfter: wallet.moneyBalance + withdrawal.amount,
+              description: `Withdrawal rejected: ${adminNote || 'No reason'}`,
+            },
+          });
+        }
+        await tx.withdrawalRequest.update({
+          where: { id },
+          data: { status: 'REJECTED', adminNote },
+        });
+      });
+    } else if (action === 'paid') {
+      if (withdrawal.status !== 'APPROVED') {
+        return res.status(400).json({ error: 'Can only mark APPROVED requests as paid' });
+      }
+      await prisma.withdrawalRequest.update({
+        where: { id },
+        data: { status: 'PAID', adminNote, paidAt: new Date() },
+      });
+    }
+
+    await logAudit(req, 'WITHDRAWAL_UPDATE', { withdrawalId: id, action, adminNote });
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

@@ -19,6 +19,7 @@ model User {
   totalSpent      Float         @default(0) @map("total_spent")
   referralCode    String        @unique @map("referral_code")
   referredBy      String?       @map("referred_by")
+  referralMode    ReferralMode  @default(TOKENS) @map("referral_mode")
   isBlocked       Boolean       @default(false) @map("is_blocked")
   isAdmin         Boolean       @default(false) @map("is_admin")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -46,6 +47,7 @@ model User {
   webAuthTokens       WebAuthToken[]
   conversations       Conversation[]
   payments            Payment[]
+  withdrawalRequests  WithdrawalRequest[]
 
   @@map("users")
 }
@@ -54,6 +56,11 @@ enum AuthProvider {
   TELEGRAM
   EMAIL
   GOOGLE
+}
+
+enum ReferralMode {
+  TOKENS
+  CASH
 }
 
 // ── Multi-Wallet System ──────────────────────────────────
@@ -144,6 +151,7 @@ enum WalletTransactionType {
   ADMIN_ADD
   ADMIN_REMOVE
   TRANSFER
+  REFERRAL_COMMISSION
 }
 
 // ── Existing Models (kept for compatibility) ─────────────
@@ -491,6 +499,32 @@ model Payment {
   @@index([userId, createdAt])
   @@index([externalId])
   @@map("payments")
+}
+
+// ── Withdrawal Requests ─────────────────────────────────
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model WithdrawalRequest {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  currency  String           @default("RUB")
+  status    WithdrawalStatus @default(PENDING)
+  adminNote String?          @map("admin_note")
+  paidAt    DateTime?        @map("paid_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("withdrawal_requests")
 }
 
 // ── Admin Panel ────────────────────────────────────────

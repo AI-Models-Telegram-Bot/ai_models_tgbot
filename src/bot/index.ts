@@ -287,7 +287,7 @@ export function createBot(): Telegraf<BotContext> {
       menuButton: {
         type: 'web_app',
         text: 'Profile',
-        web_app: { url: config.webapp.url },
+        web_app: { url: `${config.webapp.url}?v=2` },
       },
     }).catch((err) => logger.warn('Failed to set menu button', err));
   }

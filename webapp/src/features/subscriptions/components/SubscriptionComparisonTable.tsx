@@ -26,7 +26,7 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
     { label: t('price'), getValue: (p: SubscriptionPlan) => p.priceUSD === null ? t('custom') : p.priceUSD === 0 ? t('free') : `$${p.priceUSD}` },
     { label: t('tokens'), getValue: (p: SubscriptionPlan) => formatValue(p.tokens) },
     { label: t('prioritySupport'), getValue: (p: SubscriptionPlan) => formatValue(p.prioritySupport) },
-    { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => `${p.referralBonus}%` },
+    { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => p.referralBonus > 0 ? '35% / 15%' : '—' },
   ];
 
   return (
