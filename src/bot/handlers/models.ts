@@ -18,18 +18,20 @@ import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 
 /**
- * Media-group debounce: when user sends multiple photos at once (album),
- * Telegram delivers them as separate messages sharing the same media_group_id.
- * We collect all URLs silently and send ONE acknowledgment after a short delay.
+ * Per-user image upload debounce.
+ * Accumulates image URLs in memory (not session) to avoid race conditions
+ * when multiple photos arrive concurrently (albums / rapid sends).
+ * After debounce fires, reads fresh session from Redis, appends all URLs atomically.
  */
-interface PendingMediaGroup {
+interface PendingImageUpload {
   timer: ReturnType<typeof setTimeout>;
-  count: number; // how many photos were added in this batch
-  ctx: BotContext; // last ctx — used for sending the reply
-  caption?: string; // caption from any photo in the group (Telegram only attaches caption to the first)
+  urls: string[];
+  ctx: BotContext;
+  caption?: string;
+  isImageModelWithInput: boolean;
 }
-const pendingMediaGroups = new Map<string, PendingMediaGroup>();
-const MEDIA_GROUP_DEBOUNCE_MS = 600;
+const pendingImageUploads = new Map<number, PendingImageUpload>(); // keyed by ctx.from.id
+const IMAGE_UPLOAD_DEBOUNCE_MS = 800;
 
 /** Image models that accept a reference image for editing (not just text prompt) */
 const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-banana-pro', 'nano-banana-2', 'midjourney', 'seedream', 'seedream-4.5'];
@@ -46,7 +48,8 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
  */
 const MODEL_MAX_IMAGES: Record<string, number> = {
   // Video models
-  'kling': 4, 'kling-pro': 4,
+  'kling': 4, 'kling-pro': 4, 'kling-3.0': 4,
+  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1,
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
   'seedance': 2, 'seedance-lite': 2, 'seedance-1-pro': 2, 'seedance-fast': 2,
@@ -79,6 +82,123 @@ async function cleanUpImageUploadMessages(ctx: BotContext): Promise<void> {
     } catch { /* message may already be deleted */ }
   }
   ctx.session!.imageUploadMsgIds = undefined;
+}
+
+const SESSION_PREFIX = 'sess:';
+const SESSION_TTL = 86400;
+
+/**
+ * Add an image URL to the per-user debounce buffer.
+ * After IMAGE_UPLOAD_DEBOUNCE_MS of no new photos, flushes all URLs to Redis session atomically.
+ */
+function enqueueImageUrl(
+  ctx: BotContext,
+  imageUrl: string,
+  caption: string | undefined,
+  isImageModelWithInput: boolean,
+): void {
+  const userId = ctx.from!.id;
+  const existing = pendingImageUploads.get(userId);
+
+  if (existing) {
+    clearTimeout(existing.timer);
+    existing.urls.push(imageUrl);
+    existing.ctx = ctx;
+    if (caption) existing.caption = caption;
+  } else {
+    pendingImageUploads.set(userId, {
+      urls: [imageUrl],
+      ctx,
+      caption,
+      isImageModelWithInput,
+      timer: undefined as any,
+    });
+  }
+
+  const entry = pendingImageUploads.get(userId)!;
+  entry.timer = setTimeout(() => {
+    pendingImageUploads.delete(userId);
+    flushImageUploads(entry)
+      .catch((err: any) => logger.error('Image upload flush failed', { err }));
+  }, IMAGE_UPLOAD_DEBOUNCE_MS);
+}
+
+/**
+ * Flush buffered image URLs to Redis session atomically.
+ * Reads fresh session from Redis (avoiding stale reads), appends URLs, saves back.
+ * Called from debounce timer (outside Telegraf middleware lifecycle).
+ */
+async function flushImageUploads(entry: PendingImageUpload): Promise<void> {
+  const { urls, ctx, caption, isImageModelWithInput } = entry;
+  const userId = ctx.from!.id;
+  const redis = getRedis();
+  const sessionKey = `${SESSION_PREFIX}${userId}`;
+
+  // Read fresh session from Redis (avoids race condition with concurrent handlers)
+  const raw = await redis.get(sessionKey);
+  const session = raw ? JSON.parse(raw) : {};
+
+  // Enforce per-model image limits
+  const activeModel = session.imageFunction || session.videoFunction;
+  const maxImages = getMaxImages(activeModel);
+
+  if (!session.uploadedImageUrls) {
+    session.uploadedImageUrls = [];
+  }
+
+  const remaining = maxImages - session.uploadedImageUrls.length;
+  const urlsToAdd = urls.slice(0, Math.max(0, remaining));
+
+  if (urlsToAdd.length === 0) return;
+
+  session.uploadedImageUrls.push(...urlsToAdd);
+
+  // Sync in-memory ctx.session so sendImageAcknowledgment sees correct count
+  if (ctx.session) {
+    ctx.session.uploadedImageUrls = session.uploadedImageUrls;
+    ctx.session.imageUploadMsgIds = session.imageUploadMsgIds;
+  }
+
+  // Clean up old ack messages + send new acknowledgment
+  await cleanUpImageUploadMessages(ctx);
+  await sendImageAcknowledgment(ctx, isImageModelWithInput, caption);
+
+  // Persist session (including new imageUploadMsgIds from ack) back to Redis
+  session.imageUploadMsgIds = ctx.session?.imageUploadMsgIds;
+  await redis.set(sessionKey, JSON.stringify(session), 'EX', SESSION_TTL);
+
+  // Update ctx.session so the Telegraf middleware doesn't overwrite with stale data
+  if (ctx.session) {
+    Object.assign(ctx.session, session);
+  }
+}
+
+/**
+ * Force-flush any pending image uploads for a user.
+ * Call before generation or navigation to ensure all buffered URLs are committed.
+ */
+async function forceFlushPendingUploads(ctx: BotContext): Promise<void> {
+  if (!ctx.from) return;
+  const pending = pendingImageUploads.get(ctx.from.id);
+  if (!pending) return;
+
+  clearTimeout(pending.timer);
+  pendingImageUploads.delete(ctx.from.id);
+  await flushImageUploads(pending);
+
+  // Re-read session since flushImageUploads wrote to Redis directly
+  const redis = getRedis();
+  const raw = await redis.get(`${SESSION_PREFIX}${ctx.from.id}`);
+  if (raw) ctx.session = JSON.parse(raw);
+}
+
+/** Clear any pending image upload buffer for a user (no flush) */
+function clearPendingUploads(userId: number): void {
+  const pending = pendingImageUploads.get(userId);
+  if (pending) {
+    clearTimeout(pending.timer);
+    pendingImageUploads.delete(userId);
+  }
 }
 
 function formatCredits(amount: number): string {
@@ -229,64 +349,15 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // Enforce per-model image limits (both image editing and video models)
-  const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
-  const maxImages = getMaxImages(activeModel);
-  const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
-
-  if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
-    // If part of a media group, silently skip excess images (the batched reply will show the capped count)
-    if (mediaGroupId) return;
-    const msg = maxImages === 1
-      ? (lang === 'ru'
-          ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
-          : '⚠️ This model supports only 1 image. Send ✍️ a text prompt.')
-      : (lang === 'ru'
-          ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
-          : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
-    await ctx.reply(msg);
-    return;
-  }
-
   // Get the largest photo (last element in the array)
   const photo = ctx.message.photo[ctx.message.photo.length - 1];
   try {
     const fileLink = await ctx.telegram.getFileLink(photo.file_id);
     const imageUrl = fileLink.href;
-
-    if (!ctx.session.uploadedImageUrls) {
-      ctx.session.uploadedImageUrls = [];
-    }
-    ctx.session.uploadedImageUrls.push(imageUrl);
-
-    // Media-group batching: if this photo is part of an album, debounce the reply
     const caption = ctx.message.caption;
 
-    if (mediaGroupId) {
-      const existing = pendingMediaGroups.get(mediaGroupId);
-      if (existing) {
-        clearTimeout(existing.timer);
-        existing.count += 1;
-        existing.ctx = ctx; // use latest ctx for reply
-        if (caption) existing.caption = caption;
-      }
-      const entry: PendingMediaGroup = existing || {
-        count: 1,
-        ctx,
-        caption,
-        timer: undefined as any,
-      };
-      entry.timer = setTimeout(() => {
-        pendingMediaGroups.delete(mediaGroupId);
-        sendImageAcknowledgment(entry.ctx, isImageModelWithInput, entry.caption)
-          .catch((err: any) => logger.error('Media group ack failed', { err }));
-      }, MEDIA_GROUP_DEBOUNCE_MS);
-      if (!existing) pendingMediaGroups.set(mediaGroupId, entry);
-      return; // don't send reply yet — wait for debounce
-    }
-
-    // Single photo (no media group) — respond immediately
-    await sendImageAcknowledgment(ctx, isImageModelWithInput, caption);
+    // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
+    enqueueImageUrl(ctx, imageUrl, caption, isImageModelWithInput);
   } catch (error) {
     logger.error('Failed to get file link for photo:', error);
     const msg = lang === 'ru'
@@ -421,60 +492,13 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // Enforce per-model image limits (both image editing and video models)
-  const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
-  const maxImages = getMaxImages(activeModel);
-  const mediaGroupId = (ctx.message as any).media_group_id as string | undefined;
-
-  if (ctx.session.uploadedImageUrls?.length && ctx.session.uploadedImageUrls.length >= maxImages) {
-    if (mediaGroupId) return; // silently skip excess in album
-    const msg = maxImages === 1
-      ? (lang === 'ru'
-          ? '⚠️ Эта модель поддерживает только 1 изображение. Отправьте ✍️ текстовый запрос.'
-          : '⚠️ This model supports only 1 image. Send ✍️ a text prompt.')
-      : (lang === 'ru'
-          ? `⚠️ Максимум ${maxImages} изображений. Отправьте ✍️ текстовый запрос.`
-          : `⚠️ Maximum ${maxImages} images. Send ✍️ a text prompt.`);
-    await ctx.reply(msg);
-    return;
-  }
-
   try {
     const fileLink = await ctx.telegram.getFileLink(doc.file_id);
     const imageUrl = fileLink.href;
-
-    if (!ctx.session.uploadedImageUrls) {
-      ctx.session.uploadedImageUrls = [];
-    }
-    ctx.session.uploadedImageUrls.push(imageUrl);
-
-    // Media-group batching (same as handlePhotoInput)
     const caption = ctx.message.caption;
 
-    if (mediaGroupId) {
-      const existing = pendingMediaGroups.get(mediaGroupId);
-      if (existing) {
-        clearTimeout(existing.timer);
-        existing.count += 1;
-        existing.ctx = ctx;
-        if (caption) existing.caption = caption;
-      }
-      const entry: PendingMediaGroup = existing || {
-        count: 1,
-        ctx,
-        caption,
-        timer: undefined as any,
-      };
-      entry.timer = setTimeout(() => {
-        pendingMediaGroups.delete(mediaGroupId);
-        sendImageAcknowledgment(entry.ctx, isImageModelWithInput, entry.caption)
-          .catch((err: any) => logger.error('Media group ack failed', { err }));
-      }, MEDIA_GROUP_DEBOUNCE_MS);
-      if (!existing) pendingMediaGroups.set(mediaGroupId, entry);
-      return;
-    }
-
-    await sendImageAcknowledgment(ctx, isImageModelWithInput, caption);
+    // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
+    enqueueImageUrl(ctx, imageUrl, caption, isImageModelWithInput);
   } catch (error) {
     logger.error('Failed to get file link for document:', error);
     const msg = lang === 'ru'
@@ -508,6 +532,7 @@ export async function handleUserInput(ctx: BotContext): Promise<void> {
   ];
 
   if (cancelButtons.some(btn => input === btn)) {
+    if (ctx.from) clearPendingUploads(ctx.from.id);
     ctx.session.awaitingInput = false;
     ctx.session.selectedModel = undefined;
     ctx.session.uploadedImageUrls = undefined;
@@ -547,6 +572,9 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   } catch (err) {
     logger.warn('Concurrent generation check failed, proceeding', { err });
   }
+
+  // Force-flush any pending image uploads before starting generation
+  await forceFlushPendingUploads(ctx);
 
   // Clean up "image added" messages — no longer needed once generation starts
   await cleanUpImageUploadMessages(ctx);
@@ -712,6 +740,8 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
       telegramId: ctx.from?.id,
       settingsApplied: videoOptions || imageOptions || audioOptions || undefined,
       ...(inputImageUrls && { inputImageUrls }),
+      ...(ctx.session.uploadedVideoUrl && { inputVideoUrl: ctx.session.uploadedVideoUrl }),
+      ...(ctx.session.uploadedAudioUrl && { inputAudioUrl: ctx.session.uploadedAudioUrl }),
       ...(audioOptions && { audioOptions }),
       ...(imageOptions && { imageOptions }),
       ...(videoOptions && { videoOptions }),
@@ -744,7 +774,115 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   }
 
   // Keep model context active so user can send consecutive prompts.
-  // Only clear uploaded images and their tracked messages — they were consumed by this generation.
+  // Only clear uploaded images/video/audio and their tracked messages — they were consumed by this generation.
   ctx.session.uploadedImageUrls = undefined;
   ctx.session.imageUploadMsgIds = undefined;
+  ctx.session.uploadedVideoUrl = undefined;
+  ctx.session.uploadedAudioUrl = undefined;
 }
+
+/** Models that accept video uploads (Kling Motion Control) */
+const VIDEO_UPLOAD_MODELS = ['kling-motion'];
+
+/** Models that accept audio uploads (Kling AI Avatar) */
+const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar'];
+
+/**
+ * Handle video uploads for Kling Motion Control.
+ * Stores the video URL in session.
+ */
+export async function handleVideoUpload(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+  if (!ctx.message || !('video' in ctx.message) || !ctx.message.video) return;
+
+  const lang = getLang(ctx);
+
+  if (!VIDEO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
+    const msg = lang === 'ru'
+      ? '⚠️ Загрузка видео поддерживается только для модели Motion Control. Отправьте текстовый запрос.'
+      : '⚠️ Video upload is only supported for Motion Control. Please send a text prompt.';
+    await ctx.reply(msg);
+    return;
+  }
+
+  try {
+    const fileLink = await ctx.telegram.getFileLink(ctx.message.video.file_id);
+    ctx.session.uploadedVideoUrl = fileLink.href;
+
+    const hasImage = !!ctx.session.uploadedImageUrls?.length;
+    let msg: string;
+    if (hasImage) {
+      msg = lang === 'ru'
+        ? '✅ Видео загружено. Фото и видео готовы. Отправьте ✍️ текстовый запрос (опционально) или просто отправьте "go" для генерации.'
+        : '✅ Video uploaded. Photo and video ready. Send ✍️ a text prompt (optional) or just send "go" to generate.';
+    } else {
+      msg = lang === 'ru'
+        ? '✅ Видео загружено. Теперь загрузите 📸 1 фото для анимации.'
+        : '✅ Video uploaded. Now upload 📸 1 photo to animate.';
+    }
+    await ctx.reply(msg);
+  } catch (error) {
+    logger.error('Failed to get file link for video:', error);
+    const msg = lang === 'ru'
+      ? 'Не удалось загрузить видео. Попробуйте снова.'
+      : 'Failed to upload video. Please try again.';
+    await ctx.reply(msg);
+  }
+}
+
+/**
+ * Handle audio uploads for Kling AI Avatar.
+ * Stores the audio URL in session.
+ */
+export async function handleAudioUpload(ctx: BotContext): Promise<void> {
+  if (!ctx.user || !ctx.session) return;
+  if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
+
+  const lang = getLang(ctx);
+
+  if (!AUDIO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
+    const msg = lang === 'ru'
+      ? '⚠️ Загрузка аудио поддерживается только для моделей AI Avatar. Отправьте текстовый запрос.'
+      : '⚠️ Audio upload is only supported for AI Avatar models. Please send a text prompt.';
+    await ctx.reply(msg);
+    return;
+  }
+
+  // Accept both audio files and voice messages
+  let fileId: string | undefined;
+  if (ctx.message && 'audio' in ctx.message && ctx.message.audio) {
+    fileId = ctx.message.audio.file_id;
+  } else if (ctx.message && 'voice' in ctx.message && ctx.message.voice) {
+    fileId = ctx.message.voice.file_id;
+  }
+
+  if (!fileId) return;
+
+  try {
+    const fileLink = await ctx.telegram.getFileLink(fileId);
+    ctx.session.uploadedAudioUrl = fileLink.href;
+
+    const hasImage = !!ctx.session.uploadedImageUrls?.length;
+    let msg: string;
+    if (hasImage) {
+      msg = lang === 'ru'
+        ? '✅ Аудио загружено. Фото и аудио готовы. Отправьте ✍️ текстовый запрос (опционально) или просто отправьте "go" для генерации.'
+        : '✅ Audio uploaded. Photo and audio ready. Send ✍️ a text prompt (optional) or just send "go" to generate.';
+    } else {
+      msg = lang === 'ru'
+        ? '✅ Аудио загружено. Теперь загрузите 📸 1 фото.'
+        : '✅ Audio uploaded. Now upload 📸 1 photo.';
+    }
+    await ctx.reply(msg);
+  } catch (error) {
+    logger.error('Failed to get file link for audio:', error);
+    const msg = lang === 'ru'
+      ? 'Не удалось загрузить аудио. Попробуйте снова.'
+      : 'Failed to upload audio. Please try again.';
+    await ctx.reply(msg);
+  }
+}
+
+// Export helpers for use in other handlers (video.ts back navigation, etc.)
+export { forceFlushPendingUploads, clearPendingUploads };
