@@ -6,10 +6,10 @@ import api from '../api/client';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useToastStore } from '../stores/toastStore';
-import { ArrowLeft, Ban, ShieldCheck, CreditCard, Save } from 'lucide-react';
+import { ArrowLeft, Ban, ShieldCheck, CreditCard, Save, Users, XCircle } from 'lucide-react';
 
 const TIERS = ['FREE', 'STARTER', 'PRO', 'PREMIUM', 'BUSINESS', 'ENTERPRISE'];
-const TAB_KEYS = ['requests', 'payments', 'transactions'] as const;
+const TAB_KEYS = ['requests', 'payments', 'transactions', 'referrals', 'withdrawals'] as const;
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
@@ -23,10 +23,14 @@ export default function UserDetail() {
   const [selectedTier, setSelectedTier] = useState('');
   const [editBalance, setEditBalance] = useState<string | null>(null);
 
+  const [editCash, setEditCash] = useState<string | null>(null);
+
   const tabLabels: Record<typeof TAB_KEYS[number], string> = {
     requests: t('userDetail.requests'),
     payments: t('userDetail.payments'),
     transactions: t('userDetail.transactions'),
+    referrals: t('userDetail.referrals'),
+    withdrawals: t('userDetail.withdrawals'),
   };
 
   const { data: user, isLoading } = useQuery({
@@ -68,6 +72,13 @@ export default function UserDetail() {
     if (editBalance !== null) {
       updateMutation.mutate({ tokenBalance: editBalance });
       setEditBalance(null);
+    }
+  };
+
+  const handleSaveCash = () => {
+    if (editCash !== null) {
+      updateMutation.mutate({ moneyBalance: editCash });
+      setEditCash(null);
     }
   };
 
@@ -124,7 +135,7 @@ export default function UserDetail() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
           <div className="bg-gray-800/50 rounded-xl p-3">
             <div className="text-xs text-gray-500">{t('userDetail.tokenBalance')}</div>
             <div className="flex items-center gap-2 mt-1">
@@ -139,15 +150,55 @@ export default function UserDetail() {
                   <button onClick={handleSaveBalance} className="text-emerald-400 hover:text-emerald-300">
                     <Save size={14} />
                   </button>
+                  <button onClick={() => setEditBalance(null)} className="text-gray-400 hover:text-gray-300">
+                    <XCircle size={14} />
+                  </button>
                 </>
               ) : (
                 <span
                   className="text-lg font-bold text-white cursor-pointer hover:text-blue-400"
                   onClick={() => setEditBalance(String(user.wallet?.tokenBalance || 0))}
+                  title={t('userDetail.clickToEdit')}
                 >
                   {(user.wallet?.tokenBalance || 0).toFixed(1)}
                 </span>
               )}
+            </div>
+          </div>
+          <div className="bg-gray-800/50 rounded-xl p-3">
+            <div className="text-xs text-gray-500">{t('userDetail.cashBalance')}</div>
+            <div className="flex items-center gap-2 mt-1">
+              {editCash !== null ? (
+                <>
+                  <input
+                    type="number"
+                    value={editCash}
+                    onChange={(e) => setEditCash(e.target.value)}
+                    className="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-0.5 text-white text-sm"
+                  />
+                  <button onClick={handleSaveCash} className="text-emerald-400 hover:text-emerald-300">
+                    <Save size={14} />
+                  </button>
+                  <button onClick={() => setEditCash(null)} className="text-gray-400 hover:text-gray-300">
+                    <XCircle size={14} />
+                  </button>
+                </>
+              ) : (
+                <span
+                  className="text-lg font-bold text-white cursor-pointer hover:text-blue-400"
+                  onClick={() => setEditCash(String(user.wallet?.moneyBalance || 0))}
+                  title={t('userDetail.clickToEdit')}
+                >
+                  {(user.wallet?.moneyBalance || 0).toFixed(2)} ₽
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="bg-gray-800/50 rounded-xl p-3">
+            <div className="text-xs text-gray-500">{t('userDetail.referrals')}</div>
+            <div className="flex items-center gap-2 mt-1">
+              <Users size={14} className="text-blue-400" />
+              <span className="text-lg font-bold text-white">{user._count?.referrals || 0}</span>
             </div>
           </div>
           <div className="bg-gray-800/50 rounded-xl p-3">
@@ -212,6 +263,21 @@ export default function UserDetail() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.date')}</th>
                 </>
               )}
+              {activeTab === 'referrals' && (
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.referralUser')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.referralJoined')}</th>
+                </>
+              )}
+              {activeTab === 'withdrawals' && (
+                <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.amount')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.currency')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.status')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.adminNote')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.date')}</th>
+                </>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">
@@ -244,6 +310,24 @@ export default function UserDetail() {
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-400">{txn.balanceAfter?.toFixed(2)}</td>
                 <td className="px-4 py-3 text-sm text-gray-500">{new Date(txn.createdAt).toLocaleString()}</td>
+              </tr>
+            ))}
+            {activeTab === 'referrals' && user.referrals?.map((ref: any) => (
+              <tr key={ref.id}>
+                <td className="px-4 py-3 text-sm text-white">
+                  {ref.firstName || ref.username || '—'}
+                  {ref.username && <span className="text-gray-500 ml-2">@{ref.username}</span>}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-500">{new Date(ref.createdAt).toLocaleString()}</td>
+              </tr>
+            ))}
+            {activeTab === 'withdrawals' && user.withdrawalRequests?.map((wr: any) => (
+              <tr key={wr.id}>
+                <td className="px-4 py-3 text-sm text-white">{wr.amount?.toFixed(2)}</td>
+                <td className="px-4 py-3 text-sm text-gray-400">{wr.currency}</td>
+                <td className="px-4 py-3"><StatusBadge status={wr.status} /></td>
+                <td className="px-4 py-3 text-sm text-gray-400">{wr.adminNote || '—'}</td>
+                <td className="px-4 py-3 text-sm text-gray-500">{new Date(wr.createdAt).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
