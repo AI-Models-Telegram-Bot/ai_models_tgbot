@@ -941,7 +941,7 @@ export class KieAIProvider extends EnhancedProvider {
         character_orientation: 'image',
       };
 
-      if (prompt && prompt.toLowerCase() !== 'go') {
+      if (prompt && prompt.trim()) {
         input.prompt = prompt;
       }
 
@@ -996,7 +996,7 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         image_url: inputImageUrls[0],
         audio_url: inputAudioUrl,
-        prompt: (prompt && prompt.toLowerCase() !== 'go') ? prompt : '',
+        prompt: (prompt && prompt.trim()) ? prompt : '',
       };
 
       logger.info('KieAI Kling Avatar payload:', { model, input });

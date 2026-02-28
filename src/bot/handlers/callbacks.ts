@@ -1,6 +1,6 @@
 import { BotContext } from '../types';
 import { handleCategorySelection } from './categories';
-import { handleModelSelection } from './models';
+import { handleModelSelection, handleGenerateCallback } from './models';
 import { handleChatCallback } from './chat';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { getVideoModelMenuKeyboard } from '../keyboards/videoKeyboards';
@@ -70,6 +70,11 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
     }
     await ctx.reply(promptMsg, kb);
     return;
+  }
+
+  // ── Generate button callback (Motion Control / Avatar) ──
+  if (data === 'generate_now') {
+    return handleGenerateCallback(ctx);
   }
 
   // ── Chat callbacks — route before deleting the message ──
