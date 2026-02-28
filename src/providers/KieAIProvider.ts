@@ -996,7 +996,7 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         image_url: inputImageUrls[0],
         audio_url: inputAudioUrl,
-        prompt: (prompt && prompt.trim()) ? prompt : '',
+        prompt: (prompt && prompt.trim()) ? prompt : 'A person speaking naturally',
       };
 
       logger.info('KieAI Kling Avatar payload:', { model, input });
