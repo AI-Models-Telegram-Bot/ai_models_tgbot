@@ -22,7 +22,23 @@ export async function handleStart(ctx: BotContext): Promise<void> {
     return;
   }
 
-  await sendTrackedMessage(ctx, l.messages.welcome, getMainKeyboard(lang));
+  // Send welcome photo if configured, then main menu
+  const photoFileId = config.features.welcomePhotoFileId;
+  if (photoFileId) {
+    try {
+      await ctx.replyWithPhoto(photoFileId, {
+        caption: l.messages.welcome,
+        parse_mode: 'HTML',
+      });
+    } catch {
+      // Fallback to text if photo fails
+      await ctx.reply(l.messages.welcome, { parse_mode: 'HTML' });
+    }
+    // Show main menu keyboard in a follow-up message
+    await sendTrackedMessage(ctx, l.messages.chooseOption, getMainKeyboard(lang));
+  } else {
+    await sendTrackedMessage(ctx, l.messages.welcome, getMainKeyboard(lang));
+  }
 }
 
 export async function handleHelp(ctx: BotContext): Promise<void> {
@@ -30,7 +46,7 @@ export async function handleHelp(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await sendTrackedMessage(ctx, l.messages.help, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.help, { parse_mode: 'HTML', link_preview_options: { is_disabled: true }, ...getHelpKeyboard(lang) });
 }
 
 export async function handleInstructions(ctx: BotContext): Promise<void> {
@@ -49,7 +65,7 @@ export async function handleSupport(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await sendTrackedMessage(ctx, l.messages.support, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.support, { parse_mode: 'HTML', link_preview_options: { is_disabled: true }, ...getHelpKeyboard(lang) });
 }
 
 export async function handleCommunity(ctx: BotContext): Promise<void> {
@@ -57,7 +73,7 @@ export async function handleCommunity(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await sendTrackedMessage(ctx, l.messages.community, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.community, { parse_mode: 'HTML', link_preview_options: { is_disabled: true }, ...getHelpKeyboard(lang) });
 }
 
 export async function handlePrivacy(ctx: BotContext): Promise<void> {

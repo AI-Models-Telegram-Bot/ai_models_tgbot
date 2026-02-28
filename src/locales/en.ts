@@ -87,15 +87,15 @@ export const en = {
   // Messages
   messages: {
     // Welcome & Start
-    welcome: `Welcome to AI Models Bot! 🤖
+    welcome: `Hi! 👋
 
-Choose a category to start:
-• 🤖 Text AI - Chat with GPT-4, Claude, Grok
-• 🖼 Image AI - Generate images with DALL-E, Flux
-• 🎬 Video AI - Create videos with Kling, Luma
-• 🎵 Audio AI - Generate speech and music
+I'm Vseonix — I create anything you can imagine.
 
-Use the menu below to navigate.`,
+Want a cool photo? A video from an image? Music for the mood? Or just chat with AI?
+
+I can do all of this and more ✨
+
+Pick where to start 👇`,
 
     // Web Auth
     webAuthSuccess: '✅ You have successfully logged in to the web version of VseoNix. Please return to the website to continue.',
@@ -125,7 +125,15 @@ Share your link:
     // Help
     help: `❓ <b>Help</b>
 
-Press the corresponding button to contact support, ensure the safety of your data, read information about adding the chatbot to groups, or get usage instructions 👇`,
+Choose a topic or ask your question.
+
+🔗 <b>Useful links:</b>
+• <a href="https://t.me/VseOnix_Support">🆘 Support</a>
+• <a href="https://t.me/VseOnix">👥 Community</a>
+• <a href="https://t.me/VseOnixprompt_ii_photo">🖼 Photo ideas</a>
+• <a href="https://t.me/VseOnix_1">🎬 Video ideas</a>
+
+We're always happy to help! 💬`,
 
     instructions: `📋 <b>Instructions</b>
 
@@ -148,14 +156,14 @@ Press the corresponding button to contact support, ensure the safety of your dat
     support: `🆘 <b>Support</b>
 
 If you have any questions or issues, contact us:
-📧 Email: support@example.com
-💬 Telegram: @support`,
+💬 Telegram: <a href="https://t.me/VseOnix_Support">@VseOnix_Support</a>`,
 
     community: `👥 <b>Community</b>
 
 Join our community:
-📢 Channel: @aichannel
-💬 Chat: @aichat`,
+📢 Channel: <a href="https://t.me/VseOnix">@VseOnix</a>
+🖼 Photo ideas: <a href="https://t.me/VseOnixprompt_ii_photo">@VseOnixprompt_ii_photo</a>
+🎬 Video ideas: <a href="https://t.me/VseOnix_1">@VseOnix_1</a>`,
 
     privacy: `🔒 <b>Privacy</b>
 
@@ -234,9 +242,15 @@ Fee: ⚡2.5 tokens per generation`,
     audioUpgradeHint: 'Upgrade your subscription to access this feature.',
 
     // Image Functions
-    imageFamilySelect: `🖼 <b>Image AI</b>
+    imageFamilySelect: `🖼 <b>Image Generation</b>
 
-Choose a model family:`,
+⚡ <b>Fast:</b> Nano Banana, Flux Schnell
+🎨 <b>Quality:</b> Flux Pro, DALL-E
+💎 <b>Premium:</b> Midjourney
+
+Need ideas? Check our <a href="https://t.me/VseOnixprompt_ii_photo">prompts channel</a> 💡
+
+Choose a model:`,
 
     imageFluxFamilyDesc: `🔥 <b>Flux Family</b>
 
@@ -384,9 +398,17 @@ Fee: ⚡2.5–5 tokens (depends on resolution)`,
     imageUpgradeHint: 'Upgrade your subscription to access this feature.',
 
     // Video Functions
-    videoFamilySelect: `🎬 <b>Video AI</b>
+    videoFamilySelect: `🎬 <b>Video Generation</b>
 
-Choose a model family:`,
+🎥 <b>Animate photos:</b> Kling, Luma, WAN
+🎬 <b>From text:</b> Sora, Runway, Veo
+🎭 <b>Avatars:</b> Kling Avatar
+
+Send a photo or describe a scene — I'll create the video ✨
+
+Need ideas? Check our <a href="https://t.me/VseOnix_1">prompts channel</a> 💡
+
+Choose a model:`,
 
     videoKlingFamilyDesc: `🎥 <b>Kling</b>
 

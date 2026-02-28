@@ -240,6 +240,7 @@ export async function handleVideoFamilyMenu(ctx: BotContext): Promise<void> {
 
   await sendTrackedMessage(ctx, (l.messages as any).videoFamilySelect, {
     parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
     ...getVideoFamiliesKeyboard(lang),
   });
 }
@@ -342,8 +343,12 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
 
   // Send function description + reply keyboard
   const description = (l.messages as any)[func.descriptionKey] || '';
-  await sendTrackedMessage(ctx, description, {
+  const ideasLink = lang === 'ru'
+    ? '\n\n💡 <a href="https://t.me/VseOnix_1">Идеи для видео</a>'
+    : '\n\n💡 <a href="https://t.me/VseOnix_1">Video ideas</a>';
+  await sendTrackedMessage(ctx, description + ideasLink, {
     parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
     ...getVideoModelMenuKeyboard(lang, func.modelSlug, func.hasSettings, ctx.from?.id),
   });
 }

@@ -57,12 +57,23 @@ export const useReferralStore = create<ReferralState>((set, get) => ({
       set({
         referralCode: data.referralCode,
         referralUrl: url,
-        referralMode: data.referralMode,
-        commissionRates: data.commissionRates,
-        withdrawalThresholds: data.withdrawalThresholds,
-        walletCurrency: data.walletCurrency,
-        moneyBalance: data.moneyBalance,
-        stats: data.stats,
+        referralMode: data.referralMode || 'TOKENS',
+        commissionRates: data.commissionRates || { tokenPercent: 35, cashPercent: 15 },
+        withdrawalThresholds: data.withdrawalThresholds || { RUB: 500, USD: 5 },
+        walletCurrency: data.walletCurrency || 'RUB',
+        moneyBalance: data.moneyBalance || 0,
+        stats: data.stats
+          ? {
+              totalInvited: data.stats.totalInvited ?? 0,
+              totalEarned: data.stats.totalEarned ?? 0,
+              currentTierBonus: data.stats.currentTierBonus ?? 0,
+              tokensEarned: data.stats.tokensEarned ?? 0,
+              tokenCommissions: data.stats.tokenCommissions ?? 0,
+              cashEarned: data.stats.cashEarned ?? 0,
+              cashCommissions: data.stats.cashCommissions ?? 0,
+              pendingWithdrawal: data.stats.pendingWithdrawal ?? 0,
+            }
+          : null,
         isLoading: false,
       });
     } catch (err) {
