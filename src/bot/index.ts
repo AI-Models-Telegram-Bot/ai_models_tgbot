@@ -25,6 +25,8 @@ import {
   handleUserInput,
   handlePhotoInput,
   handleDocumentInput,
+  handleVideoUpload,
+  handleAudioUpload,
   handleCallbackQuery,
   handleWebAppData,
   handlePreCheckoutQuery,
@@ -136,6 +138,10 @@ export function createBot(): Telegraf<BotContext> {
   // Video model buttons (EN & RU)
   bot.hears([en.buttons.videoKling, ru.buttons.videoKling], (ctx) => handleVideoFunctionSelection(ctx, 'kling'));
   bot.hears([en.buttons.videoKlingPro, ru.buttons.videoKlingPro], (ctx) => handleVideoFunctionSelection(ctx, 'kling-pro'));
+  bot.hears([en.buttons.videoKling30, ru.buttons.videoKling30], (ctx) => handleVideoFunctionSelection(ctx, 'kling-3.0'));
+  bot.hears([en.buttons.videoKlingMotion, ru.buttons.videoKlingMotion], (ctx) => handleVideoFunctionSelection(ctx, 'kling-motion'));
+  bot.hears([en.buttons.videoKlingAvatarPro, ru.buttons.videoKlingAvatarPro], (ctx) => handleVideoFunctionSelection(ctx, 'kling-avatar-pro'));
+  bot.hears([en.buttons.videoKlingAvatar, ru.buttons.videoKlingAvatar], (ctx) => handleVideoFunctionSelection(ctx, 'kling-avatar'));
   bot.hears([en.buttons.videoVeoFast, ru.buttons.videoVeoFast], (ctx) => handleVideoFunctionSelection(ctx, 'veo-fast'));
   bot.hears([en.buttons.videoVeoQuality, ru.buttons.videoVeoQuality], (ctx) => handleVideoFunctionSelection(ctx, 'veo'));
   bot.hears([en.buttons.videoSora, ru.buttons.videoSora], (ctx) => handleVideoFunctionSelection(ctx, 'sora'));
@@ -224,6 +230,8 @@ export function createBot(): Telegraf<BotContext> {
       ctx.session.selectedModel = undefined;
       ctx.session.uploadedImageUrls = undefined;
       ctx.session.imageUploadMsgIds = undefined;
+      ctx.session.uploadedVideoUrl = undefined;
+      ctx.session.uploadedAudioUrl = undefined;
       if (family && isSingleVideoFamily(family)) {
         ctx.session.videoFamily = undefined;
         return handleVideoFamilyMenu(ctx);
@@ -268,6 +276,13 @@ export function createBot(): Telegraf<BotContext> {
 
   // Photo messages (image upload for video models)
   bot.on('photo', handlePhotoInput);
+
+  // Video messages (video upload for Kling Motion Control)
+  bot.on('video', handleVideoUpload);
+
+  // Audio / voice messages (audio upload for Kling AI Avatar)
+  bot.on('audio', handleAudioUpload);
+  bot.on('voice', handleAudioUpload);
 
   // Document messages (file uploads — .png, .jpg, etc.)
   bot.on('document', handleDocumentInput);

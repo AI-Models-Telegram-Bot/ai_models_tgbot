@@ -333,6 +333,38 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
+  // Kling 3.0 — newest generation, supports sound, multi-shot, duration 3-15s
+  'kling-3.0': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'kling-3.0/video' },
+    ],
+  },
+
+  // Kling Motion Control — animate a photo using motion from a reference video
+  'kling-motion': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'kling-2.6/motion-control' },
+    ],
+  },
+
+  // Kling AI Avatar Pro — talking head from photo + audio
+  'kling-avatar-pro': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'kling/ai-avatar-pro' },
+    ],
+  },
+
+  // Kling AI Avatar Standard — talking head from photo + audio (cheaper)
+  'kling-avatar': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'kling/ai-avatar-standard' },
+    ],
+  },
+
   // Seedance 1.0 Lite — ByteDance video (cheapest, 720p)
   'seedance-lite': {
     category: 'VIDEO',

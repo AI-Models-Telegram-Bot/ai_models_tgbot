@@ -89,6 +89,30 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'kling',
     hasSettings: true,
   },
+  'kling-3.0': {
+    modelSlug: 'kling-3.0',
+    descriptionKey: 'videoKling30Desc',
+    family: 'kling',
+    hasSettings: false,
+  },
+  'kling-motion': {
+    modelSlug: 'kling-motion',
+    descriptionKey: 'videoKlingMotionDesc',
+    family: 'kling',
+    hasSettings: false,
+  },
+  'kling-avatar-pro': {
+    modelSlug: 'kling-avatar-pro',
+    descriptionKey: 'videoKlingAvatarProDesc',
+    family: 'kling',
+    hasSettings: false,
+  },
+  'kling-avatar': {
+    modelSlug: 'kling-avatar',
+    descriptionKey: 'videoKlingAvatarDesc',
+    family: 'kling',
+    hasSettings: false,
+  },
   'veo-fast': {
     modelSlug: 'veo-fast',
     descriptionKey: 'videoVeoFastDesc',
@@ -166,6 +190,10 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
 const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'kling': { en: 'Kling', ru: 'Kling' },
   'kling-pro': { en: 'Kling Pro', ru: 'Kling Pro' },
+  'kling-3.0': { en: 'Kling 3.0', ru: 'Kling 3.0' },
+  'kling-motion': { en: 'Kling Motion Control', ru: 'Kling Motion Control' },
+  'kling-avatar-pro': { en: 'Kling Avatar Pro', ru: 'Kling Avatar Pro' },
+  'kling-avatar': { en: 'Kling Avatar', ru: 'Kling Avatar' },
   'veo-fast': { en: 'Veo Fast', ru: 'Veo Fast' },
   'veo': { en: 'Veo Quality', ru: 'Veo Quality' },
   'sora': { en: 'Sora 2', ru: 'Sora 2' },
@@ -205,6 +233,8 @@ export async function handleVideoFamilyMenu(ctx: BotContext): Promise<void> {
     ctx.session.selectedModel = undefined;
     ctx.session.uploadedImageUrls = undefined;
     ctx.session.imageUploadMsgIds = undefined;
+    ctx.session.uploadedVideoUrl = undefined;
+    ctx.session.uploadedAudioUrl = undefined;
     ctx.session.inVideoMenu = true;
   }
 
@@ -300,13 +330,15 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
     }
   }
 
-  // Set session state — clear any leftover images from previous model
+  // Set session state — clear any leftover images/video/audio from previous model
   ctx.session.videoFunction = functionId as VideoFunction;
   ctx.session.videoFamily = func.family;
   ctx.session.selectedModel = func.modelSlug;
   ctx.session.awaitingInput = true;
   ctx.session.uploadedImageUrls = undefined;
   ctx.session.imageUploadMsgIds = undefined;
+  ctx.session.uploadedVideoUrl = undefined;
+  ctx.session.uploadedAudioUrl = undefined;
 
   // Send function description + reply keyboard
   const description = (l.messages as any)[func.descriptionKey] || '';

@@ -142,6 +142,15 @@ export class KieAIProvider extends EnhancedProvider {
     if (model === 'runway' || model === 'runway-gen4') {
       return this.generateRunwayVideo(prompt, options);
     }
+    if (model === 'kling-3.0/video') {
+      return this.generateKling3Video(prompt, options);
+    }
+    if (model === 'kling-2.6/motion-control') {
+      return this.generateKlingMotionVideo(prompt, options);
+    }
+    if (model === 'kling/ai-avatar-pro' || model === 'kling/ai-avatar-standard') {
+      return this.generateKlingAvatarVideo(prompt, options);
+    }
 
     // Default: Kling / Sora / Seedance via market endpoint
     return this.generateMarketVideo(prompt, options);
@@ -845,6 +854,174 @@ export class KieAIProvider extends EnhancedProvider {
     }
 
     throw new Error('KieAI Runway: polling timed out after 5 minutes');
+  }
+
+  /**
+   * Kling 3.0 — newest generation
+   * POST /jobs/createTask with model: "kling-3.0/video"
+   * Supports: prompt, sound, duration 3-15s, mode std/pro, aspect_ratio, image_urls
+   */
+  private async generateKling3Video(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      const model = 'kling-3.0/video';
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+
+      logger.info(`KieAI Kling 3.0: starting (images: ${inputImageUrls?.length || 0})`);
+
+      const input: Record<string, unknown> = {
+        prompt,
+        aspect_ratio: (options?.aspectRatio as string) || '16:9',
+        duration: String((options?.duration as number) || 5),
+        sound: true,
+      };
+
+      if (inputImageUrls?.length) {
+        input.image_urls = inputImageUrls;
+      }
+
+      logger.info('KieAI Kling 3.0 payload:', { model, input });
+      const createResponse = await this.client.post('/jobs/createTask', { model, input });
+
+      const respData = createResponse.data;
+      const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
+      if (!taskId) {
+        throw new Error(`KieAI Kling 3.0: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+      }
+
+      logger.info(`KieAI Kling 3.0: task created, taskId=${taskId}`);
+      const videoUrl = await this.pollMarketTaskResult(taskId);
+
+      const time = Date.now() - start;
+      this.updateStats(true, 0.50, time);
+      logger.info(`KieAI Kling 3.0: success (${time}ms)`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Kling 3.0: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Kling Motion Control — animate photo with video motion
+   * POST /jobs/createTask with model: "kling-2.6/motion-control"
+   * Requires: input_urls (1 image), video_urls (1 video)
+   */
+  private async generateKlingMotionVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      const model = 'kling-2.6/motion-control';
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const inputVideoUrl = options?.inputVideoUrl as string | undefined;
+
+      if (!inputImageUrls?.length) {
+        throw new Error('Kling Motion Control requires 1 photo. Please upload a photo first.');
+      }
+      if (!inputVideoUrl) {
+        throw new Error('Kling Motion Control requires 1 video. Please upload a video first.');
+      }
+
+      logger.info('KieAI Kling Motion: starting');
+
+      const input: Record<string, unknown> = {
+        input_urls: [inputImageUrls[0]],
+        video_urls: [inputVideoUrl],
+        mode: '720p',
+        character_orientation: 'image',
+      };
+
+      if (prompt && prompt.toLowerCase() !== 'go') {
+        input.prompt = prompt;
+      }
+
+      logger.info('KieAI Kling Motion payload:', { model, input });
+      const createResponse = await this.client.post('/jobs/createTask', { model, input });
+
+      const respData = createResponse.data;
+      const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
+      if (!taskId) {
+        throw new Error(`KieAI Kling Motion: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+      }
+
+      logger.info(`KieAI Kling Motion: task created, taskId=${taskId}`);
+      const videoUrl = await this.pollMarketTaskResult(taskId);
+
+      const time = Date.now() - start;
+      this.updateStats(true, 0.60, time);
+      logger.info(`KieAI Kling Motion: success (${time}ms)`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Kling Motion: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Kling AI Avatar — talking head from photo + audio
+   * POST /jobs/createTask with model: "kling/ai-avatar-pro" or "kling/ai-avatar-standard"
+   * Requires: image_url (1 photo), audio_url (1 audio)
+   */
+  private async generateKlingAvatarVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      const model = (options?.model as string) || 'kling/ai-avatar-pro';
+      const inputImageUrls = options?.inputImageUrls as string[] | undefined;
+      const inputAudioUrl = options?.inputAudioUrl as string | undefined;
+
+      if (!inputImageUrls?.length) {
+        throw new Error('Kling AI Avatar requires 1 photo. Please upload a photo first.');
+      }
+      if (!inputAudioUrl) {
+        throw new Error('Kling AI Avatar requires 1 audio file. Please upload an audio file first.');
+      }
+
+      logger.info(`KieAI Kling Avatar: starting (model: ${model})`);
+
+      const input: Record<string, unknown> = {
+        image_url: inputImageUrls[0],
+        audio_url: inputAudioUrl,
+      };
+
+      if (prompt && prompt.toLowerCase() !== 'go') {
+        input.prompt = prompt;
+      }
+
+      logger.info('KieAI Kling Avatar payload:', { model, input });
+      const createResponse = await this.client.post('/jobs/createTask', { model, input });
+
+      const respData = createResponse.data;
+      const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
+      if (!taskId) {
+        throw new Error(`KieAI Kling Avatar: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+      }
+
+      logger.info(`KieAI Kling Avatar: task created, taskId=${taskId}`);
+      const videoUrl = await this.pollMarketTaskResult(taskId);
+
+      const time = Date.now() - start;
+      const cost = model.includes('pro') ? 0.70 : 0.40;
+      this.updateStats(true, cost, time);
+      logger.info(`KieAI Kling Avatar: success (${time}ms, $${cost})`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Kling Avatar: failed', error.response?.data || error.message);
+      throw error;
+    }
   }
 
   /**

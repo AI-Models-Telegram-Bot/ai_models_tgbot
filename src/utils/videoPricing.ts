@@ -131,8 +131,23 @@ function calculateNanaBanana2Cost(resolution?: string): number {
 
 // ── Public API ───────────────────────────────────────────────
 
+// ── Kling 3.0 pricing table ────────────────────────────────────
+// Flat per-video, scales with duration (5s base)
+const KLING_30_DURATION_CREDITS: Record<number, number> = {
+  3: 20,
+  5: 30,
+  8: 45,
+  10: 55,
+  15: 80,
+};
+
+function calculateKling30Cost(duration?: number): number {
+  const dur = duration || 5;
+  return KLING_30_DURATION_CREDITS[dur] || 30;
+}
+
 export function hasDynamicPricing(slug: string): boolean {
-  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro' || slug === 'nano-banana-2';
+  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'kling-3.0' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro' || slug === 'nano-banana-2';
 }
 
 export function calculateDynamicCost(
@@ -146,6 +161,11 @@ export function calculateDynamicCost(
   }
   if (slug === 'kling-pro') {
     return calculateKlingCost('pro', settings);
+  }
+
+  // Kling 3.0 pricing by duration
+  if (slug === 'kling-3.0') {
+    return calculateKling30Cost(settings?.duration);
   }
 
   // Midjourney pricing by speed mode

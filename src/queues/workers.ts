@@ -233,6 +233,12 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         if (job.data.inputImageUrls?.length) {
           videoOpts.inputImageUrls = job.data.inputImageUrls;
         }
+        if (job.data.inputVideoUrl) {
+          videoOpts.inputVideoUrl = job.data.inputVideoUrl;
+        }
+        if (job.data.inputAudioUrl) {
+          videoOpts.inputAudioUrl = job.data.inputAudioUrl;
+        }
         generationResponse = await manager.generateWithModel('VIDEO', 'generateVideo', modelSlug, input, videoOpts);
         break;
       }

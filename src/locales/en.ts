@@ -63,6 +63,10 @@ export const en = {
     // Video Models
     videoKling: '🎥 Kling Standard (⚡16–40)',
     videoKlingPro: '💎 Kling Pro (⚡27–144)',
+    videoKling30: '🆕 Kling 3.0 (⚡20–80)',
+    videoKlingMotion: '🎭 Motion Control (⚡35)',
+    videoKlingAvatarPro: '🗣️ Avatar Pro (⚡40)',
+    videoKlingAvatar: '🗣️ Avatar (⚡25)',
     videoVeoFast: '⚡ Veo Fast (⚡6–32)',
     videoVeoQuality: '💎 Veo Quality (⚡28–155)',
     videoSora: '🎬 Sora 2 (⚡21–113)',
@@ -388,7 +392,11 @@ Choose a model family:`,
 
 Professional video generation by Kuaishou. Smooth motion, cinematic quality, and excellent prompt adherence.
 
-Select a model:`,
+Choose a model:
+• <b>Standard</b> / <b>Pro</b> — classic text/image-to-video (⚡16–144)
+• <b>Kling 3.0</b> — newest gen with sound & multi-shot (⚡20–80)
+• <b>Motion Control</b> — animate photo with video motion (⚡35)
+• <b>Avatar Pro</b> / <b>Avatar</b> — talking head from photo+audio (⚡25–40)`,
 
     videoVeoFamilyDesc: `🌐 <b>Google Veo</b>
 
@@ -453,6 +461,38 @@ Premium Kling model — higher quality, all versions including 2.1-Master, with 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
 Fee: ⚡27–144 tokens (depends on settings)`,
+
+    videoKling30Desc: `🆕 <b>Kling 3.0</b>
+
+The newest Kling generation — supports sound, multi-shot scenes, and durations from 3 to 15 seconds.
+
+Send ✍️ a text prompt or 🌄 upload an image (optional first/last frame) 👇
+
+Fee: ⚡20–80 tokens (depends on duration)`,
+
+    videoKlingMotionDesc: `🎭 <b>Kling Motion Control</b>
+
+Animate a photo using motion from a reference video. The character in your photo will repeat the movements from the video.
+
+📸 Upload 1 photo + 🎥 1 video, then send a ✍️ text prompt (optional) 👇
+
+Fee: ⚡35 tokens`,
+
+    videoKlingAvatarProDesc: `🗣️ <b>Kling AI Avatar Pro</b>
+
+Create a talking-head video from a photo and audio. Premium quality with natural lip sync.
+
+📸 Upload 1 photo + 🎵 1 audio file, then send a ✍️ text prompt (optional) 👇
+
+Fee: ⚡40 tokens`,
+
+    videoKlingAvatarDesc: `🗣️ <b>Kling AI Avatar</b>
+
+Create a talking-head video from a photo and audio. Standard quality, more affordable.
+
+📸 Upload 1 photo + 🎵 1 audio file, then send a ✍️ text prompt (optional) 👇
+
+Fee: ⚡25 tokens`,
 
     videoVeoFastDesc: `⚡ <b>Veo 3.1 Fast</b>
 

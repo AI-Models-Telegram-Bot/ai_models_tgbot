@@ -23,6 +23,8 @@ export function getKlingModelsKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
     [l.buttons.videoKling, l.buttons.videoKlingPro],
+    [l.buttons.videoKling30, l.buttons.videoKlingMotion],
+    [l.buttons.videoKlingAvatarPro, l.buttons.videoKlingAvatar],
     [l.buttons.back, l.buttons.mainMenu],
   ]).resize();
 }
