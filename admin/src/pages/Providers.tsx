@@ -44,7 +44,9 @@ export default function Providers() {
   const costBreakdown = providerData?.costBreakdown || [];
   const balances = balancesData?.balances || [];
 
-  const filteredStats = category === 'ALL' ? stats : stats.filter((s: any) => s.category === category);
+  // Only show providers that have been used (requests > 0) or are currently active
+  const activeStats = stats.filter((s: any) => s.requests > 0 || s.enabled);
+  const filteredStats = category === 'ALL' ? activeStats : activeStats.filter((s: any) => s.category === category);
 
   const openRouterBalance = balances.find((b: any) => b.provider === 'openrouter');
   const elevenLabsBalance = balances.find((b: any) => b.provider === 'elevenlabs');
@@ -64,7 +66,7 @@ export default function Providers() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title={t('providers.totalProviders')} value={agg.totalProviders} icon={Server} color="blue" />
+        <StatCard title={t('providers.totalProviders')} value={activeStats.length} icon={Server} color="blue" />
         <StatCard title={t('providers.totalRequests')} value={agg.totalRequests} icon={Zap} color="purple" />
         <StatCard
           title={t('providers.estTotalSpend')}
@@ -74,7 +76,7 @@ export default function Providers() {
         />
         <StatCard
           title={t('providers.activeHealthy')}
-          value={`${agg.activeProviders} / ${agg.totalProviders}`}
+          value={`${agg.activeProviders} / ${activeStats.length}`}
           icon={Activity}
           color="emerald"
           trend={{ value: agg.overallSuccessRate, label: t('providers.successRate') }}

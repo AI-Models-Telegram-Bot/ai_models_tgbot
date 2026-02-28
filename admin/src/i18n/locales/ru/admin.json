@@ -34,6 +34,7 @@
     "providers": "Провайдеры",
     "auditLogs": "Журнал аудита",
     "broadcasts": "Рассылки",
+    "withdrawals": "Выводы",
     "systemLogs": "Системные логи",
     "settings": "Настройки"
   },
@@ -261,6 +262,27 @@
     "passwordChangeFailed": "Не удалось изменить пароль",
     "passwordsDoNotMatch": "Пароли не совпадают",
     "passwordTooShort": "Пароль должен быть не менее 12 символов"
+  },
+  "withdrawals": {
+    "title": "Запросы на вывод",
+    "pendingRequests": "Ожидающие запросы",
+    "totalPaid": "Всего выплачено",
+    "totalRequests": "Всего запросов",
+    "user": "Пользователь",
+    "amount": "Сумма",
+    "status": "Статус",
+    "adminNote": "Заметка админа",
+    "date": "Дата",
+    "actions": "Действия",
+    "approve": "Одобрить",
+    "reject": "Отклонить",
+    "markPaid": "Отметить оплаченным",
+    "approveRequest": "Одобрить вывод",
+    "rejectRequest": "Отклонить вывод",
+    "markAsPaid": "Отметить оплаченным",
+    "notePlaceholder": "Заметка админа (необязательно)...",
+    "updated": "Вывод обновлён",
+    "actionFailed": "Ошибка действия"
   },
   "language": {
     "en": "EN",

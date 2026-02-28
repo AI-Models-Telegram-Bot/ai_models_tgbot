@@ -24,8 +24,8 @@ export default function Dashboard() {
   });
 
   const { data: charts } = useQuery({
-    queryKey: ['admin-charts'],
-    queryFn: () => api.get('/stats/charts').then((r) => r.data),
+    queryKey: ['admin-charts', range],
+    queryFn: () => api.get(`/stats/charts?range=${range}`).then((r) => r.data),
     refetchInterval: 60_000,
   });
 
@@ -50,6 +50,18 @@ export default function Dashboard() {
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
     return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+  };
+
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' });
+
+  const formatDateFull = (d: string) =>
+    new Date(d).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const tooltipStyle = {
+    contentStyle: { background: '#111827', border: '1px solid #374151', borderRadius: 8 },
+    labelStyle: { color: '#e5e7eb' },
+    itemStyle: { color: '#e5e7eb' },
   };
 
   return (
@@ -89,10 +101,10 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={charts?.userGrowth || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })} />
+              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={formatDate} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }} labelStyle={{ color: '#9ca3af' }} />
-              <Area type="monotone" dataKey="count" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} />
+              <Tooltip {...tooltipStyle} labelFormatter={formatDateFull} />
+              <Area type="monotone" dataKey="count" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} name={t('dashboard.newUsers')} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -103,9 +115,14 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={charts?.revenueByDay || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(d) => new Date(d).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })} />
+              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={formatDate} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }} labelStyle={{ color: '#9ca3af' }} />
+              <Tooltip
+                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                {...tooltipStyle}
+                labelFormatter={formatDateFull}
+                formatter={(val: number) => [`${val.toLocaleString()} ₽`, t('dashboard.revenue')]}
+              />
               <Bar dataKey="total" fill="#f59e0b" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -134,7 +151,11 @@ export default function Dashboard() {
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }} />
+                  <Tooltip
+                    contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }}
+                    itemStyle={{ color: '#e5e7eb' }}
+                    formatter={(val: number, name: string) => [`${val}`, name]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="mt-2 space-y-1">
