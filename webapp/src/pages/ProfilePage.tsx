@@ -22,12 +22,33 @@ const ProfilePage: React.FC = () => {
   // Use hook that polls for Telegram readiness (handles menu button timing)
   const { telegramId, isLoading: isTelegramLoading } = useTelegramUser();
 
+  // Fetch profile on mount
   useEffect(() => {
     if (isTelegram && telegramId) {
       fetchUserProfile(telegramId);
     } else if (!isTelegram) {
       fetchWebProfile();
     }
+  }, [fetchUserProfile, fetchWebProfile, telegramId, isTelegram]);
+
+  // Auto-refresh: refetch on visibility change + every 60s
+  useEffect(() => {
+    const refresh = () => {
+      if (isTelegram && telegramId) fetchUserProfile(telegramId);
+      else if (!isTelegram) fetchWebProfile();
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    const interval = setInterval(refresh, 60_000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      clearInterval(interval);
+    };
   }, [fetchUserProfile, fetchWebProfile, telegramId, isTelegram]);
 
   // Still waiting for Telegram SDK to initialize (Telegram env only)
