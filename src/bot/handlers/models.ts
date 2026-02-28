@@ -393,15 +393,53 @@ async function sendImageAcknowledgment(
   const activeModel = ctx.session.imageFunction || ctx.session.videoFunction;
   const maxImages = getMaxImages(activeModel);
   const remaining = maxImages - count;
+
+  // Context-aware next-step guidance
+  const videoFunc = ctx.session.videoFunction;
+  let nextStep: string;
+  if (videoFunc === 'kling-motion') {
+    // Motion Control needs photo + video
+    const hasVideo = !!ctx.session.uploadedVideoUrl;
+    if (hasVideo) {
+      nextStep = lang === 'ru'
+        ? 'Фото и видео готовы. Отправьте ✍️ текст (опционально) или "go" для генерации 👇'
+        : 'Photo and video ready. Send ✍️ text (optional) or "go" to generate 👇';
+    } else {
+      nextStep = lang === 'ru'
+        ? 'Теперь загрузите 🎥 1 видео с движением для анимации.'
+        : 'Now upload 🎥 1 video with the motion to animate.';
+    }
+  } else if (videoFunc === 'kling-avatar-pro' || videoFunc === 'kling-avatar') {
+    // Avatar needs photo + audio
+    const hasAudio = !!ctx.session.uploadedAudioUrl;
+    if (hasAudio) {
+      nextStep = lang === 'ru'
+        ? 'Фото и аудио готовы. Отправьте ✍️ текст (опционально) или "go" для генерации 👇'
+        : 'Photo and audio ready. Send ✍️ text (optional) or "go" to generate 👇';
+    } else {
+      nextStep = lang === 'ru'
+        ? 'Теперь загрузите 🎵 1 аудиофайл или голосовое сообщение.'
+        : 'Now upload 🎵 1 audio file or voice message.';
+    }
+  } else if (remaining > 0 && maxImages > 1) {
+    nextStep = lang === 'ru'
+      ? `Можно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
+      : `Upload ${remaining} more or send ✍️ a text prompt 👇`;
+  } else {
+    nextStep = lang === 'ru'
+      ? 'Отправьте ✍️ текстовый запрос 👇'
+      : 'Send ✍️ a text prompt 👇';
+  }
+
   let msg: string;
-  if (remaining > 0 && maxImages > 1) {
+  if (remaining > 0 && maxImages > 1 && videoFunc !== 'kling-motion' && videoFunc !== 'kling-avatar-pro' && videoFunc !== 'kling-avatar') {
     msg = lang === 'ru'
-      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\nМожно загрузить ещё ${remaining} или отправить ✍️ текстовый запрос 👇`
-      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\nUpload ${remaining} more or send ✍️ a text prompt 👇`;
+      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'} (макс. ${maxImages}).\n${nextStep}`
+      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added (max ${maxImages}).\n${nextStep}`;
   } else {
     msg = lang === 'ru'
-      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\nОтправьте ✍️ текстовый запрос 👇`
-      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\nSend ✍️ a text prompt 👇`;
+      ? `✅ ${count} ${count === 1 ? 'изображение добавлено' : 'изображений добавлено'}.\n${nextStep}`
+      : `✅ ${count} ${count === 1 ? 'image' : 'images'} added.\n${nextStep}`;
   }
 
   // Build inline keyboard: [Delete] [Configure]
