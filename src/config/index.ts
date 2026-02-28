@@ -85,6 +85,7 @@ export const config = {
   },
   features: {
     audioEnabled: process.env.ENABLE_AUDIO === 'true',
+    welcomePhotoFileId: process.env.WELCOME_PHOTO_FILE_ID || '',
   },
   smtp: {
     host: process.env.SMTP_HOST || '',

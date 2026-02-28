@@ -22,7 +22,23 @@ export async function handleStart(ctx: BotContext): Promise<void> {
     return;
   }
 
-  await sendTrackedMessage(ctx, l.messages.welcome, getMainKeyboard(lang));
+  // Send welcome photo if configured, then main menu
+  const photoFileId = config.features.welcomePhotoFileId;
+  if (photoFileId) {
+    try {
+      await ctx.replyWithPhoto(photoFileId, {
+        caption: l.messages.welcome,
+        parse_mode: 'HTML',
+      });
+    } catch {
+      // Fallback to text if photo fails
+      await ctx.reply(l.messages.welcome, { parse_mode: 'HTML' });
+    }
+    // Show main menu keyboard in a follow-up message
+    await sendTrackedMessage(ctx, l.messages.chooseOption, getMainKeyboard(lang));
+  } else {
+    await sendTrackedMessage(ctx, l.messages.welcome, getMainKeyboard(lang));
+  }
 }
 
 export async function handleHelp(ctx: BotContext): Promise<void> {
