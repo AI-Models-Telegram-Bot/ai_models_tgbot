@@ -22,6 +22,8 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import os from 'os';
 import { getProviderManager } from '../config/providerFactory';
+import { getPlanByTier } from '../config/subscriptions';
+import { walletService } from '../services';
 
 const execFileAsync = promisify(execFile);
 
@@ -473,6 +475,16 @@ router.get('/users/:id', async (req: Request, res: Response) => {
           orderBy: { createdAt: 'desc' },
           take: 50,
         },
+        referrals: {
+          select: { id: true, username: true, firstName: true, createdAt: true },
+        },
+        withdrawalRequests: {
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+        },
+        _count: {
+          select: { referrals: true },
+        },
       },
     });
 
@@ -544,14 +556,34 @@ router.post('/users/:id/update-plan', requireRole('SUPER_ADMIN', 'ADMIN'), async
       },
     });
 
+    // Credit tokens for the new plan
+    const plan = getPlanByTier(tier);
+    let tokensGranted = 0;
+    if (plan && plan.limits.tokensPerMonth !== null && plan.limits.tokensPerMonth > 0) {
+      tokensGranted = plan.limits.tokensPerMonth;
+      // Ensure wallet exists
+      await prisma.userWallet.upsert({
+        where: { userId: req.params.id },
+        update: {},
+        create: { userId: req.params.id, tokenBalance: 0, moneyBalance: 0 },
+      });
+      await walletService.addCredits(
+        req.params.id,
+        'TEXT',
+        tokensGranted,
+        'BONUS',
+        { description: `Admin plan change to ${tier} — ${tokensGranted} tokens credited` },
+      );
+    }
+
     await logAudit(req.adminUser!.id, 'UPDATE_PLAN', {
       targetType: 'user',
       targetId: req.params.id,
-      details: { tier },
+      details: { tier, tokensGranted },
       ipAddress: getClientIp(req),
     });
 
-    return res.json({ ok: true });
+    return res.json({ ok: true, tokensGranted });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to update plan' });
   }

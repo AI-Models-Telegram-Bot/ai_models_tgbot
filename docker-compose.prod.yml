@@ -71,6 +71,8 @@ services:
       - DISABLE_WORKERS=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    group_add:
+      - "988"
     depends_on:
       postgres:
         condition: service_healthy
