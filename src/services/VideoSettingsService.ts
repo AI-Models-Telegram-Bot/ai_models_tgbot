@@ -13,13 +13,18 @@ export interface VideoModelSettings {
   negativePrompt?: string;
   cfgScale?: number;       // creativity: 0-1, default 0.5
   enableAudio?: boolean;   // Kling native audio (2.6 pro only)
+  // Kling 3.0 fields
+  qualityMode?: string;    // 'std' | 'pro' (Kling 3.0 quality mode)
+  sound?: boolean;         // Kling 3.0 sound generation
+  // Motion Control fields
+  characterOrientation?: string; // 'image' | 'video' (Motion Control)
 }
 
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'kling': { aspectRatio: '16:9', version: '2.6', duration: 5, cfgScale: 0.5 },
   'kling-pro': { aspectRatio: '16:9', version: '2.6', duration: 5, cfgScale: 0.5 },
-  'kling-3.0': { aspectRatio: '16:9', duration: 5 },
-  'kling-motion': {},
+  'kling-3.0': { aspectRatio: '16:9', duration: 5, qualityMode: 'std', sound: true },
+  'kling-motion': { resolution: '720p', characterOrientation: 'video' },
   'kling-avatar-pro': {},
   'kling-avatar': {},
   'veo-fast': { aspectRatio: '16:9', duration: 8, resolution: '1080p', generateAudio: true, mode: 'text' },

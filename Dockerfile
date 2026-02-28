@@ -26,8 +26,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install OpenSSL for Prisma
-RUN apk add --no-cache openssl
+# Install OpenSSL for Prisma + ffmpeg for audio conversion (voice messages → mp3)
+RUN apk add --no-cache openssl ffmpeg
 
 # Install production dependencies only
 COPY package*.json ./

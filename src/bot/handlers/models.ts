@@ -16,6 +16,8 @@ import { resizeImageForAspectRatio } from '../../utils/imageResize';
 import { calculateDynamicCost } from '../../utils/videoPricing';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
+import { convertOgaToMp3 } from '../../utils/audioConvert';
+import axios from 'axios';
 
 /**
  * Per-user image upload debounce.
@@ -902,24 +904,59 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // Only accept audio files (mp3, wav, m4a, etc.) — voice messages (OGG) are not supported by the API
+  // Accept both audio files and voice messages (voice → convert OGA to MP3)
   let fileId: string | undefined;
+  let isVoiceMessage = false;
   if (ctx.message && 'audio' in ctx.message && ctx.message.audio) {
     fileId = ctx.message.audio.file_id;
   } else if (ctx.message && 'voice' in ctx.message && ctx.message.voice) {
-    // Voice messages are OGG format — not supported by KieAI Avatar API
-    const msg = lang === 'ru'
-      ? '⚠️ Голосовые сообщения не поддерживаются. Пожалуйста, отправьте аудиофайл (mp3, wav, m4a).'
-      : '⚠️ Voice messages are not supported. Please send an audio file (mp3, wav, m4a).';
-    await ctx.reply(msg);
-    return;
+    fileId = ctx.message.voice.file_id;
+    isVoiceMessage = true;
   }
 
   if (!fileId) return;
 
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);
-    ctx.session.uploadedAudioUrl = fileLink.href;
+    let audioUrl = fileLink.href;
+
+    // Voice messages are OGA (Opus/OGG) — convert to MP3 for API compatibility
+    if (isVoiceMessage) {
+      const convertingMsg = lang === 'ru'
+        ? '🔄 Конвертация голосового сообщения...'
+        : '🔄 Converting voice message...';
+      const statusMsg = await ctx.reply(convertingMsg);
+      try {
+        // Download the OGA file
+        const response = await axios.get(audioUrl, { responseType: 'arraybuffer', timeout: 30000 });
+        const ogaBuffer = Buffer.from(response.data);
+
+        // Convert to MP3
+        const mp3Buffer = convertOgaToMp3(ogaBuffer);
+
+        // Upload the MP3 back to Telegram (as a document to get a file URL)
+        const sentDoc = await ctx.telegram.sendDocument(
+          ctx.chat!.id,
+          { source: mp3Buffer, filename: 'voice.mp3' },
+          { disable_notification: true } as any,
+        );
+        await ctx.telegram.deleteMessage(ctx.chat!.id, sentDoc.message_id).catch(() => {});
+        const docFileLink = await ctx.telegram.getFileLink(sentDoc.document.file_id);
+        audioUrl = docFileLink.href;
+        logger.info('Voice message converted to MP3 and re-uploaded');
+      } catch (convErr) {
+        logger.error('Voice conversion failed:', convErr);
+        const msg = lang === 'ru'
+          ? '⚠️ Не удалось конвертировать голосовое. Попробуйте отправить аудиофайл (mp3, wav).'
+          : '⚠️ Failed to convert voice message. Try sending an audio file (mp3, wav).';
+        await ctx.reply(msg);
+        return;
+      } finally {
+        await ctx.telegram.deleteMessage(ctx.chat!.id, statusMsg.message_id).catch(() => {});
+      }
+    }
+
+    ctx.session.uploadedAudioUrl = audioUrl;
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;
     if (hasImage) {

@@ -876,8 +876,8 @@ export class KieAIProvider extends EnhancedProvider {
         prompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         duration: String((options?.duration as number) || 5),
-        sound: true,
-        mode: 'std',
+        sound: (options?.sound !== undefined) ? options.sound : true,
+        mode: (options?.qualityMode as string) || 'std',
         multi_shots: false,
         multi_prompt: [],
       };
@@ -937,8 +937,8 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         input_urls: [inputImageUrls[0]],
         video_urls: [inputVideoUrl],
-        mode: '720p',
-        character_orientation: 'image',
+        mode: (options?.resolution as string) || '720p',
+        character_orientation: (options?.characterOrientation as string) || 'video',
       };
 
       if (prompt && prompt.trim()) {

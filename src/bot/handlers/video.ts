@@ -93,13 +93,13 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     modelSlug: 'kling-3.0',
     descriptionKey: 'videoKling30Desc',
     family: 'kling',
-    hasSettings: false,
+    hasSettings: true,
   },
   'kling-motion': {
     modelSlug: 'kling-motion',
     descriptionKey: 'videoKlingMotionDesc',
     family: 'kling',
-    hasSettings: false,
+    hasSettings: true,
   },
   'kling-avatar-pro': {
     modelSlug: 'kling-avatar-pro',
@@ -394,6 +394,17 @@ export async function getVideoOptionsForFunction(
     // Seedance-specific: camera lock
     if (settings.cameraFixed !== undefined) {
       options.cameraFixed = settings.cameraFixed;
+    }
+    // Kling 3.0: quality mode + sound
+    if (settings.qualityMode) {
+      options.qualityMode = settings.qualityMode;
+    }
+    if (settings.sound !== undefined) {
+      options.sound = settings.sound;
+    }
+    // Motion Control: character orientation
+    if (settings.characterOrientation) {
+      options.characterOrientation = settings.characterOrientation;
     }
 
     return options;

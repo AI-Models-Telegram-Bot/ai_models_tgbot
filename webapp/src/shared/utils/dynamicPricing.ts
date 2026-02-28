@@ -16,6 +16,8 @@ const BASE_COSTS: Record<string, number> = {
   'runway-gen4': 24,
   'veo-fast': 24,
   'kling-pro': 27,
+  'kling-3.0': 30,
+  'kling-motion': 35,
   'sora': 30,
   'seedance-1-pro': 35,
   'sora-pro': 47,
@@ -89,6 +91,20 @@ function calculateKlingCost(
   return KLING_CREDIT_TABLE[`${mode}:${group}:${duration}`] || (mode === 'pro' ? 27 : 16);
 }
 
+// ── Kling 3.0 pricing table ─────────────────────────────────────────
+const KLING_30_DURATION_CREDITS: Record<number, number> = {
+  3: 20,
+  5: 30,
+  8: 45,
+  10: 55,
+  15: 80,
+};
+
+function calculateKling30Cost(duration?: number): number {
+  const dur = duration || 5;
+  return KLING_30_DURATION_CREDITS[dur] || 30;
+}
+
 // ── Midjourney pricing ──────────────────────────────────────────────
 const MJ_SPEED_CREDITS: Record<string, number> = {
   relax: 2,
@@ -125,6 +141,7 @@ export function hasDynamicPricing(slug: string): boolean {
     slug in DYNAMIC_PRICING ||
     slug === 'kling' ||
     slug === 'kling-pro' ||
+    slug === 'kling-3.0' ||
     slug === 'midjourney' ||
     slug === 'seedream-4.5' ||
     slug === 'nano-banana-pro'
@@ -137,6 +154,7 @@ export function calculateDynamicCost(
 ): number {
   if (slug === 'kling') return calculateKlingCost('std', settings);
   if (slug === 'kling-pro') return calculateKlingCost('pro', settings);
+  if (slug === 'kling-3.0') return calculateKling30Cost(settings?.duration);
   if (slug === 'midjourney') return MJ_SPEED_CREDITS[settings?.speed || 'fast'] || 3;
   if (slug === 'seedream-4.5') return SEEDREAM_RES_CREDITS[settings?.resolution || '1K'] || 2.5;
   if (slug === 'nano-banana-pro') return NANO_BANANA_PRO_RES_CREDITS[settings?.resolution || '1K'] || 5;
