@@ -46,7 +46,7 @@ export async function handleHelp(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await sendTrackedMessage(ctx, l.messages.help, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.help, { parse_mode: 'HTML', link_preview_options: { is_disabled: true }, ...getHelpKeyboard(lang) });
 }
 
 export async function handleInstructions(ctx: BotContext): Promise<void> {
@@ -65,7 +65,7 @@ export async function handleSupport(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await sendTrackedMessage(ctx, l.messages.support, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.support, { parse_mode: 'HTML', link_preview_options: { is_disabled: true }, ...getHelpKeyboard(lang) });
 }
 
 export async function handleCommunity(ctx: BotContext): Promise<void> {
@@ -73,7 +73,7 @@ export async function handleCommunity(ctx: BotContext): Promise<void> {
   const lang = getLang(ctx);
   const l = getLocale(lang);
 
-  await sendTrackedMessage(ctx, l.messages.community, { parse_mode: 'HTML', ...getHelpKeyboard(lang) });
+  await sendTrackedMessage(ctx, l.messages.community, { parse_mode: 'HTML', link_preview_options: { is_disabled: true }, ...getHelpKeyboard(lang) });
 }
 
 export async function handlePrivacy(ctx: BotContext): Promise<void> {

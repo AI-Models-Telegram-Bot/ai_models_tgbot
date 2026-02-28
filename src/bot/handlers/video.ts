@@ -240,6 +240,7 @@ export async function handleVideoFamilyMenu(ctx: BotContext): Promise<void> {
 
   await sendTrackedMessage(ctx, (l.messages as any).videoFamilySelect, {
     parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
     ...getVideoFamiliesKeyboard(lang),
   });
 }
@@ -347,6 +348,7 @@ export async function handleVideoFunctionSelection(ctx: BotContext, functionId: 
     : '\n\n💡 <a href="https://t.me/VseOnix_1">Video ideas</a>';
   await sendTrackedMessage(ctx, description + ideasLink, {
     parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
     ...getVideoModelMenuKeyboard(lang, func.modelSlug, func.hasSettings, ctx.from?.id),
   });
 }

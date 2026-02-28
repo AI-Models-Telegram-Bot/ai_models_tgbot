@@ -183,6 +183,7 @@ export async function handleImageFamilyMenu(ctx: BotContext): Promise<void> {
 
   await sendTrackedMessage(ctx, (l.messages as any).imageFamilySelect, {
     parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
     ...getImageFamiliesKeyboard(lang),
   });
 }
@@ -287,6 +288,7 @@ export async function handleImageFunctionSelection(ctx: BotContext, functionId: 
     : '\n\n💡 <a href="https://t.me/VseOnixprompt_ii_photo">Photo ideas</a>';
   await sendTrackedMessage(ctx, description + ideasLink, {
     parse_mode: 'HTML',
+    link_preview_options: { is_disabled: true },
     ...getImageModelMenuKeyboard(lang, func.modelSlug, ctx.from?.id),
   });
 }
