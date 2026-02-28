@@ -503,6 +503,11 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   const doc = ctx.message.document;
   const mime = doc.mime_type || '';
 
+  // Route audio documents (mp3, wav, etc.) to audio handler
+  if (mime.startsWith('audio/')) {
+    return handleAudioUpload(ctx);
+  }
+
   // Only handle image files
   if (!mime.startsWith('image/')) return;
 
@@ -904,7 +909,7 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // Accept both audio files and voice messages (voice → convert OGA to MP3)
+  // Accept audio files, voice messages, and documents with audio MIME
   let fileId: string | undefined;
   let isVoiceMessage = false;
   if (ctx.message && 'audio' in ctx.message && ctx.message.audio) {
@@ -912,6 +917,11 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
   } else if (ctx.message && 'voice' in ctx.message && ctx.message.voice) {
     fileId = ctx.message.voice.file_id;
     isVoiceMessage = true;
+  } else if (ctx.message && 'document' in ctx.message && ctx.message.document) {
+    const mime = ctx.message.document.mime_type || '';
+    if (mime.startsWith('audio/')) {
+      fileId = ctx.message.document.file_id;
+    }
   }
 
   if (!fileId) return;
@@ -934,15 +944,15 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
         // Convert to MP3
         const mp3Buffer = convertOgaToMp3(ogaBuffer);
 
-        // Upload the MP3 back to Telegram (as a document to get a file URL)
-        const sentDoc = await ctx.telegram.sendDocument(
+        // Upload the MP3 back to Telegram (as audio to get a file URL)
+        const sentAudio = await ctx.telegram.sendAudio(
           ctx.chat!.id,
           { source: mp3Buffer, filename: 'voice.mp3' },
           { disable_notification: true } as any,
         );
-        await ctx.telegram.deleteMessage(ctx.chat!.id, sentDoc.message_id).catch(() => {});
-        const docFileLink = await ctx.telegram.getFileLink(sentDoc.document.file_id);
-        audioUrl = docFileLink.href;
+        await ctx.telegram.deleteMessage(ctx.chat!.id, sentAudio.message_id).catch(() => {});
+        const audioFileLink = await ctx.telegram.getFileLink(sentAudio.audio.file_id);
+        audioUrl = audioFileLink.href;
         logger.info('Voice message converted to MP3 and re-uploaded');
       } catch (convErr) {
         logger.error('Voice conversion failed:', convErr);
