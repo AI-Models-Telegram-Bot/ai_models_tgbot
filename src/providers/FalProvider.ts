@@ -80,6 +80,13 @@ export class FalProvider extends EnhancedProvider {
 
       const input: Record<string, unknown> = { prompt };
 
+      // Pass image size (width/height) for aspect ratio support
+      const width = options?.width as number | undefined;
+      const height = options?.height as number | undefined;
+      if (width && height) {
+        input.image_size = { width, height };
+      }
+
       // Add reference image for editing mode
       if (hasImage) {
         input.image_url = inputImageUrls[0];
