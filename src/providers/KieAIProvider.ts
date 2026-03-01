@@ -8,6 +8,7 @@ import {
   AudioGenerationResult,
 } from './BaseProvider';
 import { logger } from '../utils/logger';
+import { parseMjParams } from '../utils/mjParams';
 
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
@@ -426,40 +427,6 @@ export class KieAIProvider extends EnhancedProvider {
    * Midjourney image generation via dedicated MJ endpoint
    * POST /mj/generate → poll /mj/record-info
    */
-  /**
-   * Parse Midjourney-style parameters from prompt text.
-   * Extracts --v, --ar, --s/--stylize, --w/--weird, --q/--quality, --style, --p
-   * and returns the cleaned prompt + extracted overrides.
-   */
-  private parseMjParams(prompt: string): { cleanPrompt: string; params: Record<string, string | number> } {
-    const params: Record<string, string | number> = {};
-    let clean = prompt;
-
-    // --v <version> (e.g. --v 7, --v 6.1)
-    clean = clean.replace(/--v\s+([\d.]+)/gi, (_, v) => { params.version = v; return ''; });
-    // --ar <ratio> (e.g. --ar 16:9)
-    clean = clean.replace(/--ar\s+([\d]+:[\d]+)/gi, (_, v) => { params.aspectRatio = v; return ''; });
-    // --s or --stylize <number>
-    clean = clean.replace(/--(?:s|stylize)\s+(\d+)/gi, (_, v) => { params.stylization = parseInt(v, 10); return ''; });
-    // --w or --weird <number>
-    clean = clean.replace(/--(?:w|weird)\s+(\d+)/gi, (_, v) => { params.weirdness = parseInt(v, 10); return ''; });
-    // --q or --quality <number>
-    clean = clean.replace(/--(?:q|quality)\s+([\d.]+)/gi, (_, v) => { params.quality = parseFloat(v); return ''; });
-    // --style <value>
-    clean = clean.replace(/--style\s+(\S+)/gi, (_, v) => { params.style = v; return ''; });
-    // --c or --chaos <number>
-    clean = clean.replace(/--(?:c|chaos)\s+(\d+)/gi, (_, v) => { params.chaos = parseInt(v, 10); return ''; });
-    // --raw (raw mode)
-    clean = clean.replace(/--raw\b/gi, () => { params.raw = 1; return ''; });
-    // --p <uuid> (personalization) — strip entirely, not supported by KieAI
-    clean = clean.replace(/--p\s+[\w-]+/gi, '');
-    clean = clean.replace(/--p\b/gi, '');
-    // --no <text> (negative prompt) — strip, not supported via API params
-    clean = clean.replace(/--no\s+[^-]+/gi, '');
-
-    return { cleanPrompt: clean.replace(/\s{2,}/g, ' ').trim(), params };
-  }
-
   private async generateMidjourneyImage(
     prompt: string,
     options?: Record<string, unknown>
@@ -471,7 +438,7 @@ export class KieAIProvider extends EnhancedProvider {
       logger.info(`KieAI image: starting Midjourney generation (img2img: ${!!hasImage})`);
 
       // Parse MJ-style params from prompt (--v, --ar, --s, --w, --p etc.)
-      const { cleanPrompt, params: mjParams } = this.parseMjParams(prompt);
+      const { cleanPrompt, params: mjParams } = parseMjParams(prompt);
 
       // Version: prompt --v overrides settings, settings override default
       const versionFromSettings = (options?.version as string) || 'v6.1';
