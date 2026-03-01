@@ -198,6 +198,8 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     jobId: job.id, requestId, modelSlug, userId,
   });
 
+  let status: GenerationStatusManager | null = null;
+
   try {
     const model = await modelService.getBySlug(modelSlug);
     if (!model) throw new Error(`Model not found: ${modelSlug}`);
@@ -207,7 +209,6 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
     // Create dynamic status manager for engaging progress messages — Telegram only
     const displayName = job.data.modelName || model.name;
-    let status: GenerationStatusManager | null = null;
     if (job.data.source !== 'web') {
       status = new GenerationStatusManager({
         telegram,
@@ -216,17 +217,13 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         modelSlug,
         modelName: displayName,
       });
-      await status.start();
+      // Stage 0 is already sent by the bot handler — start auto-advancing from stage 1
+      status.startAutoAdvance(4000);
     }
 
     // Use ProviderManager for automatic fallback across multiple providers
     const manager = getProviderManager();
     let generationResponse: { result: GenerationResult; provider: string };
-
-    // Advance status to stage 2 before calling the API
-    if (status && status.totalStages > 1) {
-      await status.nextStage();
-    }
 
     switch (model.category) {
       case 'TEXT':
@@ -267,11 +264,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     logger.info(`Request ${requestId} served by provider: ${actualProvider}`);
     await job.progress(80);
 
-    // Advance through remaining stages after generation completes
+    // Stop the auto-advancing status timer now that generation is complete
     if (status) {
-      while (status.stage < status.totalStages - 1) {
-        await status.nextStage();
-      }
+      status.stop();
     }
 
     const isWeb = job.data.source === 'web';
@@ -508,6 +503,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
     return { requestId, success: true };
   } catch (error) {
+    // Stop status auto-advance timer on error
+    if (status) status.stop();
+
     const errorMsg = error instanceof Error ? error.message : String(error);
     const maxAttempts = job.opts.attempts ?? 1;
     const isFinalAttempt = job.attemptsMade >= maxAttempts - 1;

@@ -87,18 +87,18 @@ export const en = {
   // Messages
   messages: {
     // Welcome & Start
-    welcome: `Hi! 👋
+    welcome: `<b>Hi!</b> 👋
 
 Here's what I can do:
-• Magazine-quality photos ✨
-• Video from a single image 🎬
-• Music for any mood 🎵
-• Answers smarter than ChatGPT 🧠
+• <b>Magazine-quality photos</b> ✨
+• <b>Video from a single image</b> 🎬
+• <b>Music for any mood</b> 🎵
+• <b>Answers smarter than ChatGPT</b> 🧠
 
-50+ AI models in one bot.
+<b>50+ AI models</b> in one bot.
 Just tell me what you want — I'll create it.
 
-💸 You can also earn here. Up to 2000₽ per friend!
+💸 You can also <b>earn here</b>. Up to <b>2000₽</b> per friend!
 
 Where do we start? 👇`,
 
