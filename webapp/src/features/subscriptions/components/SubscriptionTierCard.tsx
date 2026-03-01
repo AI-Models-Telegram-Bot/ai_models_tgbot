@@ -5,7 +5,7 @@ import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import { FeaturesModal } from './FeaturesModal';
 import { PaymentMethodModal } from './PaymentMethodModal';
-import { getTelegramUser } from '@/services/telegram/telegram';
+import { getTelegramUser, openTelegramLink } from '@/services/telegram/telegram';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
@@ -57,9 +57,9 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
       return;
     }
     if (plan.priceUSD === null) {
-      // Enterprise: open support profile in Telegram
+      // Enterprise: open support chat natively in Telegram
       const supportUsername = import.meta.env.VITE_SUPPORT_USERNAME || 'VseOnix_Support';
-      window.location.href = `https://t.me/${supportUsername}`;
+      openTelegramLink(`https://t.me/${supportUsername}`);
       return;
     }
     setShowPayment(true);
