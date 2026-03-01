@@ -225,11 +225,6 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     const manager = getProviderManager();
     let generationResponse: { result: GenerationResult; provider: string };
 
-    // Advance status to stage 2 before calling the API
-    if (status && status.totalStages > 1) {
-      await status.nextStage();
-    }
-
     switch (model.category) {
       case 'TEXT':
         generationResponse = await manager.generateWithModel('TEXT', 'generateText', modelSlug, input);
