@@ -426,6 +426,35 @@ export class KieAIProvider extends EnhancedProvider {
    * Midjourney image generation via dedicated MJ endpoint
    * POST /mj/generate → poll /mj/record-info
    */
+  /**
+   * Parse Midjourney-style parameters from prompt text.
+   * Extracts --v, --ar, --s/--stylize, --w/--weird, --q/--quality, --style, --p
+   * and returns the cleaned prompt + extracted overrides.
+   */
+  private parseMjParams(prompt: string): { cleanPrompt: string; params: Record<string, string | number> } {
+    const params: Record<string, string | number> = {};
+    let clean = prompt;
+
+    // --v <version> (e.g. --v 7, --v 6.1)
+    clean = clean.replace(/--v\s+([\d.]+)/gi, (_, v) => { params.version = v; return ''; });
+    // --ar <ratio> (e.g. --ar 16:9)
+    clean = clean.replace(/--ar\s+([\d]+:[\d]+)/gi, (_, v) => { params.aspectRatio = v; return ''; });
+    // --s or --stylize <number>
+    clean = clean.replace(/--(?:s|stylize)\s+(\d+)/gi, (_, v) => { params.stylization = parseInt(v, 10); return ''; });
+    // --w or --weird <number>
+    clean = clean.replace(/--(?:w|weird)\s+(\d+)/gi, (_, v) => { params.weirdness = parseInt(v, 10); return ''; });
+    // --q or --quality <number>
+    clean = clean.replace(/--(?:q|quality)\s+([\d.]+)/gi, (_, v) => { params.quality = parseFloat(v); return ''; });
+    // --style <value>
+    clean = clean.replace(/--style\s+(\S+)/gi, (_, v) => { params.style = v; return ''; });
+    // --p (personalization) — strip entirely, not supported by KieAI
+    clean = clean.replace(/--p\b/gi, '');
+    // --no <text> (negative prompt) — strip, not supported via API params
+    clean = clean.replace(/--no\s+[^-]+/gi, '');
+
+    return { cleanPrompt: clean.replace(/\s{2,}/g, ' ').trim(), params };
+  }
+
   private async generateMidjourneyImage(
     prompt: string,
     options?: Record<string, unknown>
@@ -436,19 +465,38 @@ export class KieAIProvider extends EnhancedProvider {
       const hasImage = inputImageUrls && inputImageUrls.length > 0;
       logger.info(`KieAI image: starting Midjourney generation (img2img: ${!!hasImage})`);
 
-      // Map version string: 'v6.1' → '6.1', 'v7' → '7'
-      const versionStr = (options?.version as string) || 'v6.1';
-      const versionNum = versionStr.replace('v', '');
+      // Parse MJ-style params from prompt (--v, --ar, --s, --w, --p etc.)
+      const { cleanPrompt, params: mjParams } = this.parseMjParams(prompt);
+
+      // Version: prompt --v overrides settings, settings override default
+      const versionFromSettings = (options?.version as string) || 'v6.1';
+      const versionNum = mjParams.version
+        ? String(mjParams.version)
+        : versionFromSettings.replace('v', '');
+
+      // Aspect ratio: prompt --ar overrides settings
+      const aspectRatio = mjParams.aspectRatio
+        ? String(mjParams.aspectRatio)
+        : (options?.aspectRatio as string) || '1:1';
+
+      // Stylization: prompt --s overrides settings
+      const stylization = mjParams.stylization !== undefined
+        ? Number(mjParams.stylization)
+        : (options?.stylize as number) || 100;
+
+      // Weirdness: prompt --w overrides settings
+      const weirdness = mjParams.weirdness !== undefined
+        ? Number(mjParams.weirdness)
+        : (options?.weirdness as number) ?? 0;
 
       const speed = (options?.speed as string) || 'fast';
-      const weirdness = (options?.weirdness as number) ?? 0;
 
       const payload: Record<string, unknown> = {
         taskType: hasImage ? 'mj_img2img' : 'mj_txt2img',
-        prompt,
-        aspectRatio: (options?.aspectRatio as string) || '1:1',
+        prompt: cleanPrompt,
+        aspectRatio,
         version: versionNum,
-        stylization: (options?.stylize as number) || 100,
+        stylization,
         speed,
         ...(weirdness > 0 ? { weirdness } : {}),
       };
@@ -458,7 +506,7 @@ export class KieAIProvider extends EnhancedProvider {
         payload.fileUrl = inputImageUrls[0];
       }
 
-      logger.info('KieAI Midjourney payload:', { taskType: payload.taskType, hasImage });
+      logger.info('KieAI Midjourney payload:', { taskType: payload.taskType, hasImage, version: versionNum, aspectRatio });
       const createResponse = await this.client.post('/mj/generate', payload);
 
       const taskId = createResponse.data?.data?.taskId;
