@@ -51,14 +51,22 @@ router.get('/image-settings/me/:modelSlug', async (req, res) => {
   const telegramId = getEffectiveTelegramId(req);
   const { modelSlug } = req.params;
 
-  logger.info('GET /image-settings/me/:modelSlug', { telegramId, modelSlug });
+  logger.info('GET /image-settings/me/:modelSlug', {
+    telegramId,
+    modelSlug,
+    telegramUserId: (req as any).telegramUser?.id,
+    hasInitData: !!req.headers['x-telegram-init-data'],
+    hasTgIdHeader: !!req.headers['x-telegram-id'],
+  });
 
   if (!telegramId) {
+    logger.warn('GET /image-settings: no telegramId, returning defaults', { modelSlug });
     return res.json({ settings: imageSettingsService.getDefaults(modelSlug) });
   }
 
   try {
     const settings = await imageSettingsService.getModelSettingsByTelegramId(BigInt(telegramId), modelSlug);
+    logger.info('GET /image-settings: returning saved settings', { modelSlug, settings });
     return res.json({ settings });
   } catch (error: any) {
     if (error?.message?.includes('not found')) {
@@ -78,7 +86,7 @@ router.put('/image-settings/me', async (req, res) => {
   const telegramId = getEffectiveTelegramId(req);
   const { modelSlug, settings } = req.body;
 
-  logger.info('PUT /image-settings/me', { telegramId, modelSlug });
+  logger.info('PUT /image-settings/me', { telegramId, modelSlug, settings });
 
   if (!telegramId) {
     return res.status(401).json({ message: 'Not authenticated' });

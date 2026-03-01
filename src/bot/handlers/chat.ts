@@ -119,7 +119,7 @@ async function handleModelPickerSelection(ctx: BotContext, input: string): Promi
   const lang = getLang(ctx);
 
   // Parse model name from button text
-  const match = input.match(/^(.+?)\s*\(⚡\d+\)$/);
+  const match = input.match(/^(.+?)\s*\(⚡[\d.]+\)$/);
   if (!match) {
     // Not a model button — treat as chat message
     ctx.session!.chatModelPicker = false;
