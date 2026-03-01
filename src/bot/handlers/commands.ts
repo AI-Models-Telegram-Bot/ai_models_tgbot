@@ -40,6 +40,10 @@ export async function handleStart(ctx: BotContext): Promise<void> {
   } else {
     await ctx.reply(l.messages.welcome, { parse_mode: 'HTML', ...inlineKb });
   }
+
+  // Show reply keyboard (main menu) in a follow-up message
+  const menuPrompt = lang === 'ru' ? 'Или выбери из меню:' : 'Or pick from the menu:';
+  await sendTrackedMessage(ctx, menuPrompt, getMainKeyboard(lang));
 }
 
 export async function handleHelp(ctx: BotContext): Promise<void> {
