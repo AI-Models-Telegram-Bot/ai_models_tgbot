@@ -273,7 +273,7 @@ const ReferralPage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex" style={{ columnGap: 8 }}>
+            <div className="space-y-3">
               <input
                 type="number"
                 value={withdrawAmount}
@@ -281,14 +281,13 @@ const ReferralPage: React.FC = () => {
                 placeholder={`${threshold}+`}
                 min={threshold}
                 step="0.01"
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-content-tertiary focus:outline-none focus:border-brand-primary/50 transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-content-tertiary focus:outline-none focus:border-brand-primary/50 transition-colors"
               />
               <Button
                 variant="primary"
-                size="sm"
+                fullWidth
                 onClick={handleWithdraw}
                 disabled={withdrawing || !withdrawAmount || parseFloat(withdrawAmount) < threshold || parseFloat(withdrawAmount) > moneyBalance}
-                className="whitespace-nowrap px-5"
               >
                 {withdrawing ? '...' : t('referral:withdrawal.request')}
               </Button>
