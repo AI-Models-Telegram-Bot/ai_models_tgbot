@@ -61,6 +61,28 @@ export function getBackKeyboard(lang: Language) {
   ]).resize();
 }
 
+export function getWelcomeInlineKeyboard(lang: Language) {
+  const isRu = lang === 'ru';
+  const rows = [
+    [
+      Markup.button.callback(isRu ? '🖼 Создать фото' : '🖼 Create Photo', 'menu_image'),
+      Markup.button.callback(isRu ? '🎬 Создать видео' : '🎬 Create Video', 'menu_video'),
+    ],
+    [
+      Markup.button.callback(isRu ? '🎵 Создать музыку' : '🎵 Create Music', 'menu_audio'),
+      Markup.button.callback(isRu ? '💬 Чат с AI' : '💬 Chat with AI', 'menu_text'),
+    ],
+    [
+      Markup.button.callback(isRu ? '👤 Профиль' : '👤 Profile', 'menu_profile'),
+      Markup.button.callback(isRu ? '❓ Помощь' : '❓ Help', 'menu_help'),
+    ],
+    [
+      Markup.button.callback(isRu ? '💰 Зарабатывать с нами' : '💰 Earn with us', 'menu_referral'),
+    ],
+  ];
+  return Markup.inlineKeyboard(rows);
+}
+
 // Legacy exports for compatibility (will be removed)
 export const mainKeyboard = getMainKeyboard('en');
 export const cancelKeyboard = getCancelKeyboard('en');

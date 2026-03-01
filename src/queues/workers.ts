@@ -15,6 +15,7 @@ import { t } from '../locales';
 import type { Language } from '../locales';
 import { getModelActiveKeyboardMarkup } from '../bot/keyboards/modelKeyboards';
 import { parseMjParams } from '../utils/mjParams';
+import { GenerationStatusManager } from '../services/GenerationStatusManager';
 
 // Create Telegram API instance per job using the originating bot's token.
 // This ensures responses go to the correct bot (dev vs prod) when
@@ -204,18 +205,28 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     await requestService.markProcessing(requestId);
     await job.progress(10);
 
-    // Edit processing message to stage 2 (Generating) — Telegram only
+    // Create dynamic status manager for engaging progress messages — Telegram only
+    const displayName = job.data.modelName || model.name;
+    let status: GenerationStatusManager | null = null;
     if (job.data.source !== 'web') {
-      try {
-        const displayName = job.data.modelName || model.name;
-        const stage2 = t(lang, 'messages.processingGenerating', { modelName: displayName });
-        await telegram.editMessageText(chatId, processingMsgId, undefined, stage2, { parse_mode: 'HTML' });
-      } catch { /* message may already be deleted */ }
+      status = new GenerationStatusManager({
+        telegram,
+        chatId,
+        messageId: processingMsgId,
+        modelSlug,
+        modelName: displayName,
+      });
+      await status.start();
     }
 
     // Use ProviderManager for automatic fallback across multiple providers
     const manager = getProviderManager();
     let generationResponse: { result: GenerationResult; provider: string };
+
+    // Advance status to stage 2 before calling the API
+    if (status && status.totalStages > 1) {
+      await status.nextStage();
+    }
 
     switch (model.category) {
       case 'TEXT':
@@ -256,13 +267,11 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     logger.info(`Request ${requestId} served by provider: ${actualProvider}`);
     await job.progress(80);
 
-    // Edit processing message to stage 3 (Almost done) — Telegram only
-    if (job.data.source !== 'web') {
-      try {
-        const displayName = job.data.modelName || model.name;
-        const stage3 = t(lang, 'messages.processingAlmostDone', { modelName: displayName });
-        await telegram.editMessageText(chatId, processingMsgId, undefined, stage3, { parse_mode: 'HTML' });
-      } catch { /* message may already be deleted */ }
+    // Advance through remaining stages after generation completes
+    if (status) {
+      while (status.stage < status.totalStages - 1) {
+        await status.nextStage();
+      }
     }
 
     const isWeb = job.data.source === 'web';

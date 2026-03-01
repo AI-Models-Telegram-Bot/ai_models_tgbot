@@ -14,6 +14,7 @@ import { enqueueGeneration } from '../../queues/producer';
 import { config } from '../../config';
 import { resizeImageForAspectRatio } from '../../utils/imageResize';
 import { calculateDynamicCost } from '../../utils/videoPricing';
+import { getStatusType, STATUS_MESSAGES } from '../../utils/statusMessages';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 import { convertOgaToMp3 } from '../../utils/audioConvert';
@@ -735,8 +736,12 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     return;
   }
 
-  // Send processing message (Stage 1: Starting)
-  const processingMessage = t(lang, 'messages.processingStart', { modelName: model.name });
+  // Send initial processing message with dynamic status text
+  const statusType = getStatusType(model.slug);
+  const statusMsgs = STATUS_MESSAGES[statusType] || STATUS_MESSAGES.default;
+  const initialStageVariants = statusMsgs.stages[0];
+  const initialStatusText = initialStageVariants[Math.floor(Math.random() * initialStageVariants.length)];
+  const processingMessage = `🚀 <b>${model.name}</b>\n\n${initialStatusText}`;
   const activeKb = getModelActiveKeyboardMarkup({
     lang, modelCategory: model.category, modelSlug: model.slug, telegramId: ctx.from?.id,
   });

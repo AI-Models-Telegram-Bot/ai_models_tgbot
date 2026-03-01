@@ -2,12 +2,15 @@ import { BotContext } from '../types';
 import { handleCategorySelection } from './categories';
 import { handleModelSelection, handleGenerateCallback } from './models';
 import { handleChatCallback } from './chat';
+import { handleTextCategory, handleImageCategory, handleVideoCategory, handleAudioCategory } from './categories';
+import { handleProfile, handleHelp } from './commands';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { getVideoModelMenuKeyboard } from '../keyboards/videoKeyboards';
 import { getImageModelMenuKeyboard } from '../keyboards/imageKeyboards';
 import { ModelCategory } from '@prisma/client';
-import { deleteMessage } from '../utils';
-import { Language, getLocale } from '../../locales';
+import { deleteMessage, sendTrackedMessage } from '../utils';
+import { Language, t, getLocale } from '../../locales';
+import { config } from '../../config';
 
 function getLang(ctx: BotContext): Language {
   return (ctx.user?.language as Language) || 'en';
@@ -81,6 +84,34 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
   if (data.startsWith('chat:')) {
     await deleteMessage(ctx, ctx.callbackQuery.message?.message_id);
     return handleChatCallback(ctx, data);
+  }
+
+  // ── Welcome inline menu buttons ──
+  if (data === 'menu_image') {
+    return handleImageCategory(ctx);
+  }
+  if (data === 'menu_video') {
+    return handleVideoCategory(ctx);
+  }
+  if (data === 'menu_audio') {
+    if (config.features.audioEnabled) {
+      return handleAudioCategory(ctx);
+    }
+    const msg = lang === 'ru' ? '🎵 Аудио скоро будет доступно!' : '🎵 Audio coming soon!';
+    await ctx.reply(msg);
+    return;
+  }
+  if (data === 'menu_text') {
+    return handleTextCategory(ctx);
+  }
+  if (data === 'menu_profile') {
+    return handleProfile(ctx);
+  }
+  if (data === 'menu_help') {
+    return handleHelp(ctx);
+  }
+  if (data === 'menu_referral') {
+    return handleProfile(ctx);
   }
 
   // Delete the message with inline keyboard to keep chat clean

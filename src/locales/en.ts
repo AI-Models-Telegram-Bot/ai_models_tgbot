@@ -88,8 +88,7 @@ export const en = {
   messages: {
     // Welcome & Start
     welcome: `Hi! 👋
-
-I'm Vseonix — I create anything you can imagine.
+<b>I'm Vseonix</b> — I create anything you can imagine.
 
 Want a cool photo? A video from an image?
 Music for the mood? Or just chat with AI?
@@ -98,7 +97,7 @@ I can do all of this and more ✨
 
 💸 By the way, you can earn here. Up to 2000₽ per friend!
 
-Pick where to start 👇`,
+👇 <b>Pick what you want to do</b>`,
 
     // Web Auth
     webAuthSuccess: '✅ You have successfully logged in to the web version of VseoNix. Please return to the website to continue.',
