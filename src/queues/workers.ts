@@ -162,7 +162,7 @@ function formatResultCaption(opts: {
       if (key === 'generateAudio' || key === 'enableAudio') {
         displayVal = value ? (lang === 'ru' ? 'Да' : 'Yes') : (lang === 'ru' ? 'Нет' : 'No');
       }
-      if (key === 'version') displayVal = `v${value}`;
+      if (key === 'version') displayVal = String(value).startsWith('v') ? String(value) : `v${value}`;
       settingParts.push(`⚙️ ${label}: <b>${escapeHtml(displayVal)}</b>`);
     }
     if (settingParts.length > 0) {

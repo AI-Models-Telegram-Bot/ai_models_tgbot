@@ -447,7 +447,12 @@ export class KieAIProvider extends EnhancedProvider {
     clean = clean.replace(/--(?:q|quality)\s+([\d.]+)/gi, (_, v) => { params.quality = parseFloat(v); return ''; });
     // --style <value>
     clean = clean.replace(/--style\s+(\S+)/gi, (_, v) => { params.style = v; return ''; });
-    // --p (personalization) — strip entirely, not supported by KieAI
+    // --c or --chaos <number>
+    clean = clean.replace(/--(?:c|chaos)\s+(\d+)/gi, (_, v) => { params.chaos = parseInt(v, 10); return ''; });
+    // --raw (raw mode)
+    clean = clean.replace(/--raw\b/gi, () => { params.raw = 1; return ''; });
+    // --p <uuid> (personalization) — strip entirely, not supported by KieAI
+    clean = clean.replace(/--p\s+[\w-]+/gi, '');
     clean = clean.replace(/--p\b/gi, '');
     // --no <text> (negative prompt) — strip, not supported via API params
     clean = clean.replace(/--no\s+[^-]+/gi, '');
