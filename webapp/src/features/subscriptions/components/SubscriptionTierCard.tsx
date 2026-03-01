@@ -57,11 +57,9 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
       return;
     }
     if (plan.priceUSD === null) {
-      // Enterprise: open direct Telegram link to support
-      const supportUsername = import.meta.env.VITE_SUPPORT_USERNAME || '';
-      if (supportUsername) {
-        openTelegramLink(`https://t.me/${supportUsername}`);
-      }
+      // Enterprise: open support profile in Telegram
+      const supportUsername = import.meta.env.VITE_SUPPORT_USERNAME || 'VseOnix_Support';
+      window.location.href = `https://t.me/${supportUsername}`;
       return;
     }
     setShowPayment(true);
