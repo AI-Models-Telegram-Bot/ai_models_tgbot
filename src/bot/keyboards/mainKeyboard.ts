@@ -61,6 +61,26 @@ export function getBackKeyboard(lang: Language) {
   ]).resize();
 }
 
+export function getWelcomeInlineKeyboard(lang: Language) {
+  const isRu = lang === 'ru';
+  const rows: any[][] = [
+    [
+      Markup.button.callback(isRu ? '🎨 Хочу крутую картинку' : '🎨 Create a cool image', 'quick_image'),
+      Markup.button.callback(isRu ? '🎬 Хочу крутое видео' : '🎬 Create a cool video', 'quick_video'),
+    ],
+  ];
+
+  // Second row: referral webapp + ideas channel URL
+  const row2: any[] = [];
+  if (config.webapp.url) {
+    row2.push(Markup.button.webApp(isRu ? '💰 Зарабатывать с нами' : '💰 Earn with us', `${config.webapp.url}/referral`));
+  }
+  row2.push(Markup.button.url(isRu ? '💡 Идеи и промпты' : '💡 Ideas & prompts', 'https://t.me/VseOnixprompt_ii_photo'));
+  rows.push(row2);
+
+  return Markup.inlineKeyboard(rows);
+}
+
 // Legacy exports for compatibility (will be removed)
 export const mainKeyboard = getMainKeyboard('en');
 export const cancelKeyboard = getCancelKeyboard('en');

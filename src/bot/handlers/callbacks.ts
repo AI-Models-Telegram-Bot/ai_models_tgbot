@@ -2,6 +2,7 @@ import { BotContext } from '../types';
 import { handleCategorySelection } from './categories';
 import { handleModelSelection, handleGenerateCallback } from './models';
 import { handleChatCallback } from './chat';
+import { handleImageCategory, handleVideoCategory } from './categories';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
 import { getVideoModelMenuKeyboard } from '../keyboards/videoKeyboards';
 import { getImageModelMenuKeyboard } from '../keyboards/imageKeyboards';
@@ -81,6 +82,14 @@ export async function handleCallbackQuery(ctx: BotContext): Promise<void> {
   if (data.startsWith('chat:')) {
     await deleteMessage(ctx, ctx.callbackQuery.message?.message_id);
     return handleChatCallback(ctx, data);
+  }
+
+  // ── Welcome inline quick-action buttons ──
+  if (data === 'quick_image') {
+    return handleImageCategory(ctx);
+  }
+  if (data === 'quick_video') {
+    return handleVideoCategory(ctx);
   }
 
   // Delete the message with inline keyboard to keep chat clean

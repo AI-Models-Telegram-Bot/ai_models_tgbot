@@ -1,6 +1,6 @@
 import { Markup } from 'telegraf';
 import { BotContext } from '../types';
-import { getMainKeyboard, getHelpKeyboard, getProfileKeyboard, getLanguageKeyboard } from '../keyboards/mainKeyboard';
+import { getMainKeyboard, getHelpKeyboard, getProfileKeyboard, getLanguageKeyboard, getWelcomeInlineKeyboard } from '../keyboards/mainKeyboard';
 import { formatTokens } from '../../utils/helpers';
 import { userService, walletService } from '../../services';
 import { Language, t, getLocale } from '../../locales';
@@ -22,23 +22,28 @@ export async function handleStart(ctx: BotContext): Promise<void> {
     return;
   }
 
-  // Send welcome photo if configured, then main menu
+  // Build inline keyboard for welcome message
+  const inlineKb = getWelcomeInlineKeyboard(lang);
+
+  // Send welcome photo with inline buttons
   const photoFileId = config.features.welcomePhotoFileId;
   if (photoFileId) {
     try {
       await ctx.replyWithPhoto(photoFileId, {
         caption: l.messages.welcome,
         parse_mode: 'HTML',
+        ...inlineKb,
       });
     } catch {
-      // Fallback to text if photo fails
-      await ctx.reply(l.messages.welcome, { parse_mode: 'HTML' });
+      await ctx.reply(l.messages.welcome, { parse_mode: 'HTML', ...inlineKb });
     }
-    // Show main menu keyboard in a follow-up message
-    await sendTrackedMessage(ctx, l.messages.chooseOption, getMainKeyboard(lang));
   } else {
-    await sendTrackedMessage(ctx, l.messages.welcome, getMainKeyboard(lang));
+    await ctx.reply(l.messages.welcome, { parse_mode: 'HTML', ...inlineKb });
   }
+
+  // Show reply keyboard (main menu) in a follow-up message
+  const menuPrompt = lang === 'ru' ? 'Или выбери из меню:' : 'Or pick from the menu:';
+  await sendTrackedMessage(ctx, menuPrompt, getMainKeyboard(lang));
 }
 
 export async function handleHelp(ctx: BotContext): Promise<void> {

@@ -89,16 +89,18 @@ export const en = {
     // Welcome & Start
     welcome: `Hi! 👋
 
-I'm Vseonix — I create anything you can imagine.
+Here's what I can do:
+• Magazine-quality photos ✨
+• Video from a single image 🎬
+• Music for any mood 🎵
+• Answers smarter than ChatGPT 🧠
 
-Want a cool photo? A video from an image?
-Music for the mood? Or just chat with AI?
+50+ AI models in one bot.
+Just tell me what you want — I'll create it.
 
-I can do all of this and more ✨
+💸 You can also earn here. Up to 2000₽ per friend!
 
-💸 By the way, you can earn here. Up to 2000₽ per friend!
-
-Pick where to start 👇`,
+Where do we start? 👇`,
 
     // Web Auth
     webAuthSuccess: '✅ You have successfully logged in to the web version of VseoNix. Please return to the website to continue.',
