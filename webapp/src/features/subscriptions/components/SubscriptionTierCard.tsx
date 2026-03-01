@@ -5,7 +5,7 @@ import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
 import { FeaturesModal } from './FeaturesModal';
 import { PaymentMethodModal } from './PaymentMethodModal';
-import { getTelegramUser } from '@/services/telegram/telegram';
+import { getTelegramUser, openTelegramLink } from '@/services/telegram/telegram';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
