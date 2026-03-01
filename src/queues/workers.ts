@@ -14,6 +14,7 @@ import { logger } from '../utils/logger';
 import { t } from '../locales';
 import type { Language } from '../locales';
 import { getModelActiveKeyboardMarkup } from '../bot/keyboards/modelKeyboards';
+import { parseMjParams } from '../utils/mjParams';
 
 // Create Telegram API instance per job using the originating bot's token.
 // This ensures responses go to the correct bot (dev vs prod) when
@@ -391,11 +392,25 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       }
 
       const displayName = job.data.modelName || model.name;
+
+      // For Midjourney: override settingsApplied with params parsed from prompt
+      let displaySettings = job.data.settingsApplied;
+      if (modelSlug === 'midjourney' && displaySettings) {
+        const { params: mjOverrides } = parseMjParams(input);
+        if (Object.keys(mjOverrides).length > 0) {
+          displaySettings = { ...displaySettings };
+          if (mjOverrides.version) displaySettings.version = mjOverrides.version;
+          if (mjOverrides.aspectRatio) displaySettings.aspectRatio = mjOverrides.aspectRatio;
+          if (mjOverrides.stylization !== undefined) displaySettings.stylize = mjOverrides.stylization;
+          if (mjOverrides.weirdness !== undefined) displaySettings.weirdness = mjOverrides.weirdness;
+        }
+      }
+
       const caption = formatResultCaption({
         input,
         modelName: displayName,
         category: job.data.modelCategory,
-        settingsApplied: job.data.settingsApplied,
+        settingsApplied: displaySettings,
         creditsCost,
         remainingBalance,
         lang,

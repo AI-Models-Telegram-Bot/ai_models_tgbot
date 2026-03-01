@@ -91,9 +91,12 @@ export const en = {
 
 I'm Vseonix — I create anything you can imagine.
 
-Want a cool photo? A video from an image? Music for the mood? Or just chat with AI?
+Want a cool photo? A video from an image?
+Music for the mood? Or just chat with AI?
 
 I can do all of this and more ✨
+
+💸 By the way, you can earn here. Up to 2000₽ per friend!
 
 Pick where to start 👇`,
 

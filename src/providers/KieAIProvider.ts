@@ -8,6 +8,7 @@ import {
   AudioGenerationResult,
 } from './BaseProvider';
 import { logger } from '../utils/logger';
+import { parseMjParams } from '../utils/mjParams';
 
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
@@ -471,7 +472,7 @@ export class KieAIProvider extends EnhancedProvider {
       logger.info(`KieAI image: starting Midjourney generation (img2img: ${!!hasImage})`);
 
       // Parse MJ-style params from prompt (--v, --ar, --s, --w, --p etc.)
-      const { cleanPrompt, params: mjParams } = this.parseMjParams(prompt);
+      const { cleanPrompt, params: mjParams } = parseMjParams(prompt);
 
       // Version: prompt --v overrides settings, settings override default
       const versionFromSettings = (options?.version as string) || 'v6.1';
