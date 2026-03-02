@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useReferralStore } from '@/features/referral/store/referralStore';
-import { Card, Button, Skeleton, Modal, Badge } from '@/shared/ui';
+import { Card, Button, Skeleton, Badge } from '@/shared/ui';
 import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { openTelegramLink } from '@/services/telegram/telegram';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import type { ReferralMode, WithdrawalStatus } from '@/types/referral.types';
 import toast from 'react-hot-toast';
+
+const TIER_ORDER = ['STARTER', 'PRO', 'PREMIUM', 'BUSINESS'] as const;
+const TIER_LABELS: Record<string, string> = {
+  STARTER: 'Starter',
+  PRO: 'Pro',
+  PREMIUM: 'Premium',
+  BUSINESS: 'Business',
+};
 
 const ReferralPage: React.FC = () => {
   const { t } = useTranslation(['referral', 'common']);
@@ -17,11 +25,11 @@ const ReferralPage: React.FC = () => {
     referralUrl,
     referralMode,
     commissionRates,
+    inviteeBonus,
     withdrawalThresholds,
     walletCurrency,
     moneyBalance,
     stats,
-    benefits,
     withdrawals,
     isLoading,
     fetchReferralInfo,
@@ -31,7 +39,6 @@ const ReferralPage: React.FC = () => {
     fetchWithdrawals,
   } = useReferralStore();
   const { copy } = useCopyToClipboard();
-  const [benefitsOpen, setBenefitsOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
 
@@ -54,7 +61,7 @@ const ReferralPage: React.FC = () => {
 
   const handleShare = () => {
     hapticImpact('medium');
-    const text = t('referral:shareText');
+    const text = t('referral:shareText', { bonus: inviteeBonus });
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(text)}`;
     openTelegramLink(shareUrl);
   };
@@ -73,7 +80,6 @@ const ReferralPage: React.FC = () => {
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) return;
-
     setWithdrawing(true);
     try {
       await requestWithdrawal(amount, walletCurrency);
@@ -88,10 +94,20 @@ const ReferralPage: React.FC = () => {
     }
   };
 
-  const threshold = walletCurrency === 'RUB'
-    ? withdrawalThresholds.RUB
-    : withdrawalThresholds.USD;
+  const threshold = walletCurrency === 'RUB' ? withdrawalThresholds.RUB : withdrawalThresholds.USD;
   const currencySymbol = walletCurrency === 'RUB' ? '\u20BD' : '$';
+
+  // Compute min/max ranges for the mode toggle cards
+  const tokenRange = { min: 100, max: 0 };
+  const cashRange = { min: 100, max: 0 };
+  for (const tier of TIER_ORDER) {
+    const r = commissionRates[tier];
+    if (!r) continue;
+    if (r.tokenPercent < tokenRange.min) tokenRange.min = r.tokenPercent;
+    if (r.tokenPercent > tokenRange.max) tokenRange.max = r.tokenPercent;
+    if (r.cashPercent < cashRange.min) cashRange.min = r.cashPercent;
+    if (r.cashPercent > cashRange.max) cashRange.max = r.cashPercent;
+  }
 
   if (isLoading || isTelegramLoading) {
     return (
@@ -100,11 +116,6 @@ const ReferralPage: React.FC = () => {
         <div className="flex" style={{ columnGap: 12 }}>
           <Skeleton className="flex-1 h-28 rounded-2xl" variant="rectangular" />
           <Skeleton className="flex-1 h-28 rounded-2xl" variant="rectangular" />
-        </div>
-        <div className="flex" style={{ columnGap: 12 }}>
-          <Skeleton className="flex-1 h-20 rounded-2xl" variant="rectangular" />
-          <Skeleton className="flex-1 h-20 rounded-2xl" variant="rectangular" />
-          <Skeleton className="flex-1 h-20 rounded-2xl" variant="rectangular" />
         </div>
         <Skeleton className="h-36 rounded-2xl" variant="rectangular" />
       </div>
@@ -125,6 +136,25 @@ const ReferralPage: React.FC = () => {
         </p>
       </motion.div>
 
+      {/* Invitee Bonus Banner */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.03 }}
+      >
+        <Card className="flex items-center" padding="sm" variant="bordered">
+          <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0 mr-3">
+            <span className="text-lg">&#127873;</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-semibold">{t('referral:inviteeBonus.title')}</p>
+            <p className="text-content-tertiary text-xs mt-0.5">
+              {t('referral:inviteeBonus.description', { bonus: inviteeBonus })}
+            </p>
+          </div>
+        </Card>
+      </motion.div>
+
       {/* Commission Mode Toggle */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
@@ -135,7 +165,6 @@ const ReferralPage: React.FC = () => {
           {t('referral:commissionMode')}
         </h2>
         <div className="grid grid-cols-2" style={{ gap: 10 }}>
-          {/* Tokens option */}
           <button
             onClick={() => handleModeSwitch('TOKENS')}
             className={`relative rounded-2xl p-4 text-left transition-all duration-300 border-2 ${
@@ -154,11 +183,10 @@ const ReferralPage: React.FC = () => {
               </div>
             )}
             <div className="text-2xl mb-2">&#9889;</div>
-            <p className="text-white font-bold text-base">{commissionRates.tokenPercent}%</p>
+            <p className="text-white font-bold text-base">{tokenRange.min}–{tokenRange.max}%</p>
             <p className="text-content-tertiary text-xs mt-0.5">{t('referral:inTokens')}</p>
           </button>
 
-          {/* Cash option */}
           <button
             onClick={() => handleModeSwitch('CASH')}
             className={`relative rounded-2xl p-4 text-left transition-all duration-300 border-2 ${
@@ -177,10 +205,46 @@ const ReferralPage: React.FC = () => {
               </div>
             )}
             <div className="text-2xl mb-2">&#128176;</div>
-            <p className="text-white font-bold text-base">{commissionRates.cashPercent}%</p>
+            <p className="text-white font-bold text-base">{cashRange.min}–{cashRange.max}%</p>
             <p className="text-content-tertiary text-xs mt-0.5">{t('referral:inCash')}</p>
           </button>
         </div>
+      </motion.div>
+
+      {/* Tiered Rates Table */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.08 }}
+      >
+        <Card padding="sm">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-content-tertiary uppercase tracking-wider">
+                <th className="text-left py-1.5 px-2 font-medium">{t('referral:ratesTable.plan')}</th>
+                <th className="text-center py-1.5 px-2 font-medium">&#9889; {t('referral:ratesTable.tokens')}</th>
+                <th className="text-center py-1.5 px-2 font-medium">&#128176; {t('referral:ratesTable.cash')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {TIER_ORDER.map((tier) => {
+                const r = commissionRates[tier];
+                if (!r) return null;
+                return (
+                  <tr key={tier} className="border-t border-white/5">
+                    <td className="py-2 px-2 text-white font-medium">{TIER_LABELS[tier]}</td>
+                    <td className={`py-2 px-2 text-center font-mono font-semibold ${referralMode === 'TOKENS' ? 'text-brand-primary' : 'text-content-secondary'}`}>
+                      {r.tokenPercent}%
+                    </td>
+                    <td className={`py-2 px-2 text-center font-mono font-semibold ${referralMode === 'CASH' ? 'text-brand-accent' : 'text-content-secondary'}`}>
+                      {r.cashPercent}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </Card>
       </motion.div>
 
       {/* Stats Grid */}
@@ -227,22 +291,10 @@ const ReferralPage: React.FC = () => {
             </div>
           )}
           <div className="flex" style={{ columnGap: 8 }}>
-            <Button
-              variant="primary"
-              fullWidth
-              size="sm"
-              onClick={handleShare}
-              disabled={!referralUrl}
-            >
+            <Button variant="primary" fullWidth size="sm" onClick={handleShare} disabled={!referralUrl}>
               {t('referral:share')}
             </Button>
-            <Button
-              variant="secondary"
-              fullWidth
-              size="sm"
-              onClick={handleCopyLink}
-              disabled={!referralUrl}
-            >
+            <Button variant="secondary" fullWidth size="sm" onClick={handleCopyLink} disabled={!referralUrl}>
               {t('referral:copyLink')}
             </Button>
           </div>
@@ -272,7 +324,6 @@ const ReferralPage: React.FC = () => {
                 </div>
               )}
             </div>
-
             <div className="space-y-3">
               <input
                 type="number"
@@ -292,7 +343,6 @@ const ReferralPage: React.FC = () => {
                 {withdrawing ? '...' : t('referral:withdrawal.request')}
               </Button>
             </div>
-
             <p className="text-content-tertiary text-xs">
               {t('referral:withdrawal.minimum', { amount: threshold, currency: currencySymbol })}
             </p>
@@ -312,10 +362,7 @@ const ReferralPage: React.FC = () => {
           </h2>
           <Card padding="sm" className="space-y-2">
             {withdrawals.slice(0, 10).map((w) => (
-              <div
-                key={w.id}
-                className="flex items-center justify-between py-2 px-2 rounded-lg bg-white/5"
-              >
+              <div key={w.id} className="flex items-center justify-between py-2 px-2 rounded-lg bg-white/5">
                 <div>
                   <p className="text-white text-sm font-medium">
                     {w.amount.toFixed(2)} {w.currency === 'RUB' ? '\u20BD' : '$'}
@@ -330,52 +377,6 @@ const ReferralPage: React.FC = () => {
           </Card>
         </motion.div>
       )}
-
-      {/* Benefits button */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <Button variant="secondary" fullWidth onClick={() => setBenefitsOpen(true)}>
-          {t('referral:benefits')}
-        </Button>
-      </motion.div>
-
-      {/* Benefits Modal */}
-      <Modal
-        isOpen={benefitsOpen}
-        onClose={() => setBenefitsOpen(false)}
-        title={t('referral:benefits')}
-        size="sm"
-      >
-        <div className="p-4 space-y-3 pb-8">
-          <AnimatePresence>
-            {benefits.map((benefit, i) => (
-              <motion.div
-                key={benefit.tier}
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex items-center p-3 rounded-xl bg-white/5 border border-white/10"
-                style={{ columnGap: 12 }}
-              >
-                <div className="w-12 h-12 rounded-full bg-brand-primary/15 flex items-center justify-center shrink-0">
-                  <span className="text-brand-primary font-bold text-sm">
-                    {benefit.percentage}%
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">{benefit.name}</p>
-                  <p className="text-content-tertiary text-xs mt-0.5">
-                    {t('referral:bonusDescription', { percentage: benefit.percentage })}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </Modal>
     </div>
   );
 };

@@ -10,11 +10,19 @@ import type {
   WithdrawalRequest,
 } from '@/types/referral.types';
 
+const DEFAULT_RATES: CommissionRates = {
+  STARTER:  { tokenPercent: 15, cashPercent: 15 },
+  PRO:      { tokenPercent: 20, cashPercent: 12 },
+  PREMIUM:  { tokenPercent: 25, cashPercent: 10 },
+  BUSINESS: { tokenPercent: 35, cashPercent: 8 },
+};
+
 interface ReferralState {
   referralCode: string;
   referralUrl: string;
   referralMode: ReferralMode;
   commissionRates: CommissionRates;
+  inviteeBonus: number;
   withdrawalThresholds: WithdrawalThresholds;
   walletCurrency: string;
   moneyBalance: number;
@@ -35,7 +43,8 @@ export const useReferralStore = create<ReferralState>((set, get) => ({
   referralCode: '',
   referralUrl: '',
   referralMode: 'TOKENS',
-  commissionRates: { tokenPercent: 35, cashPercent: 15 },
+  commissionRates: DEFAULT_RATES,
+  inviteeBonus: 25,
   withdrawalThresholds: { RUB: 500, USD: 5 },
   walletCurrency: 'RUB',
   moneyBalance: 0,
@@ -58,7 +67,8 @@ export const useReferralStore = create<ReferralState>((set, get) => ({
         referralCode: data.referralCode,
         referralUrl: url,
         referralMode: data.referralMode || 'TOKENS',
-        commissionRates: data.commissionRates || { tokenPercent: 35, cashPercent: 15 },
+        commissionRates: data.commissionRates || DEFAULT_RATES,
+        inviteeBonus: data.inviteeBonus ?? 25,
         withdrawalThresholds: data.withdrawalThresholds || { RUB: 500, USD: 5 },
         walletCurrency: data.walletCurrency || 'RUB',
         moneyBalance: data.moneyBalance || 0,

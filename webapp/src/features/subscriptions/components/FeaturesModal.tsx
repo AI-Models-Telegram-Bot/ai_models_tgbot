@@ -233,16 +233,23 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
               {t('subscriptions:prioritySupport', 'Priority Support')}
             </span>
           )}
-          {plan.referralBonus > 0 && (
-            <>
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-medium">
-                35% {t('subscriptions:tokenReferral', 'Token Referral')}
-              </span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-medium">
-                15% {t('subscriptions:cashReferral', 'Cash Referral')}
-              </span>
-            </>
-          )}
+          {plan.referralBonus > 0 && (() => {
+            const tierRates: Record<string, { tk: number; cash: number }> = {
+              STARTER: { tk: 15, cash: 15 }, PRO: { tk: 20, cash: 12 },
+              PREMIUM: { tk: 25, cash: 10 }, BUSINESS: { tk: 35, cash: 8 },
+            };
+            const r = tierRates[plan.tier] || { tk: 15, cash: 10 };
+            return (
+              <>
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-medium">
+                  {r.tk}% {t('subscriptions:tokenReferral', 'Token Referral')}
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-medium">
+                  {r.cash}% {t('subscriptions:cashReferral', 'Cash Referral')}
+                </span>
+              </>
+            );
+          })()}
         </div>
       </div>
     </Modal>

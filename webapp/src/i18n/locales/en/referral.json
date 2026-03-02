@@ -7,12 +7,21 @@
   "modeError": "Failed to switch mode",
   "yourLink": "Your Referral Link",
   "share": "Share",
-  "shareText": "Join me on AI Models Bot and get free tokens!",
+  "shareText": "Join me on AI Models Bot and get {{bonus}} free tokens as a gift!",
   "copyLink": "Copy Link",
   "benefits": "Signup Bonuses",
   "bonusDescription": "{{percentage}}% bonus tokens per referral",
   "withdrawSuccess": "Withdrawal request submitted",
   "withdrawError": "Withdrawal failed",
+  "inviteeBonus": {
+    "title": "Gift for new users",
+    "description": "Your friend gets {{bonus}} bonus tokens when they join via your link"
+  },
+  "ratesTable": {
+    "plan": "Plan",
+    "tokens": "Tokens",
+    "cash": "Cash"
+  },
   "stats": {
     "invited": "Invited",
     "earned": "Earned",

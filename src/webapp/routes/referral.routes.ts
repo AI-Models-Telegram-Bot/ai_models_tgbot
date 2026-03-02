@@ -5,6 +5,7 @@ import { logger } from '../../utils/logger';
 import {
   SUBSCRIPTION_PLANS,
   REFERRAL_COMMISSION,
+  REFERRAL_INVITEE_BONUS,
   WITHDRAWAL_THRESHOLDS,
   SubscriptionTier,
 } from '../../config/subscriptions';
@@ -69,10 +70,8 @@ router.get('/referral/links', async (req, res) => {
       referralCode: user.referralCode,
       referralUrl,
       referralMode: user.referralMode,
-      commissionRates: {
-        tokenPercent: REFERRAL_COMMISSION.TOKEN_PERCENT,
-        cashPercent: REFERRAL_COMMISSION.CASH_PERCENT,
-      },
+      commissionRates: REFERRAL_COMMISSION,
+      inviteeBonus: REFERRAL_INVITEE_BONUS,
       withdrawalThresholds: WITHDRAWAL_THRESHOLDS,
       walletCurrency: user.wallet?.currency || 'RUB',
       moneyBalance: user.wallet?.moneyBalance || 0,

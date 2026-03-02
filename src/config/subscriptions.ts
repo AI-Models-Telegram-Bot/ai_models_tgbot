@@ -1,8 +1,13 @@
-/** Referral commission rates when a referred user pays for a subscription */
-export const REFERRAL_COMMISSION = {
-  TOKEN_PERCENT: 35, // Option A: 35% of plan tokens
-  CASH_PERCENT: 15,  // Option B: 15% of payment amount in cash
-} as const;
+/** Tiered referral commission rates — scales with the purchased plan */
+export const REFERRAL_COMMISSION: Record<string, { tokenPercent: number; cashPercent: number }> = {
+  STARTER:  { tokenPercent: 15, cashPercent: 15 },
+  PRO:      { tokenPercent: 20, cashPercent: 12 },
+  PREMIUM:  { tokenPercent: 25, cashPercent: 10 },
+  BUSINESS: { tokenPercent: 35, cashPercent: 8 },
+};
+
+/** Bonus tokens granted to a NEW user who joins via a referral link */
+export const REFERRAL_INVITEE_BONUS = 25;
 
 /** Minimum withdrawal thresholds */
 export const WITHDRAWAL_THRESHOLDS = {

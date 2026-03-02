@@ -26,7 +26,12 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
     { label: t('price'), getValue: (p: SubscriptionPlan) => p.priceUSD === null ? t('custom') : p.priceUSD === 0 ? t('free') : `$${p.priceUSD}` },
     { label: t('tokens'), getValue: (p: SubscriptionPlan) => formatValue(p.tokens) },
     { label: t('prioritySupport'), getValue: (p: SubscriptionPlan) => formatValue(p.prioritySupport) },
-    { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => p.referralBonus > 0 ? '35% / 15%' : '—' },
+    { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => {
+      const rates: Record<string, string> = {
+        STARTER: '15/15%', PRO: '20/12%', PREMIUM: '25/10%', BUSINESS: '35/8%',
+      };
+      return rates[p.tier] || (p.referralBonus > 0 ? '15/10%' : '—');
+    }},
   ];
 
   return (
