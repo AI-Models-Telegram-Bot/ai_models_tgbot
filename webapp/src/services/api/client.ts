@@ -42,8 +42,20 @@ function attachAuth(config: InternalAxiosRequestConfig) {
   return config;
 }
 
+// Bust CDN cache on GET requests by appending a timestamp parameter.
+// BunnyCDN uses the full URL (incl. query string) as cache key, so each
+// unique _t value forces a cache MISS and pulls fresh data from origin.
+function bustCdnCache(config: InternalAxiosRequestConfig) {
+  if (config.method === 'get' || !config.method) {
+    config.params = { ...config.params, _t: Date.now() };
+  }
+  return config;
+}
+
 apiClient.interceptors.request.use(attachAuth);
+apiClient.interceptors.request.use(bustCdnCache);
 rootApiClient.interceptors.request.use(attachAuth);
+rootApiClient.interceptors.request.use(bustCdnCache);
 
 // Handle responses and token refresh
 let isRefreshing = false;
