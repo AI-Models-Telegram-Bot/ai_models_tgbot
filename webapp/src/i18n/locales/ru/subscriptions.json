@@ -68,7 +68,8 @@
       "allImageModels": "Все модели генерации изображений",
       "unlimitedBasicText": "Безлимитный Fast Text и Gemini Flash",
       "basicVideo": "Базовая генерация видео (Kling, Wan)",
-      "referralBonus": "5% реферальный бонус",
+      "tokenReferral": "15% реферальная комиссия в токенах",
+      "cashReferral": "15% комиссия деньгами — зарабатывай реальные деньги",
       "emailSupport": "Поддержка по email"
     },
     "pro": {
@@ -77,7 +78,8 @@
       "geminiDeepseek": "Gemini Pro и DeepSeek R1",
       "proImage": "Профессиональная генерация изображений",
       "advancedVideo": "Продвинутое видео (Veo, Runway, Sora)",
-      "referralBonus": "8% реферальный бонус",
+      "tokenReferral": "20% реферальная комиссия в токенах",
+      "cashReferral": "12% комиссия деньгами — зарабатывай реальные деньги",
       "priorityEmail": "Приоритетная поддержка по email",
       "earlyAccess": "Ранний доступ к новым моделям"
     },
@@ -85,13 +87,15 @@
       "unlimitedCheapText": "Безлимитные базовые текстовые модели",
       "allModels": "Все ИИ-модели доступны",
       "largeCredits": "10 800 токенов на все модели",
-      "referralBonus": "12% реферальный бонус",
+      "tokenReferral": "25% реферальная комиссия в токенах",
+      "cashReferral": "10% комиссия деньгами — зарабатывай реальные деньги",
       "priorityChat": "Приоритетный чат-саппорт"
     },
     "business": {
       "unlimitedTextImage": "Безлимитные базовые текст и изображения",
       "massiveCredits": "27 000 токенов на все модели",
-      "referralBonus": "16% реферальный бонус",
+      "tokenReferral": "35% реферальная комиссия в токенах",
+      "cashReferral": "8% комиссия деньгами — зарабатывай реальные деньги",
       "support247": "Приоритетная поддержка 24/7",
       "fineTuning": "Дообучение моделей",
       "accountManager": "Персональный менеджер"
@@ -99,7 +103,8 @@
     "enterprise": {
       "unlimitedEverything": "Безлимит на всё",
       "allModelsUnlimited": "Все модели без ограничений",
-      "referralBonus": "20% реферальный бонус",
+      "tokenReferral": "20% реферальная комиссия в токенах",
+      "cashReferral": "20% комиссия деньгами — зарабатывай реальные деньги",
       "dedicatedSupport": "Выделенная команда поддержки 24/7",
       "customDevelopment": "Разработка пользовательских моделей",
       "teamCollaboration": "Командная работа",

@@ -11,15 +11,9 @@ import type { ReferralMode, WithdrawalStatus } from '@/types/referral.types';
 import toast from 'react-hot-toast';
 
 const TIER_ORDER = ['STARTER', 'PRO', 'PREMIUM', 'BUSINESS'] as const;
-const TIER_LABELS: Record<string, string> = {
-  STARTER: 'Starter',
-  PRO: 'Pro',
-  PREMIUM: 'Premium',
-  BUSINESS: 'Business',
-};
 
 const ReferralPage: React.FC = () => {
-  const { t } = useTranslation(['referral', 'common']);
+  const { t } = useTranslation(['referral', 'common', 'subscriptions']);
   const { isLoading: isTelegramLoading } = useTelegramUser();
   const {
     referralUrl,
@@ -232,7 +226,7 @@ const ReferralPage: React.FC = () => {
                 if (!r) return null;
                 return (
                   <tr key={tier} className="border-t border-white/5">
-                    <td className="py-2 px-2 text-white font-medium">{TIER_LABELS[tier]}</td>
+                    <td className="py-2 px-2 text-white font-medium">{t(`subscriptions:tiers.${tier.toLowerCase()}`)}</td>
                     <td className={`py-2 px-2 text-center font-mono font-semibold ${referralMode === 'TOKENS' ? 'text-brand-primary' : 'text-content-secondary'}`}>
                       {r.tokenPercent}%
                     </td>
