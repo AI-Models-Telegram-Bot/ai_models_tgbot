@@ -778,6 +778,71 @@ router.get('/requests', async (req: Request, res: Response) => {
   }
 });
 
+// ── Request Detail ──────────────────────────────────
+router.get('/requests/:id', async (req: Request, res: Response) => {
+  try {
+    const request = await prisma.request.findUnique({
+      where: { id: req.params.id },
+      include: {
+        user: { select: { id: true, username: true, firstName: true, lastName: true, email: true, telegramId: true } },
+        model: { select: { id: true, name: true, slug: true, category: true, provider: true } },
+      },
+    });
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+    return res.json(serializeBigInt(request));
+  } catch (err: any) {
+    logger.error('Request detail error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch request' });
+  }
+});
+
+// ── Top Users (by requests and credits) ─────────────
+router.get('/stats/top-users', async (req: Request, res: Response) => {
+  try {
+    const limit = Math.min(50, parseInt(req.query.limit as string) || 10);
+    const topByRequests: any[] = await prisma.$queryRaw`
+      SELECT
+        u.id,
+        u.username,
+        u.first_name AS "firstName",
+        u.telegram_id::text AS "telegramId",
+        COUNT(r.id)::int AS "totalRequests",
+        COUNT(r.id) FILTER (WHERE r.status = 'COMPLETED')::int AS "completedRequests",
+        COUNT(r.id) FILTER (WHERE r.status = 'FAILED')::int AS "failedRequests",
+        COALESCE(SUM(r.credits_charged), 0)::float AS "totalCredits",
+        MAX(r.created_at) AS "lastActivity"
+      FROM users u
+      JOIN requests r ON r.user_id = u.id
+      GROUP BY u.id
+      ORDER BY COUNT(r.id) DESC
+      LIMIT ${limit}
+    `;
+
+    const topByCredits: any[] = await prisma.$queryRaw`
+      SELECT
+        u.id,
+        u.username,
+        u.first_name AS "firstName",
+        u.telegram_id::text AS "telegramId",
+        COUNT(r.id)::int AS "totalRequests",
+        COALESCE(SUM(r.credits_charged), 0)::float AS "totalCredits",
+        COALESCE(w.token_balance, 0)::float AS "tokenBalance",
+        COALESCE(w.money_balance, 0)::float AS "moneyBalance"
+      FROM users u
+      JOIN requests r ON r.user_id = u.id
+      LEFT JOIN user_wallets w ON w.user_id = u.id
+      GROUP BY u.id, w.token_balance, w.money_balance
+      ORDER BY SUM(r.credits_charged) DESC NULLS LAST
+      LIMIT ${limit}
+    `;
+
+    return res.json({ topByRequests, topByCredits });
+  } catch (err: any) {
+    logger.error('Top users error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch top users' });
+  }
+});
+
 router.get('/payments', async (req: Request, res: Response) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
@@ -1174,10 +1239,55 @@ router.post('/settings/change-password', async (req: Request, res: Response) => 
 router.get('/providers/stats', async (_req: Request, res: Response) => {
   try {
     const pm = getProviderManager();
-    const stats = pm.getStats();
     const circuitBreakers = pm.getCircuitBreakerStatus();
+    const registeredProviders = pm.getStats(); // for enabled/priority info
 
-    const totalProviders = stats.length;
+    // Build stats from database instead of ephemeral in-memory counters
+    const dbStats: any[] = await prisma.$queryRaw`
+      SELECT
+        m.provider,
+        m.category,
+        COUNT(*)::int AS requests,
+        COUNT(*) FILTER (WHERE r.status = 'COMPLETED')::int AS successes,
+        COUNT(*) FILTER (WHERE r.status = 'FAILED')::int AS failures,
+        COALESCE(SUM(r.credits_charged), 0)::float AS "totalCredits",
+        COALESCE(AVG(r.processing_time), 0)::float AS "avgTime",
+        COALESCE(AVG(r.credits_charged), 0)::float AS "avgCost"
+      FROM requests r
+      JOIN ai_models m ON r.model_id = m.id
+      GROUP BY m.provider, m.category
+      ORDER BY COUNT(*) DESC
+    `;
+
+    // Merge DB stats with registered provider info
+    const stats = dbStats.map((db) => {
+      const reg = registeredProviders.find(
+        (p) => p.provider === db.provider && p.category === db.category
+      );
+      return {
+        provider: db.provider,
+        category: db.category,
+        priority: reg?.priority ?? 99,
+        enabled: reg?.enabled ?? false,
+        requests: db.requests,
+        successes: db.successes,
+        failures: db.failures,
+        totalCost: db.totalCredits,
+        totalTime: db.avgTime * db.requests,
+        successRate: db.requests > 0 ? Math.round((db.successes / db.requests) * 1000) / 10 : 0,
+        avgCost: db.avgCost,
+        avgTime: db.avgTime,
+      };
+    });
+
+    // Also include registered providers that have 0 DB requests
+    for (const reg of registeredProviders) {
+      if (!stats.find((s) => s.provider === reg.provider && s.category === reg.category)) {
+        stats.push({ ...reg, requests: 0, successes: 0, failures: 0, totalCost: 0, totalTime: 0, successRate: 0, avgCost: 0, avgTime: 0 });
+      }
+    }
+
+    const totalProviders = stats.filter((s) => s.requests > 0 || s.enabled).length;
     const totalRequests = stats.reduce((sum, s) => sum + s.requests, 0);
     const totalSuccesses = stats.reduce((sum, s) => sum + s.successes, 0);
     const estimatedTotalSpend = stats.reduce((sum, s) => sum + s.totalCost, 0);

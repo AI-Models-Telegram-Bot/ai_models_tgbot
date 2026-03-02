@@ -75,7 +75,9 @@
     "redis": "Redis",
     "memory": "Memory",
     "uptime": "Uptime",
-    "queueStatus": "Queue Status"
+    "queueStatus": "Queue Status",
+    "topByRequests": "Top Users by Requests",
+    "topByCredits": "Top Users by Credits Spent"
   },
   "users": {
     "title": "Users",
@@ -142,7 +144,15 @@
     "status": "Status",
     "credits": "Credits",
     "time": "Time",
-    "created": "Created"
+    "created": "Created",
+    "requestDetail": "Request Details",
+    "output": "Output",
+    "error": "Error",
+    "metadata": "Metadata",
+    "completed": "Completed",
+    "tokensCost": "Tokens Cost",
+    "walletCategory": "Wallet Category",
+    "notFound": "Request not found"
   },
   "revenue": {
     "title": "Revenue",
