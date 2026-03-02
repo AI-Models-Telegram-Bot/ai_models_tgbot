@@ -141,7 +141,11 @@ export function createHealthServer(port: number = 3000): express.Application {
   logger.info('Provider monitoring routes mounted at /api/providers/*');
 
   // --- Auth endpoints (unauthenticated) ---
-  app.use('/api/auth', authRoutes);
+  app.use('/api/auth', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, private, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    next();
+  }, authRoutes);
   logger.info('Auth routes mounted at /api/auth/*');
 
   // --- YooKassa webhook (no auth required, IP-whitelisted) ---
@@ -171,11 +175,20 @@ export function createHealthServer(port: number = 3000): express.Application {
   logger.info('YooKassa webhook mounted at /api/payment/yookassa/webhook');
 
   // --- Web Chat API endpoints (authenticated + rate limited) ---
-  app.use('/api/web/chat', apiLimiter, unifiedAuth, chatRoutes);
+  app.use('/api/web/chat', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, private, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    next();
+  }, apiLimiter, unifiedAuth, chatRoutes);
   logger.info('Web Chat API routes mounted at /api/web/chat/*');
 
   // --- WebApp API endpoints (authenticated + rate limited) ---
-  app.use('/api/webapp', apiLimiter, unifiedAuth, webappRoutes);
+  // Prevent CDN/browser caching of all API responses
+  app.use('/api/webapp', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, private, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    next();
+  }, apiLimiter, unifiedAuth, webappRoutes);
   logger.info('WebApp API routes mounted at /api/webapp/*');
 
   // --- File upload endpoint (authenticated + rate limited) ---

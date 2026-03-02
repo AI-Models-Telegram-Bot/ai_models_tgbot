@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
-import { Users, Zap, DollarSign, CreditCard, Activity, Database, Cpu, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Zap, DollarSign, CreditCard, Activity, Database, Cpu, Clock, Trophy, TrendingUp } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
@@ -15,6 +16,7 @@ const PIE_COLORS = ['#6366f1', '#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [range, setRange] = useState<string>('30d');
 
   const { data: stats } = useQuery({
@@ -44,6 +46,12 @@ export default function Dashboard() {
   const { data: health } = useQuery({
     queryKey: ['admin-health'],
     queryFn: () => api.get('/system-health').then((r) => r.data),
+    refetchInterval: 60_000,
+  });
+
+  const { data: topUsers } = useQuery({
+    queryKey: ['admin-top-users'],
+    queryFn: () => api.get('/stats/top-users?limit=10').then((r) => r.data),
     refetchInterval: 60_000,
   });
 
@@ -266,6 +274,84 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Users */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top by Requests */}
+        <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy size={16} className="text-yellow-400" />
+            <h3 className="text-sm font-medium text-gray-400">{t('dashboard.topByRequests')}</h3>
+          </div>
+          <div className="space-y-1">
+            {(topUsers?.topByRequests || []).map((u: any, i: number) => (
+              <div
+                key={u.id}
+                onClick={() => navigate(`/users/${u.id}`)}
+                className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs font-bold w-5 text-center ${
+                    i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-amber-600' : 'text-gray-500'
+                  }`}>
+                    {i + 1}
+                  </span>
+                  <div>
+                    <div className="text-white text-sm">{u.firstName || u.username || 'Unknown'}</div>
+                    {u.username && <div className="text-gray-500 text-xs">@{u.username}</div>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-white text-sm font-medium">{u.totalRequests}</div>
+                  <div className="text-xs text-gray-500">
+                    <span className="text-emerald-400">{u.completedRequests}</span>
+                    {u.failedRequests > 0 && <> / <span className="text-red-400">{u.failedRequests}</span></>}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(!topUsers?.topByRequests || topUsers.topByRequests.length === 0) && (
+              <div className="text-gray-500 text-sm text-center py-4">{t('common.noData')}</div>
+            )}
+          </div>
+        </div>
+
+        {/* Top by Credits Spent */}
+        <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp size={16} className="text-purple-400" />
+            <h3 className="text-sm font-medium text-gray-400">{t('dashboard.topByCredits')}</h3>
+          </div>
+          <div className="space-y-1">
+            {(topUsers?.topByCredits || []).map((u: any, i: number) => (
+              <div
+                key={u.id}
+                onClick={() => navigate(`/users/${u.id}`)}
+                className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs font-bold w-5 text-center ${
+                    i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-amber-600' : 'text-gray-500'
+                  }`}>
+                    {i + 1}
+                  </span>
+                  <div>
+                    <div className="text-white text-sm">{u.firstName || u.username || 'Unknown'}</div>
+                    {u.username && <div className="text-gray-500 text-xs">@{u.username}</div>}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-white text-sm font-medium">{u.totalCredits?.toFixed(1)}</div>
+                  <div className="text-xs text-gray-500">{u.totalRequests} {t('dashboard.requests').toLowerCase()}</div>
+                </div>
+              </div>
+            ))}
+            {(!topUsers?.topByCredits || topUsers.topByCredits.length === 0) && (
+              <div className="text-gray-500 text-sm text-center py-4">{t('common.noData')}</div>
             )}
           </div>
         </div>
