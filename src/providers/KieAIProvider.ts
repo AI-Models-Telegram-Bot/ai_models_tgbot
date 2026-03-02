@@ -1055,9 +1055,13 @@ export class KieAIProvider extends EnhancedProvider {
     timeoutMs: number = VIDEO_POLL_TIMEOUT_MS,
     intervalMs: number = POLL_INTERVAL_MS,
   ): Promise<string> {
-    const deadline = Date.now() + timeoutMs;
+    const startTime = Date.now();
+    // Hard max: 14 min (Bull queue timeout is 15 min, leave 1 min buffer)
+    const absoluteDeadline = startTime + 840000;
+    // Soft deadline: if task is still in waiting/queuing after this, give up
+    const queueDeadline = startTime + timeoutMs;
 
-    while (Date.now() < deadline) {
+    while (Date.now() < absoluteDeadline) {
       await this.sleep(intervalMs);
 
       const response = await this.client.get('/jobs/recordInfo', {
@@ -1066,17 +1070,16 @@ export class KieAIProvider extends EnhancedProvider {
 
       const data = response.data?.data;
       const state = data?.state;
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
 
-      logger.debug(`KieAI poll: state=${state}, taskId=${taskId}`);
+      logger.debug(`KieAI poll: state=${state}, taskId=${taskId}, elapsed=${elapsed}s`);
 
       if (state === 'success') {
-        // resultJson is a JSON string: {"resultUrls":["https://..."]}
         let resultUrl: string | undefined;
         try {
           const resultData = JSON.parse(data.resultJson);
           resultUrl = resultData?.resultUrls?.[0];
         } catch {
-          // If resultJson is not valid JSON, try direct fields
           resultUrl = data?.resultUrls?.[0];
         }
 
@@ -1090,9 +1093,16 @@ export class KieAIProvider extends EnhancedProvider {
         const errorMsg = data?.failMsg || 'Generation failed';
         throw new Error(`KieAI task failed: ${errorMsg}`);
       }
+
+      // If task is actively generating, keep waiting up to the absolute deadline.
+      // Only enforce the soft timeout for waiting/queuing states.
+      if (state !== 'generating' && Date.now() > queueDeadline) {
+        throw new Error(`KieAI task: stuck in ${state} state after ${elapsed}s`);
+      }
     }
 
-    throw new Error(`KieAI task: polling timed out after ${timeoutMs / 1000}s`);
+    const totalElapsed = Math.round((Date.now() - startTime) / 1000);
+    throw new Error(`KieAI task: polling timed out after ${totalElapsed}s`);
   }
 
   private sleep(ms: number): Promise<void> {
