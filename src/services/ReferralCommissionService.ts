@@ -48,12 +48,12 @@ export class ReferralCommissionService {
       // 3. Ensure referrer wallet exists
       await walletService.getOrCreateWallet(referrer.id);
 
-      // 4. Calculate and grant commission
+      // 4. Calculate and grant commission (tiered rates)
       const plan = SUBSCRIPTION_PLANS.find((p) => p.tier === params.tier);
+      const rates = REFERRAL_COMMISSION[params.tier] || { tokenPercent: 15, cashPercent: 10 };
 
       if (referrer.referralMode === 'CASH') {
-        // 15% of payment amount in cash
-        const cashAmount = Math.round(params.paymentAmount * REFERRAL_COMMISSION.CASH_PERCENT / 100 * 100) / 100;
+        const cashAmount = Math.round(params.paymentAmount * rates.cashPercent / 100 * 100) / 100;
 
         await walletService.addMoney(
           referrer.id,
@@ -65,7 +65,7 @@ export class ReferralCommissionService {
             paymentId: params.paymentId,
             metadata: {
               referredUserId: params.payingUserId,
-              commissionPercent: REFERRAL_COMMISSION.CASH_PERCENT,
+              commissionPercent: rates.cashPercent,
               mode: 'CASH',
             },
           },
@@ -78,9 +78,8 @@ export class ReferralCommissionService {
           tier: params.tier,
         });
       } else {
-        // 35% of plan tokens
         const planTokens = plan?.tokens || 0;
-        const tokenAmount = Math.round(planTokens * REFERRAL_COMMISSION.TOKEN_PERCENT / 100);
+        const tokenAmount = Math.round(planTokens * rates.tokenPercent / 100);
 
         if (tokenAmount > 0) {
           await walletService.addCredits(
@@ -93,7 +92,7 @@ export class ReferralCommissionService {
               paymentId: params.paymentId,
               metadata: {
                 referredUserId: params.payingUserId,
-                commissionPercent: REFERRAL_COMMISSION.TOKEN_PERCENT,
+                commissionPercent: rates.tokenPercent,
                 mode: 'TOKENS',
                 planTokens,
               },

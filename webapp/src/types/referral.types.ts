@@ -13,10 +13,13 @@ export interface ReferralStats {
   pendingWithdrawal: number;
 }
 
-export interface CommissionRates {
+export interface TierCommissionRate {
   tokenPercent: number;
   cashPercent: number;
 }
+
+/** Keyed by tier name: STARTER, PRO, PREMIUM, BUSINESS */
+export type CommissionRates = Record<string, TierCommissionRate>;
 
 export interface WithdrawalThresholds {
   RUB: number;
@@ -28,6 +31,7 @@ export interface ReferralInfoResponse {
   referralUrl: string;
   referralMode: ReferralMode;
   commissionRates: CommissionRates;
+  inviteeBonus: number;
   withdrawalThresholds: WithdrawalThresholds;
   walletCurrency: string;
   moneyBalance: number;

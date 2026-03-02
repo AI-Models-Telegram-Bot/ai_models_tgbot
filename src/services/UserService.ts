@@ -5,7 +5,7 @@ import { generateReferralCode } from '../utils/helpers';
 import { config } from '../config';
 import { Language } from '../locales';
 import { walletService } from './WalletService';
-import { SUBSCRIPTION_PLANS, SubscriptionTier } from '../config/subscriptions';
+import { SUBSCRIPTION_PLANS, SubscriptionTier, REFERRAL_INVITEE_BONUS } from '../config/subscriptions';
 import { logger } from '../utils/logger';
 
 /** Tokens granted to the referrer when someone signs up via their link */
@@ -132,13 +132,21 @@ export class UserService {
       // Calculate token bonus: base signup bonus scaled by tier percentage
       const tokenBonus = Math.round(REFERRAL_SIGNUP_BONUS * (1 + bonusPercent / 100));
 
-      // Ensure wallet exists
+      // Ensure wallets exist
       await walletService.getOrCreateWallet(referrer.id);
+      await walletService.getOrCreateWallet(newUser.id);
 
-      // Grant tokens
+      // Grant referrer bonus
       if (tokenBonus > 0) {
         await walletService.addCredits(referrer.id, 'TEXT', tokenBonus, 'BONUS', {
           description: `Referral bonus: new user joined`,
+        });
+      }
+
+      // Grant invitee bonus tokens
+      if (REFERRAL_INVITEE_BONUS > 0) {
+        await walletService.addCredits(newUser.id, 'TEXT', REFERRAL_INVITEE_BONUS, 'BONUS', {
+          description: `Welcome bonus: joined via referral link`,
         });
       }
 
@@ -147,7 +155,12 @@ export class UserService {
         await this.notifyReferrer(referrer, newUser, tokenBonus);
       }
 
-      logger.info(`Referral bonus granted to ${referrer.id}: +${tokenBonus} tokens (tier: ${referrerTier}, ${bonusPercent}%)`, {
+      // Notify invitee about their bonus
+      if (newUser.telegramId) {
+        await this.notifyInvitee(newUser);
+      }
+
+      logger.info(`Referral bonus granted: referrer ${referrer.id} +${tokenBonus}tk, invitee ${newUser.id} +${REFERRAL_INVITEE_BONUS}tk`, {
         referrerId: referrer.id,
         newUserId: newUser.id,
       });
@@ -169,6 +182,21 @@ export class UserService {
       await telegram.sendMessage(referrer.telegramId!.toString(), message, { parse_mode: 'HTML' });
     } catch (error) {
       logger.warn('Failed to send referral notification', { error, referrerId: referrer.id });
+    }
+  }
+
+  private async notifyInvitee(newUser: User): Promise<void> {
+    try {
+      const telegram = new Telegram(config.bot.token);
+      const lang = (newUser.language as Language) || 'en';
+
+      const message = lang === 'ru'
+        ? `🎁 <b>Добро пожаловать!</b>\n\nВы присоединились по реферальной ссылке и получили <b>⚡ ${REFERRAL_INVITEE_BONUS} бонусных токенов</b>!\n\nИспользуйте их для генерации текста, изображений и видео.`
+        : `🎁 <b>Welcome!</b>\n\nYou joined via a referral link and received <b>⚡ ${REFERRAL_INVITEE_BONUS} bonus tokens</b>!\n\nUse them to generate text, images, and videos.`;
+
+      await telegram.sendMessage(newUser.telegramId!.toString(), message, { parse_mode: 'HTML' });
+    } catch (error) {
+      logger.warn('Failed to send invitee notification', { error, userId: newUser.id });
     }
   }
 }
