@@ -13,7 +13,7 @@ import { parseMjParams } from '../utils/mjParams';
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
 const IMAGE_POLL_TIMEOUT_MS = 120000; // 2 minutes for images
-const VIDEO_POLL_TIMEOUT_MS = 300000; // 5 minutes for video (leaves room for fallback providers)
+const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes for video (Kling 3.0 complex prompts can take 7-10 min)
 
 /**
  * Kie.ai Provider — Async task-based API
