@@ -68,7 +68,8 @@
       "allImageModels": "All image generation models",
       "unlimitedBasicText": "Unlimited Fast Text & Gemini Flash",
       "basicVideo": "Basic video generation (Kling, Wan)",
-      "referralBonus": "5% referral bonus",
+      "tokenReferral": "15% token referral commission",
+      "cashReferral": "15% cash referral — earn real money",
       "emailSupport": "Email support"
     },
     "pro": {
@@ -77,7 +78,8 @@
       "geminiDeepseek": "Gemini Pro & DeepSeek R1",
       "proImage": "Professional image generation",
       "advancedVideo": "Advanced video (Veo, Runway, Sora)",
-      "referralBonus": "8% referral bonus",
+      "tokenReferral": "20% token referral commission",
+      "cashReferral": "12% cash referral — earn real money",
       "priorityEmail": "Priority email support",
       "earlyAccess": "Early access to new models"
     },
@@ -85,13 +87,15 @@
       "unlimitedCheapText": "Unlimited basic text models",
       "allModels": "All AI models available",
       "largeCredits": "10,800 tokens for all models",
-      "referralBonus": "12% referral bonus",
+      "tokenReferral": "25% token referral commission",
+      "cashReferral": "10% cash referral — earn real money",
       "priorityChat": "Priority chat support"
     },
     "business": {
       "unlimitedTextImage": "Unlimited basic text & image models",
       "massiveCredits": "27,000 tokens for all models",
-      "referralBonus": "16% referral bonus",
+      "tokenReferral": "35% token referral commission",
+      "cashReferral": "8% cash referral — earn real money",
       "support247": "24/7 priority support",
       "fineTuning": "Custom model fine-tuning",
       "accountManager": "Dedicated account manager"
@@ -99,7 +103,8 @@
     "enterprise": {
       "unlimitedEverything": "Unlimited everything",
       "allModelsUnlimited": "All models unlimited",
-      "referralBonus": "20% referral bonus",
+      "tokenReferral": "20% token referral commission",
+      "cashReferral": "20% cash referral — earn real money",
       "dedicatedSupport": "Dedicated 24/7 support team",
       "customDevelopment": "Custom model development",
       "teamCollaboration": "Team collaboration features",
