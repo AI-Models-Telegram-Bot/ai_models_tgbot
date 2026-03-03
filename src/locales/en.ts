@@ -61,6 +61,7 @@ export const en = {
     videoWanFamily: '🌊 WAN',
     videoSeedanceFamily: '🌱 Seedance',
     videoEnhancementFamily: '💠 Enhancement',
+    videoTrends: '🔥 Trends',
     // Video Models
     videoKling: '🎥 Kling Standard (⚡16–40)',
     videoKlingPro: '💎 Kling Pro (⚡27–144)',
@@ -657,6 +658,12 @@ Upload a clip up to 20 seconds / 20 MB, set resolution and FPS settings, and we'
 🎥 Upload a video to get started 👇
 
 Fee: ⚡1 token per second of video`,
+
+    videoTrendsDesc: `🔥 <b>Video Trends</b>
+
+Browse trending video templates, upload your photo and create a personalized video in seconds!
+
+Tap the button below to open Trends:`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',

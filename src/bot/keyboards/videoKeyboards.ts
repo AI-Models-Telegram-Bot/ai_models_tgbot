@@ -8,6 +8,7 @@ import { config } from '../../config';
 export function getVideoFamiliesKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
+    [l.buttons.videoTrends],
     [l.buttons.videoKlingFamily, l.buttons.videoVeoFamily],
     [l.buttons.videoSoraFamily, l.buttons.videoRunwayFamily],
     [l.buttons.videoLumaFamily, l.buttons.videoWanFamily],

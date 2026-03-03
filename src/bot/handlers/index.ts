@@ -5,6 +5,6 @@ export * from './callbacks';
 export { handleTextAI, handleNewChat, handleChangeModel, handleChatMessage, handleChatCallback } from './chat';
 export { handleAudioFunctionSelection } from './audio';
 export { handleImageFamilyMenu, handleImageFamilySelection, handleImageFunctionSelection, isSingleModelFamily } from './image';
-export { handleVideoFamilyMenu, handleVideoFamilySelection, handleVideoFunctionSelection, isSingleVideoFamily } from './video';
+export { handleVideoFamilyMenu, handleVideoFamilySelection, handleVideoFunctionSelection, isSingleVideoFamily, handleVideoTrends } from './video';
 export * from './webapp';
 export * from './payments';

@@ -23,7 +23,10 @@ import { promisify } from 'util';
 import os from 'os';
 import { getProviderManager } from '../config/providerFactory';
 import { getPlanByTier } from '../config/subscriptions';
-import { walletService } from '../services';
+import { walletService, trendService } from '../services';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const execFileAsync = promisify(execFile);
 
@@ -1618,6 +1621,234 @@ router.put('/withdrawals/:id', adminAuth, requireRole('SUPER_ADMIN'), async (req
     res.json({ ok: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Video Trends Management ──────────────────────────────
+
+// File upload storage for trend videos
+const TRENDS_UPLOAD_DIR = process.env.TRENDS_UPLOAD_DIR || path.join(process.cwd(), 'uploads', 'trends');
+
+// Ensure upload directory exists
+try { fs.mkdirSync(TRENDS_UPLOAD_DIR, { recursive: true }); } catch { /* ignore */ }
+
+const trendVideoUpload = multer({
+  storage: multer.diskStorage({
+    destination: TRENDS_UPLOAD_DIR,
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname) || '.mp4';
+      const name = `trend_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
+      cb(null, name);
+    },
+  }),
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
+  },
+});
+
+// GET /admin/api/trends/categories — list all categories (MUST be before /trends/:id)
+router.get('/trends/categories', async (_req: Request, res: Response) => {
+  try {
+    const categories = await trendService.getAllCategoriesAdmin();
+    return res.json(categories);
+  } catch (err: any) {
+    logger.error('Admin categories list error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// POST /admin/api/trends/categories — create category
+router.post('/trends/categories', async (req: Request, res: Response) => {
+  try {
+    const { slug, name, nameEn, icon, sortOrder } = req.body;
+
+    if (!slug || !name) {
+      return res.status(400).json({ error: 'slug and name are required' });
+    }
+
+    const category = await trendService.createCategory({
+      slug, name, nameEn, icon, sortOrder,
+    });
+
+    await logAudit(req.adminUser!.id, 'CREATE_TREND_CATEGORY', {
+      targetType: 'trend_category',
+      targetId: category.id,
+      details: { slug, name },
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true, category });
+  } catch (err: any) {
+    logger.error('Admin create category error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to create category' });
+  }
+});
+
+// PUT /admin/api/trends/categories/:id — update category
+router.put('/trends/categories/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const { slug, name, nameEn, icon, sortOrder, isActive } = req.body;
+
+    const category = await trendService.updateCategory(id, {
+      slug, name, nameEn, icon, sortOrder, isActive,
+    });
+
+    await logAudit(req.adminUser!.id, 'UPDATE_TREND_CATEGORY', {
+      targetType: 'trend_category',
+      targetId: id,
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true, category });
+  } catch (err: any) {
+    logger.error('Admin update category error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to update category' });
+  }
+});
+
+// Seed default categories endpoint
+router.post('/trends/seed-categories', async (req: Request, res: Response) => {
+  try {
+    await trendService.seedDefaultCategories();
+    return res.json({ success: true, message: 'Default categories seeded' });
+  } catch (err: any) {
+    logger.error('Admin seed categories error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to seed categories' });
+  }
+});
+
+// GET /admin/api/trends — list all trends
+router.get('/trends', async (_req: Request, res: Response) => {
+  try {
+    const trends = await trendService.getAllTrendsAdmin();
+    return res.json(trends);
+  } catch (err: any) {
+    logger.error('Admin trends list error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to fetch trends' });
+  }
+});
+
+// POST /admin/api/trends — create trend
+router.post('/trends', async (req: Request, res: Response) => {
+  try {
+    const {
+      name, nameEn, description, descriptionEn,
+      videoUrl, thumbnailUrl, referenceVideoUrl,
+      model, promptTemplate, negativePrompt,
+      duration, aspectRatio, tokenCost,
+      categoryId, tags, isFeatured, isNew, isActive, sortOrder,
+    } = req.body;
+
+    if (!name || !videoUrl || !promptTemplate) {
+      return res.status(400).json({ error: 'name, videoUrl, and promptTemplate are required' });
+    }
+
+    const trend = await trendService.createTrend({
+      name, nameEn, description, descriptionEn,
+      videoUrl, thumbnailUrl, referenceVideoUrl,
+      model, promptTemplate, negativePrompt,
+      duration, aspectRatio, tokenCost,
+      categoryId, tags, isFeatured, isNew, isActive, sortOrder,
+      createdBy: req.adminUser?.id,
+    });
+
+    await logAudit(req.adminUser!.id, 'CREATE_TREND', {
+      targetType: 'video_trend',
+      targetId: trend.id,
+      details: { name },
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true, trend });
+  } catch (err: any) {
+    logger.error('Admin create trend error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to create trend' });
+  }
+});
+
+// PUT /admin/api/trends/:id — update trend
+router.put('/trends/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const updates = { ...req.body };
+
+    // Remove fields that shouldn't be updated directly
+    delete updates.id;
+    delete updates.usageCount;
+    delete updates.createdAt;
+    delete updates.createdBy;
+    delete updates.generations;
+    delete updates._count;
+    delete updates.category;
+
+    const trend = await trendService.updateTrend(id, updates);
+
+    await logAudit(req.adminUser!.id, 'UPDATE_TREND', {
+      targetType: 'video_trend',
+      targetId: id,
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true, trend });
+  } catch (err: any) {
+    logger.error('Admin update trend error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to update trend' });
+  }
+});
+
+// DELETE /admin/api/trends/:id — soft delete (set inactive)
+router.delete('/trends/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    await trendService.deleteTrend(id);
+
+    await logAudit(req.adminUser!.id, 'DELETE_TREND', {
+      targetType: 'video_trend',
+      targetId: id,
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true });
+  } catch (err: any) {
+    logger.error('Admin delete trend error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to delete trend' });
+  }
+});
+
+// POST /admin/api/trends/:id/upload-video — upload video file
+router.post('/trends/:id/upload-video', trendVideoUpload.single('video'), async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No video file uploaded' });
+    }
+
+    // Build URL path for serving via nginx
+    const videoUrl = `/uploads/trends/${file.filename}`;
+
+    await trendService.updateTrend(id, {
+      videoUrl,
+    });
+
+    await logAudit(req.adminUser!.id, 'UPLOAD_TREND_VIDEO', {
+      targetType: 'video_trend',
+      targetId: id,
+      details: { filename: file.filename, size: file.size },
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true, videoUrl });
+  } catch (err: any) {
+    logger.error('Admin upload trend video error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to upload video' });
   }
 });
 

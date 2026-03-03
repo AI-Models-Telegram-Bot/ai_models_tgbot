@@ -8,6 +8,7 @@ import subscriptionRoutes from './subscription.routes';
 import audioRoutes from './audio.routes';
 import imageRoutes from './image.routes';
 import videoRoutes from './video.routes';
+import trendsRoutes from './trends.routes';
 import tokenPackagesRoutes from './tokenPackages.routes';
 
 const webappRouter = Router();
@@ -23,5 +24,6 @@ if (config.features.audioEnabled) {
 }
 webappRouter.use(imageRoutes);
 webappRouter.use(videoRoutes);
+webappRouter.use(trendsRoutes);
 
 export default webappRouter;

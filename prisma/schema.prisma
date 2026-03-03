@@ -48,6 +48,7 @@ model User {
   conversations       Conversation[]
   payments            Payment[]
   withdrawalRequests  WithdrawalRequest[]
+  trendGenerations    TrendGeneration[]
 
   @@map("users")
 }
@@ -638,4 +639,84 @@ model Broadcast {
   @@index([status])
   @@index([adminId])
   @@map("broadcasts")
+}
+
+// ── Video Trends ──────────────────────────────────────
+
+enum TrendGenerationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model TrendCategory {
+  id        String       @id @default(cuid())
+  slug      String       @unique
+  name      String
+  nameEn    String?      @map("name_en")
+  icon      String?
+  sortOrder Int          @default(0) @map("sort_order")
+  isActive  Boolean      @default(true) @map("is_active")
+  trends    VideoTrend[]
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@map("trend_categories")
+}
+
+model VideoTrend {
+  id                String          @id @default(cuid())
+  name              String
+  nameEn            String?         @map("name_en")
+  description       String?
+  descriptionEn     String?         @map("description_en")
+  videoUrl          String          @map("video_url")
+  videoFileId       String?         @map("video_file_id")
+  thumbnailUrl      String?         @map("thumbnail_url")
+  referenceVideoUrl String?         @map("reference_video_url")
+  model             String          @default("kling-motion")
+  promptTemplate    String          @map("prompt_template")
+  negativePrompt    String?         @map("negative_prompt")
+  duration          Int             @default(5)
+  aspectRatio       String          @default("9:16") @map("aspect_ratio")
+  tokenCost         Int             @default(5) @map("token_cost")
+  usageCount        Int             @default(0) @map("usage_count")
+  categoryId        String?         @map("category_id")
+  category          TrendCategory?  @relation(fields: [categoryId], references: [id])
+  tags              String[]        @default([])
+  isFeatured        Boolean         @default(false) @map("is_featured")
+  isNew             Boolean         @default(false) @map("is_new")
+  isActive          Boolean         @default(true) @map("is_active")
+  sortOrder         Int             @default(0) @map("sort_order")
+  createdBy         String?         @map("created_by")
+  generations       TrendGeneration[]
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@index([categoryId])
+  @@map("video_trends")
+}
+
+model TrendGeneration {
+  id              String                @id @default(cuid())
+  userId          String                @map("user_id")
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trendId         String                @map("trend_id")
+  trend           VideoTrend            @relation(fields: [trendId], references: [id])
+  sourcePhotoUrl  String?               @map("source_photo_url")
+  resultVideoUrl  String?               @map("result_video_url")
+  resultFileId    String?               @map("result_file_id")
+  tokensSpent     Int                   @default(0) @map("tokens_spent")
+  status          TrendGenerationStatus @default(PENDING)
+  errorMessage    String?               @map("error_message")
+  processingTime  Int?                  @map("processing_time")
+  requestId       String?               @map("request_id")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  completedAt     DateTime?             @map("completed_at")
+
+  @@index([userId, createdAt])
+  @@index([trendId])
+  @@index([status])
+  @@map("trend_generations")
 }

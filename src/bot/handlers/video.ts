@@ -10,7 +10,7 @@ import {
   getVideoModelMenuKeyboard,
 } from '../keyboards/videoKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
-import { modelService, walletService, modelAccessService, videoSettingsService } from '../../services';
+import { modelService, walletService, modelAccessService, videoSettingsService, trendService } from '../../services';
 import { Language, getLocale } from '../../locales';
 import { sendTrackedMessage } from '../utils';
 import { logger } from '../../utils/logger';
@@ -449,4 +449,39 @@ export async function getVideoOptionsForFunction(
  */
 export function isSingleVideoFamily(familyId: string): boolean {
   return !!VIDEO_FAMILIES[familyId as VideoFamily]?.singleModel;
+}
+
+/**
+ * Handle "Trends" button tap — open WebApp trends page
+ */
+export async function handleVideoTrends(ctx: BotContext): Promise<void> {
+  const lang = getLang(ctx);
+  const l = getLocale(lang);
+  const webappUrl = config.webapp?.url;
+
+  if (!webappUrl) {
+    await sendTrackedMessage(ctx, 'Trends are not available at the moment.', getMainKeyboard(lang));
+    return;
+  }
+
+  // Seed default categories on first access (no-op if already seeded)
+  try {
+    await trendService.seedDefaultCategories();
+  } catch {
+    // ignore seed errors
+  }
+
+  const trendsUrl = `${webappUrl}/trends`;
+  const buttonText = lang === 'ru' ? '🔥 Открыть Тренды' : '🔥 Open Trends';
+
+  await sendTrackedMessage(ctx, (l.messages as any).videoTrendsDesc, {
+    parse_mode: 'HTML',
+    ...getVideoFamiliesKeyboard(lang),
+  });
+
+  await ctx.reply(buttonText, {
+    reply_markup: {
+      inline_keyboard: [[{ text: buttonText, web_app: { url: trendsUrl } }]],
+    },
+  });
 }

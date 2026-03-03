@@ -36,6 +36,7 @@ import {
   handleVideoFamilySelection,
   handleVideoFunctionSelection,
   isSingleVideoFamily,
+  handleVideoTrends,
   handleNewChat,
   handleChangeModel,
 } from './handlers';
@@ -125,6 +126,9 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.imageNanoBanana2, ru.buttons.imageNanoBanana2], (ctx) => handleImageFunctionSelection(ctx, 'nano-banana-2'));
   bot.hears([en.buttons.imageSeedream, ru.buttons.imageSeedream], (ctx) => handleImageFunctionSelection(ctx, 'seedream'));
   bot.hears([en.buttons.imageSeedream45, ru.buttons.imageSeedream45], (ctx) => handleImageFunctionSelection(ctx, 'seedream-4.5'));
+
+  // Video Trends button (EN & RU)
+  bot.hears([en.buttons.videoTrends, ru.buttons.videoTrends], (ctx) => handleVideoTrends(ctx));
 
   // Video family buttons (EN & RU)
   bot.hears([en.buttons.videoKlingFamily, ru.buttons.videoKlingFamily], (ctx) => handleVideoFamilySelection(ctx, 'kling'));

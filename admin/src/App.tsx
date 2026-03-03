@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import UserDetail from './pages/UserDetail';
 import Generations from './pages/Generations';
+import Trends from './pages/Trends';
 import Revenue from './pages/Revenue';
 import AuditLogs from './pages/AuditLogs';
 import Broadcasts from './pages/Broadcasts';
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/users/:id" element={<UserDetail />} />
             <Route path="/generations" element={<Generations />} />
+            <Route path="/trends" element={<Trends />} />
             <Route path="/revenue" element={<Revenue />} />
             <Route path="/providers" element={<Providers />} />
             <Route path="/audit-logs" element={<AuditLogs />} />
