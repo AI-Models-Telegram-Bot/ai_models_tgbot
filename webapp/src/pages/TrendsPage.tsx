@@ -231,7 +231,7 @@ const TrendDetail: React.FC<{
 
       // Start generation
       const result = await trendsApi.generateTrendVideo(trend.id, {
-        photoUrl: uploadResult.photoUrl,
+        photoUrl: uploadResult.url,
       });
 
       setGeneration(result);
