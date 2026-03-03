@@ -22,11 +22,27 @@ export class WalletService {
   }
 
   /**
-   * Get token balance for user
+   * Get total token balance for user (subscriptionTokens + purchasedTokens)
    */
   async getBalance(userId: string): Promise<number> {
     const wallet = await this.getOrCreateWallet(userId);
     return wallet.tokenBalance;
+  }
+
+  /**
+   * Get detailed balance breakdown
+   */
+  async getBalanceDetails(userId: string): Promise<{
+    tokenBalance: number;
+    subscriptionTokens: number;
+    purchasedTokens: number;
+  }> {
+    const wallet = await this.getOrCreateWallet(userId);
+    return {
+      tokenBalance: wallet.tokenBalance,
+      subscriptionTokens: wallet.subscriptionTokens,
+      purchasedTokens: wallet.purchasedTokens,
+    };
   }
 
   /**
@@ -38,7 +54,104 @@ export class WalletService {
   }
 
   /**
-   * Add credits (purchase, bonus, refund, admin).
+   * Reset subscription tokens to a new amount (called on subscription activation/renewal).
+   * This REPLACES (not adds) subscription tokens and recalculates tokenBalance.
+   */
+  async addSubscriptionTokens(userId: string, amount: number) {
+    return await prisma.$transaction(async (tx) => {
+      const wallet = await tx.userWallet.findUnique({ where: { userId } });
+      if (!wallet) throw new Error('Wallet not found');
+
+      const oldBalance = wallet.tokenBalance;
+      const newSubscriptionTokens = amount;
+      const newBalance = wallet.purchasedTokens + newSubscriptionTokens;
+      const netChange = newSubscriptionTokens - wallet.subscriptionTokens;
+
+      await tx.userWallet.update({
+        where: { userId },
+        data: {
+          subscriptionTokens: newSubscriptionTokens,
+          tokenBalance: newBalance,
+        },
+      });
+
+      const transaction = await tx.walletTransaction.create({
+        data: {
+          userId,
+          category: 'TEXT',
+          transactionType: 'SUBSCRIPTION_GRANT',
+          amount: netChange,
+          balanceBefore: oldBalance,
+          balanceAfter: newBalance,
+          description: `Subscription tokens set to ${amount}`,
+        },
+      });
+
+      logger.info(`Subscription tokens reset to ${amount} for user ${userId}`, {
+        transactionId: transaction.id,
+        oldSubscription: wallet.subscriptionTokens,
+        newBalance,
+      });
+
+      return { wallet, transaction };
+    });
+  }
+
+  /**
+   * Add purchased tokens (from token package purchase, referral bonus, etc.).
+   * These persist forever and are not affected by subscription resets.
+   */
+  async addPurchasedTokens(
+    userId: string,
+    amount: number,
+    meta?: {
+      description?: string;
+      paymentId?: string;
+      metadata?: Record<string, unknown>;
+    }
+  ) {
+    return await prisma.$transaction(async (tx) => {
+      const wallet = await tx.userWallet.findUnique({ where: { userId } });
+      if (!wallet) throw new Error('Wallet not found');
+
+      const oldBalance = wallet.tokenBalance;
+      const newPurchasedTokens = wallet.purchasedTokens + amount;
+      const newBalance = wallet.subscriptionTokens + newPurchasedTokens;
+
+      await tx.userWallet.update({
+        where: { userId },
+        data: {
+          purchasedTokens: newPurchasedTokens,
+          tokenBalance: newBalance,
+        },
+      });
+
+      const transaction = await tx.walletTransaction.create({
+        data: {
+          userId,
+          category: 'TEXT',
+          transactionType: 'TOKEN_PURCHASE',
+          amount,
+          balanceBefore: oldBalance,
+          balanceAfter: newBalance,
+          description: meta?.description,
+          paymentId: meta?.paymentId,
+          metadata: meta?.metadata as any,
+        },
+      });
+
+      logger.info(`Added ${amount} purchased tokens to user ${userId}`, {
+        transactionId: transaction.id,
+        newBalance,
+      });
+
+      return { wallet, transaction };
+    });
+  }
+
+  /**
+   * Add credits (generic — for admin grants, misc bonuses).
+   * Adds to purchasedTokens pool by default.
    * Category is kept for analytics tracking on the transaction record.
    */
   async addCredits(
@@ -58,12 +171,16 @@ export class WalletService {
       const wallet = await tx.userWallet.findUnique({ where: { userId } });
       if (!wallet) throw new Error('Wallet not found');
 
-      const currentBalance = wallet.tokenBalance;
-      const newBalance = currentBalance + amount;
+      const oldBalance = wallet.tokenBalance;
+      const newPurchasedTokens = wallet.purchasedTokens + amount;
+      const newBalance = wallet.subscriptionTokens + newPurchasedTokens;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { tokenBalance: newBalance },
+        data: {
+          purchasedTokens: newPurchasedTokens,
+          tokenBalance: newBalance,
+        },
       });
 
       const transaction = await tx.walletTransaction.create({
@@ -72,7 +189,7 @@ export class WalletService {
           category,
           transactionType,
           amount,
-          balanceBefore: currentBalance,
+          balanceBefore: oldBalance,
           balanceAfter: newBalance,
           description: meta?.description,
           paymentId: meta?.paymentId,
@@ -93,6 +210,7 @@ export class WalletService {
 
   /**
    * Deduct credits atomically with balance check.
+   * Spends subscription tokens first, then purchased tokens.
    * Category is kept for analytics tracking on the transaction record.
    */
   async deductCredits(
@@ -115,11 +233,21 @@ export class WalletService {
         throw new Error(`Insufficient balance. Required: ${amount}, Available: ${currentBalance}`);
       }
 
-      const newBalance = currentBalance - amount;
+      // Spend subscription tokens first, then purchased
+      const subDeduction = Math.min(wallet.subscriptionTokens, amount);
+      const purchDeduction = amount - subDeduction;
+
+      const newSubscriptionTokens = wallet.subscriptionTokens - subDeduction;
+      const newPurchasedTokens = wallet.purchasedTokens - purchDeduction;
+      const newBalance = newSubscriptionTokens + newPurchasedTokens;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { tokenBalance: newBalance },
+        data: {
+          subscriptionTokens: newSubscriptionTokens,
+          purchasedTokens: newPurchasedTokens,
+          tokenBalance: newBalance,
+        },
       });
 
       const transaction = await tx.walletTransaction.create({
@@ -133,13 +261,19 @@ export class WalletService {
           requestId: meta.requestId,
           priceItemCode: meta.priceItemCode,
           description: meta.description,
-          metadata: meta.metadata as any,
+          metadata: {
+            ...(meta.metadata || {}),
+            subscriptionTokensUsed: subDeduction,
+            purchasedTokensUsed: purchDeduction,
+          } as any,
         },
       });
 
       logger.info(`Deducted ${amount} tokens (${category}) from user ${userId}`, {
         transactionId: transaction.id,
         newBalance,
+        subUsed: subDeduction,
+        purchUsed: purchDeduction,
       });
 
       return { wallet, transaction };
@@ -148,6 +282,7 @@ export class WalletService {
 
   /**
    * Reserve credits for long-running operations (video).
+   * Spends subscription tokens first, then purchased tokens.
    * Category is kept for analytics tracking on the transaction record.
    */
   async reserveCredits(
@@ -171,11 +306,21 @@ export class WalletService {
         throw new Error(`Insufficient balance for reservation. Required: ${estimatedAmount}, Available: ${currentBalance}`);
       }
 
-      const newBalance = currentBalance - estimatedAmount;
+      // Spend subscription tokens first, then purchased
+      const subDeduction = Math.min(wallet.subscriptionTokens, estimatedAmount);
+      const purchDeduction = estimatedAmount - subDeduction;
+
+      const newSubscriptionTokens = wallet.subscriptionTokens - subDeduction;
+      const newPurchasedTokens = wallet.purchasedTokens - purchDeduction;
+      const newBalance = newSubscriptionTokens + newPurchasedTokens;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { tokenBalance: newBalance },
+        data: {
+          subscriptionTokens: newSubscriptionTokens,
+          purchasedTokens: newPurchasedTokens,
+          tokenBalance: newBalance,
+        },
       });
 
       await tx.walletTransaction.create({
@@ -191,6 +336,10 @@ export class WalletService {
           description: meta.description || 'Reserved credits',
           isReservation: true,
           reservationId,
+          metadata: {
+            subscriptionTokensUsed: subDeduction,
+            purchasedTokensUsed: purchDeduction,
+          } as any,
         },
       });
 
@@ -201,7 +350,8 @@ export class WalletService {
   }
 
   /**
-   * Adjust reservation to actual cost after generation completes
+   * Adjust reservation to actual cost after generation completes.
+   * Adjustments always affect purchasedTokens for simplicity.
    */
   async adjustReservation(
     userId: string,
@@ -227,11 +377,15 @@ export class WalletService {
 
       const currentBalance = wallet.tokenBalance;
       const adjustmentAmount = -difference; // Positive if refunding, negative if charging more
-      const newBalance = currentBalance + adjustmentAmount;
+      const newPurchasedTokens = wallet.purchasedTokens + adjustmentAmount;
+      const newBalance = wallet.subscriptionTokens + newPurchasedTokens;
 
       await tx.userWallet.update({
         where: { userId },
-        data: { tokenBalance: newBalance },
+        data: {
+          purchasedTokens: newPurchasedTokens,
+          tokenBalance: newBalance,
+        },
       });
 
       await tx.walletTransaction.create({
@@ -257,6 +411,7 @@ export class WalletService {
 
   /**
    * Refund full deduction (for failed operations).
+   * Refunds go to purchasedTokens since we can't know original source after the fact.
    * Category is kept for analytics tracking on the transaction record.
    */
   async refundCredits(
@@ -265,10 +420,42 @@ export class WalletService {
     amount: number,
     meta: { requestId: string; priceItemCode: string; description?: string }
   ) {
-    return this.addCredits(userId, category, amount, 'REFUND', {
-      description: meta.description || 'Refund for failed operation',
-      requestId: meta.requestId,
-      priceItemCode: meta.priceItemCode,
+    return await prisma.$transaction(async (tx) => {
+      const wallet = await tx.userWallet.findUnique({ where: { userId } });
+      if (!wallet) throw new Error('Wallet not found');
+
+      const oldBalance = wallet.tokenBalance;
+      const newPurchasedTokens = wallet.purchasedTokens + amount;
+      const newBalance = wallet.subscriptionTokens + newPurchasedTokens;
+
+      await tx.userWallet.update({
+        where: { userId },
+        data: {
+          purchasedTokens: newPurchasedTokens,
+          tokenBalance: newBalance,
+        },
+      });
+
+      const transaction = await tx.walletTransaction.create({
+        data: {
+          userId,
+          category,
+          transactionType: 'REFUND',
+          amount,
+          balanceBefore: oldBalance,
+          balanceAfter: newBalance,
+          description: meta.description || 'Refund for failed operation',
+          requestId: meta.requestId,
+          priceItemCode: meta.priceItemCode,
+        },
+      });
+
+      logger.info(`Refunded ${amount} tokens (${category}) to user ${userId}`, {
+        transactionId: transaction.id,
+        newBalance,
+      });
+
+      return { wallet, transaction };
     });
   }
 
@@ -370,13 +557,14 @@ export class WalletService {
   }
 
   /**
-   * Grant initial tokens to new user wallet (signup bonus)
+   * Grant initial tokens to new user wallet (signup bonus).
+   * Goes to purchasedTokens so they persist forever.
    */
   async grantSignupBonus(userId: string, amount: number) {
     await this.getOrCreateWallet(userId);
 
     if (amount > 0) {
-      await this.addCredits(userId, 'TEXT', amount, 'BONUS', {
+      await this.addPurchasedTokens(userId, amount, {
         description: 'Signup bonus',
       });
     }

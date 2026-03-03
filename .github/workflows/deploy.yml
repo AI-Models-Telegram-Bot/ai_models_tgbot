@@ -85,12 +85,13 @@ jobs:
               sh -c "npm ci --include=dev && npm run build:staging"
 
             # Atomic swap: sync to temp dir, then swap into place
+            rm -rf webapp-dev-dist-new webapp-dev-dist-old 2>/dev/null || true
             mkdir -p webapp-dev-dist webapp-dev-dist-new
             rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dev-dist-new/
             chmod -R 755 webapp-dev-dist-new
             mv webapp-dev-dist webapp-dev-dist-old 2>/dev/null || true
             mv webapp-dev-dist-new webapp-dev-dist
-            rm -rf webapp-dev-dist-old
+            rm -rf webapp-dev-dist-old 2>/dev/null || true
             echo "Dev webapp built successfully"
 
             # Seed new price items into database (upsert, safe to re-run)
@@ -186,13 +187,15 @@ jobs:
 
             # Atomic swap: sync to a temp dir, then move into place
             # This prevents serving partially-written files during deployment
+            rm -rf webapp-dist-new webapp-dist-old 2>/dev/null || true
             mkdir -p webapp-dist webapp-dist-new
             rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dist-new/
             chmod -R 755 webapp-dist-new
             # Swap old and new atomically (directory rename is instant on same filesystem)
             mv webapp-dist webapp-dist-old 2>/dev/null || true
             mv webapp-dist-new webapp-dist
-            rm -rf webapp-dist-old
+            # Cleanup old dir (non-fatal — may have root-owned files from manual deploys)
+            rm -rf webapp-dist-old 2>/dev/null || true
             echo "Webapp built successfully"
 
             # Clean up any leftover orphaned containers from previous failed deploys

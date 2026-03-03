@@ -136,16 +136,16 @@ export class UserService {
       await walletService.getOrCreateWallet(referrer.id);
       await walletService.getOrCreateWallet(newUser.id);
 
-      // Grant referrer bonus
+      // Grant referrer bonus (purchased tokens — persist forever)
       if (tokenBonus > 0) {
-        await walletService.addCredits(referrer.id, 'TEXT', tokenBonus, 'BONUS', {
+        await walletService.addPurchasedTokens(referrer.id, tokenBonus, {
           description: `Referral bonus: new user joined`,
         });
       }
 
-      // Grant invitee bonus tokens
+      // Grant invitee bonus tokens (purchased tokens — persist forever)
       if (REFERRAL_INVITEE_BONUS > 0) {
-        await walletService.addCredits(newUser.id, 'TEXT', REFERRAL_INVITEE_BONUS, 'BONUS', {
+        await walletService.addPurchasedTokens(newUser.id, REFERRAL_INVITEE_BONUS, {
           description: `Welcome bonus: joined via referral link`,
         });
       }

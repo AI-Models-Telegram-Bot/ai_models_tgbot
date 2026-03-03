@@ -8,5 +8,8 @@
   "tokens": "Tokens",
   "totalSpent": "Total Spent",
   "totalRequests": "Requests",
-  "moneyBalance": "Money"
+  "moneyBalance": "Money",
+  "topUp": "Top Up",
+  "subscriptionTokens": "Subscription",
+  "purchasedTokens": "Purchased"
 }

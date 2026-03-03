@@ -8,5 +8,8 @@
   "tokens": "Токены",
   "totalSpent": "Всего потрачено",
   "totalRequests": "Запросов",
-  "moneyBalance": "Деньги"
+  "moneyBalance": "Деньги",
+  "topUp": "Пополнить",
+  "subscriptionTokens": "Подписка",
+  "purchasedTokens": "Купленные"
 }

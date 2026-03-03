@@ -509,6 +509,11 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     return handleAudioUpload(ctx);
   }
 
+  // Route video documents (mp4, mov, etc.) to video handler
+  if (mime.startsWith('video/')) {
+    return handleVideoUpload(ctx);
+  }
+
   // Only handle image files
   if (!mime.startsWith('image/')) return;
 
@@ -852,12 +857,21 @@ const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar'];
 
 /**
  * Handle video uploads for Kling Motion Control.
- * Stores the video URL in session.
+ * Stores the video URL in session. Accepts both native video messages and video documents.
  */
 export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   if (!ctx.user || !ctx.session) return;
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
-  if (!ctx.message || !('video' in ctx.message) || !ctx.message.video) return;
+  if (!ctx.message) return;
+
+  // Extract file_id from native video or video document
+  let fileId: string | undefined;
+  if ('video' in ctx.message && ctx.message.video) {
+    fileId = ctx.message.video.file_id;
+  } else if ('document' in ctx.message && ctx.message.document?.mime_type?.startsWith('video/')) {
+    fileId = ctx.message.document.file_id;
+  }
+  if (!fileId) return;
 
   const lang = getLang(ctx);
 
@@ -870,7 +884,7 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   }
 
   try {
-    const fileLink = await ctx.telegram.getFileLink(ctx.message.video.file_id);
+    const fileLink = await ctx.telegram.getFileLink(fileId);
     ctx.session.uploadedVideoUrl = fileLink.href;
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;

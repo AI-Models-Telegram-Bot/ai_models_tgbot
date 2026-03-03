@@ -2,6 +2,8 @@ import apiClient from './client';
 import type {
   CreatePaymentRequest,
   CreatePaymentResponse,
+  CreateTokenPurchaseRequest,
+  CreateTokenPurchaseResponse,
   PaymentVerifyResponse,
   PaymentMethodsResponse,
 } from '@/types/payment.types';
@@ -20,5 +22,10 @@ export const paymentApi = {
   getMethods: () =>
     apiClient
       .get<PaymentMethodsResponse>('/payment/methods')
+      .then((r) => r.data),
+
+  createTokenPurchase: (data: CreateTokenPurchaseRequest) =>
+    apiClient
+      .post<CreateTokenPurchaseResponse>('/payment/create-token-purchase', data)
       .then((r) => r.data),
 };

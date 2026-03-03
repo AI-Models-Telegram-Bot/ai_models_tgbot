@@ -6,6 +6,8 @@ import { prisma } from '../config/database';
 import { config } from '../config';
 import { getPlanByTier } from '../config/subscriptions';
 import { subscriptionService } from './SubscriptionService';
+import { walletService } from './WalletService';
+import { tokenPackageService } from './TokenPackageService';
 import { referralCommissionService } from './ReferralCommissionService';
 import { logger } from '../utils/logger';
 
@@ -183,6 +185,122 @@ export class YooKassaService {
   }
 
   /**
+   * Create a YooKassa payment for a token package purchase.
+   */
+  async createTokenPurchasePayment(
+    userId: string,
+    packageId: string,
+    returnUrl: string,
+    paymentMethodType?: 'sbp' | 'sberbank' | 'bank_card',
+  ): Promise<{ confirmationUrl: string; paymentId: string }> {
+    const pkg = await tokenPackageService.getPackageById(packageId);
+    if (!pkg || !pkg.isActive) {
+      throw new Error(`Token package not found or inactive: ${packageId}`);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    const customerEmail = user?.email || config.yookassa.defaultEmail;
+
+    const payment = await prisma.payment.create({
+      data: {
+        userId,
+        amount: pkg.priceRUB,
+        currency: 'RUB',
+        status: 'PENDING',
+        provider: 'YOOKASSA',
+        tier: null,
+        description: `Token purchase: ${pkg.name}`,
+        metadata: { type: 'token_purchase', packageId, tokens: pkg.tokens },
+      },
+    });
+
+    const idempotencyKey = crypto.randomUUID();
+    const separator = returnUrl.includes('?') ? '&' : '?';
+    const returnUrlWithPayment = `${returnUrl}${separator}paymentId=${payment.id}`;
+
+    try {
+      const response = await this.client.post<YooKassaPaymentResponse>(
+        '/payments',
+        {
+          amount: {
+            value: pkg.priceRUB.toFixed(2),
+            currency: 'RUB',
+          },
+          capture: true,
+          confirmation: {
+            type: 'redirect',
+            return_url: returnUrlWithPayment,
+          },
+          description: `Покупка ${pkg.tokens} токенов`,
+          receipt: {
+            customer: { email: customerEmail },
+            items: [
+              {
+                description: `${pkg.name} — пополнение токенов`,
+                quantity: '1.00',
+                amount: {
+                  value: pkg.priceRUB.toFixed(2),
+                  currency: 'RUB',
+                },
+                vat_code: 1,
+                payment_subject: 'service',
+                payment_mode: 'full_payment',
+              },
+            ],
+          },
+          ...(paymentMethodType && {
+            payment_method_data: { type: paymentMethodType },
+          }),
+          metadata: {
+            userId,
+            type: 'token_purchase',
+            packageId,
+            tokens: String(pkg.tokens),
+            paymentId: payment.id,
+          },
+        },
+        {
+          headers: { 'Idempotence-Key': idempotencyKey },
+        },
+      );
+
+      const yooPayment = response.data;
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { externalId: yooPayment.id },
+      });
+
+      const confirmationUrl = yooPayment.confirmation?.confirmation_url;
+      if (!confirmationUrl) {
+        throw new Error('YooKassa response missing confirmation URL');
+      }
+
+      logger.info('YooKassa token purchase payment created', {
+        paymentId: payment.id,
+        externalId: yooPayment.id,
+        packageId,
+        tokens: pkg.tokens,
+        amount: pkg.priceRUB,
+      });
+
+      return { confirmationUrl, paymentId: payment.id };
+    } catch (error: any) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: 'CANCELED' },
+      });
+
+      const detail = error.response?.data || error.message;
+      logger.error('YooKassa token purchase payment creation failed', { error: detail, userId, packageId });
+      throw new Error(`YooKassa payment creation failed: ${JSON.stringify(detail)}`);
+    }
+  }
+
+  /**
    * Handle incoming webhook notification from YooKassa.
    * Idempotent: if the payment has already been processed, it is skipped.
    */
@@ -272,25 +390,44 @@ export class YooKassaService {
     userId: string,
     tier: SubscriptionTier | null,
   ): Promise<void> {
-    await prisma.payment.update({
+    const paymentRecord = await prisma.payment.update({
       where: { id: paymentId },
       data: { status: 'SUCCEEDED' },
     });
 
+    const metadata = paymentRecord.metadata as Record<string, any> | null;
+
+    // Token purchase flow
+    if (metadata?.type === 'token_purchase') {
+      try {
+        const tokens = Number(metadata.tokens);
+        await walletService.getOrCreateWallet(userId);
+        await walletService.addPurchasedTokens(userId, tokens, {
+          description: `Token purchase: ${tokens} tokens`,
+          paymentId,
+        });
+
+        logger.info('Token purchase completed after YooKassa payment', {
+          paymentId, userId, tokens,
+        });
+
+        await this.sendTokenPurchaseNotification(userId, tokens);
+      } catch (err: any) {
+        logger.error('Failed to grant tokens after payment', {
+          paymentId, userId, error: err.message,
+        });
+      }
+      return;
+    }
+
+    // Subscription upgrade flow
     if (tier && tier !== 'FREE') {
       try {
         await subscriptionService.upgradeTier(userId, tier);
         logger.info('Subscription upgraded after YooKassa payment', {
-          paymentId,
-          userId,
-          tier,
+          paymentId, userId, tier,
         });
 
-        // Process referral commission for referred users
-        const paymentRecord = await prisma.payment.findUnique({
-          where: { id: paymentId },
-          select: { amount: true, currency: true },
-        });
         if (paymentRecord) {
           await referralCommissionService.processCommission({
             payingUserId: userId,
@@ -301,20 +438,34 @@ export class YooKassaService {
           });
         }
 
-        // Send Telegram notification to the user
-        await this.sendPaymentNotification(userId, tier);
+        await this.sendSubscriptionNotification(userId, tier);
       } catch (err: any) {
         logger.error('Failed to upgrade subscription after payment', {
-          paymentId,
-          userId,
-          tier,
-          error: err.message,
+          paymentId, userId, tier, error: err.message,
         });
       }
     }
   }
 
-  private async sendPaymentNotification(userId: string, tier: SubscriptionTier): Promise<void> {
+  private async sendTokenPurchaseNotification(userId: string, tokens: number): Promise<void> {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user?.telegramId) return;
+
+      const lang = user.languageCode?.startsWith('ru') ? 'ru' : 'en';
+      const messages = {
+        en: `⚡ *+${tokens} tokens added!*\n\nYour token purchase is complete. Your balance has been updated.`,
+        ru: `⚡ *+${tokens} токенов зачислено!*\n\nПокупка токенов завершена. Баланс обновлён.`,
+      };
+
+      const telegram = new Telegram(config.bot.token);
+      await telegram.sendMessage(user.telegramId.toString(), messages[lang], { parse_mode: 'Markdown' });
+    } catch (err: any) {
+      logger.warn('Failed to send token purchase notification', { userId, error: err.message });
+    }
+  }
+
+  private async sendSubscriptionNotification(userId: string, tier: SubscriptionTier): Promise<void> {
     try {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user?.telegramId) return;

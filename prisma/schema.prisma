@@ -66,17 +66,19 @@ enum ReferralMode {
 // ── Multi-Wallet System ──────────────────────────────────
 
 model UserWallet {
-  id            String    @id @default(cuid())
-  userId        String    @unique @map("user_id")
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String    @id @default(cuid())
+  userId              String    @unique @map("user_id")
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  tokenBalance  Float     @default(0) @map("token_balance")
+  tokenBalance        Float     @default(0) @map("token_balance")
+  subscriptionTokens  Float     @default(0) @map("subscription_tokens")
+  purchasedTokens     Float     @default(0) @map("purchased_tokens")
 
-  moneyBalance  Float     @default(0) @map("money_balance")
-  currency      String    @default("USD")
+  moneyBalance        Float     @default(0) @map("money_balance")
+  currency            String    @default("USD")
 
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
   @@index([userId])
   @@map("user_wallets")
@@ -152,6 +154,8 @@ enum WalletTransactionType {
   ADMIN_REMOVE
   TRANSFER
   REFERRAL_COMMISSION
+  TOKEN_PURCHASE
+  SUBSCRIPTION_GRANT
 }
 
 // ── Existing Models (kept for compatibility) ─────────────
@@ -226,7 +230,13 @@ model TokenPackage {
   name            String
   tokens          Int
   price           Float
-  currency        String    @default("USD")
+  currency        String    @default("RUB")
+  priceRUB        Float     @default(0) @map("price_rub")
+  priceStars      Int       @default(0) @map("price_stars")
+  discountPercent Int       @default(0) @map("discount_percent")
+  isPopular       Boolean   @default(false) @map("is_popular")
+  sortOrder       Int       @default(0) @map("sort_order")
+  description     String?
   isActive        Boolean   @default(true) @map("is_active")
   createdAt       DateTime  @default(now()) @map("created_at")
 

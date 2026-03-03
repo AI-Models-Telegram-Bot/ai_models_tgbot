@@ -44,6 +44,21 @@
     "free": "Free",
     "perMonth": "/mo"
   },
+  "tabs": {
+    "plans": "Plans",
+    "tokens": "Tokens"
+  },
+  "tokenPackages": {
+    "title": "Buy Tokens",
+    "subtitle": "Top up your balance anytime",
+    "currentBalance": "Current Balance",
+    "buy": "Buy",
+    "popular": "Popular",
+    "discount": "{{percent}}% off",
+    "tokens": "tokens",
+    "tokenPurchase": "Token Purchase",
+    "purchaseDescription": "One-time purchase, tokens never expire"
+  },
   "payment": {
     "selectMethod": "Select Payment Method",
     "monthlySubscription": "Monthly subscription",
