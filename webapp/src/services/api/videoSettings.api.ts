@@ -14,6 +14,19 @@ export interface VideoModelSettings {
   qualityMode?: string;
   sound?: boolean;
   characterOrientation?: string;
+  // Topaz AI fields
+  upscale?: string;
+  fps?: number;
+  topazModel?: string;
+  addNoise?: number;
+  fixCompression?: number;
+  improveDetail?: number;
+  sharpen?: number;
+  reduceNoise?: number;
+  dehalo?: number;
+  antiAlias?: number;
+  focusFix?: string;
+  grain?: string;
 }
 
 export interface VideoSettingsResponse {

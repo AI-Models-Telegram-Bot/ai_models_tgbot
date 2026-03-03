@@ -88,6 +88,27 @@
     "seedance": "Seedance 1.5 Pro",
     "seedance-lite": "Seedance 1.0 Lite",
     "seedance-1-pro": "Seedance 1.0 Pro",
-    "seedance-fast": "Seedance 1.0 Fast"
-  }
+    "seedance-fast": "Seedance 1.0 Fast",
+    "topaz": "Topaz AI"
+  },
+  "topazUpscale": "Upscale",
+  "topazUpscaleOriginal": "Original",
+  "topazUpscale2x": "2x Upscale",
+  "topazUpscale4x": "4x Upscale",
+  "topazFps": "Frame Rate",
+  "topazProSettings": "Professional Settings",
+  "topazProSettingsDesc": "Fine-tune enhancement parameters",
+  "topazModel": "Enhancement Model",
+  "topazModelProteus": "Proteus v4",
+  "topazAddNoise": "Add Noise",
+  "topazFocusFix": "Focus Fix",
+  "topazGrain": "Grain",
+  "topazFixCompression": "Fix Compression",
+  "topazImproveDetail": "Improve Detail",
+  "topazSharpen": "Sharpen",
+  "topazReduceNoise": "Reduce Noise",
+  "topazDehalo": "Dehalo",
+  "topazAntiAlias": "Anti-alias / Deblur",
+  "topazOn": "On",
+  "topazOff": "Off"
 }

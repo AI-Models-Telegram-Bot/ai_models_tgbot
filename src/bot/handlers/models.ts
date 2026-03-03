@@ -52,7 +52,7 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
 const MODEL_MAX_IMAGES: Record<string, number> = {
   // Video models
   'kling': 4, 'kling-pro': 4, 'kling-3.0': 4,
-  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1,
+  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1, 'topaz': 0,
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
   'seedance': 2, 'seedance-lite': 2, 'seedance-1-pro': 2, 'seedance-fast': 2,
@@ -849,8 +849,8 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   ctx.session.uploadedAudioUrl = undefined;
 }
 
-/** Models that accept video uploads (Kling Motion Control) */
-const VIDEO_UPLOAD_MODELS = ['kling-motion'];
+/** Models that accept video uploads (Kling Motion Control, Topaz AI) */
+const VIDEO_UPLOAD_MODELS = ['kling-motion', 'topaz'];
 
 /** Models that accept audio uploads (Kling AI Avatar) */
 const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar'];
@@ -864,16 +864,30 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
   if (!ctx.message) return;
 
-  // Extract file_id from native video or video document
+  // Extract file_id and dimensions from native video or video document
   let fileId: string | undefined;
+  let videoWidth: number | undefined;
+  let videoHeight: number | undefined;
   if ('video' in ctx.message && ctx.message.video) {
     fileId = ctx.message.video.file_id;
+    videoWidth = ctx.message.video.width;
+    videoHeight = ctx.message.video.height;
   } else if ('document' in ctx.message && ctx.message.document?.mime_type?.startsWith('video/')) {
     fileId = ctx.message.document.file_id;
   }
   if (!fileId) return;
 
   const lang = getLang(ctx);
+
+  // Validate minimum video resolution (KieAI requires at least 340x340)
+  const MIN_VIDEO_RES = 340;
+  if (videoWidth && videoHeight && (videoWidth < MIN_VIDEO_RES || videoHeight < MIN_VIDEO_RES)) {
+    const msg = lang === 'ru'
+      ? `⚠️ Видео слишком маленькое (${videoWidth}x${videoHeight}). Минимальное разрешение: ${MIN_VIDEO_RES}x${MIN_VIDEO_RES}. Загрузите видео в более высоком качестве.`
+      : `⚠️ Video resolution too low (${videoWidth}x${videoHeight}). Minimum required: ${MIN_VIDEO_RES}x${MIN_VIDEO_RES}. Please upload a higher quality video.`;
+    await ctx.reply(msg);
+    return;
+  }
 
   if (!VIDEO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
     const msg = lang === 'ru'
@@ -886,6 +900,17 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);
     ctx.session.uploadedVideoUrl = fileLink.href;
+
+    // Topaz: video-only, no photo needed — show Generate button immediately
+    if (ctx.session.videoFunction === 'topaz') {
+      const msg = lang === 'ru'
+        ? '✅ Видео загружено. Нажмите кнопку ниже для улучшения 👇'
+        : '✅ Video uploaded. Tap the button below to enhance 👇';
+      await ctx.reply(msg, Markup.inlineKeyboard([
+        [Markup.button.callback(lang === 'ru' ? '💠 Улучшить видео' : '💠 Enhance Video', 'generate_now')],
+      ]));
+      return;
+    }
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;
     if (hasImage) {

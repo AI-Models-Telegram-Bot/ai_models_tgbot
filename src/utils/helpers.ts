@@ -115,6 +115,13 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
       : 'Generated image is too large. Try reducing the resolution.';
   }
 
+  // Video resolution too low
+  if (lower.includes('video resolution') || lower.includes('resolution must be at least')) {
+    return lang === 'ru'
+      ? 'Разрешение видео слишком низкое. Загрузите видео в более высоком качестве (минимум 340x340).'
+      : 'Video resolution is too low. Please upload a higher quality video (minimum 340x340).';
+  }
+
   // Bad request / validation
   if (lower.includes('status code 400') || lower.includes('bad request') || lower.includes('validation')) {
     return lang === 'ru'

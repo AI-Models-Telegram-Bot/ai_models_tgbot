@@ -60,6 +60,7 @@ export const en = {
     videoLumaFamily: '💫 Luma',
     videoWanFamily: '🌊 WAN',
     videoSeedanceFamily: '🌱 Seedance',
+    videoEnhancementFamily: '💠 Enhancement',
     // Video Models
     videoKling: '🎥 Kling Standard (⚡16–40)',
     videoKlingPro: '💎 Kling Pro (⚡27–144)',
@@ -640,6 +641,22 @@ Latest Seedance model from ByteDance. Multi-scene storytelling, high-quality ani
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
 Fee: ⚡13–33 tokens (depends on duration)`,
+
+    videoEnhancementFamilyDesc: `💠 <b>Video Enhancement</b>
+
+AI-powered video upscaling and quality improvement. Transform low-resolution footage into stunning high-quality video.
+
+Select a model:`,
+
+    videoTopazDesc: `💠 <b>Topaz AI</b>
+
+Upload a clip up to 20 seconds / 20 MB, set resolution and FPS settings, and we'll enhance it.
+
+⚙️ Use Settings to configure upscale (2x/4x), frame rate, and professional enhancement options.
+
+🎥 Upload a video to get started 👇
+
+Fee: ⚡1 token per second of video`,
 
     videoAccessDenied: 'is not available on your current plan.',
     videoUpgradeHint: 'Upgrade your subscription to access this feature.',

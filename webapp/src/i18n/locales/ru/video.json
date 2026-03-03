@@ -88,6 +88,27 @@
     "seedance": "Seedance 1.5 Pro",
     "seedance-lite": "Seedance 1.0 Lite",
     "seedance-1-pro": "Seedance 1.0 Pro",
-    "seedance-fast": "Seedance 1.0 Fast"
-  }
+    "seedance-fast": "Seedance 1.0 Fast",
+    "topaz": "Topaz AI"
+  },
+  "topazUpscale": "Масштабирование (Upscale)",
+  "topazUpscaleOriginal": "Оригинал",
+  "topazUpscale2x": "2x Upscale",
+  "topazUpscale4x": "4x Upscale",
+  "topazFps": "Частота кадров (FPS)",
+  "topazProSettings": "Профессиональные настройки",
+  "topazProSettingsDesc": "Тонкая настройка параметров улучшения",
+  "topazModel": "Модель улучшения",
+  "topazModelProteus": "Proteus v4",
+  "topazAddNoise": "Добавить шум (Add Noise)",
+  "topazFocusFix": "Фокус (Focus Fix)",
+  "topazGrain": "Зернистость (Grain)",
+  "topazFixCompression": "Исправить сжатие (Fix Compression)",
+  "topazImproveDetail": "Улучшить детали (Improve Detail)",
+  "topazSharpen": "Резкость (Sharpen)",
+  "topazReduceNoise": "Шумоподавление (Reduce Noise)",
+  "topazDehalo": "Удаление ореолов (Dehalo)",
+  "topazAntiAlias": "Сглаживание (Anti-alias / Deblur)",
+  "topazOn": "Вкл",
+  "topazOff": "Выкл"
 }
