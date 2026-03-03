@@ -90,9 +90,10 @@ export const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({
         ? `${window.location.origin}/payment/success?source=bot`
         : `${window.location.origin}/payment/success`;
 
+      const isCustom = pkg.id.startsWith('custom:');
       const response = await paymentApi.createTokenPurchase({
         telegramId,
-        packageId: pkg.id,
+        ...(isCustom ? { customTokens: pkg.tokens } : { packageId: pkg.id }),
         paymentMethod: selectedMethod,
         returnUrl: successUrl,
       });

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import i18n from '@/i18n/config';
 import { userApi } from '@/services/api/user.api';
 import type { User, UserWallet, CurrentPlan, UserStats } from '@/types/user.types';
 
@@ -40,6 +41,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         stats: data.stats,
         isLoading: false,
       });
+
+      // Sync webapp language to user's preference from the database
+      if (data.user?.language) {
+        const lang = data.user.language.startsWith('ru') ? 'ru' : 'en';
+        if (i18n.language !== lang) {
+          i18n.changeLanguage(lang);
+        }
+      }
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : 'Failed to load profile',
@@ -61,6 +70,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         stats: data.stats,
         isLoading: false,
       });
+
+      // Sync webapp language to user's preference from the database
+      if (data.user?.language) {
+        const lang = data.user.language.startsWith('ru') ? 'ru' : 'en';
+        if (i18n.language !== lang) {
+          i18n.changeLanguage(lang);
+        }
+      }
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : 'Failed to load profile',

@@ -185,11 +185,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     }
   }, [isOpen, methods]);
 
-  // Show RUB for Russian methods, USD for Telegram Stars
-  const isRubMethod = selectedMethod && selectedMethod !== 'telegram_stars';
-  const buttonPrice = isRubMethod
-    ? plan.priceRUB ? `${plan.priceRUB.toLocaleString()} ₽` : ''
-    : plan.priceUSD ? `$${plan.priceUSD}` : '';
+  const buttonPrice = plan.priceRUB ? `${plan.priceRUB.toLocaleString()} ₽` : '';
 
   return (
     <Modal
@@ -213,9 +209,8 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                 <p className="text-lg font-bold text-white font-mono">
                   {plan.priceRUB.toLocaleString()} ₽
                 </p>
-              ) : null}
-              {plan.priceUSD ? (
-                <p className={`font-mono ${plan.priceRUB ? 'text-xs text-content-tertiary' : 'text-lg font-bold text-white'}`}>
+              ) : plan.priceUSD ? (
+                <p className="text-lg font-bold text-white font-mono">
                   ${plan.priceUSD}
                 </p>
               ) : null}

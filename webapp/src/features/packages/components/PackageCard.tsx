@@ -60,9 +60,7 @@ export const PackageCard: React.FC<PackageCardProps> = ({
 
         {/* Pricing */}
         <div className="flex items-baseline mt-3" style={{ columnGap: 6 }}>
-          <span className="text-white text-xl font-bold">${pkg.priceUSD}</span>
-          <span className="text-content-tertiary">/</span>
-          <span className="text-content-secondary text-base">{pkg.priceRUB} &#8381;</span>
+          <span className="text-white text-xl font-bold">{pkg.priceRUB.toLocaleString()} ₽</span>
         </div>
 
         {/* Features */}

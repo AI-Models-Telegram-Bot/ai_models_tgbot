@@ -33,7 +33,8 @@ export type CreatePaymentResponse =
 
 export interface CreateTokenPurchaseRequest {
   telegramId?: string;
-  packageId: string;
+  packageId?: string;
+  customTokens?: number;
   paymentMethod: PaymentMethod;
   returnUrl?: string;
 }
