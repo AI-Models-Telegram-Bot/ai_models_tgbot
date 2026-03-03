@@ -5,6 +5,8 @@ import { initTelegramWebApp } from './services/telegram/telegram';
 import './i18n/config';
 import './styles/index.css';
 
+// App version — used to verify bundle integrity via console
+(window as any).__appVersion = '2.1.0';
 // Signal to the timeout detector in index.html that the JS bundle loaded
 (window as any).__appLoaded = true;
 

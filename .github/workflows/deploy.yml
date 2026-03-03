@@ -84,10 +84,13 @@ jobs:
               node:20-alpine \
               sh -c "npm ci --include=dev && npm run build:staging"
 
-            # Sync built files into webapp-dev-dist
-            mkdir -p webapp-dev-dist
-            rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dev-dist/
-            chmod -R 755 webapp-dev-dist
+            # Atomic swap: sync to temp dir, then swap into place
+            mkdir -p webapp-dev-dist webapp-dev-dist-new
+            rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dev-dist-new/
+            chmod -R 755 webapp-dev-dist-new
+            mv webapp-dev-dist webapp-dev-dist-old 2>/dev/null || true
+            mv webapp-dev-dist-new webapp-dev-dist
+            rm -rf webapp-dev-dist-old
             echo "Dev webapp built successfully"
 
             # Seed new price items into database (upsert, safe to re-run)
@@ -180,11 +183,20 @@ jobs:
               -w /app \
               node:20-alpine \
               sh -c "npm ci --include=dev && npm run build:prod"
-            # Sync built files into webapp-dist (preserve directory inode for nginx bind mount)
-            mkdir -p webapp-dist
-            rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dist/
-            chmod -R 755 webapp-dist
+
+            # Atomic swap: sync to a temp dir, then move into place
+            # This prevents serving partially-written files during deployment
+            mkdir -p webapp-dist webapp-dist-new
+            rsync -a --delete --no-owner --no-group webapp/dist/ webapp-dist-new/
+            chmod -R 755 webapp-dist-new
+            # Swap old and new atomically (directory rename is instant on same filesystem)
+            mv webapp-dist webapp-dist-old 2>/dev/null || true
+            mv webapp-dist-new webapp-dist
+            rm -rf webapp-dist-old
             echo "Webapp built successfully"
+
+            # Clean up any leftover orphaned containers from previous failed deploys
+            docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
 
             # Build images on server (no cache to ensure fresh code)
             docker compose -f docker-compose.prod.yml build --no-cache
@@ -195,7 +207,7 @@ jobs:
             # Restart services
             docker compose -f docker-compose.prod.yml up -d
 
-            # Restart nginx to re-mount the new webapp-dist directory
+            # Restart nginx to pick up new webapp-dist content
             docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
