@@ -10,6 +10,18 @@ import {
 import { logger } from '../utils/logger';
 import { parseMjParams } from '../utils/mjParams';
 
+/**
+ * Extract a user-facing error message from a KieAI API response that lacks a taskId.
+ * KieAI returns errors like: { code: 422, msg: "video resolution must be at least 340x340", data: null }
+ */
+function extractKieAiError(respData: any, prefix: string): string {
+  const apiMsg = respData?.msg || respData?.message || respData?.error;
+  if (apiMsg && typeof apiMsg === 'string') {
+    return `${prefix}: ${apiMsg}`;
+  }
+  return `${prefix}: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`;
+}
+
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
 const IMAGE_POLL_TIMEOUT_MS = 120000; // 2 minutes for images
@@ -107,7 +119,7 @@ export class KieAIProvider extends EnhancedProvider {
       }
       const taskId = fluxResp?.data?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI image: no taskId in response: ${JSON.stringify(fluxResp).slice(0, 300)}`);
+        throw new Error(extractKieAiError(fluxResp, 'KieAI image'));
       }
 
       logger.info(`KieAI image: task created, taskId=${taskId}`);
@@ -255,8 +267,7 @@ export class KieAIProvider extends EnhancedProvider {
       const respData = createResponse.data;
       const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
       if (!taskId) {
-        const respStr = JSON.stringify(respData).slice(0, 500);
-        throw new Error(`KieAI video: no taskId in response: ${respStr}`);
+        throw new Error(extractKieAiError(respData, 'KieAI video'));
       }
 
       logger.info(`KieAI video: task created, taskId=${taskId}`);
@@ -332,7 +343,7 @@ export class KieAIProvider extends EnhancedProvider {
       }
       const taskId = respData?.data?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI Veo: no taskId in response: ${JSON.stringify(respData).slice(0, 300)}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Veo'));
       }
 
       logger.info(`KieAI Veo: task created, taskId=${taskId}`);
@@ -398,7 +409,7 @@ export class KieAIProvider extends EnhancedProvider {
       }
       const taskId = runwayResp?.data?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI Runway: no taskId in response: ${JSON.stringify(runwayResp).slice(0, 300)}`);
+        throw new Error(extractKieAiError(runwayResp, 'KieAI Runway'));
       }
 
       logger.info(`KieAI Runway: task created, taskId=${taskId}`);
@@ -487,7 +498,7 @@ export class KieAIProvider extends EnhancedProvider {
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
         const respData = JSON.stringify(createResponse.data).slice(0, 500);
-        throw new Error(`KieAI Midjourney: no taskId in response: ${respData}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Midjourney'));
       }
 
       logger.info(`KieAI Midjourney: task created, taskId=${taskId}`);
@@ -571,7 +582,7 @@ export class KieAIProvider extends EnhancedProvider {
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
         const respData = JSON.stringify(createResponse.data).slice(0, 500);
-        throw new Error(`KieAI Nano Banana: no taskId in response: ${respData}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Nano Banana'));
       }
 
       logger.info(`KieAI ${slug}: task created, taskId=${taskId}`);
@@ -647,7 +658,7 @@ export class KieAIProvider extends EnhancedProvider {
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
         const respData = JSON.stringify(createResponse.data).slice(0, 500);
-        throw new Error(`KieAI Seedream: no taskId in response: ${respData}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Seedream'));
       }
 
       logger.info(`KieAI Seedream: task created, taskId=${taskId}`);
@@ -708,7 +719,7 @@ export class KieAIProvider extends EnhancedProvider {
       const taskId = createResponse.data?.data?.taskId;
       if (!taskId) {
         const respData = JSON.stringify(createResponse.data).slice(0, 500);
-        throw new Error(`KieAI Seedream 4.5: no taskId in response: ${respData}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Seedream 4.5'));
       }
 
       logger.info(`KieAI Seedream 4.5: task created, taskId=${taskId}`);
@@ -915,7 +926,7 @@ export class KieAIProvider extends EnhancedProvider {
       const respData = createResponse.data;
       const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI Kling 3.0: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Kling 3.0'));
       }
 
       logger.info(`KieAI Kling 3.0: task created, taskId=${taskId}`);
@@ -974,7 +985,7 @@ export class KieAIProvider extends EnhancedProvider {
       const respData = createResponse.data;
       const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI Kling Motion: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Kling Motion'));
       }
 
       logger.info(`KieAI Kling Motion: task created, taskId=${taskId}`);
@@ -1028,7 +1039,7 @@ export class KieAIProvider extends EnhancedProvider {
       const respData = createResponse.data;
       const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI Kling Avatar: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Kling Avatar'));
       }
 
       logger.info(`KieAI Kling Avatar: task created, taskId=${taskId}`);
@@ -1094,7 +1105,7 @@ export class KieAIProvider extends EnhancedProvider {
       }
       const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
       if (!taskId) {
-        throw new Error(`KieAI Topaz: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+        throw new Error(extractKieAiError(respData, 'KieAI Topaz'));
       }
 
       logger.info(`KieAI Topaz: task created, taskId=${taskId}`);

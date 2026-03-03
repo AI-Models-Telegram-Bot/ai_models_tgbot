@@ -864,16 +864,30 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
   if (!ctx.message) return;
 
-  // Extract file_id from native video or video document
+  // Extract file_id and dimensions from native video or video document
   let fileId: string | undefined;
+  let videoWidth: number | undefined;
+  let videoHeight: number | undefined;
   if ('video' in ctx.message && ctx.message.video) {
     fileId = ctx.message.video.file_id;
+    videoWidth = ctx.message.video.width;
+    videoHeight = ctx.message.video.height;
   } else if ('document' in ctx.message && ctx.message.document?.mime_type?.startsWith('video/')) {
     fileId = ctx.message.document.file_id;
   }
   if (!fileId) return;
 
   const lang = getLang(ctx);
+
+  // Validate minimum video resolution (KieAI requires at least 340x340)
+  const MIN_VIDEO_RES = 340;
+  if (videoWidth && videoHeight && (videoWidth < MIN_VIDEO_RES || videoHeight < MIN_VIDEO_RES)) {
+    const msg = lang === 'ru'
+      ? `⚠️ Видео слишком маленькое (${videoWidth}x${videoHeight}). Минимальное разрешение: ${MIN_VIDEO_RES}x${MIN_VIDEO_RES}. Загрузите видео в более высоком качестве.`
+      : `⚠️ Video resolution too low (${videoWidth}x${videoHeight}). Minimum required: ${MIN_VIDEO_RES}x${MIN_VIDEO_RES}. Please upload a higher quality video.`;
+    await ctx.reply(msg);
+    return;
+  }
 
   if (!VIDEO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
     const msg = lang === 'ru'
