@@ -26,7 +26,7 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   index,
   onUpgradeSuccess,
 }) => {
-  const { t, i18n } = useTranslation(['subscriptions', 'common', 'profile']);
+  const { t } = useTranslation(['subscriptions', 'common', 'profile']);
 
   const [showFeatures, setShowFeatures] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
@@ -35,13 +35,12 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   const authUser = useAuthStore((s) => s.user);
   const telegramId = telegramUser?.id?.toString() || authUser?.telegramId || '';
 
-  const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
-
   const formatPrice = (priceUSD: number | null, priceRUB: number | null) => {
     if (priceUSD === null) return t('subscriptions:price.contactUs');
     if (priceUSD === 0) return t('subscriptions:price.free');
     const perMonth = t('subscriptions:price.perMonth');
-    if (lang === 'ru' && priceRUB) {
+    // Always show rubles when available (primary audience is Russian)
+    if (priceRUB) {
       return `${priceRUB.toLocaleString('ru-RU')} ₽${perMonth}`;
     }
     return `$${priceUSD}${perMonth}`;

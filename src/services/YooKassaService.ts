@@ -301,6 +301,116 @@ export class YooKassaService {
   }
 
   /**
+   * Create a YooKassa payment for a custom token amount (not a predefined package).
+   */
+  async createCustomTokenPurchasePayment(
+    userId: string,
+    tokens: number,
+    priceRUB: number,
+    returnUrl: string,
+    paymentMethodType?: 'sbp' | 'sberbank' | 'bank_card',
+  ): Promise<{ confirmationUrl: string; paymentId: string }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    const customerEmail = user?.email || config.yookassa.defaultEmail;
+
+    const payment = await prisma.payment.create({
+      data: {
+        userId,
+        amount: priceRUB,
+        currency: 'RUB',
+        status: 'PENDING',
+        provider: 'YOOKASSA',
+        tier: null,
+        description: `Custom token purchase: ${tokens} tokens`,
+        metadata: { type: 'token_purchase', tokens, custom: true },
+      },
+    });
+
+    const idempotencyKey = crypto.randomUUID();
+    const separator = returnUrl.includes('?') ? '&' : '?';
+    const returnUrlWithPayment = `${returnUrl}${separator}paymentId=${payment.id}`;
+
+    try {
+      const response = await this.client.post<YooKassaPaymentResponse>(
+        '/payments',
+        {
+          amount: {
+            value: priceRUB.toFixed(2),
+            currency: 'RUB',
+          },
+          capture: true,
+          confirmation: {
+            type: 'redirect',
+            return_url: returnUrlWithPayment,
+          },
+          description: `Покупка ${tokens} токенов`,
+          receipt: {
+            customer: { email: customerEmail },
+            items: [
+              {
+                description: `${tokens} токенов — пополнение баланса`,
+                quantity: '1.00',
+                amount: {
+                  value: priceRUB.toFixed(2),
+                  currency: 'RUB',
+                },
+                vat_code: 1,
+                payment_subject: 'service',
+                payment_mode: 'full_payment',
+              },
+            ],
+          },
+          ...(paymentMethodType && {
+            payment_method_data: { type: paymentMethodType },
+          }),
+          metadata: {
+            userId,
+            type: 'token_purchase',
+            tokens: String(tokens),
+            paymentId: payment.id,
+          },
+        },
+        {
+          headers: { 'Idempotence-Key': idempotencyKey },
+        },
+      );
+
+      const yooPayment = response.data;
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { externalId: yooPayment.id },
+      });
+
+      const confirmationUrl = yooPayment.confirmation?.confirmation_url;
+      if (!confirmationUrl) {
+        throw new Error('YooKassa response missing confirmation URL');
+      }
+
+      logger.info('YooKassa custom token purchase payment created', {
+        paymentId: payment.id,
+        externalId: yooPayment.id,
+        tokens,
+        amount: priceRUB,
+      });
+
+      return { confirmationUrl, paymentId: payment.id };
+    } catch (error: any) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: 'CANCELED' },
+      });
+
+      const detail = error.response?.data || error.message;
+      logger.error('YooKassa custom token purchase payment creation failed', { error: detail, userId, tokens });
+      throw new Error(`YooKassa payment creation failed: ${JSON.stringify(detail)}`);
+    }
+  }
+
+  /**
    * Handle incoming webhook notification from YooKassa.
    * Idempotent: if the payment has already been processed, it is skipped.
    */

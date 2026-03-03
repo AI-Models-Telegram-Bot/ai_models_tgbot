@@ -62,14 +62,16 @@ export const TokenPackageCard: React.FC<TokenPackageCardProps> = ({ pkg, index, 
       </div>
 
       {/* Buy button */}
-      <Button
-        variant="primary"
-        fullWidth
-        size="sm"
-        onClick={() => onBuy(pkg)}
-      >
-        {t('tokenPackages.buy')}
-      </Button>
+      <div className="mt-auto">
+        <Button
+          variant="primary"
+          fullWidth
+          size="sm"
+          onClick={() => onBuy(pkg)}
+        >
+          {t('tokenPackages.buy')}
+        </Button>
+      </div>
     </motion.div>
   );
 };

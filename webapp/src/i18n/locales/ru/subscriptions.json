@@ -57,7 +57,11 @@
     "discount": "Скидка {{percent}}%",
     "tokens": "токенов",
     "tokenPurchase": "Покупка токенов",
-    "purchaseDescription": "Разовая покупка, токены не сгорают"
+    "purchaseDescription": "Разовая покупка, токены не сгорают",
+    "customAmount": "Своё количество",
+    "customMin": "Минимум {{min}} токенов",
+    "customMax": "Максимум {{max}} токенов",
+    "customRate": "{{rate}} ₽ за токен, без скидки"
   },
   "payment": {
     "selectMethod": "Выберите способ оплаты",

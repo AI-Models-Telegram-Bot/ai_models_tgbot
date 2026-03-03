@@ -4,7 +4,7 @@ import { prisma } from '../../config/database';
 import { config } from '../../config';
 import { subscriptionService } from '../../services/SubscriptionService';
 import { yookassaService } from '../../services/YooKassaService';
-import { tokenPackageService } from '../../services/TokenPackageService';
+import { tokenPackageService, CUSTOM_MIN_TOKENS, CUSTOM_MAX_TOKENS } from '../../services/TokenPackageService';
 import { logger } from '../../utils/logger';
 import { SubscriptionTier } from '@prisma/client';
 
@@ -247,13 +247,14 @@ router.get('/payment/methods', (_req, res) => {
 
 /**
  * POST /api/webapp/payment/create-token-purchase
- * Creates a payment for a token package purchase.
+ * Creates a payment for a token package or custom token amount purchase.
+ * Body: { telegramId, paymentMethod, returnUrl?, packageId? | customTokens? }
  */
 router.post('/payment/create-token-purchase', async (req, res) => {
-  const { telegramId, packageId, paymentMethod, returnUrl } = req.body;
+  const { telegramId, packageId, customTokens, paymentMethod, returnUrl } = req.body;
 
-  if (!telegramId || !packageId) {
-    return res.status(400).json({ message: 'telegramId and packageId are required' });
+  if (!telegramId || (!packageId && !customTokens)) {
+    return res.status(400).json({ message: 'telegramId and either packageId or customTokens are required' });
   }
 
   try {
@@ -265,29 +266,53 @@ router.post('/payment/create-token-purchase', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const pkg = await tokenPackageService.getPackageById(packageId);
-    if (!pkg || !pkg.isActive) {
-      return res.status(404).json({ message: 'Token package not found or inactive' });
+    // Determine tokens and price — either from a package or custom amount
+    let tokens: number;
+    let priceRUB: number;
+    let priceStars: number;
+    let purchaseLabel: string;
+    let resolvedPackageId: string | null = null;
+
+    if (packageId) {
+      const pkg = await tokenPackageService.getPackageById(packageId);
+      if (!pkg || !pkg.isActive) {
+        return res.status(404).json({ message: 'Token package not found or inactive' });
+      }
+      tokens = pkg.tokens;
+      priceRUB = pkg.priceRUB;
+      priceStars = pkg.priceStars;
+      purchaseLabel = pkg.name;
+      resolvedPackageId = pkg.id;
+    } else {
+      const amount = Math.round(Number(customTokens));
+      if (!amount || amount < CUSTOM_MIN_TOKENS || amount > CUSTOM_MAX_TOKENS) {
+        return res.status(400).json({
+          message: `Custom token amount must be between ${CUSTOM_MIN_TOKENS} and ${CUSTOM_MAX_TOKENS}`,
+        });
+      }
+      const pricing = tokenPackageService.calculateCustomPrice(amount);
+      tokens = amount;
+      priceRUB = pricing.priceRUB;
+      priceStars = pricing.priceStars;
+      purchaseLabel = `${tokens} Tokens (custom)`;
     }
 
     if (paymentMethod === 'telegram_stars') {
-      const starsAmount = pkg.priceStars;
-
       const invoiceLink = await telegram.createInvoiceLink({
-        title: `${pkg.tokens} Tokens`,
-        description: `Purchase ${pkg.tokens} tokens for your account.`,
+        title: `${tokens} Tokens`,
+        description: `Purchase ${tokens} tokens for your account.`,
         payload: JSON.stringify({
           userId: user.id,
           type: 'token_purchase',
-          packageId: pkg.id,
-          tokens: pkg.tokens,
+          packageId: resolvedPackageId,
+          tokens,
         }),
         provider_token: '',
         currency: 'XTR',
         prices: [
           {
-            label: `${pkg.tokens} Tokens`,
-            amount: starsAmount,
+            label: `${tokens} Tokens`,
+            amount: priceStars,
           },
         ],
       });
@@ -295,8 +320,8 @@ router.post('/payment/create-token-purchase', async (req, res) => {
       return res.json({
         method: 'telegram_stars',
         invoiceUrl: invoiceLink,
-        starsAmount,
-        tokens: pkg.tokens,
+        starsAmount: priceStars,
+        tokens,
       });
     } else if (['yookassa', 'sbp', 'sberpay', 'card_ru'].includes(paymentMethod)) {
       const yookassaMethodMap: Record<string, 'sbp' | 'sberbank' | 'bank_card' | undefined> = {
@@ -308,25 +333,33 @@ router.post('/payment/create-token-purchase', async (req, res) => {
       const yookassaType = yookassaMethodMap[paymentMethod];
       const baseReturnUrl = returnUrl || `${config.webapp.url || 'https://webapp.vseonix.com'}/payment/success`;
 
-      const { confirmationUrl, paymentId } = await yookassaService.createTokenPurchasePayment(
-        user.id,
-        packageId,
-        baseReturnUrl,
-        yookassaType,
-      );
+      const { confirmationUrl, paymentId } = resolvedPackageId
+        ? await yookassaService.createTokenPurchasePayment(
+            user.id,
+            resolvedPackageId,
+            baseReturnUrl,
+            yookassaType,
+          )
+        : await yookassaService.createCustomTokenPurchasePayment(
+            user.id,
+            tokens,
+            priceRUB,
+            baseReturnUrl,
+            yookassaType,
+          );
 
       return res.json({
         method: 'yookassa',
         confirmationUrl,
         paymentId,
-        priceRUB: pkg.priceRUB,
-        tokens: pkg.tokens,
+        priceRUB,
+        tokens,
       });
     }
 
     return res.status(400).json({ message: 'Invalid payment method' });
   } catch (error: any) {
-    logger.error('Failed to create token purchase payment', { error, telegramId, packageId });
+    logger.error('Failed to create token purchase payment', { error, telegramId, packageId, customTokens });
     return res.status(500).json({ message: error.message || 'Failed to create payment' });
   }
 });

@@ -57,7 +57,11 @@
     "discount": "{{percent}}% off",
     "tokens": "tokens",
     "tokenPurchase": "Token Purchase",
-    "purchaseDescription": "One-time purchase, tokens never expire"
+    "purchaseDescription": "One-time purchase, tokens never expire",
+    "customAmount": "Custom Amount",
+    "customMin": "Minimum {{min}} tokens",
+    "customMax": "Maximum {{max}} tokens",
+    "customRate": "{{rate}} ₽ per token, no volume discount"
   },
   "payment": {
     "selectMethod": "Select Payment Method",
