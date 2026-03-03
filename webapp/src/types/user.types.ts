@@ -12,6 +12,8 @@ export interface User {
 
 export interface UserWallet {
   tokenBalance: number;
+  subscriptionTokens: number;
+  purchasedTokens: number;
   moneyBalance: number;
   currency: string;
 }

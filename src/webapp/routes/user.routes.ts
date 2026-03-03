@@ -61,6 +61,8 @@ router.get('/user/:telegramId', async (req, res) => {
       },
       wallet: {
         tokenBalance: wallet.tokenBalance,
+        subscriptionTokens: wallet.subscriptionTokens,
+        purchasedTokens: wallet.purchasedTokens,
         moneyBalance: wallet.moneyBalance,
         currency: wallet.currency,
       },

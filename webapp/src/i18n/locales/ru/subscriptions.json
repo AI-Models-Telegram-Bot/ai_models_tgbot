@@ -44,6 +44,21 @@
     "free": "Бесплатно",
     "perMonth": "/мес"
   },
+  "tabs": {
+    "plans": "Тарифы",
+    "tokens": "Токены"
+  },
+  "tokenPackages": {
+    "title": "Купить токены",
+    "subtitle": "Пополняйте баланс в любое время",
+    "currentBalance": "Текущий баланс",
+    "buy": "Купить",
+    "popular": "Популярный",
+    "discount": "Скидка {{percent}}%",
+    "tokens": "токенов",
+    "tokenPurchase": "Покупка токенов",
+    "purchaseDescription": "Разовая покупка, токены не сгорают"
+  },
   "payment": {
     "selectMethod": "Выберите способ оплаты",
     "monthlySubscription": "Месячная подписка",

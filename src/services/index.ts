@@ -15,3 +15,4 @@ export { authService, AuthService } from './AuthService';
 export type { AuthTokens, JwtPayload } from './AuthService';
 export { emailService } from './EmailService';
 export { chatService, ChatService } from './ChatService';
+export { tokenPackageService, TokenPackageService } from './TokenPackageService';

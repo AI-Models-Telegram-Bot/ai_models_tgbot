@@ -89,12 +89,11 @@ export class SubscriptionService {
       },
     });
 
-    // Grant tokens based on the new tier
+    // Reset subscription tokens to the plan amount
     const tokens = plan.tokens;
     if (tokens !== null && tokens > 0) {
-      await walletService.addCredits(userId, 'TEXT', tokens, 'BONUS', {
-        description: `${plan.name} subscription tokens`,
-      });
+      await walletService.getOrCreateWallet(userId);
+      await walletService.addSubscriptionTokens(userId, tokens);
     }
 
     logger.info(`User ${userId} upgraded to ${newTier}, credits granted`);
@@ -145,6 +144,14 @@ export class SubscriptionService {
           currentPeriodEnd: null,
         },
       });
+
+      // Clear subscription tokens (purchased tokens are preserved)
+      try {
+        await walletService.addSubscriptionTokens(sub.userId, 0);
+      } catch (err) {
+        logger.warn(`Failed to clear subscription tokens for user ${sub.userId}`, { error: err });
+      }
+
       logger.info(`Subscription expired for user ${sub.userId}, downgraded to FREE`);
     }
 

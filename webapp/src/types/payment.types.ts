@@ -31,6 +31,32 @@ export type CreatePaymentResponse =
   | YooKassaPaymentResponse
   | ContactPaymentResponse;
 
+export interface CreateTokenPurchaseRequest {
+  telegramId?: string;
+  packageId: string;
+  paymentMethod: PaymentMethod;
+  returnUrl?: string;
+}
+
+export interface TokenPurchaseStarsResponse {
+  method: 'telegram_stars';
+  invoiceUrl: string;
+  starsAmount: number;
+  tokens: number;
+}
+
+export interface TokenPurchaseYooKassaResponse {
+  method: 'yookassa';
+  confirmationUrl: string;
+  paymentId: string;
+  priceRUB: number;
+  tokens: number;
+}
+
+export type CreateTokenPurchaseResponse =
+  | TokenPurchaseStarsResponse
+  | TokenPurchaseYooKassaResponse;
+
 export interface PaymentVerifyResponse {
   status: 'pending' | 'succeeded' | 'failed';
   message?: string;

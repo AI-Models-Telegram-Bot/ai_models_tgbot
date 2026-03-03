@@ -2,7 +2,7 @@ import { config, validateConfig } from './config';
 import { connectDatabase, disconnectDatabase } from './config/database';
 import { connectRedis, disconnectRedis } from './config/redis';
 import { createBot } from './bot';
-import { modelService, authService } from './services';
+import { modelService, authService, tokenPackageService } from './services';
 import { setupQueueEvents, shutdownQueues } from './queues';
 import { startWorkers } from './queues/workers';
 import { createHealthServer } from './health/server';
@@ -18,9 +18,11 @@ async function main(): Promise<void> {
     await connectDatabase();
     logger.info('Connected to database');
 
-    // Seed default models
+    // Seed default models and token packages
     await modelService.seedDefaultModels();
     logger.info('AI models seeded');
+    await tokenPackageService.seedDefaults();
+    logger.info('Token packages seeded');
 
     // Connect to Redis
     try {

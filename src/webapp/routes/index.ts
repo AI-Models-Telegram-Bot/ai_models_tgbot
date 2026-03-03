@@ -8,11 +8,13 @@ import subscriptionRoutes from './subscription.routes';
 import audioRoutes from './audio.routes';
 import imageRoutes from './image.routes';
 import videoRoutes from './video.routes';
+import tokenPackagesRoutes from './tokenPackages.routes';
 
 const webappRouter = Router();
 
 webappRouter.use(userRoutes);
 webappRouter.use(packagesRoutes);
+webappRouter.use(tokenPackagesRoutes);
 webappRouter.use(referralRoutes);
 webappRouter.use(paymentRoutes);
 webappRouter.use(subscriptionRoutes);
