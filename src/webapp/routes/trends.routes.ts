@@ -227,6 +227,12 @@ router.post('/trends/:id/generate', async (req, res) => {
       duration: trend.duration,
     };
 
+    // Resolve reference video URL (fall back to trend's own video)
+    const rawVideoUrl = trend.referenceVideoUrl || trend.videoUrl;
+    const referenceVideoUrl = rawVideoUrl?.startsWith('/')
+      ? `${config.webapp.url}${rawVideoUrl}`
+      : rawVideoUrl;
+
     // Enqueue generation job
     await enqueueGeneration({
       requestId: request.id,
@@ -246,7 +252,7 @@ router.post('/trends/:id/generate', async (req, res) => {
       telegramId,
       videoOptions,
       inputImageUrls: [photoUrl],
-      ...(trend.referenceVideoUrl && { inputVideoUrl: trend.referenceVideoUrl }),
+      ...(referenceVideoUrl && { inputVideoUrl: referenceVideoUrl }),
       settingsApplied: videoOptions,
       source: 'telegram',
       trendGenerationId: generation.id,
