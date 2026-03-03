@@ -152,6 +152,9 @@ export class KieAIProvider extends EnhancedProvider {
     if (model === 'kling/ai-avatar-pro' || model === 'kling/ai-avatar-standard') {
       return this.generateKlingAvatarVideo(prompt, options);
     }
+    if (model === 'topaz/video-enhance') {
+      return this.generateTopazVideo(prompt, options);
+    }
 
     // Default: Kling / Sora / Seedance via market endpoint
     return this.generateMarketVideo(prompt, options);
@@ -1040,6 +1043,71 @@ export class KieAIProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('KieAI Kling Avatar: failed', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Topaz AI — video enhancement (upscale, FPS, quality improvements)
+   * POST /jobs/createTask with model: "topaz/video-enhance"
+   * Requires: video_url (input video to enhance)
+   */
+  private async generateTopazVideo(
+    prompt: string,
+    options?: Record<string, unknown>
+  ): Promise<VideoGenerationResult> {
+    const start = Date.now();
+    try {
+      const model = 'topaz/video-enhance';
+      const inputVideoUrl = options?.inputVideoUrl as string | undefined;
+
+      if (!inputVideoUrl) {
+        throw new Error('Topaz AI requires a video. Please upload a video first.');
+      }
+
+      logger.info('KieAI Topaz: starting video enhancement');
+
+      const input: Record<string, unknown> = {
+        video_url: inputVideoUrl,
+        model: (options?.topazModel as string) || 'proteus-v4',
+        upscale: (options?.upscale as string) || '4x',
+        fps: (options?.fps as number) || 60,
+      };
+
+      // Professional settings (only include if explicitly set)
+      if (options?.addNoise !== undefined) input.addNoise = options.addNoise;
+      if (options?.fixCompression !== undefined) input.fixCompression = options.fixCompression;
+      if (options?.improveDetail !== undefined) input.improveDetail = options.improveDetail;
+      if (options?.sharpen !== undefined) input.sharpen = options.sharpen;
+      if (options?.reduceNoise !== undefined) input.reduceNoise = options.reduceNoise;
+      if (options?.dehalo !== undefined) input.dehalo = options.dehalo;
+      if (options?.antiAlias !== undefined) input.antiAlias = options.antiAlias;
+      if (options?.focusFix) input.focusFix = options.focusFix;
+      if (options?.grain) input.grain = options.grain;
+
+      logger.info('KieAI Topaz payload:', { model, upscale: input.upscale, fps: input.fps });
+      const createResponse = await this.client.post('/jobs/createTask', { model, input });
+
+      const respData = createResponse.data;
+      if (respData?.code && respData.code !== 200 && respData.code !== 0) {
+        throw new Error(`KieAI Topaz API error (${respData.code}): ${respData.msg || JSON.stringify(respData).slice(0, 300)}`);
+      }
+      const taskId = respData?.data?.taskId || respData?.data?.task_id || respData?.taskId;
+      if (!taskId) {
+        throw new Error(`KieAI Topaz: no taskId in response: ${JSON.stringify(respData).slice(0, 500)}`);
+      }
+
+      logger.info(`KieAI Topaz: task created, taskId=${taskId}`);
+      const videoUrl = await this.pollMarketTaskResult(taskId);
+
+      const time = Date.now() - start;
+      this.updateStats(true, 0.02, time);
+      logger.info(`KieAI Topaz: success (${time}ms)`);
+      return { videoUrl };
+    } catch (error: any) {
+      const time = Date.now() - start;
+      this.updateStats(false, 0, time);
+      logger.error('KieAI Topaz: failed', error.response?.data || error.message);
       throw error;
     }
   }

@@ -52,7 +52,7 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
 const MODEL_MAX_IMAGES: Record<string, number> = {
   // Video models
   'kling': 4, 'kling-pro': 4, 'kling-3.0': 4,
-  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1,
+  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1, 'topaz': 0,
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
   'seedance': 2, 'seedance-lite': 2, 'seedance-1-pro': 2, 'seedance-fast': 2,
@@ -849,8 +849,8 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   ctx.session.uploadedAudioUrl = undefined;
 }
 
-/** Models that accept video uploads (Kling Motion Control) */
-const VIDEO_UPLOAD_MODELS = ['kling-motion'];
+/** Models that accept video uploads (Kling Motion Control, Topaz AI) */
+const VIDEO_UPLOAD_MODELS = ['kling-motion', 'topaz'];
 
 /** Models that accept audio uploads (Kling AI Avatar) */
 const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar'];
@@ -886,6 +886,17 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);
     ctx.session.uploadedVideoUrl = fileLink.href;
+
+    // Topaz: video-only, no photo needed — show Generate button immediately
+    if (ctx.session.videoFunction === 'topaz') {
+      const msg = lang === 'ru'
+        ? '✅ Видео загружено. Нажмите кнопку ниже для улучшения 👇'
+        : '✅ Video uploaded. Tap the button below to enhance 👇';
+      await ctx.reply(msg, Markup.inlineKeyboard([
+        [Markup.button.callback(lang === 'ru' ? '💠 Улучшить видео' : '💠 Enhance Video', 'generate_now')],
+      ]));
+      return;
+    }
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;
     if (hasImage) {

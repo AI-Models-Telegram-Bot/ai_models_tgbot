@@ -355,6 +355,13 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 25,
     isLossLeader: false,
   },
+  'topaz': {
+    creditsPerUnit: 1,
+    unitType: '1_video',
+    baseCostUSD: 0.02,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
 };
 
 // ── AUDIO MODEL PRICING ─────────────────────────────────

@@ -65,6 +65,11 @@ const VIDEO_FAMILIES: Record<VideoFamily, VideoFamilyConfig> = {
     descriptionKey: 'videoSeedanceFamilyDesc',
     getKeyboard: getSeedanceModelsKeyboard,
   },
+  enhancement: {
+    descriptionKey: 'videoEnhancementFamilyDesc',
+    getKeyboard: () => null,
+    singleModel: 'topaz',
+  },
 };
 
 // ── Model configs ───────────────────────────────────────
@@ -185,6 +190,12 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'seedance',
     hasSettings: true,
   },
+  'topaz': {
+    modelSlug: 'topaz',
+    descriptionKey: 'videoTopazDesc',
+    family: 'enhancement',
+    hasSettings: true,
+  },
 };
 
 const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
@@ -206,6 +217,7 @@ const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'seedance-1-pro': { en: 'Seedance 1.0 Pro', ru: 'Seedance 1.0 Pro' },
   'seedance-fast': { en: 'Seedance 1.0 Fast', ru: 'Seedance 1.0 Fast' },
   'seedance': { en: 'Seedance 1.5 Pro', ru: 'Seedance 1.5 Pro' },
+  'topaz': { en: 'Topaz AI', ru: 'Topaz AI' },
 };
 
 // ── Handlers ────────────────────────────────────────────
@@ -411,6 +423,19 @@ export async function getVideoOptionsForFunction(
     if (settings.characterOrientation) {
       options.characterOrientation = settings.characterOrientation;
     }
+    // Topaz AI: enhancement settings
+    if (settings.upscale) options.upscale = settings.upscale;
+    if (settings.fps !== undefined) options.fps = settings.fps;
+    if (settings.topazModel) options.topazModel = settings.topazModel;
+    if (settings.addNoise !== undefined) options.addNoise = settings.addNoise;
+    if (settings.fixCompression !== undefined) options.fixCompression = settings.fixCompression;
+    if (settings.improveDetail !== undefined) options.improveDetail = settings.improveDetail;
+    if (settings.sharpen !== undefined) options.sharpen = settings.sharpen;
+    if (settings.reduceNoise !== undefined) options.reduceNoise = settings.reduceNoise;
+    if (settings.dehalo !== undefined) options.dehalo = settings.dehalo;
+    if (settings.antiAlias !== undefined) options.antiAlias = settings.antiAlias;
+    if (settings.focusFix) options.focusFix = settings.focusFix;
+    if (settings.grain) options.grain = settings.grain;
 
     return options;
   } catch (error) {

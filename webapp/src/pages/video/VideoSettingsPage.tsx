@@ -162,6 +162,16 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
   ],
 };
 
+const TOPAZ_MODEL = 'topaz';
+
+const TOPAZ_UPSCALE_OPTIONS = [
+  { value: 'original', labelKey: 'topazUpscaleOriginal' },
+  { value: '2x', labelKey: 'topazUpscale2x' },
+  { value: '4x', labelKey: 'topazUpscale4x' },
+];
+
+const TOPAZ_FPS_OPTIONS = [24, 25, 30, 45, 50, 60];
+
 const AUDIO_MODELS = ['veo-fast', 'veo'];
 
 const VEO_MODELS = ['veo-fast', 'veo'];
@@ -247,6 +257,7 @@ export default function VideoSettingsPage() {
   const isKling = KLING_MODELS.includes(modelSlug);
   const isKling30 = modelSlug === KLING_30_MODEL;
   const isKlingMotion = modelSlug === KLING_MOTION_MODEL;
+  const isTopaz = modelSlug === TOPAZ_MODEL;
   const hasAspect = !!MODEL_ASPECTS[modelSlug];
   const klingMode: 'std' | 'pro' = modelSlug === 'kling-pro' ? 'pro' : 'std';
   const availableVersions = modelSlug === 'kling-pro' ? KLING_VERSIONS_PRO : KLING_VERSIONS_STD;
@@ -274,6 +285,20 @@ export default function VideoSettingsPage() {
   const [sound, setSound] = useState(true);
   // Motion Control state
   const [characterOrientation, setCharacterOrientation] = useState('video');
+  // Topaz AI state
+  const [topazUpscale, setTopazUpscale] = useState('4x');
+  const [topazFps, setTopazFps] = useState(60);
+  const [topazShowPro, setTopazShowPro] = useState(false);
+  const [topazModelName, setTopazModelName] = useState('proteus-v4');
+  const [topazAddNoise, setTopazAddNoise] = useState(0);
+  const [topazFixCompression, setTopazFixCompression] = useState(0);
+  const [topazImproveDetail, setTopazImproveDetail] = useState(0);
+  const [topazSharpen, setTopazSharpen] = useState(0);
+  const [topazReduceNoise, setTopazReduceNoise] = useState(0);
+  const [topazDehalo, setTopazDehalo] = useState(0);
+  const [topazAntiAlias, setTopazAntiAlias] = useState(0);
+  const [topazFocusFix, setTopazFocusFix] = useState('off');
+  const [topazGrain, setTopazGrain] = useState('off');
 
   useEffect(() => {
     fetchModelSettings(modelSlug);
@@ -312,8 +337,22 @@ export default function VideoSettingsPage() {
       if (isKlingMotion) {
         setCharacterOrientation(modelSettings.characterOrientation || 'video');
       }
+      if (isTopaz) {
+        setTopazUpscale(modelSettings.upscale || '4x');
+        setTopazFps(modelSettings.fps ?? 60);
+        setTopazModelName(modelSettings.topazModel || 'proteus-v4');
+        setTopazAddNoise(modelSettings.addNoise ?? 0);
+        setTopazFixCompression(modelSettings.fixCompression ?? 0);
+        setTopazImproveDetail(modelSettings.improveDetail ?? 0);
+        setTopazSharpen(modelSettings.sharpen ?? 0);
+        setTopazReduceNoise(modelSettings.reduceNoise ?? 0);
+        setTopazDehalo(modelSettings.dehalo ?? 0);
+        setTopazAntiAlias(modelSettings.antiAlias ?? 0);
+        setTopazFocusFix(modelSettings.focusFix || 'off');
+        setTopazGrain(modelSettings.grain || 'off');
+      }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, isTopaz, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -363,6 +402,20 @@ export default function VideoSettingsPage() {
       if (characterOrientation !== (modelSettings?.characterOrientation || 'video')) return true;
       if (resolution !== (modelSettings?.resolution || '720p')) return true;
     }
+    if (isTopaz) {
+      if (topazUpscale !== (modelSettings?.upscale || '4x')) return true;
+      if (topazFps !== (modelSettings?.fps ?? 60)) return true;
+      if (topazModelName !== (modelSettings?.topazModel || 'proteus-v4')) return true;
+      if (topazAddNoise !== (modelSettings?.addNoise ?? 0)) return true;
+      if (topazFixCompression !== (modelSettings?.fixCompression ?? 0)) return true;
+      if (topazImproveDetail !== (modelSettings?.improveDetail ?? 0)) return true;
+      if (topazSharpen !== (modelSettings?.sharpen ?? 0)) return true;
+      if (topazReduceNoise !== (modelSettings?.reduceNoise ?? 0)) return true;
+      if (topazDehalo !== (modelSettings?.dehalo ?? 0)) return true;
+      if (topazAntiAlias !== (modelSettings?.antiAlias ?? 0)) return true;
+      if (topazFocusFix !== (modelSettings?.focusFix || 'off')) return true;
+      if (topazGrain !== (modelSettings?.grain || 'off')) return true;
+    }
     return false;
   })();
 
@@ -398,6 +451,20 @@ export default function VideoSettingsPage() {
       if (isKlingMotion) {
         updates.resolution = resolution;
         updates.characterOrientation = characterOrientation;
+      }
+      if (isTopaz) {
+        updates.upscale = topazUpscale;
+        updates.fps = topazFps;
+        updates.topazModel = topazModelName;
+        updates.addNoise = topazAddNoise;
+        updates.fixCompression = topazFixCompression;
+        updates.improveDetail = topazImproveDetail;
+        updates.sharpen = topazSharpen;
+        updates.reduceNoise = topazReduceNoise;
+        updates.dehalo = topazDehalo;
+        updates.antiAlias = topazAntiAlias;
+        updates.focusFix = topazFocusFix;
+        updates.grain = topazGrain;
       }
       await updateModelSettings(modelSlug, updates);
       hapticNotification('success');
@@ -793,6 +860,174 @@ export default function VideoSettingsPage() {
                 </div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* ── Topaz AI: Upscale ── */}
+        {isTopaz && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('topazUpscale')}
+            </div>
+            <div className="flex flex-wrap" style={{ gap: 8 }}>
+              {TOPAZ_UPSCALE_OPTIONS.map(({ value, labelKey }) => (
+                <button
+                  key={value}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setTopazUpscale(value);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    topazUpscale === value
+                      ? 'bg-video-primary text-white shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                  }`}
+                >
+                  {t(labelKey as any)}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Topaz AI: Frame Rate ── */}
+        {isTopaz && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('topazFps')}
+            </div>
+            <div className="flex flex-wrap" style={{ gap: 8 }}>
+              {TOPAZ_FPS_OPTIONS.map((fps) => (
+                <button
+                  key={fps}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setTopazFps(fps);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    topazFps === fps
+                      ? 'bg-video-primary text-white shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                  }`}
+                >
+                  {fps} FPS
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Topaz AI: Professional Settings Toggle ── */}
+        {isTopaz && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-5"
+          >
+            <div
+              onClick={() => {
+                hapticImpact('light');
+                setTopazShowPro(!topazShowPro);
+              }}
+              className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                topazShowPro
+                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center" style={{ columnGap: 10 }}>
+                  <span className="text-lg">{topazShowPro ? '🔧' : '⚙️'}</span>
+                  <div>
+                    <span className="font-semibold text-content-primary text-sm">
+                      {t('topazProSettings')}
+                    </span>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      {t('topazProSettingsDesc')}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-content-tertiary text-sm">{topazShowPro ? '▲' : '▼'}</span>
+              </div>
+            </div>
+
+            {topazShowPro && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-3 space-y-4"
+              >
+                {/* Sliders */}
+                {([
+                  { key: 'addNoise', labelKey: 'topazAddNoise', value: topazAddNoise, setter: setTopazAddNoise },
+                  { key: 'fixCompression', labelKey: 'topazFixCompression', value: topazFixCompression, setter: setTopazFixCompression },
+                  { key: 'improveDetail', labelKey: 'topazImproveDetail', value: topazImproveDetail, setter: setTopazImproveDetail },
+                  { key: 'sharpen', labelKey: 'topazSharpen', value: topazSharpen, setter: setTopazSharpen },
+                  { key: 'reduceNoise', labelKey: 'topazReduceNoise', value: topazReduceNoise, setter: setTopazReduceNoise },
+                  { key: 'dehalo', labelKey: 'topazDehalo', value: topazDehalo, setter: setTopazDehalo },
+                  { key: 'antiAlias', labelKey: 'topazAntiAlias', value: topazAntiAlias, setter: setTopazAntiAlias },
+                ] as const).map(({ key, labelKey, value, setter }) => (
+                  <div key={key} className="rounded-xl bg-video-surface-card border border-white/5 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-content-secondary">{t(labelKey as any)}</span>
+                      <span className="text-xs text-video-primary font-semibold">{value}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={value}
+                      onChange={(e) => {
+                        setter(parseInt(e.target.value, 10));
+                      }}
+                      className="w-full accent-video-primary"
+                    />
+                  </div>
+                ))}
+
+                {/* On/Off toggles */}
+                {([
+                  { key: 'focusFix', labelKey: 'topazFocusFix', value: topazFocusFix, setter: setTopazFocusFix },
+                  { key: 'grain', labelKey: 'topazGrain', value: topazGrain, setter: setTopazGrain },
+                ] as const).map(({ key, labelKey, value, setter }) => (
+                  <div key={key} className="rounded-xl bg-video-surface-card border border-white/5 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-content-secondary">{t(labelKey as any)}</span>
+                      <div className="flex" style={{ gap: 8 }}>
+                        {(['off', 'on'] as const).map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => {
+                              hapticImpact('light');
+                              setter(opt);
+                            }}
+                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                              value === opt
+                                ? 'bg-video-primary text-white'
+                                : 'bg-white/5 text-content-tertiary'
+                            }`}
+                          >
+                            {t(opt === 'on' ? 'topazOn' : 'topazOff')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
           </motion.div>
         )}
 

@@ -57,6 +57,7 @@ const SLUG_TO_PRICE: Record<string, string> = {
   'seedance-lite': 'VIDEO_SEEDANCE_LITE',
   'seedance-1-pro': 'VIDEO_SEEDANCE_PRO',
   'seedance-fast': 'VIDEO_SEEDANCE_FAST',
+  'topaz': 'VIDEO_TOPAZ',
   'fish-speech': 'AUDIO_FISH_SPEECH',
 };
 
@@ -166,6 +167,7 @@ export class ModelService {
       { name: 'Seedance 1.0 Pro', slug: 'seedance-1-pro', provider: 'fal', category: 'VIDEO', tokenCost: 35, priceItemCode: 'VIDEO_SEEDANCE_PRO', description: 'ByteDance Seedance 1.0 Pro — highest quality 1080p' },
       { name: 'Sora 2 Pro', slug: 'sora-pro', provider: 'kieai', category: 'VIDEO', tokenCost: 47, priceItemCode: 'VIDEO_SORA_PRO', description: 'OpenAI Sora 2 Pro — premium quality video' },
       { name: 'Veo Quality', slug: 'veo', provider: 'kieai', category: 'VIDEO', tokenCost: 116, priceItemCode: 'VIDEO_VEO', description: 'Google Veo 3.1 Quality — best video quality' },
+      { name: 'Topaz AI', slug: 'topaz', provider: 'kieai', category: 'VIDEO', tokenCost: 1, priceItemCode: 'VIDEO_TOPAZ', description: 'Topaz AI video enhancement — upscale, FPS boost, quality (⚡1/sec)' },
 
       // Audio models
       { name: 'Deepgram TTS', slug: 'deepgram-tts', provider: 'openai', category: 'AUDIO', tokenCost: 0.5, priceItemCode: 'AUDIO_DEEPGRAM', description: 'Text-to-speech via OpenAI TTS' },
