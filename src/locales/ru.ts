@@ -63,6 +63,7 @@ export const ru: Locale = {
     videoWanFamily: '🌊 WAN',
     videoSeedanceFamily: '🌱 Seedance',
     videoEnhancementFamily: '💠 Улучшение',
+    videoTrends: '🔥 Тренды',
     // Video Models
     videoKling: '🎥 Kling Стандарт (⚡16–40)',
     videoKlingPro: '💎 Kling Pro (⚡27–144)',
@@ -659,6 +660,12 @@ OpenAI Sora 2 Pro — премиум генерация видео с повыш
 🎥 Загрузите видео для начала 👇
 
 Стоимость: ⚡1 токен за секунду видео`,
+
+    videoTrendsDesc: `🔥 <b>Видео Тренды</b>
+
+Смотри популярные шаблоны видео, загрузи своё фото и создай персональное видео за секунды!
+
+Нажми кнопку ниже, чтобы открыть Тренды:`,
 
     videoAccessDenied: 'недоступна на вашем текущем плане.',
     videoUpgradeHint: 'Обновите подписку для доступа к этой функции.',

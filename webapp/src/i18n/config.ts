@@ -13,6 +13,7 @@ import enVideo from './locales/en/video.json';
 import enAuth from './locales/en/auth.json';
 import enChat from './locales/en/chat.json';
 import enCreate from './locales/en/create.json';
+import enTrends from './locales/en/trends.json';
 
 import ruCommon from './locales/ru/common.json';
 import ruProfile from './locales/ru/profile.json';
@@ -25,6 +26,7 @@ import ruVideo from './locales/ru/video.json';
 import ruAuth from './locales/ru/auth.json';
 import ruChat from './locales/ru/chat.json';
 import ruCreate from './locales/ru/create.json';
+import ruTrends from './locales/ru/trends.json';
 
 // Ensure Russian is the default language when no explicit choice has been saved.
 // LanguageDetector would otherwise pick the browser's navigator language (often 'en').
@@ -49,6 +51,7 @@ const resources = {
     auth: enAuth,
     chat: enChat,
     create: enCreate,
+    trends: enTrends,
   },
   ru: {
     common: ruCommon,
@@ -62,6 +65,7 @@ const resources = {
     auth: ruAuth,
     chat: ruChat,
     create: ruCreate,
+    trends: ruTrends,
   },
 };
 
@@ -73,7 +77,7 @@ try {
       resources,
       fallbackLng: 'ru',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat', 'create'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat', 'create', 'trends'],
       interpolation: {
         escapeValue: false,
       },
@@ -94,7 +98,7 @@ try {
       lng: 'ru',
       fallbackLng: 'ru',
       defaultNS: 'common',
-      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat', 'create'],
+      ns: ['common', 'profile', 'packages', 'referral', 'subscriptions', 'audio', 'image', 'video', 'auth', 'chat', 'create', 'trends'],
       interpolation: {
         escapeValue: false,
       },

@@ -36,6 +36,27 @@ const CrownIcon = () => (
   </svg>
 );
 
+const TrendsIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="trendsGrad" x1="8" y1="2" x2="16" y2="22" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#f97316" />
+        <stop offset="1" stopColor="#ef4444" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 2C8.5 6 4 9.5 4 14a8 8 0 0016 0c0-4.5-4.5-8-8-12zm0 18a6 6 0 01-6-6c0-3.21 2.56-5.91 5-8.9 .37-.46.68-.86 1-1.28.32.42.63.82 1 1.28C15.44 8.09 18 10.79 18 14a6 6 0 01-6 6z"
+      fill="url(#trendsGrad)"
+      opacity="0.9"
+    />
+    <path
+      d="M12 20a4 4 0 01-4-4c0-2 1.5-3.5 3-5.5.5-.65 1-.65 1.5 0C14 12.5 16 14 16 16a4 4 0 01-4 4z"
+      fill="url(#trendsGrad)"
+      opacity="0.6"
+    />
+  </svg>
+);
+
 const HandshakeIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <defs>
@@ -54,6 +75,7 @@ const HandshakeIcon = () => (
 
 const navItems: NavItem[] = [
   { path: '/', labelKey: 'subscriptions:title', icon: <CrownIcon /> },
+  { path: '/trends', labelKey: 'trends:title', icon: <TrendsIcon /> },
   { path: '/profile', labelKey: 'profile:title', icon: <UserIcon /> },
   { path: '/referral', labelKey: 'referral:title', icon: <HandshakeIcon /> },
 ];

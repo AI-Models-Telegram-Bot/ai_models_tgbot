@@ -23,6 +23,7 @@ export interface GenerationJobData {
   settingsApplied?: Record<string, unknown>; // Snapshot of settings at enqueue time
   source?: 'telegram' | 'web' | 'bot_chat'; // Origin of the request
   webMessageId?: string; // ChatMessage ID for web/bot_chat delivery
+  trendGenerationId?: string; // Links to TrendGeneration record for trend video generation
 }
 
 export interface GenerationJobResult {

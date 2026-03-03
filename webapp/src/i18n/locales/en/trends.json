@@ -1,0 +1,19 @@
+{
+  "title": "Trends",
+  "subtitle": "Pick a video — upload your photo — get your version!",
+  "all": "All",
+  "loading": "Loading...",
+  "noTrends": "No trends in this category yet",
+  "back": "Back",
+  "used": "Used",
+  "cost": "Cost",
+  "uploadPhoto": "Upload your photo",
+  "photoHint": "Front-facing face photo works best",
+  "tapToSelect": "Tap to select",
+  "generate": "Generate Video",
+  "generating": "Creating video...",
+  "generatingHint": "This will take 1-2 minutes. You can close — we'll send it to the bot!",
+  "insufficientTokens": "Not enough tokens. Need: {{required}}",
+  "generationError": "Generation failed",
+  "retry": "Try again"
+}

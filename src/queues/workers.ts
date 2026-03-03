@@ -6,7 +6,7 @@ import { GenerationJobData, GenerationJobResult } from './types';
 import { textQueue, imageQueue, videoQueue, audioQueue } from './index';
 import { TextGenerationResult, ImageGenerationResult, VideoGenerationResult, AudioGenerationResult, GenerationResult } from '../providers/BaseProvider';
 import { getProviderManager } from '../config/providerFactory';
-import { modelService, requestService, walletService } from '../services';
+import { modelService, requestService, walletService, trendService } from '../services';
 import { prisma } from '../config/database';
 import { getRedis } from '../config/redis';
 import { markdownToTelegramHtml, truncateText, sanitizeErrorForUser } from '../utils/helpers';
@@ -493,6 +493,47 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
     await job.progress(100);
 
+    // Update trend generation status on success
+    if (job.data.trendGenerationId) {
+      try {
+        const videoUrl = ('videoUrl' in result) ? (result as VideoGenerationResult).videoUrl : undefined;
+        await trendService.updateGenerationStatus(job.data.trendGenerationId, 'COMPLETED', {
+          resultVideoUrl: videoUrl,
+          requestId,
+        });
+
+        // Send trend completion notification to user
+        const trendGen = await prisma.trendGeneration.findUnique({
+          where: { id: job.data.trendGenerationId },
+          include: { trend: true },
+        });
+        if (trendGen && videoUrl) {
+          try {
+            const arStr = trendGen.trend.aspectRatio || '9:16';
+            const dims = VIDEO_DIMS[arStr];
+            const trendCaption = lang === 'ru'
+              ? `✅ Твоё видео готово!\n\n🔥 Тренд: ${trendGen.trend.name}`
+              : `✅ Your video is ready!\n\n🔥 Trend: ${trendGen.trend.nameEn || trendGen.trend.name}`;
+            await telegram.sendVideo(chatId, { url: videoUrl }, {
+              caption: trendCaption,
+              parse_mode: 'HTML',
+              supports_streaming: true,
+              ...(dims && { width: dims.width, height: dims.height }),
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: lang === 'ru' ? '🔥 Ещё тренды' : '🔥 More trends', callback_data: 'open_trends' }],
+                ],
+              },
+            });
+          } catch (notifErr) {
+            logger.error('Failed to send trend completion notification', { notifErr });
+          }
+        }
+      } catch (trendErr) {
+        logger.error('Failed to update trend generation status', { trendErr });
+      }
+    }
+
     // Decrement concurrent generation counter
     try {
       const redis = getRedis();
@@ -544,6 +585,19 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       });
     } catch (refundError) {
       logger.error('Failed to refund credits', { refundError });
+    }
+
+    // Update trend generation status on failure
+    if (job.data.trendGenerationId) {
+      try {
+        await trendService.updateGenerationStatus(job.data.trendGenerationId, 'FAILED', {
+          errorMessage: errorMsg,
+          requestId,
+        });
+        // Trend refund is already handled by the general refund above
+      } catch (trendErr) {
+        logger.error('Failed to update trend generation status on failure', { trendErr });
+      }
     }
 
     if (isWebErr || isBotChatErr) {

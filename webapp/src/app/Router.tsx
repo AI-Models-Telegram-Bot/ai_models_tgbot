@@ -21,6 +21,9 @@ const SoundGeneratorPage = lazy(() => import('@/pages/audio/SoundGeneratorPage')
 const ImageSettingsPage = lazy(() => import('@/pages/image/ImageSettingsPage'));
 const VideoSettingsPage = lazy(() => import('@/pages/video/VideoSettingsPage'));
 
+// Trends page
+const TrendsPage = lazy(() => import('@/pages/TrendsPage'));
+
 // Chat page (Telegram mini app)
 const TelegramChatPage = lazy(() => import('@/pages/TelegramChatPage'));
 
@@ -107,6 +110,7 @@ export function Router() {
           <>
             <Route element={<MainLayout />}>
               <Route path="/" element={<SubscriptionsPage />} />
+              <Route path="/trends" element={<TrendsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/referral" element={<ReferralPage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />

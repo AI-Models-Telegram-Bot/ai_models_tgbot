@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   Shield,
+  TrendingUp,
 } from 'lucide-react';
 import LanguageToggle from './LanguageToggle';
 
@@ -25,6 +26,7 @@ export default function Sidebar() {
     { to: '/', icon: LayoutDashboard, label: t('sidebar.dashboard') },
     { to: '/users', icon: Users, label: t('sidebar.users') },
     { to: '/generations', icon: Zap, label: t('sidebar.generations') },
+    { to: '/trends', icon: TrendingUp, label: t('sidebar.trends') },
     { to: '/revenue', icon: DollarSign, label: t('sidebar.revenue') },
     { to: '/providers', icon: Server, label: t('sidebar.providers') },
     { to: '/audit-logs', icon: FileText, label: t('sidebar.auditLogs') },
