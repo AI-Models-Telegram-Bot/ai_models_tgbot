@@ -8,11 +8,20 @@ import { cn } from '@/shared/utils/cn';
 
 /* ───────── Types ───────── */
 
+interface TrendCategory {
+  id: string;
+  slug: string;
+  name: string;
+  nameEn?: string;
+  icon?: string;
+  sortOrder: number;
+}
+
 interface Trend {
   id: string;
   name: string;
   description?: string;
-  category: string;
+  category?: TrendCategory | null;
   videoUrl: string;
   thumbnailUrl?: string;
   tokenCost: number;
@@ -430,7 +439,7 @@ const TrendDetail: React.FC<{
 const TrendsPage: React.FC = () => {
   const { t } = useTranslation('trends');
   const [trends, setTrends] = useState<Trend[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<TrendCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedTrend, setSelectedTrend] = useState<Trend | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -498,16 +507,16 @@ const TrendsPage: React.FC = () => {
             </button>
             {categories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => handleCategorySelect(cat)}
+                key={cat.slug}
+                onClick={() => handleCategorySelect(cat.slug)}
                 className={cn(
                   'shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border whitespace-nowrap',
-                  activeCategory === cat
+                  activeCategory === cat.slug
                     ? 'bg-brand-primary/20 border-brand-primary/40 text-brand-primary'
                     : 'bg-surface-card border-white/10 text-content-secondary hover:border-white/20'
                 )}
               >
-                {cat}
+                {cat.icon ? `${cat.icon} ` : ''}{cat.name}
               </button>
             ))}
           </div>

@@ -222,17 +222,22 @@ export default function Trends() {
     onError: (err: any) => addToast(err.response?.data?.error || 'Error', 'error'),
   });
 
-  // Video upload handler
-  const handleVideoUpload = async (trendId: string, file: File) => {
+  // Video upload handler — works for both new and existing trends
+  const handleVideoUpload = async (file: File) => {
     setUploadingVideo(true);
     try {
       const formData = new FormData();
       formData.append('video', file);
-      await api.post(`/trends/${trendId}/upload-video`, formData, {
+      const res = await api.post('/trends/upload-video', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      queryClient.invalidateQueries({ queryKey: ['admin-trends'] });
-      addToast(t('trends.trendUpdated'), 'success');
+      const videoUrl = res.data.videoUrl;
+      // Set the URL in the form so it's saved with create/update
+      setTrendForm((prev) => ({ ...prev, videoUrl }));
+      if (editingTrend) {
+        queryClient.invalidateQueries({ queryKey: ['admin-trends'] });
+      }
+      addToast(t('trends.videoUploaded'), 'success');
     } catch (err: any) {
       addToast(err.response?.data?.error || 'Upload failed', 'error');
     } finally {
@@ -680,32 +685,30 @@ export default function Trends() {
                       placeholder="https://..."
                     />
                   </div>
-                  {/* Video upload (only for existing trends) */}
-                  {editingTrend && (
-                    <div>
-                      <label className={labelClasses}>{t('trends.uploadVideo')}</label>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="video/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file && editingTrend) {
-                            handleVideoUpload(editingTrend.id, file);
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploadingVideo}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl transition-colors border border-gray-700 disabled:opacity-50"
-                      >
-                        <Upload size={16} />
-                        {uploadingVideo ? t('common.loading') : t('trends.uploadVideo')}
-                      </button>
-                    </div>
-                  )}
+                  {/* Video upload */}
+                  <div>
+                    <label className={labelClasses}>{t('trends.uploadVideo')}</label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleVideoUpload(file);
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingVideo}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl transition-colors border border-gray-700 disabled:opacity-50"
+                    >
+                      <Upload size={16} />
+                      {uploadingVideo ? t('common.loading') : t('trends.uploadVideo')}
+                    </button>
+                  </div>
                   {/* Preview */}
                   {trendForm.videoUrl && (
                     <div>

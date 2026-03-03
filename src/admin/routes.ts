@@ -1821,7 +1821,31 @@ router.delete('/trends/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /admin/api/trends/:id/upload-video — upload video file
+// POST /admin/api/trends/upload-video — upload video file (no trend ID required)
+router.post('/trends/upload-video', trendVideoUpload.single('video'), async (req: Request, res: Response) => {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No video file uploaded' });
+    }
+
+    const videoUrl = `/uploads/trends/${file.filename}`;
+
+    await logAudit(req.adminUser!.id, 'UPLOAD_TREND_VIDEO', {
+      targetType: 'video_trend',
+      details: { filename: file.filename, size: file.size },
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ success: true, videoUrl });
+  } catch (err: any) {
+    logger.error('Admin upload trend video error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to upload video' });
+  }
+});
+
+// POST /admin/api/trends/:id/upload-video — upload video file for existing trend
 router.post('/trends/:id/upload-video', trendVideoUpload.single('video'), async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
