@@ -1655,7 +1655,7 @@ const trendVideoUpload = multer({
 router.get('/trends/categories', async (_req: Request, res: Response) => {
   try {
     const categories = await trendService.getAllCategoriesAdmin();
-    return res.json(categories);
+    return res.json({ categories });
   } catch (err: any) {
     logger.error('Admin categories list error', { error: err.message });
     return res.status(500).json({ error: 'Failed to fetch categories' });
@@ -1727,7 +1727,7 @@ router.post('/trends/seed-categories', async (req: Request, res: Response) => {
 router.get('/trends', async (_req: Request, res: Response) => {
   try {
     const trends = await trendService.getAllTrendsAdmin();
-    return res.json(trends);
+    return res.json({ trends });
   } catch (err: any) {
     logger.error('Admin trends list error', { error: err.message });
     return res.status(500).json({ error: 'Failed to fetch trends' });
