@@ -96,7 +96,7 @@ export class TrendService {
         duration: data.duration ?? 5,
         aspectRatio: data.aspectRatio || '9:16',
         tokenCost: data.tokenCost ?? 5,
-        categoryId: data.categoryId || undefined,
+        categoryId: data.categoryId || null,
         tags: data.tags || [],
         isFeatured: data.isFeatured ?? false,
         isNew: data.isNew ?? false,
@@ -125,13 +125,18 @@ export class TrendService {
     duration: number;
     aspectRatio: string;
     tokenCost: number;
-    categoryId: string;
+    categoryId: string | null;
     tags: string[];
     isFeatured: boolean;
     isNew: boolean;
     isActive: boolean;
     sortOrder: number;
   }>) {
+    // Convert empty string categoryId to null to avoid FK violation
+    if ('categoryId' in data && !data.categoryId) {
+      data.categoryId = null;
+    }
+
     const trend = await prisma.videoTrend.update({
       where: { id },
       data,
@@ -143,11 +148,10 @@ export class TrendService {
   }
 
   async deleteTrend(id: string) {
-    await prisma.videoTrend.update({
-      where: { id },
-      data: { isActive: false },
-    });
-    logger.info('Soft-deleted video trend', { trendId: id });
+    // Delete associated generations first, then the trend
+    await prisma.trendGeneration.deleteMany({ where: { trendId: id } });
+    await prisma.videoTrend.delete({ where: { id } });
+    logger.info('Deleted video trend', { trendId: id });
   }
 
   // ── Category CRUD ───────────────────────────────────────
