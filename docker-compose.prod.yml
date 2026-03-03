@@ -11,6 +11,8 @@ services:
       - NODE_ENV=production
       - INSTANCE_ID=bot1
       - BOT_MODE=polling
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,6 +73,7 @@ services:
       - DISABLE_WORKERS=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./uploads:/app/uploads
     group_add:
       - "988"
     depends_on:
@@ -126,6 +129,7 @@ services:
       - ./webapp-dist:/var/www/webapp:ro
       - ./webapp-dev-dist:/var/www/webapp-dev:ro
       - ./admin/dist:/var/www/admin:ro
+      - ./uploads:/var/www/uploads:ro
     depends_on:
       - bot1
       - dev-bot
