@@ -479,7 +479,6 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'topaz-direct', modelId: 'topaz-direct' },
-      { name: 'kieai', modelId: 'topaz/video-upscale' },   // fallback
     ],
   },
 

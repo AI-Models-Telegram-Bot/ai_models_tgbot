@@ -81,7 +81,7 @@ export function getSeedanceModelsKeyboard(lang: Language) {
 export function getEnhancementModelsKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
-    [l.buttons.videoTopazDirect, l.buttons.videoTopaz],
+    [l.buttons.videoTopazDirect],
     [l.buttons.videoWaveSpeed, l.buttons.videoWaveSpeedPro],
     [l.buttons.back, l.buttons.mainMenu],
   ]).resize();
