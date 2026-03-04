@@ -93,7 +93,20 @@ export class TopazDirectProvider extends EnhancedProvider {
       const assumedFps = 30;
       const frameCount = Math.round(sourceDuration * assumedFps);
 
-      const filters = this.buildFilters(options, sourceWidth, sourceHeight);
+      const filters = this.buildFilters(options);
+
+      // Compute output resolution from upscale setting
+      const upscaleSetting = (options?.upscale as string) || '2x';
+      let scaleFactor = 2;
+      if (upscaleSetting === 'original' || upscaleSetting === '1') scaleFactor = 1;
+      else if (upscaleSetting === '4x' || upscaleSetting === '4') scaleFactor = 4;
+
+      const outputWidth = sourceWidth * scaleFactor;
+      const outputHeight = sourceHeight * scaleFactor;
+
+      // Determine output frame rate (if FPS interpolation, use target; otherwise match source)
+      const topazFpsModel = options?.topazFpsModel as string | undefined;
+      const outputFps = topazFpsModel ? ((options?.targetFps as number) || 60) : assumedFps;
 
       const createBody = {
         source: {
@@ -107,10 +120,15 @@ export class TopazDirectProvider extends EnhancedProvider {
         filters,
         output: {
           container: 'mp4',
+          resolution: { width: outputWidth, height: outputHeight },
+          frameRate: outputFps,
+          audioCodec: 'AAC',
+          audioTransfer: 'Copy',
+          dynamicCompressionLevel: 'Mid',
         },
       };
 
-      logger.info('Topaz Direct: creating request...', { filters: filters.map((f: any) => f.type) });
+      logger.info('Topaz Direct: creating request...', { filters: filters.map((f: any) => f.model) });
       const createResponse = await this.client.post('/video/', createBody);
       const requestId = createResponse.data?.requestId || createResponse.data?.id;
 
@@ -171,28 +189,15 @@ export class TopazDirectProvider extends EnhancedProvider {
    */
   private buildFilters(
     options: Record<string, unknown> | undefined,
-    sourceWidth: number,
-    sourceHeight: number,
   ): any[] {
     const filters: any[] = [];
 
-    // Upscale filter
+    // Upscale/enhancement filter — model + quality params only
+    // Output resolution is set in the top-level output object, not in the filter
     const topazModel = (options?.topazModel as string) || 'prob-4';
-    const upscaleSetting = (options?.upscale as string) || '2x';
-
-    let scaleFactor = 2;
-    if (upscaleSetting === 'original' || upscaleSetting === '1') scaleFactor = 1;
-    else if (upscaleSetting === '4x' || upscaleSetting === '4') scaleFactor = 4;
 
     const upscaleFilter: Record<string, unknown> = {
-      type: 'upscale',
       model: topazModel,
-      output: {
-        resolution: {
-          width: sourceWidth * scaleFactor,
-          height: sourceHeight * scaleFactor,
-        },
-      },
     };
 
     // Quality parameters (0.0-1.0)
