@@ -100,7 +100,7 @@ export default function Withdrawals() {
                     <div className="text-white">{wr.user?.firstName || wr.user?.username || '—'}</div>
                     {wr.user?.username && <div className="text-xs text-gray-500">@{wr.user.username}</div>}
                   </td>
-                  <td className="px-4 py-3 text-right text-white font-medium">{wr.amount.toFixed(2)} {wr.currency}</td>
+                  <td className="px-4 py-3 text-right text-white font-medium">{wr.amount.toFixed(2)} ₽</td>
                   <td className="px-4 py-3"><StatusBadge status={wr.status} /></td>
                   <td className="px-4 py-3 text-gray-400 text-xs max-w-xs truncate">{wr.adminNote || '—'}</td>
                   <td className="px-4 py-3 text-gray-500">{new Date(wr.createdAt).toLocaleString()}</td>

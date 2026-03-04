@@ -35,7 +35,7 @@ export default function Revenue() {
         <span className="text-white">{p.user?.firstName || p.user?.username || p.user?.email || '—'}</span>
       ),
     },
-    { key: 'amount', header: t('revenue.amount'), render: (p: any) => <span className="text-white font-medium">{p.amount} {p.currency}</span> },
+    { key: 'amount', header: t('revenue.amount'), render: (p: any) => <span className="text-white font-medium">{p.amount} ₽</span> },
     { key: 'provider', header: t('revenue.provider'), render: (p: any) => <span className="text-gray-400">{p.provider}</span> },
     { key: 'status', header: t('revenue.status'), render: (p: any) => <StatusBadge status={p.status} /> },
     { key: 'tier', header: t('revenue.tier'), render: (p: any) => p.tier ? <StatusBadge status={p.tier} /> : <span className="text-gray-500">—</span> },

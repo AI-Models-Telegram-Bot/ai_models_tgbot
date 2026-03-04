@@ -185,7 +185,9 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     }
   }, [isOpen, methods]);
 
-  const buttonPrice = plan.priceRUB ? `${plan.priceRUB.toLocaleString()} ₽` : '';
+  const buttonPrice = plan.priceRUB
+    ? `${plan.priceRUB.toLocaleString()} ₽`
+    : plan.priceUSD ? `${Math.round((plan.priceUSD || 0) * 95).toLocaleString()} ₽` : '';
 
   return (
     <Modal
@@ -211,7 +213,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                 </p>
               ) : plan.priceUSD ? (
                 <p className="text-lg font-bold text-white font-mono">
-                  ${plan.priceUSD}
+                  {Math.round((plan.priceUSD || 0) * 95).toLocaleString()} ₽
                 </p>
               ) : null}
             </div>

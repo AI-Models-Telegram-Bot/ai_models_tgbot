@@ -157,7 +157,7 @@ const ProfilePage: React.FC = () => {
                   {t('profile:totalSpent', 'Total Spent')}
                 </p>
                 <p className="text-white text-xl font-bold font-mono mt-1">
-                  ${stats.totalSpent.toFixed(2)}
+                  {stats.totalSpent.toFixed(2)} ₽
                 </p>
               </Card>
             </div>

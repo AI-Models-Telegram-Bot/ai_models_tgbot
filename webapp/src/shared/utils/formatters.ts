@@ -7,10 +7,10 @@ export function formatCredits(amount: number): string {
   }).format(amount);
 }
 
-export function formatMoney(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatMoney(amount: number, _currency = 'RUB'): string {
+  return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
-    currency,
+    currency: 'RUB',
     minimumFractionDigits: 2,
   }).format(amount);
 }

@@ -292,7 +292,7 @@ export default function UserDetail() {
             ))}
             {activeTab === 'payments' && user.payments?.map((p: any) => (
               <tr key={p.id}>
-                <td className="px-4 py-3 text-sm text-white">{p.amount} {p.currency}</td>
+                <td className="px-4 py-3 text-sm text-white">{p.amount} ₽</td>
                 <td className="px-4 py-3 text-sm text-gray-400">{p.provider}</td>
                 <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
                 <td className="px-4 py-3"><StatusBadge status={p.tier || '—'} /></td>
@@ -323,8 +323,8 @@ export default function UserDetail() {
             ))}
             {activeTab === 'withdrawals' && user.withdrawalRequests?.map((wr: any) => (
               <tr key={wr.id}>
-                <td className="px-4 py-3 text-sm text-white">{wr.amount?.toFixed(2)}</td>
-                <td className="px-4 py-3 text-sm text-gray-400">{wr.currency}</td>
+                <td className="px-4 py-3 text-sm text-white">{wr.amount?.toFixed(2)} ₽</td>
+                <td className="px-4 py-3 text-sm text-gray-400">RUB</td>
                 <td className="px-4 py-3"><StatusBadge status={wr.status} /></td>
                 <td className="px-4 py-3 text-sm text-gray-400">{wr.adminNote || '—'}</td>
                 <td className="px-4 py-3 text-sm text-gray-500">{new Date(wr.createdAt).toLocaleString()}</td>
