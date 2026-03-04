@@ -423,19 +423,8 @@ export async function getVideoOptionsForFunction(
     if (settings.characterOrientation) {
       options.characterOrientation = settings.characterOrientation;
     }
-    // Topaz AI: enhancement settings
+    // Topaz AI: upscale factor setting
     if (settings.upscale) options.upscale = settings.upscale;
-    if (settings.fps !== undefined) options.fps = settings.fps;
-    if (settings.topazModel) options.topazModel = settings.topazModel;
-    if (settings.addNoise !== undefined) options.addNoise = settings.addNoise;
-    if (settings.fixCompression !== undefined) options.fixCompression = settings.fixCompression;
-    if (settings.improveDetail !== undefined) options.improveDetail = settings.improveDetail;
-    if (settings.sharpen !== undefined) options.sharpen = settings.sharpen;
-    if (settings.reduceNoise !== undefined) options.reduceNoise = settings.reduceNoise;
-    if (settings.dehalo !== undefined) options.dehalo = settings.dehalo;
-    if (settings.antiAlias !== undefined) options.antiAlias = settings.antiAlias;
-    if (settings.focusFix) options.focusFix = settings.focusFix;
-    if (settings.grain) options.grain = settings.grain;
 
     return options;
   } catch (error) {

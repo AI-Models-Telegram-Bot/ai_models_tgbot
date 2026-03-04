@@ -19,18 +19,7 @@ export interface VideoModelSettings {
   // Motion Control fields
   characterOrientation?: string; // 'image' | 'video' (Motion Control)
   // Topaz AI fields
-  upscale?: string;        // 'original' | '2x' | '4x'
-  fps?: number;            // 24, 25, 30, 45, 50, 60
-  topazModel?: string;     // 'proteus-v4' (default)
-  addNoise?: number;       // 0-100
-  fixCompression?: number; // 0-100
-  improveDetail?: number;  // 0-100
-  sharpen?: number;        // 0-100
-  reduceNoise?: number;    // 0-100
-  dehalo?: number;         // 0-100
-  antiAlias?: number;      // 0-100
-  focusFix?: string;       // 'off' | 'on'
-  grain?: string;          // 'off' | 'on'
+  upscale?: string;        // 'original' | '2x' | '4x' (maps to upscale_factor)
 }
 
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
@@ -52,7 +41,7 @@ const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'seedance-lite': { aspectRatio: '16:9', duration: 4, resolution: '720p' },
   'seedance-1-pro': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
   'seedance-fast': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
-  'topaz': { upscale: '4x', fps: 60 },
+  'topaz': { upscale: '2x' },
 };
 
 export class VideoSettingsService {

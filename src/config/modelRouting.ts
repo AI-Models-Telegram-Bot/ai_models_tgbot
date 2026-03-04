@@ -466,11 +466,11 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Topaz AI — video enhancement (upscale, FPS, quality)
+  // Topaz AI — video upscaling
   'topaz': {
     category: 'VIDEO',
     providers: [
-      { name: 'kieai', modelId: 'topaz/video-enhance' },
+      { name: 'kieai', modelId: 'topaz/video-upscale' },
     ],
   },
 
