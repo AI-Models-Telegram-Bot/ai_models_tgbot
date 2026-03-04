@@ -39,11 +39,11 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
     if (priceUSD === null) return t('subscriptions:price.contactUs');
     if (priceUSD === 0) return t('subscriptions:price.free');
     const perMonth = t('subscriptions:price.perMonth');
-    // Always show rubles when available (primary audience is Russian)
     if (priceRUB) {
       return `${priceRUB.toLocaleString('ru-RU')} ₽${perMonth}`;
     }
-    return `$${priceUSD}${perMonth}`;
+    // Fallback: convert USD to approximate RUB display
+    return `${Math.round((priceUSD || 0) * 95).toLocaleString('ru-RU')} ₽${perMonth}`;
   };
 
   const formatCredits = (credits: number | null) => {

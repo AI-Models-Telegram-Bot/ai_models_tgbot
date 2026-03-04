@@ -23,7 +23,7 @@ export const SubscriptionComparisonTable: React.FC<SubscriptionComparisonTablePr
   const { t } = useTranslation('common');
 
   const rows = [
-    { label: t('price'), getValue: (p: SubscriptionPlan) => p.priceUSD === null ? t('custom') : p.priceUSD === 0 ? t('free') : p.priceRUB ? `${p.priceRUB.toLocaleString()} ₽` : `$${p.priceUSD}` },
+    { label: t('price'), getValue: (p: SubscriptionPlan) => p.priceUSD === null ? t('custom') : p.priceUSD === 0 ? t('free') : p.priceRUB ? `${p.priceRUB.toLocaleString()} ₽` : `${Math.round((p.priceUSD || 0) * 95).toLocaleString()} ₽` },
     { label: t('tokens'), getValue: (p: SubscriptionPlan) => formatValue(p.tokens) },
     { label: t('prioritySupport'), getValue: (p: SubscriptionPlan) => formatValue(p.prioritySupport) },
     { label: t('referralBonus'), getValue: (p: SubscriptionPlan) => {

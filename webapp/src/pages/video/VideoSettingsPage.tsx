@@ -163,6 +163,8 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
 };
 
 const TOPAZ_MODEL = 'topaz';
+const TOPAZ_DIRECT_MODEL = 'topaz-direct';
+const WAVESPEED_MODELS = ['wavespeed', 'wavespeed-pro'];
 
 const TOPAZ_UPSCALE_OPTIONS = [
   { value: 'original', labelKey: 'topazUpscaleOriginal' },
@@ -170,7 +172,26 @@ const TOPAZ_UPSCALE_OPTIONS = [
   { value: '4x', labelKey: 'topazUpscale4x' },
 ];
 
-const TOPAZ_FPS_OPTIONS = [24, 25, 30, 45, 50, 60];
+const TOPAZ_AI_MODELS = [
+  { value: 'prob-4', labelKey: 'topazModelProteus', desc: 'Proteus v4' },
+  { value: 'rhea-1', labelKey: 'topazModelRhea', desc: 'Rhea 4x' },
+  { value: 'ahq-12', labelKey: 'topazModelArtemis', desc: 'Artemis HQ' },
+  { value: 'nyx-3', labelKey: 'topazModelNyx', desc: 'Nyx' },
+];
+
+const TOPAZ_FPS_MODELS = [
+  { value: 'apo-8', labelKey: 'topazFpsApollo', desc: 'Apollo' },
+  { value: 'chr-2', labelKey: 'topazFpsChronos', desc: 'Chronos' },
+];
+
+const FPS_OPTIONS = [30, 60, 120];
+
+const WAVESPEED_RESOLUTIONS = [
+  { value: '720p', labelKey: 'resolution720p' },
+  { value: '1080p', labelKey: 'resolution1080p' },
+  { value: '2k', labelKey: 'resolution2K' },
+  { value: '4k', labelKey: 'resolution4K' },
+];
 
 const AUDIO_MODELS = ['veo-fast', 'veo'];
 
@@ -258,6 +279,8 @@ export default function VideoSettingsPage() {
   const isKling30 = modelSlug === KLING_30_MODEL;
   const isKlingMotion = modelSlug === KLING_MOTION_MODEL;
   const isTopaz = modelSlug === TOPAZ_MODEL;
+  const isTopazDirect = modelSlug === TOPAZ_DIRECT_MODEL;
+  const isWaveSpeed = WAVESPEED_MODELS.includes(modelSlug);
   const hasAspect = !!MODEL_ASPECTS[modelSlug];
   const klingMode: 'std' | 'pro' = modelSlug === 'kling-pro' ? 'pro' : 'std';
   const availableVersions = modelSlug === 'kling-pro' ? KLING_VERSIONS_PRO : KLING_VERSIONS_STD;
@@ -286,19 +309,18 @@ export default function VideoSettingsPage() {
   // Motion Control state
   const [characterOrientation, setCharacterOrientation] = useState('video');
   // Topaz AI state
-  const [topazUpscale, setTopazUpscale] = useState('4x');
-  const [topazFps, setTopazFps] = useState(60);
-  const [topazShowPro, setTopazShowPro] = useState(false);
-  const [topazModelName, setTopazModelName] = useState('proteus-v4');
-  const [topazAddNoise, setTopazAddNoise] = useState(0);
-  const [topazFixCompression, setTopazFixCompression] = useState(0);
-  const [topazImproveDetail, setTopazImproveDetail] = useState(0);
-  const [topazSharpen, setTopazSharpen] = useState(0);
-  const [topazReduceNoise, setTopazReduceNoise] = useState(0);
-  const [topazDehalo, setTopazDehalo] = useState(0);
-  const [topazAntiAlias, setTopazAntiAlias] = useState(0);
-  const [topazFocusFix, setTopazFocusFix] = useState('off');
-  const [topazGrain, setTopazGrain] = useState('off');
+  const [topazUpscale, setTopazUpscale] = useState('2x');
+  // Topaz AI Pro (Direct) state
+  const [topazModel, setTopazModel] = useState('prob-4');
+  const [topazFpsModel, setTopazFpsModel] = useState<string | null>(null);
+  const [targetFps, setTargetFps] = useState(60);
+  const [compression, setCompression] = useState(0.5);
+  const [details, setDetails] = useState(0.5);
+  const [noise, setNoise] = useState(0.3);
+  const [halo, setHalo] = useState(0.0);
+  const [blur, setBlur] = useState(0.0);
+  // WaveSpeed state
+  const [targetResolution, setTargetResolution] = useState('1080p');
 
   useEffect(() => {
     fetchModelSettings(modelSlug);
@@ -338,21 +360,24 @@ export default function VideoSettingsPage() {
         setCharacterOrientation(modelSettings.characterOrientation || 'video');
       }
       if (isTopaz) {
-        setTopazUpscale(modelSettings.upscale || '4x');
-        setTopazFps(modelSettings.fps ?? 60);
-        setTopazModelName(modelSettings.topazModel || 'proteus-v4');
-        setTopazAddNoise(modelSettings.addNoise ?? 0);
-        setTopazFixCompression(modelSettings.fixCompression ?? 0);
-        setTopazImproveDetail(modelSettings.improveDetail ?? 0);
-        setTopazSharpen(modelSettings.sharpen ?? 0);
-        setTopazReduceNoise(modelSettings.reduceNoise ?? 0);
-        setTopazDehalo(modelSettings.dehalo ?? 0);
-        setTopazAntiAlias(modelSettings.antiAlias ?? 0);
-        setTopazFocusFix(modelSettings.focusFix || 'off');
-        setTopazGrain(modelSettings.grain || 'off');
+        setTopazUpscale(modelSettings.upscale || '2x');
+      }
+      if (isTopazDirect) {
+        setTopazUpscale(modelSettings.upscale || '2x');
+        setTopazModel(modelSettings.topazModel || 'prob-4');
+        setTopazFpsModel(modelSettings.topazFpsModel || null);
+        setTargetFps(modelSettings.targetFps || 60);
+        setCompression(modelSettings.compression ?? 0.5);
+        setDetails(modelSettings.details ?? 0.5);
+        setNoise(modelSettings.noise ?? 0.3);
+        setHalo(modelSettings.halo ?? 0.0);
+        setBlur(modelSettings.blur ?? 0.0);
+      }
+      if (isWaveSpeed) {
+        setTargetResolution(modelSettings.targetResolution || '1080p');
       }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, isTopaz, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, isTopaz, isTopazDirect, isWaveSpeed, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -403,18 +428,21 @@ export default function VideoSettingsPage() {
       if (resolution !== (modelSettings?.resolution || '720p')) return true;
     }
     if (isTopaz) {
-      if (topazUpscale !== (modelSettings?.upscale || '4x')) return true;
-      if (topazFps !== (modelSettings?.fps ?? 60)) return true;
-      if (topazModelName !== (modelSettings?.topazModel || 'proteus-v4')) return true;
-      if (topazAddNoise !== (modelSettings?.addNoise ?? 0)) return true;
-      if (topazFixCompression !== (modelSettings?.fixCompression ?? 0)) return true;
-      if (topazImproveDetail !== (modelSettings?.improveDetail ?? 0)) return true;
-      if (topazSharpen !== (modelSettings?.sharpen ?? 0)) return true;
-      if (topazReduceNoise !== (modelSettings?.reduceNoise ?? 0)) return true;
-      if (topazDehalo !== (modelSettings?.dehalo ?? 0)) return true;
-      if (topazAntiAlias !== (modelSettings?.antiAlias ?? 0)) return true;
-      if (topazFocusFix !== (modelSettings?.focusFix || 'off')) return true;
-      if (topazGrain !== (modelSettings?.grain || 'off')) return true;
+      if (topazUpscale !== (modelSettings?.upscale || '2x')) return true;
+    }
+    if (isTopazDirect) {
+      if (topazUpscale !== (modelSettings?.upscale || '2x')) return true;
+      if (topazModel !== (modelSettings?.topazModel || 'prob-4')) return true;
+      if ((topazFpsModel || null) !== (modelSettings?.topazFpsModel || null)) return true;
+      if (targetFps !== (modelSettings?.targetFps || 60)) return true;
+      if (compression !== (modelSettings?.compression ?? 0.5)) return true;
+      if (details !== (modelSettings?.details ?? 0.5)) return true;
+      if (noise !== (modelSettings?.noise ?? 0.3)) return true;
+      if (halo !== (modelSettings?.halo ?? 0.0)) return true;
+      if (blur !== (modelSettings?.blur ?? 0.0)) return true;
+    }
+    if (isWaveSpeed) {
+      if (targetResolution !== (modelSettings?.targetResolution || '1080p')) return true;
     }
     return false;
   })();
@@ -454,17 +482,20 @@ export default function VideoSettingsPage() {
       }
       if (isTopaz) {
         updates.upscale = topazUpscale;
-        updates.fps = topazFps;
-        updates.topazModel = topazModelName;
-        updates.addNoise = topazAddNoise;
-        updates.fixCompression = topazFixCompression;
-        updates.improveDetail = topazImproveDetail;
-        updates.sharpen = topazSharpen;
-        updates.reduceNoise = topazReduceNoise;
-        updates.dehalo = topazDehalo;
-        updates.antiAlias = topazAntiAlias;
-        updates.focusFix = topazFocusFix;
-        updates.grain = topazGrain;
+      }
+      if (isTopazDirect) {
+        updates.upscale = topazUpscale;
+        updates.topazModel = topazModel;
+        updates.topazFpsModel = topazFpsModel || undefined;
+        updates.targetFps = targetFps;
+        updates.compression = compression;
+        updates.details = details;
+        updates.noise = noise;
+        updates.halo = halo;
+        updates.blur = blur;
+      }
+      if (isWaveSpeed) {
+        updates.targetResolution = targetResolution;
       }
       await updateModelSettings(modelSlug, updates);
       hapticNotification('success');
@@ -895,139 +926,186 @@ export default function VideoSettingsPage() {
           </motion.div>
         )}
 
-        {/* ── Topaz AI: Frame Rate ── */}
-        {isTopaz && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-5"
-          >
-            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
-              {t('topazFps')}
-            </div>
-            <div className="flex flex-wrap" style={{ gap: 8 }}>
-              {TOPAZ_FPS_OPTIONS.map((fps) => (
+        {/* ── Topaz AI Pro: Full Settings ── */}
+        {isTopazDirect && (
+          <>
+            {/* Upscale */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazUpscale')}
+              </div>
+              <div className="flex flex-wrap" style={{ gap: 8 }}>
+                {TOPAZ_UPSCALE_OPTIONS.map(({ value, labelKey }) => (
+                  <button
+                    key={value}
+                    onClick={() => { hapticImpact('light'); setTopazUpscale(value); }}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                      topazUpscale === value
+                        ? 'bg-video-primary text-white shadow-video-neon'
+                        : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                    }`}
+                  >
+                    {t(labelKey as any)}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* AI Model */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazAiModel')}
+              </div>
+              <div className="flex flex-wrap" style={{ gap: 8 }}>
+                {TOPAZ_AI_MODELS.map(({ value, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => { hapticImpact('light'); setTopazModel(value); }}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                      topazModel === value
+                        ? 'bg-video-primary text-white shadow-video-neon'
+                        : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                    }`}
+                  >
+                    {desc}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* FPS Interpolation */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazFpsInterpolation')}
+              </div>
+              <div className="flex items-center mb-3" style={{ gap: 12 }}>
                 <button
-                  key={fps}
-                  onClick={() => {
-                    hapticImpact('light');
-                    setTopazFps(fps);
-                  }}
+                  onClick={() => { hapticImpact('light'); setTopazFpsModel(topazFpsModel ? null : 'apo-8'); }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                    topazFps === fps
+                    topazFpsModel
                       ? 'bg-video-primary text-white shadow-video-neon'
-                      : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary'
                   }`}
                 >
-                  {fps} FPS
+                  {topazFpsModel ? t('enabled') : t('disabled')}
                 </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── Topaz AI: Professional Settings Toggle ── */}
-        {isTopaz && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-5"
-          >
-            <div
-              onClick={() => {
-                hapticImpact('light');
-                setTopazShowPro(!topazShowPro);
-              }}
-              className={`rounded-xl p-3.5 cursor-pointer transition-all ${
-                topazShowPro
-                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
-                  : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center" style={{ columnGap: 10 }}>
-                  <span className="text-lg">{topazShowPro ? '🔧' : '⚙️'}</span>
-                  <div>
-                    <span className="font-semibold text-content-primary text-sm">
-                      {t('topazProSettings')}
-                    </span>
-                    <p className="text-xs text-content-tertiary mt-0.5">
-                      {t('topazProSettingsDesc')}
-                    </p>
+              </div>
+              {topazFpsModel && (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap" style={{ gap: 8 }}>
+                    {TOPAZ_FPS_MODELS.map(({ value, desc }) => (
+                      <button
+                        key={value}
+                        onClick={() => { hapticImpact('light'); setTopazFpsModel(value); }}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                          topazFpsModel === value
+                            ? 'bg-video-primary text-white shadow-video-neon'
+                            : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                        }`}
+                      >
+                        {desc}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap" style={{ gap: 8 }}>
+                    {FPS_OPTIONS.map((fps) => (
+                      <button
+                        key={fps}
+                        onClick={() => { hapticImpact('light'); setTargetFps(fps); }}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                          targetFps === fps
+                            ? 'bg-video-primary text-white shadow-video-neon'
+                            : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                        }`}
+                      >
+                        {fps} fps
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <span className="text-content-tertiary text-sm">{topazShowPro ? '▲' : '▼'}</span>
-              </div>
-            </div>
+              )}
+            </motion.div>
 
-            {topazShowPro && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-3 space-y-4"
-              >
-                {/* Sliders */}
+            {/* Quality Sliders */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazQuality')}
+              </div>
+              <div className="rounded-xl bg-video-surface-card border border-white/5 p-4 space-y-4">
                 {([
-                  { key: 'addNoise', labelKey: 'topazAddNoise', value: topazAddNoise, setter: setTopazAddNoise },
-                  { key: 'fixCompression', labelKey: 'topazFixCompression', value: topazFixCompression, setter: setTopazFixCompression },
-                  { key: 'improveDetail', labelKey: 'topazImproveDetail', value: topazImproveDetail, setter: setTopazImproveDetail },
-                  { key: 'sharpen', labelKey: 'topazSharpen', value: topazSharpen, setter: setTopazSharpen },
-                  { key: 'reduceNoise', labelKey: 'topazReduceNoise', value: topazReduceNoise, setter: setTopazReduceNoise },
-                  { key: 'dehalo', labelKey: 'topazDehalo', value: topazDehalo, setter: setTopazDehalo },
-                  { key: 'antiAlias', labelKey: 'topazAntiAlias', value: topazAntiAlias, setter: setTopazAntiAlias },
-                ] as const).map(({ key, labelKey, value, setter }) => (
-                  <div key={key} className="rounded-xl bg-video-surface-card border border-white/5 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-content-secondary">{t(labelKey as any)}</span>
-                      <span className="text-xs text-video-primary font-semibold">{value}</span>
+                  { label: t('topazCompression'), value: compression, setter: setCompression },
+                  { label: t('topazDetails'), value: details, setter: setDetails },
+                  { label: t('topazNoise'), value: noise, setter: setNoise },
+                  { label: t('topazHalo'), value: halo, setter: setHalo },
+                  { label: t('topazBlur'), value: blur, setter: setBlur },
+                ] as { label: string; value: number; setter: (v: number) => void }[]).map(({ label, value, setter }) => (
+                  <div key={label}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-content-secondary">{label}</span>
+                      <span className="text-xs text-video-primary font-mono">{Math.round(value * 100)}%</span>
                     </div>
                     <input
                       type="range"
                       min={0}
-                      max={100}
-                      step={1}
+                      max={1}
+                      step={0.05}
                       value={value}
-                      onChange={(e) => {
-                        setter(parseInt(e.target.value, 10));
-                      }}
+                      onChange={(e) => setter(parseFloat(e.target.value))}
                       className="w-full accent-video-primary"
                     />
                   </div>
                 ))}
+              </div>
+            </motion.div>
+          </>
+        )}
 
-                {/* On/Off toggles */}
-                {([
-                  { key: 'focusFix', labelKey: 'topazFocusFix', value: topazFocusFix, setter: setTopazFocusFix },
-                  { key: 'grain', labelKey: 'topazGrain', value: topazGrain, setter: setTopazGrain },
-                ] as const).map(({ key, labelKey, value, setter }) => (
-                  <div key={key} className="rounded-xl bg-video-surface-card border border-white/5 p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-content-secondary">{t(labelKey as any)}</span>
-                      <div className="flex" style={{ gap: 8 }}>
-                        {(['off', 'on'] as const).map((opt) => (
-                          <button
-                            key={opt}
-                            onClick={() => {
-                              hapticImpact('light');
-                              setter(opt);
-                            }}
-                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                              value === opt
-                                ? 'bg-video-primary text-white'
-                                : 'bg-white/5 text-content-tertiary'
-                            }`}
-                          >
-                            {t(opt === 'on' ? 'topazOn' : 'topazOff')}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            )}
+        {/* ── WaveSpeed: Target Resolution ── */}
+        {isWaveSpeed && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('wavespeedResolution')}
+            </div>
+            <div className="flex flex-wrap" style={{ gap: 8 }}>
+              {WAVESPEED_RESOLUTIONS.map(({ value, labelKey }) => (
+                <button
+                  key={value}
+                  onClick={() => { hapticImpact('light'); setTargetResolution(value); }}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    targetResolution === value
+                      ? 'bg-video-primary text-white shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                  }`}
+                >
+                  {t(labelKey as any)}
+                </button>
+              ))}
+            </div>
           </motion.div>
         )}
 

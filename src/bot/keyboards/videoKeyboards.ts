@@ -76,6 +76,18 @@ export function getSeedanceModelsKeyboard(lang: Language) {
 }
 
 /**
+ * Reply keyboard: Enhancement family models + back/main
+ */
+export function getEnhancementModelsKeyboard(lang: Language) {
+  const l = getLocale(lang);
+  return Markup.keyboard([
+    [l.buttons.videoTopazDirect],
+    [l.buttons.videoWaveSpeed, l.buttons.videoWaveSpeedPro],
+    [l.buttons.back, l.buttons.mainMenu],
+  ]).resize();
+}
+
+/**
  * Reply keyboard for a selected video model (with optional webapp settings button + back/main)
  */
 export function getVideoModelMenuKeyboard(lang: Language, modelSlug: string, hasSettings: boolean, telegramId?: number) {

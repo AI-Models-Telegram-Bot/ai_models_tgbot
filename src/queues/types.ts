@@ -16,8 +16,9 @@ export interface GenerationJobData {
   imageOptions?: Record<string, unknown>; // User image settings (aspectRatio, quality, style, etc.)
   videoOptions?: Record<string, unknown>; // User video settings (aspectRatio, duration, resolution, etc.)
   inputImageUrls?: string[]; // Image URLs for image-to-video generation
-  inputVideoUrl?: string; // Video URL for Kling Motion Control
+  inputVideoUrl?: string; // Video URL for Kling Motion Control / Enhancement
   inputAudioUrl?: string; // Audio URL for Kling AI Avatar
+  videoMeta?: { width?: number; height?: number; duration?: number; fileSize?: number; mimeType?: string };
   modelName?: string; // Display name (e.g. "Seedance 1.5", "Kling")
   telegramId?: number; // User's Telegram ID (for webapp settings URL)
   settingsApplied?: Record<string, unknown>; // Snapshot of settings at enqueue time

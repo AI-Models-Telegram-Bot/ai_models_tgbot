@@ -16,17 +16,20 @@ export interface VideoModelSettings {
   characterOrientation?: string;
   // Topaz AI fields
   upscale?: string;
-  fps?: number;
+  // Topaz AI Pro (Direct API) fields
   topazModel?: string;
-  addNoise?: number;
-  fixCompression?: number;
-  improveDetail?: number;
-  sharpen?: number;
-  reduceNoise?: number;
-  dehalo?: number;
-  antiAlias?: number;
-  focusFix?: string;
-  grain?: string;
+  topazFpsModel?: string;
+  targetFps?: number;
+  compression?: number;
+  details?: number;
+  noise?: number;
+  halo?: number;
+  blur?: number;
+  grain?: number;
+  grainSize?: number;
+  recoverOriginalDetail?: number;
+  // WaveSpeed fields
+  targetResolution?: string;
 }
 
 export interface VideoSettingsResponse {

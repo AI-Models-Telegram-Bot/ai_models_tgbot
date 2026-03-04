@@ -89,7 +89,10 @@
     "seedance-lite": "Seedance 1.0 Lite",
     "seedance-1-pro": "Seedance 1.0 Pro",
     "seedance-fast": "Seedance 1.0 Fast",
-    "topaz": "Topaz AI"
+    "topaz": "Topaz AI",
+    "topaz-direct": "Topaz AI Pro",
+    "wavespeed": "WaveSpeed",
+    "wavespeed-pro": "WaveSpeed Pro"
   },
   "topazUpscale": "Upscale",
   "topazUpscaleOriginal": "Original",
@@ -110,5 +113,23 @@
   "topazDehalo": "Dehalo",
   "topazAntiAlias": "Anti-alias / Deblur",
   "topazOn": "On",
-  "topazOff": "Off"
+  "topazOff": "Off",
+  "topazAiModel": "AI Model",
+  "topazModelRhea": "Rhea 4x",
+  "topazModelArtemis": "Artemis HQ",
+  "topazModelNyx": "Nyx",
+  "topazFpsInterpolation": "FPS Interpolation",
+  "topazFpsApollo": "Apollo",
+  "topazFpsChronos": "Chronos",
+  "topazQuality": "Quality Settings",
+  "topazCompression": "Compression",
+  "topazDetails": "Details",
+  "topazNoise": "Noise",
+  "topazHalo": "Halo",
+  "topazBlur": "Blur",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "wavespeedResolution": "Target Resolution",
+  "resolution2K": "2K",
+  "resolution4K": "4K"
 }

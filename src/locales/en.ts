@@ -79,6 +79,10 @@ export const en = {
     videoSeedancePro: '💎 1.0 Pro (⚡35–88)',
     videoSeedanceFast: '⚡ 1.0 Fast (⚡13–33)',
     videoSeedance15Pro: '🌱 1.5 Pro (⚡13–33)',
+    videoTopazDirect: '💠 Topaz AI Pro (⚡2)',
+    videoTopaz: '💠 Topaz AI (⚡1)',
+    videoWaveSpeed: '🌊 WaveSpeed (⚡1)',
+    videoWaveSpeedPro: '🌊 WaveSpeed Pro (⚡2)',
     videoSettings: '🎛️ Video Settings',
     // Chat
     chatNewChat: '🆕 Chat',
@@ -647,6 +651,11 @@ Fee: ⚡13–33 tokens (depends on duration)`,
 
 AI-powered video upscaling and quality improvement. Transform low-resolution footage into stunning high-quality video.
 
+💠 <b>Topaz AI Pro</b> — Premium: full quality controls, FPS interpolation, AI upscale models
+💠 <b>Topaz AI</b> — Simple upscale (2x/4x)
+🌊 <b>WaveSpeed</b> — Budget upscaling
+🌊 <b>WaveSpeed Pro</b> — Better quality upscaling
+
 Select a model:`,
 
     videoTopazDesc: `💠 <b>Topaz AI</b>
@@ -658,6 +667,39 @@ Upload a clip up to 20 seconds / 20 MB, set resolution and FPS settings, and we'
 🎥 Upload a video to get started 👇
 
 Fee: ⚡1 token per second of video`,
+
+    videoTopazDirectDesc: `💠 <b>Topaz AI Pro</b>
+
+Premium video enhancement powered by Topaz Labs Direct API. Full control over upscale model, FPS interpolation, and quality parameters.
+
+⚙️ Use Settings to configure:
+• AI upscale model (Proteus, Rhea, Artemis, Nyx)
+• FPS interpolation (30/60/120 fps)
+• Quality sliders (compression, details, noise, etc.)
+
+🎥 Upload a video to get started 👇
+
+Fee: ⚡2 tokens per video`,
+
+    videoWaveSpeedDesc: `🌊 <b>WaveSpeed</b>
+
+Budget video upscaling. Simple and fast — just pick a target resolution.
+
+⚙️ Use Settings to choose target resolution (720p / 1080p / 2K / 4K).
+
+🎥 Upload a video to get started 👇
+
+Fee: ⚡1 token per video`,
+
+    videoWaveSpeedProDesc: `🌊 <b>WaveSpeed Pro</b>
+
+Higher quality video upscaling with better detail preservation.
+
+⚙️ Use Settings to choose target resolution (720p / 1080p / 2K / 4K).
+
+🎥 Upload a video to get started 👇
+
+Fee: ⚡2 tokens per video`,
 
     videoTrendsDesc: `🔥 <b>Video Trends</b>
 

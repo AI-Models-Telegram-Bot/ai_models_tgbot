@@ -164,7 +164,7 @@ export class KieAIProvider extends EnhancedProvider {
     if (model === 'kling/ai-avatar-pro' || model === 'kling/ai-avatar-standard') {
       return this.generateKlingAvatarVideo(prompt, options);
     }
-    if (model === 'topaz/video-enhance') {
+    if (model === 'topaz/video-upscale') {
       return this.generateTopazVideo(prompt, options);
     }
 
@@ -1059,44 +1059,38 @@ export class KieAIProvider extends EnhancedProvider {
   }
 
   /**
-   * Topaz AI — video enhancement (upscale, FPS, quality improvements)
-   * POST /jobs/createTask with model: "topaz/video-enhance"
-   * Requires: video_url (input video to enhance)
+   * Topaz AI — video upscaling
+   * POST /jobs/createTask with model: "topaz/video-upscale"
+   * Requires: video_url (input video to upscale)
+   * Optional: upscale_factor ("1", "2", "4")
    */
   private async generateTopazVideo(
-    prompt: string,
+    _prompt: string,
     options?: Record<string, unknown>
   ): Promise<VideoGenerationResult> {
     const start = Date.now();
     try {
-      const model = 'topaz/video-enhance';
+      const model = 'topaz/video-upscale';
       const inputVideoUrl = options?.inputVideoUrl as string | undefined;
 
       if (!inputVideoUrl) {
         throw new Error('Topaz AI requires a video. Please upload a video first.');
       }
 
-      logger.info('KieAI Topaz: starting video enhancement');
+      logger.info('KieAI Topaz: starting video upscale');
+
+      // Map upscale setting to upscale_factor: "original" → "1", "2x" → "2", "4x" → "4"
+      const upscaleSetting = (options?.upscale as string) || '2x';
+      let upscale_factor = '2';
+      if (upscaleSetting === 'original' || upscaleSetting === '1') upscale_factor = '1';
+      else if (upscaleSetting === '4x' || upscaleSetting === '4') upscale_factor = '4';
 
       const input: Record<string, unknown> = {
         video_url: inputVideoUrl,
-        model: (options?.topazModel as string) || 'proteus-v4',
-        upscale: (options?.upscale as string) || '4x',
-        fps: (options?.fps as number) || 60,
+        upscale_factor,
       };
 
-      // Professional settings (only include if explicitly set)
-      if (options?.addNoise !== undefined) input.addNoise = options.addNoise;
-      if (options?.fixCompression !== undefined) input.fixCompression = options.fixCompression;
-      if (options?.improveDetail !== undefined) input.improveDetail = options.improveDetail;
-      if (options?.sharpen !== undefined) input.sharpen = options.sharpen;
-      if (options?.reduceNoise !== undefined) input.reduceNoise = options.reduceNoise;
-      if (options?.dehalo !== undefined) input.dehalo = options.dehalo;
-      if (options?.antiAlias !== undefined) input.antiAlias = options.antiAlias;
-      if (options?.focusFix) input.focusFix = options.focusFix;
-      if (options?.grain) input.grain = options.grain;
-
-      logger.info('KieAI Topaz payload:', { model, upscale: input.upscale, fps: input.fps });
+      logger.info('KieAI Topaz payload:', { model, upscale_factor });
       const createResponse = await this.client.post('/jobs/createTask', { model, input });
 
       const respData = createResponse.data;

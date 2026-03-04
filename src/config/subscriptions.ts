@@ -165,7 +165,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
-        allowed: ['kling', 'kling-pro', 'kling-3.0', 'kling-motion', 'kling-avatar-pro', 'kling-avatar', 'luma', 'wan', 'runway', 'seedance', 'sora', 'veo-fast', 'topaz'],
+        allowed: ['kling', 'kling-pro', 'kling-3.0', 'kling-motion', 'kling-avatar-pro', 'kling-avatar', 'luma', 'wan', 'runway', 'seedance', 'sora', 'veo-fast', 'topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro'],
       },
       audio: {
         allowed: [],

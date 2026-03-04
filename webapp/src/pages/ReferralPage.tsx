@@ -88,8 +88,8 @@ const ReferralPage: React.FC = () => {
     }
   };
 
-  const threshold = walletCurrency === 'RUB' ? withdrawalThresholds.RUB : withdrawalThresholds.USD;
-  const currencySymbol = walletCurrency === 'RUB' ? '\u20BD' : '$';
+  const threshold = withdrawalThresholds.RUB;
+  const currencySymbol = '\u20BD';
 
   // Compute min/max ranges for the mode toggle cards
   const tokenRange = { min: 100, max: 0 };
@@ -359,7 +359,7 @@ const ReferralPage: React.FC = () => {
               <div key={w.id} className="flex items-center justify-between py-2 px-2 rounded-lg bg-white/5">
                 <div>
                   <p className="text-white text-sm font-medium">
-                    {w.amount.toFixed(2)} {w.currency === 'RUB' ? '\u20BD' : '$'}
+                    {w.amount.toFixed(2)} ₽
                   </p>
                   <p className="text-content-tertiary text-[11px]">
                     {new Date(w.createdAt).toLocaleDateString()}

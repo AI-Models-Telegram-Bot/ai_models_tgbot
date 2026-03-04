@@ -58,6 +58,9 @@ const SLUG_TO_PRICE: Record<string, string> = {
   'seedance-1-pro': 'VIDEO_SEEDANCE_PRO',
   'seedance-fast': 'VIDEO_SEEDANCE_FAST',
   'topaz': 'VIDEO_TOPAZ',
+  'topaz-direct': 'VIDEO_TOPAZ_DIRECT',
+  'wavespeed': 'VIDEO_WAVESPEED',
+  'wavespeed-pro': 'VIDEO_WAVESPEED_PRO',
   'fish-speech': 'AUDIO_FISH_SPEECH',
 };
 
@@ -168,6 +171,9 @@ export class ModelService {
       { name: 'Sora 2 Pro', slug: 'sora-pro', provider: 'kieai', category: 'VIDEO', tokenCost: 47, priceItemCode: 'VIDEO_SORA_PRO', description: 'OpenAI Sora 2 Pro — premium quality video' },
       { name: 'Veo Quality', slug: 'veo', provider: 'kieai', category: 'VIDEO', tokenCost: 116, priceItemCode: 'VIDEO_VEO', description: 'Google Veo 3.1 Quality — best video quality' },
       { name: 'Topaz AI', slug: 'topaz', provider: 'kieai', category: 'VIDEO', tokenCost: 1, priceItemCode: 'VIDEO_TOPAZ', description: 'Topaz AI video enhancement — upscale, FPS boost, quality (⚡1/sec)' },
+      { name: 'Topaz AI Pro', slug: 'topaz-direct', provider: 'topaz-direct', category: 'VIDEO', tokenCost: 2, priceItemCode: 'VIDEO_TOPAZ_DIRECT', description: 'Topaz AI Pro — premium enhancement with full controls (⚡2)' },
+      { name: 'WaveSpeed', slug: 'wavespeed', provider: 'wavespeed', category: 'VIDEO', tokenCost: 1, priceItemCode: 'VIDEO_WAVESPEED', description: 'WaveSpeed — budget video upscaling (⚡1)' },
+      { name: 'WaveSpeed Pro', slug: 'wavespeed-pro', provider: 'wavespeed', category: 'VIDEO', tokenCost: 2, priceItemCode: 'VIDEO_WAVESPEED_PRO', description: 'WaveSpeed Pro — premium video upscaling (⚡2)' },
 
       // Audio models
       { name: 'Deepgram TTS', slug: 'deepgram-tts', provider: 'openai', category: 'AUDIO', tokenCost: 0.5, priceItemCode: 'AUDIO_DEEPGRAM', description: 'Text-to-speech via OpenAI TTS' },
