@@ -89,7 +89,10 @@
     "seedance-lite": "Seedance 1.0 Lite",
     "seedance-1-pro": "Seedance 1.0 Pro",
     "seedance-fast": "Seedance 1.0 Fast",
-    "topaz": "Topaz AI"
+    "topaz": "Topaz AI",
+    "topaz-direct": "Topaz AI Pro",
+    "wavespeed": "WaveSpeed",
+    "wavespeed-pro": "WaveSpeed Pro"
   },
   "topazUpscale": "Масштабирование (Upscale)",
   "topazUpscaleOriginal": "Оригинал",
@@ -110,5 +113,23 @@
   "topazDehalo": "Удаление ореолов (Dehalo)",
   "topazAntiAlias": "Сглаживание (Anti-alias / Deblur)",
   "topazOn": "Вкл",
-  "topazOff": "Выкл"
+  "topazOff": "Выкл",
+  "topazAiModel": "AI Модель",
+  "topazModelRhea": "Rhea 4x",
+  "topazModelArtemis": "Artemis HQ",
+  "topazModelNyx": "Nyx",
+  "topazFpsInterpolation": "Интерполяция FPS",
+  "topazFpsApollo": "Apollo",
+  "topazFpsChronos": "Chronos",
+  "topazQuality": "Настройки качества",
+  "topazCompression": "Сжатие",
+  "topazDetails": "Детали",
+  "topazNoise": "Шум",
+  "topazHalo": "Ореолы",
+  "topazBlur": "Размытие",
+  "enabled": "Вкл",
+  "disabled": "Выкл",
+  "wavespeedResolution": "Целевое разрешение",
+  "resolution2K": "2K",
+  "resolution4K": "4K"
 }

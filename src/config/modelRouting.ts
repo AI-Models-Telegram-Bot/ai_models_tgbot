@@ -466,11 +466,36 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Topaz AI — video upscaling
+  // Topaz AI — video upscaling (KieAI wrapper)
   'topaz': {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'topaz/video-upscale' },
+    ],
+  },
+
+  // Topaz AI Pro — premium video enhancement (direct API, full controls)
+  'topaz-direct': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'topaz-direct', modelId: 'topaz-direct' },
+      { name: 'kieai', modelId: 'topaz/video-upscale' },   // fallback
+    ],
+  },
+
+  // WaveSpeed — budget video upscaling
+  'wavespeed': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'wavespeed', modelId: 'wavespeed-ai/video-upscaler' },
+    ],
+  },
+
+  // WaveSpeed Pro — better video upscaling
+  'wavespeed-pro': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'wavespeed', modelId: 'wavespeed-ai/video-upscaler-pro' },
     ],
   },
 

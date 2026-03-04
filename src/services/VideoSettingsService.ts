@@ -20,6 +20,20 @@ export interface VideoModelSettings {
   characterOrientation?: string; // 'image' | 'video' (Motion Control)
   // Topaz AI fields
   upscale?: string;        // 'original' | '2x' | '4x' (maps to upscale_factor)
+  // Topaz AI Pro (Direct API) fields
+  topazModel?: string;     // 'prob-4' | 'rhea-1' | 'ahq-12' | 'nyx-3'
+  topazFpsModel?: string;  // 'apo-8' | 'chr-2' (FPS interpolation model)
+  targetFps?: number;      // 30 | 60 | 120 (target FPS for interpolation)
+  compression?: number;    // 0.0-1.0
+  details?: number;        // 0.0-1.0
+  noise?: number;          // 0.0-1.0
+  halo?: number;           // 0.0-1.0
+  blur?: number;           // 0.0-1.0
+  grain?: number;          // 0.0-1.0
+  grainSize?: number;      // 0.0-1.0
+  recoverOriginalDetail?: number; // 0.0-1.0
+  // WaveSpeed fields
+  targetResolution?: string; // '720p' | '1080p' | '2k' | '4k'
 }
 
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
@@ -42,6 +56,9 @@ const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'seedance-1-pro': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
   'seedance-fast': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
   'topaz': { upscale: '2x' },
+  'topaz-direct': { upscale: '2x', topazModel: 'prob-4', compression: 0.5, details: 0.5, noise: 0.3 },
+  'wavespeed': { targetResolution: '1080p' },
+  'wavespeed-pro': { targetResolution: '1080p' },
 };
 
 export class VideoSettingsService {

@@ -52,7 +52,7 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
 const MODEL_MAX_IMAGES: Record<string, number> = {
   // Video models
   'kling': 4, 'kling-pro': 4, 'kling-3.0': 4,
-  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1, 'topaz': 0,
+  'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1, 'topaz': 0, 'topaz-direct': 0, 'wavespeed': 0, 'wavespeed-pro': 0,
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
   'seedance': 2, 'seedance-lite': 2, 'seedance-1-pro': 2, 'seedance-fast': 2,
@@ -810,6 +810,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
       ...(inputImageUrls && { inputImageUrls }),
       ...(ctx.session.uploadedVideoUrl && { inputVideoUrl: ctx.session.uploadedVideoUrl }),
       ...(ctx.session.uploadedAudioUrl && { inputAudioUrl: ctx.session.uploadedAudioUrl }),
+      ...(ctx.session.videoMeta && { videoMeta: ctx.session.videoMeta }),
       ...(audioOptions && { audioOptions }),
       ...(imageOptions && { imageOptions }),
       ...(videoOptions && { videoOptions }),
@@ -849,8 +850,8 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   ctx.session.uploadedAudioUrl = undefined;
 }
 
-/** Models that accept video uploads (Kling Motion Control, Topaz AI) */
-const VIDEO_UPLOAD_MODELS = ['kling-motion', 'topaz'];
+/** Models that accept video uploads (Kling Motion Control, Enhancement) */
+const VIDEO_UPLOAD_MODELS = ['kling-motion', 'topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro'];
 
 /** Models that accept audio uploads (Kling AI Avatar) */
 const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar'];
@@ -891,8 +892,8 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
 
   if (!VIDEO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
     const msg = lang === 'ru'
-      ? '⚠️ Загрузка видео поддерживается только для модели Motion Control. Отправьте текстовый запрос.'
-      : '⚠️ Video upload is only supported for Motion Control. Please send a text prompt.';
+      ? '⚠️ Загрузка видео поддерживается только для моделей Motion Control и Enhancement. Отправьте текстовый запрос.'
+      : '⚠️ Video upload is only supported for Motion Control and Enhancement models. Please send a text prompt.';
     await ctx.reply(msg);
     return;
   }
@@ -901,8 +902,21 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
     const fileLink = await ctx.telegram.getFileLink(fileId);
     ctx.session.uploadedVideoUrl = fileLink.href;
 
-    // Topaz: video-only, no photo needed — show Generate button immediately
-    if (ctx.session.videoFunction === 'topaz') {
+    // Capture video metadata for enhancement providers (Topaz Direct needs source dims)
+    if ('video' in ctx.message! && (ctx.message as any).video) {
+      const v = (ctx.message as any).video;
+      ctx.session.videoMeta = {
+        width: v.width,
+        height: v.height,
+        duration: v.duration,
+        fileSize: v.file_size,
+        mimeType: v.mime_type,
+      };
+    }
+
+    // Enhancement models: video-only, no photo needed — show Generate button immediately
+    const ENHANCEMENT_MODELS = ['topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro'];
+    if (ENHANCEMENT_MODELS.includes(ctx.session.videoFunction || '')) {
       const msg = lang === 'ru'
         ? '✅ Видео загружено. Нажмите кнопку ниже для улучшения 👇'
         : '✅ Video uploaded. Tap the button below to enhance 👇';

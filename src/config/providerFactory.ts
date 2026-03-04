@@ -14,6 +14,8 @@ import { KieAIProvider } from '../providers/KieAIProvider';
 import { PiAPIProvider } from '../providers/PiAPIProvider';
 import { RunwareProvider } from '../providers/RunwareProvider';
 import { FalProvider } from '../providers/FalProvider';
+import { WaveSpeedProvider } from '../providers/WaveSpeedProvider';
+import { TopazDirectProvider } from '../providers/TopazDirectProvider';
 
 import { logger } from '../utils/logger';
 
@@ -99,6 +101,12 @@ export function initProviders(): ProviderManager {
   }
   if (PROVIDER_CONFIGS.video_replicate.apiKey) {
     manager.register('VIDEO', new ReplicateAdapter(PROVIDER_CONFIGS.video_replicate));
+  }
+  if (PROVIDER_CONFIGS.video_wavespeed.apiKey) {
+    manager.register('VIDEO', new WaveSpeedProvider(PROVIDER_CONFIGS.video_wavespeed));
+  }
+  if (PROVIDER_CONFIGS.video_topaz_direct.apiKey) {
+    manager.register('VIDEO', new TopazDirectProvider(PROVIDER_CONFIGS.video_topaz_direct));
   }
 
   // ============ AUDIO PROVIDERS ============

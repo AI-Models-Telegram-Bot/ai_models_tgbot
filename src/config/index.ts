@@ -57,6 +57,12 @@ export const config = {
     openrouter: {
       apiKey: process.env.OPENROUTER_API_KEY || '',
     },
+    wavespeed: {
+      apiKey: process.env.WAVESPEED_API_KEY || '',
+    },
+    topazDirect: {
+      apiKey: process.env.TOPAZ_API_KEY || '',
+    },
   },
   app: {
     nodeEnv: process.env.NODE_ENV || 'development',

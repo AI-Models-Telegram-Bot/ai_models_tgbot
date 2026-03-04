@@ -146,6 +146,18 @@ export const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
     priority: 4,
     apiKey: REPLICATE_KEY,
   },
+  video_wavespeed: {
+    name: 'wavespeed',
+    enabled: true,
+    priority: 5,
+    apiKey: process.env.WAVESPEED_API_KEY || '',
+  },
+  video_topaz_direct: {
+    name: 'topaz-direct',
+    enabled: true,
+    priority: 6,
+    apiKey: process.env.TOPAZ_API_KEY || '',
+  },
 
   // ============ AUDIO PROVIDERS ============
   // Groq (1) → OpenAI TTS (2) → ElevenLabs (3) → Replicate (4)

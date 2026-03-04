@@ -7,6 +7,7 @@ import {
   getSoraModelsKeyboard,
   getRunwayModelsKeyboard,
   getSeedanceModelsKeyboard,
+  getEnhancementModelsKeyboard,
   getVideoModelMenuKeyboard,
 } from '../keyboards/videoKeyboards';
 import { getMainKeyboard } from '../keyboards/mainKeyboard';
@@ -67,8 +68,7 @@ const VIDEO_FAMILIES: Record<VideoFamily, VideoFamilyConfig> = {
   },
   enhancement: {
     descriptionKey: 'videoEnhancementFamilyDesc',
-    getKeyboard: () => null,
-    singleModel: 'topaz',
+    getKeyboard: getEnhancementModelsKeyboard,
   },
 };
 
@@ -196,6 +196,24 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'enhancement',
     hasSettings: true,
   },
+  'topaz-direct': {
+    modelSlug: 'topaz-direct',
+    descriptionKey: 'videoTopazDirectDesc',
+    family: 'enhancement',
+    hasSettings: true,
+  },
+  'wavespeed': {
+    modelSlug: 'wavespeed',
+    descriptionKey: 'videoWaveSpeedDesc',
+    family: 'enhancement',
+    hasSettings: true,
+  },
+  'wavespeed-pro': {
+    modelSlug: 'wavespeed-pro',
+    descriptionKey: 'videoWaveSpeedProDesc',
+    family: 'enhancement',
+    hasSettings: true,
+  },
 };
 
 const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
@@ -218,6 +236,9 @@ const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'seedance-fast': { en: 'Seedance 1.0 Fast', ru: 'Seedance 1.0 Fast' },
   'seedance': { en: 'Seedance 1.5 Pro', ru: 'Seedance 1.5 Pro' },
   'topaz': { en: 'Topaz AI', ru: 'Topaz AI' },
+  'topaz-direct': { en: 'Topaz AI Pro', ru: 'Topaz AI Pro' },
+  'wavespeed': { en: 'WaveSpeed', ru: 'WaveSpeed' },
+  'wavespeed-pro': { en: 'WaveSpeed Pro', ru: 'WaveSpeed Pro' },
 };
 
 // ── Handlers ────────────────────────────────────────────
@@ -425,6 +446,20 @@ export async function getVideoOptionsForFunction(
     }
     // Topaz AI: upscale factor setting
     if (settings.upscale) options.upscale = settings.upscale;
+    // Topaz AI Pro (Direct API) settings
+    if (settings.topazModel) options.topazModel = settings.topazModel;
+    if (settings.topazFpsModel) options.topazFpsModel = settings.topazFpsModel;
+    if (settings.targetFps !== undefined) options.targetFps = settings.targetFps;
+    if (settings.compression !== undefined) options.compression = settings.compression;
+    if (settings.details !== undefined) options.details = settings.details;
+    if (settings.noise !== undefined) options.noise = settings.noise;
+    if (settings.halo !== undefined) options.halo = settings.halo;
+    if (settings.blur !== undefined) options.blur = settings.blur;
+    if (settings.grain !== undefined) options.grain = settings.grain;
+    if (settings.grainSize !== undefined) options.grainSize = settings.grainSize;
+    if (settings.recoverOriginalDetail !== undefined) options.recoverOriginalDetail = settings.recoverOriginalDetail;
+    // WaveSpeed: target resolution
+    if (settings.targetResolution) options.targetResolution = settings.targetResolution;
 
     return options;
   } catch (error) {

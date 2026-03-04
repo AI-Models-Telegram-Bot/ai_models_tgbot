@@ -362,6 +362,27 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 30,
     isLossLeader: false,
   },
+  'topaz-direct': {
+    creditsPerUnit: 2,
+    unitType: '1_video',
+    baseCostUSD: 0.08,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
+  'wavespeed': {
+    creditsPerUnit: 1,
+    unitType: '1_video',
+    baseCostUSD: 0.005,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
+  'wavespeed-pro': {
+    creditsPerUnit: 2,
+    unitType: '1_video',
+    baseCostUSD: 0.02,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
 };
 
 // ── AUDIO MODEL PRICING ─────────────────────────────────

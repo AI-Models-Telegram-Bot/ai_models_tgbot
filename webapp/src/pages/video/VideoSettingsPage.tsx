@@ -163,11 +163,34 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
 };
 
 const TOPAZ_MODEL = 'topaz';
+const TOPAZ_DIRECT_MODEL = 'topaz-direct';
+const WAVESPEED_MODELS = ['wavespeed', 'wavespeed-pro'];
 
 const TOPAZ_UPSCALE_OPTIONS = [
   { value: 'original', labelKey: 'topazUpscaleOriginal' },
   { value: '2x', labelKey: 'topazUpscale2x' },
   { value: '4x', labelKey: 'topazUpscale4x' },
+];
+
+const TOPAZ_AI_MODELS = [
+  { value: 'prob-4', labelKey: 'topazModelProteus', desc: 'Proteus v4' },
+  { value: 'rhea-1', labelKey: 'topazModelRhea', desc: 'Rhea 4x' },
+  { value: 'ahq-12', labelKey: 'topazModelArtemis', desc: 'Artemis HQ' },
+  { value: 'nyx-3', labelKey: 'topazModelNyx', desc: 'Nyx' },
+];
+
+const TOPAZ_FPS_MODELS = [
+  { value: 'apo-8', labelKey: 'topazFpsApollo', desc: 'Apollo' },
+  { value: 'chr-2', labelKey: 'topazFpsChronos', desc: 'Chronos' },
+];
+
+const FPS_OPTIONS = [30, 60, 120];
+
+const WAVESPEED_RESOLUTIONS = [
+  { value: '720p', labelKey: 'resolution720p' },
+  { value: '1080p', labelKey: 'resolution1080p' },
+  { value: '2k', labelKey: 'resolution2K' },
+  { value: '4k', labelKey: 'resolution4K' },
 ];
 
 const AUDIO_MODELS = ['veo-fast', 'veo'];
@@ -256,6 +279,8 @@ export default function VideoSettingsPage() {
   const isKling30 = modelSlug === KLING_30_MODEL;
   const isKlingMotion = modelSlug === KLING_MOTION_MODEL;
   const isTopaz = modelSlug === TOPAZ_MODEL;
+  const isTopazDirect = modelSlug === TOPAZ_DIRECT_MODEL;
+  const isWaveSpeed = WAVESPEED_MODELS.includes(modelSlug);
   const hasAspect = !!MODEL_ASPECTS[modelSlug];
   const klingMode: 'std' | 'pro' = modelSlug === 'kling-pro' ? 'pro' : 'std';
   const availableVersions = modelSlug === 'kling-pro' ? KLING_VERSIONS_PRO : KLING_VERSIONS_STD;
@@ -285,6 +310,17 @@ export default function VideoSettingsPage() {
   const [characterOrientation, setCharacterOrientation] = useState('video');
   // Topaz AI state
   const [topazUpscale, setTopazUpscale] = useState('2x');
+  // Topaz AI Pro (Direct) state
+  const [topazModel, setTopazModel] = useState('prob-4');
+  const [topazFpsModel, setTopazFpsModel] = useState<string | null>(null);
+  const [targetFps, setTargetFps] = useState(60);
+  const [compression, setCompression] = useState(0.5);
+  const [details, setDetails] = useState(0.5);
+  const [noise, setNoise] = useState(0.3);
+  const [halo, setHalo] = useState(0.0);
+  const [blur, setBlur] = useState(0.0);
+  // WaveSpeed state
+  const [targetResolution, setTargetResolution] = useState('1080p');
 
   useEffect(() => {
     fetchModelSettings(modelSlug);
@@ -326,8 +362,22 @@ export default function VideoSettingsPage() {
       if (isTopaz) {
         setTopazUpscale(modelSettings.upscale || '2x');
       }
+      if (isTopazDirect) {
+        setTopazUpscale(modelSettings.upscale || '2x');
+        setTopazModel(modelSettings.topazModel || 'prob-4');
+        setTopazFpsModel(modelSettings.topazFpsModel || null);
+        setTargetFps(modelSettings.targetFps || 60);
+        setCompression(modelSettings.compression ?? 0.5);
+        setDetails(modelSettings.details ?? 0.5);
+        setNoise(modelSettings.noise ?? 0.3);
+        setHalo(modelSettings.halo ?? 0.0);
+        setBlur(modelSettings.blur ?? 0.0);
+      }
+      if (isWaveSpeed) {
+        setTargetResolution(modelSettings.targetResolution || '1080p');
+      }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, isTopaz, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, isTopaz, isTopazDirect, isWaveSpeed, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -380,6 +430,20 @@ export default function VideoSettingsPage() {
     if (isTopaz) {
       if (topazUpscale !== (modelSettings?.upscale || '2x')) return true;
     }
+    if (isTopazDirect) {
+      if (topazUpscale !== (modelSettings?.upscale || '2x')) return true;
+      if (topazModel !== (modelSettings?.topazModel || 'prob-4')) return true;
+      if ((topazFpsModel || null) !== (modelSettings?.topazFpsModel || null)) return true;
+      if (targetFps !== (modelSettings?.targetFps || 60)) return true;
+      if (compression !== (modelSettings?.compression ?? 0.5)) return true;
+      if (details !== (modelSettings?.details ?? 0.5)) return true;
+      if (noise !== (modelSettings?.noise ?? 0.3)) return true;
+      if (halo !== (modelSettings?.halo ?? 0.0)) return true;
+      if (blur !== (modelSettings?.blur ?? 0.0)) return true;
+    }
+    if (isWaveSpeed) {
+      if (targetResolution !== (modelSettings?.targetResolution || '1080p')) return true;
+    }
     return false;
   })();
 
@@ -418,6 +482,20 @@ export default function VideoSettingsPage() {
       }
       if (isTopaz) {
         updates.upscale = topazUpscale;
+      }
+      if (isTopazDirect) {
+        updates.upscale = topazUpscale;
+        updates.topazModel = topazModel;
+        updates.topazFpsModel = topazFpsModel || undefined;
+        updates.targetFps = targetFps;
+        updates.compression = compression;
+        updates.details = details;
+        updates.noise = noise;
+        updates.halo = halo;
+        updates.blur = blur;
+      }
+      if (isWaveSpeed) {
+        updates.targetResolution = targetResolution;
       }
       await updateModelSettings(modelSlug, updates);
       hapticNotification('success');
@@ -837,6 +915,189 @@ export default function VideoSettingsPage() {
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     topazUpscale === value
+                      ? 'bg-video-primary text-white shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                  }`}
+                >
+                  {t(labelKey as any)}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Topaz AI Pro: Full Settings ── */}
+        {isTopazDirect && (
+          <>
+            {/* Upscale */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazUpscale')}
+              </div>
+              <div className="flex flex-wrap" style={{ gap: 8 }}>
+                {TOPAZ_UPSCALE_OPTIONS.map(({ value, labelKey }) => (
+                  <button
+                    key={value}
+                    onClick={() => { hapticImpact('light'); setTopazUpscale(value); }}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                      topazUpscale === value
+                        ? 'bg-video-primary text-white shadow-video-neon'
+                        : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                    }`}
+                  >
+                    {t(labelKey as any)}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* AI Model */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazAiModel')}
+              </div>
+              <div className="flex flex-wrap" style={{ gap: 8 }}>
+                {TOPAZ_AI_MODELS.map(({ value, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => { hapticImpact('light'); setTopazModel(value); }}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                      topazModel === value
+                        ? 'bg-video-primary text-white shadow-video-neon'
+                        : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                    }`}
+                  >
+                    {desc}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* FPS Interpolation */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazFpsInterpolation')}
+              </div>
+              <div className="flex items-center mb-3" style={{ gap: 12 }}>
+                <button
+                  onClick={() => { hapticImpact('light'); setTopazFpsModel(topazFpsModel ? null : 'apo-8'); }}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    topazFpsModel
+                      ? 'bg-video-primary text-white shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 text-content-secondary'
+                  }`}
+                >
+                  {topazFpsModel ? t('enabled') : t('disabled')}
+                </button>
+              </div>
+              {topazFpsModel && (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap" style={{ gap: 8 }}>
+                    {TOPAZ_FPS_MODELS.map(({ value, desc }) => (
+                      <button
+                        key={value}
+                        onClick={() => { hapticImpact('light'); setTopazFpsModel(value); }}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                          topazFpsModel === value
+                            ? 'bg-video-primary text-white shadow-video-neon'
+                            : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                        }`}
+                      >
+                        {desc}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap" style={{ gap: 8 }}>
+                    {FPS_OPTIONS.map((fps) => (
+                      <button
+                        key={fps}
+                        onClick={() => { hapticImpact('light'); setTargetFps(fps); }}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                          targetFps === fps
+                            ? 'bg-video-primary text-white shadow-video-neon'
+                            : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
+                        }`}
+                      >
+                        {fps} fps
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Quality Sliders */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mb-5"
+            >
+              <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+                {t('topazQuality')}
+              </div>
+              <div className="rounded-xl bg-video-surface-card border border-white/5 p-4 space-y-4">
+                {([
+                  { label: t('topazCompression'), value: compression, setter: setCompression },
+                  { label: t('topazDetails'), value: details, setter: setDetails },
+                  { label: t('topazNoise'), value: noise, setter: setNoise },
+                  { label: t('topazHalo'), value: halo, setter: setHalo },
+                  { label: t('topazBlur'), value: blur, setter: setBlur },
+                ] as { label: string; value: number; setter: (v: number) => void }[]).map(({ label, value, setter }) => (
+                  <div key={label}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs text-content-secondary">{label}</span>
+                      <span className="text-xs text-video-primary font-mono">{Math.round(value * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      value={value}
+                      onChange={(e) => setter(parseFloat(e.target.value))}
+                      className="w-full accent-video-primary"
+                    />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* ── WaveSpeed: Target Resolution ── */}
+        {isWaveSpeed && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('wavespeedResolution')}
+            </div>
+            <div className="flex flex-wrap" style={{ gap: 8 }}>
+              {WAVESPEED_RESOLUTIONS.map(({ value, labelKey }) => (
+                <button
+                  key={value}
+                  onClick={() => { hapticImpact('light'); setTargetResolution(value); }}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    targetResolution === value
                       ? 'bg-video-primary text-white shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                   }`}
