@@ -605,9 +605,22 @@ router.post('/users/:id/update', requireRole('SUPER_ADMIN', 'ADMIN'), async (req
     const updates: any = {};
 
     if (tokenBalance !== undefined || moneyBalance !== undefined) {
+      const parsedTokens = tokenBalance !== undefined ? parseFloat(tokenBalance) : undefined;
+      const parsedMoney = moneyBalance !== undefined ? parseFloat(moneyBalance) : undefined;
+
+      // Read current wallet to compute the delta for purchasedTokens
+      const currentWallet = await prisma.userWallet.findUnique({ where: { userId: req.params.id } });
+
       const walletData: any = {};
-      if (tokenBalance !== undefined) walletData.tokenBalance = parseFloat(tokenBalance);
-      if (moneyBalance !== undefined) walletData.moneyBalance = parseFloat(moneyBalance);
+      if (parsedMoney !== undefined) walletData.moneyBalance = parsedMoney;
+      if (parsedTokens !== undefined) {
+        // Adjust purchasedTokens by the delta so deduction logic stays consistent
+        const oldBalance = currentWallet?.tokenBalance ?? 0;
+        const oldPurchased = currentWallet?.purchasedTokens ?? 0;
+        const delta = parsedTokens - oldBalance;
+        walletData.tokenBalance = parsedTokens;
+        walletData.purchasedTokens = Math.max(0, oldPurchased + delta);
+      }
 
       await prisma.userWallet.upsert({
         where: { userId: req.params.id },
