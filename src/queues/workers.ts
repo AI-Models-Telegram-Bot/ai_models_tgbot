@@ -331,49 +331,93 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
       }
 
       // ── Bot chat: also send result to Telegram ──
-      if (isBotChat && contentValue) {
+      if (isBotChat) {
         try {
           await telegram.deleteMessage(chatId, processingMsgId);
         } catch { /* already deleted */ }
 
         const displayName = job.data.modelName || model.name;
-        const textResult = 'text' in result ? result as TextGenerationResult : null;
-        let formattedText: string;
-        if (textResult?.thinking) {
-          const thinkingSummary = textResult.thinking.length > 300
-            ? textResult.thinking.slice(0, 300) + '…'
-            : textResult.thinking;
-          formattedText = `💭 <b>Thinking:</b>\n<blockquote>${escapeHtml(thinkingSummary)}</blockquote>\n\n📝 <b>Answer:</b>\n${markdownToTelegramHtml(textResult.text)}`;
-        } else {
-          formattedText = markdownToTelegramHtml(contentValue);
-        }
-
         let remainingBalance = 0;
         try {
           remainingBalance = await walletService.getBalance(userId);
         } catch { /* non-critical */ }
 
-        const footer = `\n\n📊 <i>${escapeHtml(displayName)}</i>\n💰 <i>-${creditsCost} ⚡ · ${lang === 'ru' ? 'Баланс' : 'Balance'}: ${remainingBalance} ⚡</i>`;
-
-        // Build chat inline keyboard
         const chatKb = getBotChatKeyboardMarkup(lang, job.data.telegramId);
-        const maxLength = 4000 - footer.length;
 
-        if (formattedText.length > maxLength) {
-          const parts = splitMessage(formattedText, maxLength);
-          for (let i = 0; i < parts.length; i++) {
-            const isLast = i === parts.length - 1;
-            const partText = isLast ? `${parts[i]}${footer}` : parts[i];
-            await telegram.sendMessage(chatId, partText, {
+        if (contentValue) {
+          // Text result
+          const textResult = 'text' in result ? result as TextGenerationResult : null;
+          let formattedText: string;
+          if (textResult?.thinking) {
+            const thinkingSummary = textResult.thinking.length > 300
+              ? textResult.thinking.slice(0, 300) + '…'
+              : textResult.thinking;
+            formattedText = `💭 <b>Thinking:</b>\n<blockquote>${escapeHtml(thinkingSummary)}</blockquote>\n\n📝 <b>Answer:</b>\n${markdownToTelegramHtml(textResult.text)}`;
+          } else {
+            formattedText = markdownToTelegramHtml(contentValue);
+          }
+
+          const footer = `\n\n📊 <i>${escapeHtml(displayName)}</i>\n💰 <i>-${creditsCost} ⚡ · ${lang === 'ru' ? 'Баланс' : 'Balance'}: ${remainingBalance} ⚡</i>`;
+          const maxLength = 4000 - footer.length;
+
+          if (formattedText.length > maxLength) {
+            const parts = splitMessage(formattedText, maxLength);
+            for (let i = 0; i < parts.length; i++) {
+              const isLast = i === parts.length - 1;
+              const partText = isLast ? `${parts[i]}${footer}` : parts[i];
+              await telegram.sendMessage(chatId, partText, {
+                parse_mode: 'HTML',
+                ...(isLast ? chatKb : {}),
+              });
+            }
+          } else {
+            await telegram.sendMessage(chatId, `${formattedText}${footer}`, {
               parse_mode: 'HTML',
-              ...(isLast ? chatKb : {}),
+              ...chatKb,
             });
           }
-        } else {
-          await telegram.sendMessage(chatId, `${formattedText}${footer}`, {
-            parse_mode: 'HTML',
-            ...chatKb,
+        } else if ('imageUrl' in result) {
+          // Image result
+          const caption = formatResultCaption({
+            input, modelName: displayName, category: job.data.modelCategory,
+            settingsApplied: job.data.settingsApplied, creditsCost, remainingBalance, lang,
           });
+          try {
+            await telegram.sendPhoto(chatId, { url: (result as ImageGenerationResult).imageUrl }, { caption, parse_mode: 'HTML', ...chatKb });
+          } catch (sendErr: any) {
+            const errMsg = sendErr?.message || String(sendErr);
+            if (errMsg.includes('too big for a photo') || errMsg.includes('file is too big')) {
+              const { compressImageForTelegram } = await import('../utils/imageResize');
+              const compressed = await compressImageForTelegram((result as ImageGenerationResult).imageUrl);
+              await telegram.sendPhoto(chatId, { source: compressed }, { caption, parse_mode: 'HTML', ...chatKb });
+            } else {
+              throw sendErr;
+            }
+          }
+        } else if ('videoUrl' in result) {
+          // Video result
+          const caption = formatResultCaption({
+            input, modelName: displayName, category: job.data.modelCategory,
+            settingsApplied: job.data.settingsApplied, creditsCost, remainingBalance, lang,
+          });
+          const arStr = (job.data.settingsApplied?.aspectRatio as string) || '';
+          const dims = VIDEO_DIMS[arStr];
+          await telegram.sendVideo(chatId, { url: (result as VideoGenerationResult).videoUrl }, {
+            caption, parse_mode: 'HTML', ...chatKb, supports_streaming: true,
+            ...(dims && { width: dims.width, height: dims.height }),
+          });
+        } else if ('audioBuffer' in result && result.audioBuffer) {
+          const caption = formatResultCaption({
+            input, modelName: displayName, category: job.data.modelCategory,
+            settingsApplied: job.data.settingsApplied, creditsCost, remainingBalance, lang,
+          });
+          await telegram.sendVoice(chatId, { source: (result as AudioGenerationResult).audioBuffer! }, { caption, parse_mode: 'HTML', ...chatKb });
+        } else if ('audioUrl' in result && result.audioUrl) {
+          const caption = formatResultCaption({
+            input, modelName: displayName, category: job.data.modelCategory,
+            settingsApplied: job.data.settingsApplied, creditsCost, remainingBalance, lang,
+          });
+          await telegram.sendAudio(chatId, { url: (result as AudioGenerationResult).audioUrl! }, { caption, parse_mode: 'HTML', ...chatKb });
         }
       }
     } else {
