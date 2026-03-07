@@ -225,9 +225,11 @@ export class KieAIProvider extends EnhancedProvider {
         duration: String(options?.duration || '5'),
       };
 
-      // Add image URLs for image-to-video (KieAI uses `image_urls` for Kling/Sora)
+      // Add image URLs for image-to-video (KieAI uses `image_urls`)
+      // Kling 2.6 supports only 1 image; Sora supports up to 4
       if (hasImages) {
-        input.image_urls = inputImageUrls;
+        const maxImages = model.includes('kling') ? 1 : 4;
+        input.image_urls = inputImageUrls.slice(0, maxImages);
       }
 
       // Kling-specific: sound off
