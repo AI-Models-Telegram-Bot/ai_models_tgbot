@@ -222,7 +222,7 @@ export class KieAIProvider extends EnhancedProvider {
       const input: Record<string, unknown> = {
         prompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
-        duration: (options?.duration as string) || '5',
+        duration: String(options?.duration || '5'),
       };
 
       // Add image URLs for image-to-video (KieAI uses `image_urls` for Kling/Sora)
@@ -917,7 +917,8 @@ export class KieAIProvider extends EnhancedProvider {
       };
 
       if (inputImageUrls?.length) {
-        input.image_urls = inputImageUrls;
+        // Single-shot mode supports at most 2 images (start + end frame)
+        input.image_urls = inputImageUrls.slice(0, 2);
       }
 
       logger.info('KieAI Kling 3.0 payload:', { model, input });

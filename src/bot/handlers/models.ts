@@ -52,7 +52,7 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
  */
 const MODEL_MAX_IMAGES: Record<string, number> = {
   // Video models
-  'kling': 4, 'kling-pro': 4, 'kling-3.0': 4,
+  'kling': 4, 'kling-pro': 4, 'kling-3.0': 2,
   'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1, 'topaz': 0, 'topaz-direct': 0, 'wavespeed': 0, 'wavespeed-pro': 0,
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
