@@ -225,9 +225,11 @@ export class KieAIProvider extends EnhancedProvider {
         duration: String(options?.duration || '5'),
       };
 
-      // Add image URLs for image-to-video (KieAI uses `image_urls` for Kling/Sora)
+      // Add image URLs for image-to-video (KieAI uses `image_urls`)
+      // Kling 2.6 supports only 1 image; Sora supports up to 4
       if (hasImages) {
-        input.image_urls = inputImageUrls;
+        const maxImages = model.includes('kling') ? 1 : 4;
+        input.image_urls = inputImageUrls.slice(0, maxImages);
       }
 
       // Kling-specific: sound off
@@ -893,7 +895,11 @@ export class KieAIProvider extends EnhancedProvider {
   /**
    * Kling 3.0 — newest generation
    * POST /jobs/createTask with model: "kling-3.0/video"
-   * Supports: prompt, sound, duration 3-15s, mode std/pro, aspect_ratio, image_urls
+   * Supports: prompt, sound, duration 3-15s, mode std/pro, aspect_ratio, image_urls, kling_elements
+   *
+   * Image handling (up to 4 images):
+   *   1-2 images → image_urls keyframes (first frame + optional last frame)
+   *   3-4 images → first 2 as keyframes, remaining as kling_elements (character reference)
    */
   private async generateKling3Video(
     prompt: string,
@@ -906,8 +912,9 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Kling 3.0: starting (images: ${inputImageUrls?.length || 0})`);
 
+      let finalPrompt = prompt;
       const input: Record<string, unknown> = {
-        prompt,
+        prompt: finalPrompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         duration: String((options?.duration as number) || 5),
         sound: (options?.sound !== undefined) ? options.sound : true,
@@ -917,8 +924,26 @@ export class KieAIProvider extends EnhancedProvider {
       };
 
       if (inputImageUrls?.length) {
-        // Single-shot mode supports at most 2 images (start + end frame)
+        // First 2 images → keyframes (first frame + last frame)
         input.image_urls = inputImageUrls.slice(0, 2);
+
+        // 3+ images → extra images become a kling_element for character/object consistency
+        if (inputImageUrls.length > 2) {
+          const elementUrls = inputImageUrls.slice(2, 4);
+          // Need at least 2 images for an element; if only 1 extra, duplicate it
+          if (elementUrls.length === 1) {
+            elementUrls.push(elementUrls[0]);
+          }
+          const elementName = 'element_ref';
+          input.kling_elements = [{
+            name: elementName,
+            description: 'reference subject from uploaded images',
+            element_input_urls: elementUrls,
+          }];
+          // Append element reference to prompt so Kling uses it
+          finalPrompt = `${prompt} @${elementName}`;
+          input.prompt = finalPrompt;
+        }
       }
 
       logger.info('KieAI Kling 3.0 payload:', { model, input });
