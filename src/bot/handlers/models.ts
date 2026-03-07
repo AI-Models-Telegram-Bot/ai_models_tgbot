@@ -18,6 +18,7 @@ import { getStatusType, STATUS_MESSAGES } from '../../utils/statusMessages';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 import { convertOgaToMp3 } from '../../utils/audioConvert';
+import { downloadTelegramFile } from '../../utils/telegramFileDownload';
 import axios from 'axios';
 
 /**
@@ -555,8 +556,18 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   }
 
   try {
-    const fileLink = await ctx.telegram.getFileLink(doc.file_id);
-    const imageUrl = fileLink.href;
+    let imageUrl: string;
+    try {
+      const fileLink = await ctx.telegram.getFileLink(doc.file_id);
+      imageUrl = fileLink.href;
+    } catch {
+      // Fallback for large files (>20MB) — download to our server
+      logger.info('getFileLink failed for document, falling back to direct download');
+      const ext = doc.file_name ? '.' + (doc.file_name.split('.').pop() || 'jpg') : '.jpg';
+      const { scheduleFileCleanup } = await import('../../utils/telegramFileDownload');
+      imageUrl = await downloadTelegramFile(doc.file_id, config.bot.token, ext);
+      scheduleFileCleanup(imageUrl);
+    }
     const caption = ctx.message.caption;
 
     // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
@@ -899,8 +910,35 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   }
 
   try {
-    const fileLink = await ctx.telegram.getFileLink(fileId);
-    ctx.session.uploadedVideoUrl = fileLink.href;
+    // Try getFileLink first (fast, works for files <20MB)
+    let videoUrl: string;
+    try {
+      const fileLink = await ctx.telegram.getFileLink(fileId);
+      videoUrl = fileLink.href;
+    } catch (fileLinkErr: any) {
+      // getFileLink fails for files >20MB — fall back to downloading to our server
+      const errMsg = fileLinkErr?.message || String(fileLinkErr);
+      logger.info('getFileLink failed for video, falling back to direct download', {
+        error: errMsg, fileId: fileId.slice(0, 20),
+      });
+
+      const statusMsg = await ctx.reply(lang === 'ru'
+        ? '⏳ Загрузка видео (большой файл)...'
+        : '⏳ Downloading video (large file)...');
+
+      try {
+        const { scheduleFileCleanup } = await import('../../utils/telegramFileDownload');
+        videoUrl = await downloadTelegramFile(fileId, config.bot.token);
+        scheduleFileCleanup(videoUrl);
+      } catch (downloadErr) {
+        logger.error('Direct video download also failed', { downloadErr });
+        throw downloadErr;
+      } finally {
+        try { await ctx.telegram.deleteMessage(ctx.chat!.id, statusMsg.message_id); } catch { /* ignore */ }
+      }
+    }
+
+    ctx.session.uploadedVideoUrl = videoUrl;
 
     // Capture video metadata for enhancement providers (Topaz Direct needs source dims)
     if ('video' in ctx.message! && (ctx.message as any).video) {
@@ -911,6 +949,16 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
         duration: v.duration,
         fileSize: v.file_size,
         mimeType: v.mime_type,
+      };
+    } else if ('document' in ctx.message! && (ctx.message as any).document) {
+      // Capture metadata from document video too
+      const d = (ctx.message as any).document;
+      ctx.session.videoMeta = {
+        width: undefined,
+        height: undefined,
+        duration: undefined,
+        fileSize: d.file_size,
+        mimeType: d.mime_type,
       };
     }
 
@@ -940,12 +988,19 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
         : '✅ Video uploaded. Now upload 📸 1 photo to animate.';
       await ctx.reply(msg);
     }
-  } catch (error) {
-    logger.error('Failed to get file link for video:', error);
+  } catch (error: any) {
+    const errMsg = error?.message || String(error);
+    logger.error('Failed to upload video', { error: errMsg, fileId: fileId?.slice(0, 20) });
+
+    const isTooBig = errMsg.includes('too big') || errMsg.includes('file is too big');
     const msg = lang === 'ru'
-      ? 'Не удалось загрузить видео. Попробуйте снова.'
-      : 'Failed to upload video. Please try again.';
-    await ctx.reply(msg);
+      ? isTooBig
+        ? '⚠️ Видео слишком большое для загрузки. Попробуйте отправить видео меньшего размера или сжать его перед отправкой.'
+        : `⚠️ Не удалось загрузить видео. Попробуйте снова.\n<i>${errMsg.slice(0, 100)}</i>`
+      : isTooBig
+        ? '⚠️ Video file is too large. Please send a smaller or compressed video.'
+        : `⚠️ Failed to upload video. Please try again.\n<i>${errMsg.slice(0, 100)}</i>`;
+    await ctx.reply(msg, { parse_mode: 'HTML' });
   }
 }
 
