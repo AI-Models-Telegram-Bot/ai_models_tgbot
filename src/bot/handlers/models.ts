@@ -43,7 +43,9 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
 /**
  * Per-model maximum image upload limits.
  * Based on provider API capabilities:
- * - KieAI market endpoint (kling/sora): image_urls array → up to 4
+ * - KieAI kling 2.6: image_urls → 1 (start frame only)
+ * - KieAI kling 3.0: image_urls (2 keyframes) + kling_elements (2-4 ref images) → 4
+ * - KieAI sora: image_urls array → up to 4
  * - KieAI runway: imageUrl single string → 1
  * - KieAI veo: frames (2) / ingredients (3) → 3
  * - FAL (seedance/wan/luma): image_url + end_image_url → 2
@@ -52,7 +54,7 @@ const IMAGE_MODELS_WITH_IMAGE_INPUT = ['flux-kontext', 'nano-banana', 'nano-bana
  */
 const MODEL_MAX_IMAGES: Record<string, number> = {
   // Video models
-  'kling': 1, 'kling-pro': 1, 'kling-3.0': 2,
+  'kling': 1, 'kling-pro': 1, 'kling-3.0': 4,
   'kling-motion': 1, 'kling-avatar-pro': 1, 'kling-avatar': 1, 'topaz': 0, 'topaz-direct': 0, 'wavespeed': 0, 'wavespeed-pro': 0,
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
