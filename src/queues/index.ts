@@ -29,8 +29,7 @@ export const imageQueue = new Queue<GenerationJobData>('image-generation', redis
 
 export const videoQueue = new Queue<GenerationJobData>('video-generation', redisUrl, {
   defaultJobOptions: {
-    attempts: 2,
-    backoff: { type: 'fixed', delay: 10000 },
+    attempts: 1, // No retries — each attempt creates a paid task on external APIs (KieAI etc.)
     removeOnComplete: 20,
     removeOnFail: 200,
     timeout: 900000, // 15 min (provider fallback handles retries within each attempt)

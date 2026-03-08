@@ -1046,8 +1046,8 @@ export class KieAIProvider extends EnhancedProvider {
       }
 
       logger.info(`KieAI Kling Motion: task created, taskId=${taskId}`);
-      // Use shorter queue timeout (3 min) — if task is still waiting after 3 min, something is wrong
-      const videoUrl = await this.pollMarketTaskResult(taskId, 180000);
+      // Motion control processes both image+video, can take longer in waiting/queuing state
+      const videoUrl = await this.pollMarketTaskResult(taskId, VIDEO_POLL_TIMEOUT_MS);
 
       const time = Date.now() - start;
       this.updateStats(true, 0.60, time);
