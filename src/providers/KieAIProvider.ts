@@ -219,8 +219,12 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI video: starting market generation (${model}, images: ${hasImages ? inputImageUrls.length : 0})`);
 
+      // Model-specific prompt limits: Kling 2.6 = 1000 chars, Sora/others = 2500 chars
+      const maxPromptLen = model.includes('kling') ? 1000 : 2500;
+      const safePrompt = prompt.length > maxPromptLen ? prompt.slice(0, maxPromptLen) : prompt;
+
       const input: Record<string, unknown> = {
-        prompt,
+        prompt: safePrompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         duration: String(options?.duration || '5'),
       };
@@ -912,7 +916,8 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI Kling 3.0: starting (images: ${inputImageUrls?.length || 0})`);
 
-      let finalPrompt = prompt;
+      // Kling 3.0 prompt limit: 2500 chars
+      let finalPrompt = prompt.length > 2500 ? prompt.slice(0, 2500) : prompt;
       const input: Record<string, unknown> = {
         prompt: finalPrompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',

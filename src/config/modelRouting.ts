@@ -316,9 +316,9 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'kling': {
     category: 'VIDEO',
     providers: [
+      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },
       { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'std' } },
       { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/standard' },
-      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },
       { name: 'replicate', modelId: 'kling' },
     ],
   },
@@ -327,9 +327,9 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
   'kling-pro': {
     category: 'VIDEO',
     providers: [
+      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },
       { name: 'piapi', modelId: 'kling', extraOptions: { mode: 'pro' } },
       { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/pro' },
-      { name: 'kieai', modelId: 'kling-2.6/text-to-video' },
     ],
   },
 
