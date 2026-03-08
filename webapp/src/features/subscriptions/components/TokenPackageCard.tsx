@@ -6,6 +6,19 @@ import { Button } from '@/shared/ui';
 import { getActivePromo, getDiscountedPrice } from '@/config/promoConfig';
 import type { TokenPackage } from '@/types/tokenPackage.types';
 
+const TokenCardSparkle: React.FC<{ style: React.CSSProperties; delay: number; size?: number; color?: string }> = ({ style, delay, size = 10, color = '#ffd700' }) => (
+  <motion.div
+    className="absolute pointer-events-none z-0"
+    style={style}
+    animate={{ opacity: [0, 0.7, 0], scale: [0.4, 1.1, 0.4] }}
+    transition={{ duration: 2.8, delay, repeat: Infinity, ease: 'easeInOut' }}
+  >
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ filter: `drop-shadow(0 0 3px ${color})` }}>
+      <path d="M12 0 L14 9 L24 12 L14 15 L12 24 L10 15 L0 12 L10 9 Z" fill={color} opacity="0.8" />
+    </svg>
+  </motion.div>
+);
+
 interface TokenPackageCardProps {
   pkg: TokenPackage;
   index: number;
@@ -52,6 +65,14 @@ export const TokenPackageCard: React.FC<TokenPackageCardProps> = ({ pkg, index, 
         >
           <span className="promo-mini-badge">−{promo!.discountPercent}%</span>
         </motion.div>
+      )}
+
+      {/* Promo sparkle decorations */}
+      {showPromo && (
+        <>
+          <TokenCardSparkle style={{ top: 6, left: 4 }} delay={index * 0.15} size={9} color="#ffd700" />
+          <TokenCardSparkle style={{ bottom: 30, right: 4 }} delay={index * 0.15 + 1} size={8} color="#ff85b3" />
+        </>
       )}
 
       {/* Token amount */}

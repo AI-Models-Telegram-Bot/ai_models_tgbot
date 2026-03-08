@@ -10,6 +10,51 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { getActivePromo, getDiscountedPrice } from '@/config/promoConfig';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
+// ── Tiny promo decorations for plan cards ──────────────────────
+
+const CardPromoFlower: React.FC<{ style: React.CSSProperties; delay: number; size?: number }> = ({ style, delay, size = 18 }) => (
+  <motion.div
+    className="absolute pointer-events-none z-0"
+    style={style}
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{ opacity: 0.7, scale: 1, rotate: [0, 10, -8, 0], y: [0, -4, 2, 0] }}
+    transition={{
+      opacity: { duration: 0.5, delay },
+      scale: { duration: 0.6, delay, type: 'spring', bounce: 0.4 },
+      rotate: { duration: 5, delay: delay + 0.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+      y: { duration: 4, delay: delay + 0.5, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+    }}
+  >
+    <svg viewBox="0 0 32 32" width={size} height={size} style={{ filter: 'drop-shadow(0 2px 6px rgba(255,107,157,0.4))' }}>
+      <defs>
+        <radialGradient id={`cf${size}`} cx="50%" cy="40%">
+          <stop offset="0%" stopColor="#ffb3d0" />
+          <stop offset="100%" stopColor="#ff4081" />
+        </radialGradient>
+      </defs>
+      <circle cx="16" cy="10" r="5" fill={`url(#cf${size})`} opacity="0.85" />
+      <circle cx="10" cy="16" r="5" fill={`url(#cf${size})`} opacity="0.75" />
+      <circle cx="22" cy="16" r="5" fill={`url(#cf${size})`} opacity="0.8" />
+      <circle cx="13" cy="22" r="5" fill={`url(#cf${size})`} opacity="0.7" />
+      <circle cx="19" cy="22" r="5" fill={`url(#cf${size})`} opacity="0.75" />
+      <circle cx="16" cy="16" r="3" fill="#ffd700" opacity="0.9" />
+    </svg>
+  </motion.div>
+);
+
+const CardPromoSparkle: React.FC<{ style: React.CSSProperties; delay: number; size?: number; color?: string }> = ({ style, delay, size = 12, color = '#ffd700' }) => (
+  <motion.div
+    className="absolute pointer-events-none z-0"
+    style={style}
+    animate={{ opacity: [0, 0.8, 0], scale: [0.5, 1.2, 0.5] }}
+    transition={{ duration: 2.5, delay, repeat: Infinity, ease: 'easeInOut' }}
+  >
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ filter: `drop-shadow(0 0 4px ${color})` }}>
+      <path d="M12 0 L14 9 L24 12 L14 15 L12 24 L10 15 L0 12 L10 9 Z" fill={color} opacity="0.85" />
+    </svg>
+  </motion.div>
+);
+
 interface SubscriptionTierCardProps {
   plan: SubscriptionPlan;
   isCurrent: boolean;
@@ -120,6 +165,17 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         >
           <span className="promo-mini-badge">−{promo!.discountPercent}%</span>
         </motion.div>
+      )}
+
+      {/* Promo floating decorations on card */}
+      {showPromo && !isCurrent && !isLowerThanCurrent && (
+        <>
+          <CardPromoFlower style={{ top: -6, left: -6 }} delay={index * 0.15} size={20} />
+          <CardPromoFlower style={{ bottom: 12, right: -4 }} delay={index * 0.15 + 0.8} size={16} />
+          <CardPromoSparkle style={{ top: 18, right: 8 }} delay={index * 0.2 + 0.3} size={10} color="#ffd700" />
+          <CardPromoSparkle style={{ bottom: 40, left: 6 }} delay={index * 0.2 + 1.2} size={8} color="#ff85b3" />
+          <CardPromoSparkle style={{ top: '50%', right: -2 }} delay={index * 0.2 + 0.6} size={11} color="#ffffff" />
+        </>
       )}
 
       <div className="p-5 pt-6 flex flex-col flex-1">

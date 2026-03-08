@@ -521,24 +521,31 @@ export const March8PromoBanner: React.FC = () => {
             {isRu ? 'Подписки и пакеты токенов' : 'Subscriptions & token packages'}
           </motion.p>
 
-          {/* Countdown + CTA row */}
+          {/* Countdown */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
-            className="mt-3 flex items-center" style={{ columnGap: 10 }}
+            className="mt-3"
           >
-            <div className="flex-1 min-w-0">
-              <p className="text-white/40 text-[8px] uppercase tracking-widest mb-1">
-                {isRu ? 'Осталось' : 'Ends in'}
-              </p>
-              <CountdownTimer endDate={promo.endDate} />
-            </div>
+            <p className="text-white/40 text-[8px] uppercase tracking-widest mb-1">
+              {isRu ? 'Осталось' : 'Ends in'}
+            </p>
+            <CountdownTimer endDate={promo.endDate} />
+          </motion.div>
+
+          {/* CTA button */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1 }}
+            className="mt-2.5"
+          >
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleScrollToPlans}
-              className="promo-cta-button flex-shrink-0"
+              className="promo-cta-button"
             >
               {isRu ? 'Выбрать' : 'Choose'}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
