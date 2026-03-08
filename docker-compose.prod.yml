@@ -105,6 +105,8 @@ services:
       - IMAGE_WORKERS=10
       - VIDEO_WORKERS=2
       - AUDIO_WORKERS=8
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
