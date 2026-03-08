@@ -621,6 +621,7 @@ model Broadcast {
   name            String
   message         String
   parseMode       String              @default("HTML") @map("parse_mode")
+  buttons         Json?               @default("[]")
   targetType      BroadcastTargetType @map("target_type")
   targetPlans     String[]            @map("target_plans")
   targetStatuses  String[]            @map("target_statuses")

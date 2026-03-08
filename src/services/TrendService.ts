@@ -1,7 +1,10 @@
 import { TrendGenerationStatus, Prisma } from '@prisma/client';
 import { prisma } from '../config/database';
 import { walletService } from './WalletService';
+import { subscriptionService } from './SubscriptionService';
 import { logger } from '../utils/logger';
+
+const FREE_TREND_LIMIT = 2;
 
 export class TrendService {
   // ── Public queries ──────────────────────────────────────
@@ -186,20 +189,39 @@ export class TrendService {
 
   // ── Generation lifecycle ────────────────────────────────
 
+  async getCompletedTrendCount(userId: string): Promise<number> {
+    return prisma.trendGeneration.count({
+      where: { userId, status: { in: ['COMPLETED', 'PENDING', 'PROCESSING'] } },
+    });
+  }
+
+  async isFreeTrial(userId: string): Promise<boolean> {
+    const sub = await subscriptionService.getUserSubscription(userId);
+    if (sub.tier !== 'FREE') return false;
+    const count = await this.getCompletedTrendCount(userId);
+    return count < FREE_TREND_LIMIT;
+  }
+
   async createGeneration(userId: string, trendId: string, sourcePhotoUrl: string) {
     const trend = await prisma.videoTrend.findUnique({ where: { id: trendId } });
     if (!trend || !trend.isActive) {
       throw new Error('Trend not found or inactive');
     }
 
-    const hasFunds = await walletService.hasSufficientBalance(userId, trend.tokenCost);
-    if (!hasFunds) {
-      const balance = await walletService.getBalance(userId);
-      throw Object.assign(new Error('Insufficient tokens'), {
-        code: 'INSUFFICIENT_TOKENS',
-        required: trend.tokenCost,
-        balance,
-      });
+    // Check if user qualifies for free trial (FREE plan + < 2 trends used)
+    const freeTrial = await this.isFreeTrial(userId);
+    const effectiveCost = freeTrial ? 0 : trend.tokenCost;
+
+    if (!freeTrial) {
+      const hasFunds = await walletService.hasSufficientBalance(userId, trend.tokenCost);
+      if (!hasFunds) {
+        const balance = await walletService.getBalance(userId);
+        throw Object.assign(new Error('Insufficient tokens'), {
+          code: 'INSUFFICIENT_TOKENS',
+          required: trend.tokenCost,
+          balance,
+        });
+      }
     }
 
     const generation = await prisma.trendGeneration.create({
@@ -207,17 +229,19 @@ export class TrendService {
         userId,
         trendId,
         sourcePhotoUrl,
-        tokensSpent: trend.tokenCost,
+        tokensSpent: effectiveCost,
         status: 'PENDING',
       },
     });
 
-    // Deduct tokens
-    await walletService.deductCredits(userId, 'VIDEO', trend.tokenCost, {
-      requestId: generation.id,
-      priceItemCode: `trend_${trendId}`,
-      description: `Trend video: ${trend.name}`,
-    });
+    // Deduct tokens (skip for free trial)
+    if (effectiveCost > 0) {
+      await walletService.deductCredits(userId, 'VIDEO', trend.tokenCost, {
+        requestId: generation.id,
+        priceItemCode: `trend_${trendId}`,
+        description: `Trend video: ${trend.name}`,
+      });
+    }
 
     // Increment usage count
     await prisma.videoTrend.update({
@@ -229,10 +253,11 @@ export class TrendService {
       generationId: generation.id,
       userId,
       trendId,
-      tokenCost: trend.tokenCost,
+      tokenCost: effectiveCost,
+      freeTrial,
     });
 
-    return { generation, trend };
+    return { generation, trend, freeTrial };
   }
 
   async updateGenerationStatus(

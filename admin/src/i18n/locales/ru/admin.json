@@ -219,7 +219,17 @@
     "broadcastSendingStarted": "Отправка рассылки начата",
     "sendFailed": "Ошибка отправки",
     "broadcastCancelled": "Рассылка отменена",
-    "broadcastDeleted": "Рассылка удалена"
+    "broadcastDeleted": "Рассылка удалена",
+    "inlineButtons": "Инлайн кнопки",
+    "addButton": "Добавить кнопку",
+    "noButtons": "Нет кнопок. Нажмите 'Добавить кнопку' для добавления.",
+    "buttonText": "Текст кнопки",
+    "buttonPlaceholder": "Кнопка",
+    "typeUrl": "Ссылка",
+    "typeMiniapp": "Мини-приложение",
+    "typeChannel": "Канал",
+    "selectedUsers": "Выбранные пользователи",
+    "searchUsers": "Поиск пользователей..."
   },
   "providers": {
     "title": "Провайдеры",
