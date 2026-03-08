@@ -906,6 +906,18 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
     return;
   }
 
+  // Motion Control requires at least 3 seconds of continuous motion
+  if (ctx.session.videoFunction === 'kling-motion') {
+    const videoDuration = ('video' in ctx.message && ctx.message.video?.duration) || undefined;
+    if (videoDuration !== undefined && videoDuration < 3) {
+      const msg = lang === 'ru'
+        ? `⚠️ Видео слишком короткое (${videoDuration}с). Motion Control требует минимум 3 секунды непрерывного движения. Загрузите более длинное видео.`
+        : `⚠️ Video is too short (${videoDuration}s). Motion Control requires at least 3 seconds of continuous motion. Please upload a longer video.`;
+      await ctx.reply(msg);
+      return;
+    }
+  }
+
   if (!VIDEO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
     const msg = lang === 'ru'
       ? '⚠️ Загрузка видео поддерживается только для моделей Motion Control и Enhancement. Отправьте текстовый запрос.'

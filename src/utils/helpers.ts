@@ -136,6 +136,13 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
       : 'You have too many active requests. Please wait for current ones to finish.';
   }
 
+  // Video motion/duration too short (KieAI motion control)
+  if (lower.includes('duration') && (lower.includes('too short') || lower.includes('at least'))) {
+    return lang === 'ru'
+      ? 'Видео слишком короткое или содержит недостаточно движения. Загрузите видео длиной минимум 3 секунды с непрерывным движением.'
+      : 'Video is too short or has insufficient motion. Please upload a video at least 3 seconds long with continuous movement.';
+  }
+
   // Content moderation
   if (lower.includes('content policy') || lower.includes('moderation') || lower.includes('safety') || lower.includes('nsfw')) {
     return lang === 'ru'
