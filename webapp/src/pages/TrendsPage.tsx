@@ -46,9 +46,16 @@ const TrendCard: React.FC<{
   const { t } = useTranslation('trends');
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   const handleTouchStart = () => {
     if (videoRef.current && !isPlaying) {
+      // Lazy-load: set src only on first interaction to avoid
+      // blocking browser connections on slow/blocked CDN edges (Russia)
+      if (!videoLoaded) {
+        videoRef.current.src = trend.videoUrl;
+        setVideoLoaded(true);
+      }
       videoRef.current.play().catch(() => {});
       setIsPlaying(true);
     }
@@ -84,15 +91,33 @@ const TrendCard: React.FC<{
           if (isPlaying) handleTouchEnd();
         }}
       >
+        {/* Thumbnail shown until video plays; no src set until user interaction
+            to prevent connection pool starvation on blocked CDN edges */}
+        {trend.thumbnailUrl ? (
+          <img
+            src={trend.thumbnailUrl}
+            alt={trend.name}
+            className={cn(
+              'absolute inset-0 w-full h-full object-cover',
+              isPlaying && 'hidden'
+            )}
+          />
+        ) : (
+          <div className={cn(
+            'absolute inset-0 w-full h-full bg-surface-card',
+            isPlaying && 'hidden'
+          )} />
+        )}
         <video
           ref={videoRef}
-          src={trend.videoUrl}
-          poster={trend.thumbnailUrl}
-          className="absolute inset-0 w-full h-full object-cover"
+          className={cn(
+            'absolute inset-0 w-full h-full object-cover',
+            !isPlaying && 'hidden'
+          )}
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="none"
         />
 
         {/* Play overlay */}
@@ -285,11 +310,12 @@ const TrendDetail: React.FC<{
         >
           <video
             src={trend.videoUrl}
-            poster={trend.thumbnailUrl}
+            poster={trend.thumbnailUrl || undefined}
             className="w-full h-full object-cover"
             controls
             playsInline
             loop
+            preload="none"
           />
         </div>
 
@@ -444,13 +470,16 @@ const TrendsPage: React.FC = () => {
   const [selectedTrend, setSelectedTrend] = useState<Trend | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const categoriesLoaded = useRef(false);
+
   const fetchTrends = useCallback(async (category?: string) => {
     setIsLoading(true);
     try {
       const params = category ? { category } : undefined;
       const data = await trendsApi.getTrends(params);
       setTrends(data.trends || []);
-      if (!categories.length && data.categories) {
+      if (!categoriesLoaded.current && data.categories) {
+        categoriesLoaded.current = true;
         setCategories(data.categories);
       }
     } catch {
@@ -458,7 +487,7 @@ const TrendsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [categories.length]);
+  }, []);
 
   useEffect(() => {
     fetchTrends(activeCategory || undefined);

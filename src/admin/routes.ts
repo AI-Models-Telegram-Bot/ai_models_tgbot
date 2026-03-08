@@ -1021,7 +1021,7 @@ router.get('/broadcasts/:id', async (req: Request, res: Response) => {
 
 router.post('/broadcasts', async (req: Request, res: Response) => {
   try {
-    const { name, message, targetType, targetPlans, targetStatuses, targetUserIds, scheduledFor } = req.body;
+    const { name, message, targetType, targetPlans, targetStatuses, targetUserIds, buttons, scheduledFor } = req.body;
 
     const broadcast = await prisma.broadcast.create({
       data: {
@@ -1031,6 +1031,7 @@ router.post('/broadcasts', async (req: Request, res: Response) => {
         targetPlans: targetPlans || [],
         targetStatuses: targetStatuses || [],
         targetUserIds: targetUserIds || [],
+        buttons: Array.isArray(buttons) ? buttons : [],
         scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
         adminId: req.adminUser!.id,
       },
@@ -1055,11 +1056,12 @@ router.put('/broadcasts/:id', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Can only edit drafts' });
     }
 
-    const { name, message, targetType, targetPlans, targetStatuses, targetUserIds, scheduledFor } = req.body;
+    const { name, message, targetType, targetPlans, targetStatuses, targetUserIds, buttons, scheduledFor } = req.body;
     const broadcast = await prisma.broadcast.update({
       where: { id: req.params.id },
       data: {
         name, message, targetType, targetPlans, targetStatuses, targetUserIds,
+        buttons: Array.isArray(buttons) ? buttons : [],
         scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
       },
     });
@@ -1094,6 +1096,20 @@ router.post('/broadcasts/preview', async (req: Request, res: Response) => {
   }
 });
 
+router.post('/broadcasts/resolve-users', async (req: Request, res: Response) => {
+  try {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds) || !userIds.length) return res.json({ users: [] });
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, username: true, firstName: true, telegramId: true },
+    });
+    return res.json({ users: users.map((u) => ({ ...u, telegramId: u.telegramId?.toString() })) });
+  } catch {
+    return res.status(500).json({ error: 'Failed to resolve users' });
+  }
+});
+
 router.post('/broadcasts/:id/send', async (req: Request, res: Response) => {
   try {
     const broadcastId = req.params.id as string;
@@ -1121,7 +1137,8 @@ router.post('/broadcasts/:id/send', async (req: Request, res: Response) => {
     });
 
     // Start sending in background
-    sendBroadcastAsync(broadcast.id, broadcast.message, broadcast.parseMode, where);
+    const btns = Array.isArray(broadcast.buttons) ? broadcast.buttons as any[] : [];
+    sendBroadcastAsync(broadcast.id, broadcast.message, broadcast.parseMode, where, btns);
 
     return res.json({ ok: true, totalRecipients });
   } catch (err: any) {
@@ -1450,12 +1467,35 @@ async function sendBroadcastAsync(
   broadcastId: string,
   message: string,
   parseMode: string,
-  userWhere: Prisma.UserWhereInput
+  userWhere: Prisma.UserWhereInput,
+  buttons: any[] = []
 ): Promise<void> {
   let sentCount = 0;
   let failedCount = 0;
   const BATCH_SIZE = 50;
   const DELAY_MS = 40; // ~25 msgs/sec
+
+  // Build inline keyboard from buttons
+  let reply_markup: any = undefined;
+  if (buttons.length > 0) {
+    const inlineKeyboard = buttons
+      .filter((b: any) => b.text && b.value)
+      .map((b: any) => {
+        if (b.type === 'webapp') {
+          return [{ text: b.text, web_app: { url: b.value } }];
+        } else if (b.type === 'channel') {
+          // Channel: link to t.me/channel
+          const channelUrl = b.value.startsWith('http') ? b.value
+            : `https://t.me/${b.value.replace(/^@/, '')}`;
+          return [{ text: b.text, url: channelUrl }];
+        } else {
+          return [{ text: b.text, url: b.value }];
+        }
+      });
+    if (inlineKeyboard.length > 0) {
+      reply_markup = { inline_keyboard: inlineKeyboard };
+    }
+  }
 
   try {
     const users = await prisma.user.findMany({
@@ -1479,14 +1519,17 @@ async function sendBroadcastAsync(
       const user = users[i];
       if (!user.telegramId) continue;
 
+      const payload: any = {
+        chat_id: user.telegramId.toString(),
+        text: message,
+        parse_mode: parseMode,
+      };
+      if (reply_markup) payload.reply_markup = reply_markup;
+
       try {
         await axios.post(
           `https://api.telegram.org/bot${config.bot.token}/sendMessage`,
-          {
-            chat_id: user.telegramId.toString(),
-            text: message,
-            parse_mode: parseMode,
-          }
+          payload
         );
         sentCount++;
       } catch (err: any) {
@@ -1497,7 +1540,7 @@ async function sendBroadcastAsync(
           try {
             await axios.post(
               `https://api.telegram.org/bot${config.bot.token}/sendMessage`,
-              { chat_id: user.telegramId.toString(), text: message, parse_mode: parseMode }
+              payload
             );
             sentCount++;
           } catch {

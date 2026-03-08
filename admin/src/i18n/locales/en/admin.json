@@ -217,7 +217,17 @@
     "broadcastSendingStarted": "Broadcast sending started",
     "sendFailed": "Send failed",
     "broadcastCancelled": "Broadcast cancelled",
-    "broadcastDeleted": "Broadcast deleted"
+    "broadcastDeleted": "Broadcast deleted",
+    "inlineButtons": "Inline Buttons",
+    "addButton": "Add Button",
+    "noButtons": "No buttons. Click 'Add Button' to attach inline buttons.",
+    "buttonText": "Button label",
+    "buttonPlaceholder": "Button",
+    "typeUrl": "URL",
+    "typeMiniapp": "Mini App",
+    "typeChannel": "Channel",
+    "selectedUsers": "Selected Users",
+    "searchUsers": "Search users..."
   },
   "providers": {
     "title": "Providers",

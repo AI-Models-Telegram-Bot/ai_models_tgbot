@@ -44,7 +44,24 @@ router.get('/trends', async (req, res) => {
       trendService.getCategories(),
     ]);
 
-    return res.json({ trends, categories, total });
+    // Check free trial status for authenticated user
+    let freeTrial = { eligible: false, remaining: 0 };
+    const telegramId = getEffectiveTelegramId(req);
+    if (telegramId) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { telegramId: BigInt(telegramId) },
+          select: { id: true },
+        });
+        if (user) {
+          const isEligible = await trendService.isFreeTrial(user.id);
+          const usedCount = await trendService.getCompletedTrendCount(user.id);
+          freeTrial = { eligible: isEligible, remaining: Math.max(0, 2 - usedCount) };
+        }
+      } catch { /* non-critical */ }
+    }
+
+    return res.json({ trends, categories, total, freeTrial });
   } catch (error: any) {
     logger.error('Failed to fetch trends', { error: error?.message });
     return res.status(500).json({ message: 'Internal server error' });
@@ -174,7 +191,7 @@ router.post('/trends/:id/generate', async (req, res) => {
     }
 
     // Create generation record + deduct tokens
-    const { generation, trend } = await trendService.createGeneration(
+    const { generation, trend, freeTrial } = await trendService.createGeneration(
       user.id,
       req.params.id,
       photoUrl,
@@ -244,7 +261,7 @@ router.post('/trends/:id/generate', async (req, res) => {
       input: trend.promptTemplate,
       processingMsgId,
       language: user.language || 'en',
-      creditsCost: trend.tokenCost,
+      creditsCost: freeTrial ? 0 : trend.tokenCost,
       priceItemCode: model.priceItemCode || `trend_${trend.id}`,
       walletCategory: 'VIDEO',
       botToken: config.bot.token,

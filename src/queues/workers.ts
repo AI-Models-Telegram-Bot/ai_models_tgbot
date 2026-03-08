@@ -6,11 +6,12 @@ import { GenerationJobData, GenerationJobResult } from './types';
 import { textQueue, imageQueue, videoQueue, audioQueue } from './index';
 import { TextGenerationResult, ImageGenerationResult, VideoGenerationResult, AudioGenerationResult, GenerationResult } from '../providers/BaseProvider';
 import { getProviderManager } from '../config/providerFactory';
-import { modelService, requestService, walletService, trendService } from '../services';
+import { modelService, requestService, walletService, trendService, subscriptionService } from '../services';
 import { prisma } from '../config/database';
 import { getRedis } from '../config/redis';
 import { markdownToTelegramHtml, truncateText, sanitizeErrorForUser } from '../utils/helpers';
 import { logger } from '../utils/logger';
+import { applyWatermark, cleanupWatermarkedVideo } from '../utils/videoWatermark';
 import { t } from '../locales';
 import type { Language } from '../locales';
 import { getModelActiveKeyboardMarkup } from '../bot/keyboards/modelKeyboards';
@@ -561,7 +562,22 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
             const trendCaption = lang === 'ru'
               ? `✅ Твоё видео готово!\n\n🔥 Тренд: ${trendGen.trend.name}`
               : `✅ Your video is ready!\n\n🔥 Trend: ${trendGen.trend.nameEn || trendGen.trend.name}`;
-            await telegram.sendVideo(chatId, { url: videoUrl }, {
+
+            // Check if user is on FREE plan → apply watermark
+            let videoSource: { url: string } | { source: string } = { url: videoUrl };
+            let watermarkedPath: string | null = null;
+            try {
+              const sub = await subscriptionService.getUserSubscription(userId);
+              if (sub.tier === 'FREE') {
+                logger.info('Applying watermark for free user trend video', { userId, trendGenerationId: job.data.trendGenerationId });
+                watermarkedPath = await applyWatermark(videoUrl);
+                videoSource = { source: watermarkedPath } as any;
+              }
+            } catch (wmErr) {
+              logger.error('Watermark failed, sending original', { wmErr });
+            }
+
+            await telegram.sendVideo(chatId, videoSource as any, {
               caption: trendCaption,
               parse_mode: 'HTML',
               supports_streaming: true,
@@ -572,6 +588,9 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
                 ],
               },
             });
+
+            // Clean up watermarked file
+            if (watermarkedPath) cleanupWatermarkedVideo(watermarkedPath);
           } catch (notifErr) {
             logger.error('Failed to send trend completion notification', { notifErr });
           }

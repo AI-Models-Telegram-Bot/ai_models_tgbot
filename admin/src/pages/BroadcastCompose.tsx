@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -6,10 +6,25 @@ import api from '../api/client';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useToastStore } from '../stores/toastStore';
-import { ArrowLeft, Send, Save, Trash2, XCircle, Bold, Italic, Code, Link } from 'lucide-react';
+import { ArrowLeft, Send, Save, Trash2, XCircle, Bold, Italic, Code, Link, Plus, X, Search, ExternalLink, Smartphone, MessageSquare } from 'lucide-react';
 
 const TIERS = ['FREE', 'STARTER', 'PRO', 'PREMIUM', 'BUSINESS', 'ENTERPRISE'];
 const SUB_STATUSES = ['ACTIVE', 'CANCELED', 'EXPIRED', 'PAST_DUE', 'TRIALING'];
+
+type ButtonType = 'url' | 'webapp' | 'channel';
+
+interface InlineButton {
+  id: string;
+  text: string;
+  type: ButtonType;
+  value: string;
+}
+
+const BUTTON_TYPE_OPTIONS: { value: ButtonType; labelKey: string; icon: typeof ExternalLink }[] = [
+  { value: 'url', labelKey: 'broadcastCompose.typeUrl', icon: ExternalLink },
+  { value: 'webapp', labelKey: 'broadcastCompose.typeMiniapp', icon: Smartphone },
+  { value: 'channel', labelKey: 'broadcastCompose.typeChannel', icon: MessageSquare },
+];
 
 export default function BroadcastCompose() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +43,15 @@ export default function BroadcastCompose() {
   const [confirmSend, setConfirmSend] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
+  // Inline buttons
+  const [buttons, setButtons] = useState<InlineButton[]>([]);
+
+  // Selected users
+  const [selectedUsers, setSelectedUsers] = useState<{ id: string; username: string; firstName: string; telegramId: string }[]>([]);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   const { data: broadcast } = useQuery({
     queryKey: ['admin-broadcast', id],
     queryFn: () => api.get(`/broadcasts/${id}`).then((r) => r.data),
@@ -42,15 +66,50 @@ export default function BroadcastCompose() {
       setTargetPlans(broadcast.targetPlans || []);
       setTargetStatuses(broadcast.targetStatuses || []);
       setScheduledFor(broadcast.scheduledFor ? new Date(broadcast.scheduledFor).toISOString().slice(0, 16) : '');
+      setButtons(Array.isArray(broadcast.buttons) ? broadcast.buttons : []);
+      // Load selected users if SELECTED_USERS
+      if (broadcast.targetType === 'SELECTED_USERS' && broadcast.targetUserIds?.length) {
+        api.post('/broadcasts/resolve-users', { userIds: broadcast.targetUserIds })
+          .then((r) => setSelectedUsers(r.data.users || []))
+          .catch(() => {});
+      }
     }
   }, [broadcast]);
 
   const { data: preview } = useQuery({
-    queryKey: ['admin-broadcast-preview', targetType, targetPlans, targetStatuses],
-    queryFn: () =>
-      api.post('/broadcasts/preview', { targetType, targetPlans, targetStatuses }).then((r) => r.data),
-    enabled: targetType !== 'SELECTED_USERS',
+    queryKey: ['admin-broadcast-preview', targetType, targetPlans, targetStatuses, selectedUsers.map((u) => u.id)],
+    queryFn: () => {
+      if (targetType === 'SELECTED_USERS') {
+        return { count: selectedUsers.length };
+      }
+      return api.post('/broadcasts/preview', { targetType, targetPlans, targetStatuses }).then((r) => r.data);
+    },
   });
+
+  // Debounced user search
+  const searchUsers = useCallback(async (query: string) => {
+    if (!query || query.length < 2) {
+      setUserSearchResults([]);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const res = await api.get('/users', { params: { search: query, limit: 10 } });
+      const users = res.data.users || [];
+      // Filter out already selected
+      const selectedIds = new Set(selectedUsers.map((u) => u.id));
+      setUserSearchResults(users.filter((u: any) => !selectedIds.has(u.id)));
+    } catch {
+      setUserSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [selectedUsers]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => searchUsers(userSearchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [userSearchQuery, searchUsers]);
 
   const saveMutation = useMutation({
     mutationFn: (data: any) =>
@@ -91,7 +150,16 @@ export default function BroadcastCompose() {
   });
 
   const handleSave = () => {
-    saveMutation.mutate({ name, message, targetType, targetPlans, targetStatuses, scheduledFor: scheduledFor || null });
+    saveMutation.mutate({
+      name,
+      message,
+      targetType,
+      targetPlans,
+      targetStatuses,
+      targetUserIds: selectedUsers.map((u) => u.id),
+      buttons,
+      scheduledFor: scheduledFor || null,
+    });
   };
 
   const insertTag = (tag: string) => {
@@ -102,6 +170,30 @@ export default function BroadcastCompose() {
     const selected = message.slice(start, end);
     const wrapped = `<${tag}>${selected}</${tag}>`;
     setMessage(message.slice(0, start) + wrapped + message.slice(end));
+  };
+
+  // Button management
+  const addButton = () => {
+    setButtons([...buttons, { id: crypto.randomUUID(), text: '', type: 'url', value: '' }]);
+  };
+
+  const updateButton = (btnId: string, field: keyof InlineButton, val: string) => {
+    setButtons(buttons.map((b) => (b.id === btnId ? { ...b, [field]: val } : b)));
+  };
+
+  const removeButton = (btnId: string) => {
+    setButtons(buttons.filter((b) => b.id !== btnId));
+  };
+
+  // User selection
+  const addUser = (user: any) => {
+    setSelectedUsers([...selectedUsers, { id: user.id, username: user.username, firstName: user.firstName, telegramId: String(user.telegramId) }]);
+    setUserSearchQuery('');
+    setUserSearchResults([]);
+  };
+
+  const removeUser = (userId: string) => {
+    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId));
   };
 
   const isDraft = !broadcast || broadcast.status === 'DRAFT';
@@ -170,15 +262,101 @@ export default function BroadcastCompose() {
               onChange={(e) => setMessage(e.target.value)}
               disabled={!isDraft}
               rows={8}
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm font-mono disabled:opacity-50"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm font-mono disabled:opacity-50 resize-y"
               placeholder={t('broadcastCompose.messagePlaceholder')}
             />
             <div className="mt-3">
               <div className="text-xs text-gray-500 mb-1">{t('broadcastCompose.preview')}</div>
-              <div
-                className="bg-gray-800/50 rounded-xl p-3 text-sm text-white prose prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: message }}
-              />
+              <div className="bg-gray-800/50 rounded-xl p-3">
+                <div
+                  className="text-sm text-white prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: message.replace(/\n/g, '<br>') }}
+                />
+                {/* Button preview */}
+                {buttons.length > 0 && (
+                  <div className="mt-3 space-y-1.5 border-t border-gray-700/50 pt-3">
+                    {buttons.map((btn) => (
+                      <div
+                        key={btn.id}
+                        className="flex items-center justify-center gap-1.5 py-2 px-3 bg-[#3390ec]/20 border border-[#3390ec]/40 rounded-lg text-[#3390ec] text-sm font-medium"
+                      >
+                        {btn.type === 'url' && <ExternalLink size={13} />}
+                        {btn.type === 'webapp' && <Smartphone size={13} />}
+                        {btn.type === 'channel' && <MessageSquare size={13} />}
+                        {btn.text || t('broadcastCompose.buttonPlaceholder')}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Inline Buttons Editor */}
+          <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-gray-400">{t('broadcastCompose.inlineButtons')}</label>
+              {isDraft && (
+                <button
+                  onClick={addButton}
+                  className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+                >
+                  <Plus size={14} /> {t('broadcastCompose.addButton')}
+                </button>
+              )}
+            </div>
+
+            {buttons.length === 0 && (
+              <p className="text-xs text-gray-600">{t('broadcastCompose.noButtons')}</p>
+            )}
+
+            <div className="space-y-3">
+              {buttons.map((btn) => (
+                <div key={btn.id} className="flex gap-2 items-start">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={btn.text}
+                        onChange={(e) => updateButton(btn.id, 'text', e.target.value)}
+                        disabled={!isDraft}
+                        className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm disabled:opacity-50"
+                        placeholder={t('broadcastCompose.buttonText')}
+                      />
+                      <select
+                        value={btn.type}
+                        onChange={(e) => updateButton(btn.id, 'type', e.target.value)}
+                        disabled={!isDraft}
+                        className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm disabled:opacity-50"
+                      >
+                        {BUTTON_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <input
+                      type="text"
+                      value={btn.value}
+                      onChange={(e) => updateButton(btn.id, 'value', e.target.value)}
+                      disabled={!isDraft}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm disabled:opacity-50"
+                      placeholder={
+                        btn.type === 'url' ? 'https://example.com'
+                          : btn.type === 'webapp' ? 'https://webapp.example.com'
+                            : '@channel_username'
+                      }
+                    />
+                  </div>
+                  {isDraft && (
+                    <button
+                      onClick={() => removeButton(btn.id)}
+                      className="p-1.5 text-gray-500 hover:text-red-400 mt-1"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -196,6 +374,7 @@ export default function BroadcastCompose() {
               <option value="ALL">{t('broadcastCompose.allUsers')}</option>
               <option value="BY_PLAN">{t('broadcastCompose.byPlan')}</option>
               <option value="BY_STATUS">{t('broadcastCompose.byStatus')}</option>
+              <option value="SELECTED_USERS">{t('broadcastCompose.selectedUsers')}</option>
             </select>
 
             {targetType === 'BY_PLAN' && (
@@ -232,6 +411,69 @@ export default function BroadcastCompose() {
                     />
                     {s}
                   </label>
+                ))}
+              </div>
+            )}
+
+            {targetType === 'SELECTED_USERS' && isDraft && (
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    type="text"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-9 pr-3 py-2 text-white text-sm"
+                    placeholder={t('broadcastCompose.searchUsers')}
+                  />
+                </div>
+
+                {/* Search results dropdown */}
+                {userSearchResults.length > 0 && (
+                  <div className="bg-gray-800 border border-gray-700 rounded-lg max-h-40 overflow-y-auto">
+                    {userSearchResults.map((u: any) => (
+                      <button
+                        key={u.id}
+                        onClick={() => addUser(u)}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-700 text-sm flex items-center gap-2"
+                      >
+                        <span className="text-white">{u.username || u.firstName || 'User'}</span>
+                        {u.telegramId && <span className="text-gray-500 text-xs">#{String(u.telegramId)}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {isSearching && <p className="text-xs text-gray-500">{t('common.loading')}</p>}
+
+                {/* Selected users chips */}
+                {selectedUsers.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {selectedUsers.map((u) => (
+                      <span
+                        key={u.id}
+                        className="flex items-center gap-1 bg-blue-600/20 text-blue-300 text-xs px-2 py-1 rounded-full"
+                      >
+                        {u.username || u.firstName || 'User'}
+                        <button onClick={() => removeUser(u.id)} className="hover:text-white">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Show selected users read-only when not draft */}
+            {targetType === 'SELECTED_USERS' && !isDraft && selectedUsers.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {selectedUsers.map((u) => (
+                  <span
+                    key={u.id}
+                    className="bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded-full"
+                  >
+                    {u.username || u.firstName || 'User'}
+                  </span>
                 ))}
               </div>
             )}
