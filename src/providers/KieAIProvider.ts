@@ -9,6 +9,7 @@ import {
 } from './BaseProvider';
 import { logger } from '../utils/logger';
 import { parseMjParams } from '../utils/mjParams';
+import { reHostUrl, scheduleFileCleanup } from '../utils/telegramFileDownload';
 
 /**
  * Extract a user-facing error message from a KieAI API response that lacks a taskId.
@@ -231,9 +232,13 @@ export class KieAIProvider extends EnhancedProvider {
 
       // Add image URLs for image-to-video (KieAI uses `image_urls`)
       // Kling 2.6 supports only 1 image; Sora supports up to 4
+      // Re-host Telegram URLs so KieAI can access them
       if (hasImages) {
         const maxImages = model.includes('kling') ? 1 : 4;
-        input.image_urls = inputImageUrls.slice(0, maxImages);
+        const urls = inputImageUrls.slice(0, maxImages);
+        const publicUrls = await Promise.all(urls.map(u => reHostUrl(u, '.jpg')));
+        publicUrls.forEach(u => scheduleFileCleanup(u));
+        input.image_urls = publicUrls;
       }
 
       // Kling-specific: sound off
@@ -575,8 +580,11 @@ export class KieAIProvider extends EnhancedProvider {
       }
 
       // Add reference images with the correct field name for this model
+      // Re-host Telegram URLs so KieAI can access them
       if (hasImage && imageField) {
-        input[imageField] = inputImageUrls;
+        const publicUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
+        publicUrls.forEach(u => scheduleFileCleanup(u));
+        input[imageField] = publicUrls;
       }
 
       logger.info('KieAI Nano Banana payload:', { kieModelId, aspectRatio: input.aspect_ratio, resolution: input.resolution, hasImage, imageCount: inputImageUrls?.length });
@@ -650,9 +658,11 @@ export class KieAIProvider extends EnhancedProvider {
         image_size: this.toSeedreamImageSize(aspectRatio),
       };
 
-      // Add reference images for editing mode
+      // Add reference images for editing mode (re-host Telegram URLs)
       if (hasImage) {
-        input.image_urls = inputImageUrls;
+        const publicUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
+        publicUrls.forEach(u => scheduleFileCleanup(u));
+        input.image_urls = publicUrls;
       }
 
       logger.info('KieAI Seedream payload:', { model, image_size: input.image_size, hasImage });
@@ -711,9 +721,11 @@ export class KieAIProvider extends EnhancedProvider {
         quality: resolution === '1K' ? 'basic' : 'high',
       };
 
-      // Add reference images for editing mode
+      // Add reference images for editing mode (re-host Telegram URLs)
       if (hasImage) {
-        input.image_urls = inputImageUrls;
+        const publicUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
+        publicUrls.forEach(u => scheduleFileCleanup(u));
+        input.image_urls = publicUrls;
       }
 
       logger.info('KieAI Seedream 4.5 payload:', { model, aspect_ratio: aspectRatio, quality: input.quality, hasImage });
@@ -929,12 +941,16 @@ export class KieAIProvider extends EnhancedProvider {
       };
 
       if (inputImageUrls?.length) {
+        // Re-host all image URLs so KieAI can access them
+        const publicImageUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
+        publicImageUrls.forEach(u => scheduleFileCleanup(u));
+
         // First 2 images → keyframes (first frame + last frame)
-        input.image_urls = inputImageUrls.slice(0, 2);
+        input.image_urls = publicImageUrls.slice(0, 2);
 
         // 3+ images → extra images become a kling_element for character/object consistency
-        if (inputImageUrls.length > 2) {
-          const elementUrls = inputImageUrls.slice(2, 4);
+        if (publicImageUrls.length > 2) {
+          const elementUrls = publicImageUrls.slice(2, 4);
           // Need at least 2 images for an element; if only 1 extra, duplicate it
           if (elementUrls.length === 1) {
             elementUrls.push(elementUrls[0]);
@@ -997,11 +1013,21 @@ export class KieAIProvider extends EnhancedProvider {
         throw new Error('Kling Motion Control requires 1 video. Please upload a video first.');
       }
 
-      logger.info('KieAI Kling Motion: starting');
+      logger.info('KieAI Kling Motion: starting, re-hosting files to public URLs');
+
+      // Re-host Telegram file URLs to our server so KieAI can access them
+      const [publicImageUrl, publicVideoUrl] = await Promise.all([
+        reHostUrl(inputImageUrls[0], '.jpg'),
+        reHostUrl(inputVideoUrl, '.mp4'),
+      ]);
+
+      // Schedule cleanup after 30 min
+      scheduleFileCleanup(publicImageUrl);
+      scheduleFileCleanup(publicVideoUrl);
 
       const input: Record<string, unknown> = {
-        input_urls: [inputImageUrls[0]],
-        video_urls: [inputVideoUrl],
+        input_urls: [publicImageUrl],
+        video_urls: [publicVideoUrl],
         mode: (options?.resolution as string) || '720p',
         character_orientation: (options?.characterOrientation as string) || 'video',
       };
@@ -1020,7 +1046,8 @@ export class KieAIProvider extends EnhancedProvider {
       }
 
       logger.info(`KieAI Kling Motion: task created, taskId=${taskId}`);
-      const videoUrl = await this.pollMarketTaskResult(taskId);
+      // Use shorter queue timeout (3 min) — if task is still waiting after 3 min, something is wrong
+      const videoUrl = await this.pollMarketTaskResult(taskId, 180000);
 
       const time = Date.now() - start;
       this.updateStats(true, 0.60, time);
@@ -1056,11 +1083,19 @@ export class KieAIProvider extends EnhancedProvider {
         throw new Error('Kling AI Avatar requires 1 audio file. Please upload an audio file first.');
       }
 
-      logger.info(`KieAI Kling Avatar: starting (model: ${model})`);
+      logger.info(`KieAI Kling Avatar: starting (model: ${model}), re-hosting files`);
+
+      // Re-host Telegram file URLs to our server so KieAI can access them
+      const [publicImageUrl, publicAudioUrl] = await Promise.all([
+        reHostUrl(inputImageUrls[0], '.jpg'),
+        reHostUrl(inputAudioUrl, '.mp3'),
+      ]);
+      scheduleFileCleanup(publicImageUrl);
+      scheduleFileCleanup(publicAudioUrl);
 
       const input: Record<string, unknown> = {
-        image_url: inputImageUrls[0],
-        audio_url: inputAudioUrl,
+        image_url: publicImageUrl,
+        audio_url: publicAudioUrl,
         prompt: (prompt && prompt.trim()) ? prompt : 'A person speaking naturally',
       };
 
@@ -1108,7 +1143,11 @@ export class KieAIProvider extends EnhancedProvider {
         throw new Error('Topaz AI requires a video. Please upload a video first.');
       }
 
-      logger.info('KieAI Topaz: starting video upscale');
+      logger.info('KieAI Topaz: starting video upscale, re-hosting video');
+
+      // Re-host Telegram video URL so KieAI can access it
+      const publicVideoUrl = await reHostUrl(inputVideoUrl, '.mp4');
+      scheduleFileCleanup(publicVideoUrl);
 
       // Map upscale setting to upscale_factor: "original" → "1", "2x" → "2", "4x" → "4"
       const upscaleSetting = (options?.upscale as string) || '2x';
@@ -1117,7 +1156,7 @@ export class KieAIProvider extends EnhancedProvider {
       else if (upscaleSetting === '4x' || upscaleSetting === '4') upscale_factor = '4';
 
       const input: Record<string, unknown> = {
-        video_url: inputVideoUrl,
+        video_url: publicVideoUrl,
         upscale_factor,
       };
 
