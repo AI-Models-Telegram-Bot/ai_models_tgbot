@@ -1,375 +1,358 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useCallback } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { getActivePromo } from '@/config/promoConfig';
 
-// ── 3D Floating Icon Components ─────────────────────────────────
+// ── Reusable 3D wrapper with depth parallax ─────────────────────
 
-const FloatingTulip: React.FC<{ style?: React.CSSProperties; delay?: number; size?: number }> = ({
+interface Float3DProps {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+  delay?: number;
+  duration?: number;
+  depth?: 'near' | 'mid' | 'far';
+  rotateRange?: number;
+}
+
+const Float3D: React.FC<Float3DProps> = ({
+  children,
   style,
   delay = 0,
-  size = 48,
-}) => (
-  <motion.div
-    className="absolute pointer-events-none promo-3d-icon"
-    style={{ ...style, width: size, height: size }}
-    initial={{ opacity: 0, scale: 0.3, rotateY: -40 }}
-    animate={{
-      opacity: [0, 1, 1, 0.8],
-      scale: [0.3, 1.1, 1, 1],
-      rotateY: [-40, 10, -5, 0],
-      rotateX: [20, -5, 5, 0],
-      y: [10, -6, 4, -6],
-    }}
-    transition={{
-      duration: 4,
-      delay,
-      repeat: Infinity,
-      repeatType: 'reverse',
-      ease: 'easeInOut',
-    }}
-  >
-    <svg viewBox="0 0 64 64" width={size} height={size} className="drop-shadow-[0_4px_12px_rgba(255,107,157,0.5)]">
-      {/* Stem */}
-      <path d="M32 58 C32 58 30 42 32 30" stroke="#4ade80" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-      {/* Leaf */}
-      <path d="M32 45 C26 42 22 38 24 34 C28 36 30 40 32 45Z" fill="#22c55e" opacity="0.8" />
-      {/* Tulip petals */}
-      <ellipse cx="26" cy="22" rx="8" ry="14" fill="#ff6b9d" transform="rotate(-15 26 22)" />
-      <ellipse cx="38" cy="22" rx="8" ry="14" fill="#ff85b3" transform="rotate(15 38 22)" />
-      <ellipse cx="32" cy="20" rx="7" ry="15" fill="#ff4081" />
-      {/* Highlight */}
-      <ellipse cx="30" cy="16" rx="3" ry="6" fill="white" opacity="0.2" />
-    </svg>
-  </motion.div>
+  duration = 5,
+  depth = 'mid',
+  rotateRange = 12,
+}) => {
+  const depthScale = depth === 'near' ? 1.15 : depth === 'far' ? 0.7 : 0.9;
+  const depthBlur = depth === 'far' ? 'blur(1px)' : 'none';
+
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{
+        ...style,
+        filter: depthBlur,
+        transformStyle: 'preserve-3d',
+        willChange: 'transform',
+      }}
+      initial={{ opacity: 0, scale: 0, rotateY: -60 }}
+      animate={{
+        opacity: 1,
+        scale: depthScale,
+        rotateY: [0, rotateRange, -rotateRange * 0.6, 0],
+        rotateX: [0, -rotateRange * 0.5, rotateRange * 0.3, 0],
+        rotateZ: [0, rotateRange * 0.2, -rotateRange * 0.15, 0],
+        y: [0, -8 * depthScale, 4 * depthScale, -6 * depthScale],
+        x: [0, 3 * depthScale, -2 * depthScale, 0],
+      }}
+      transition={{
+        opacity: { duration: 0.6, delay },
+        scale: { duration: 0.8, delay, type: 'spring', bounce: 0.4 },
+        rotateY: { duration, delay: delay + 0.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+        rotateX: { duration: duration * 1.1, delay: delay + 0.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+        rotateZ: { duration: duration * 0.9, delay: delay + 0.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+        y: { duration: duration * 0.8, delay: delay + 0.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+        x: { duration: duration * 1.2, delay: delay + 0.4, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+// ── SVG Icons with premium gradients ────────────────────────────
+
+const Tulip3D: React.FC<{ size?: number }> = ({ size = 48 }) => (
+  <svg viewBox="0 0 64 80" width={size} height={size * 1.25} style={{ filter: 'drop-shadow(0 6px 20px rgba(255,107,157,0.5))' }}>
+    <defs>
+      <linearGradient id="tulipPetal" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#ff85b3" />
+        <stop offset="100%" stopColor="#e91e63" />
+      </linearGradient>
+      <linearGradient id="tulipStem" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#4ade80" />
+        <stop offset="100%" stopColor="#16a34a" />
+      </linearGradient>
+      <radialGradient id="tulipGlow">
+        <stop offset="0%" stopColor="#ff6b9d" stopOpacity="0.6" />
+        <stop offset="100%" stopColor="#ff6b9d" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <ellipse cx="32" cy="28" rx="20" ry="20" fill="url(#tulipGlow)" />
+    <path d="M32 72 C31 72 30 50 32 35" stroke="url(#tulipStem)" strokeWidth="3" fill="none" strokeLinecap="round" />
+    <path d="M32 55 C24 52 19 46 22 40" fill="#22c55e" opacity="0.7" />
+    <path d="M32 50 C38 48 42 43 40 38" fill="#16a34a" opacity="0.5" />
+    <ellipse cx="24" cy="24" rx="10" ry="18" fill="url(#tulipPetal)" transform="rotate(-12 24 24)" opacity="0.9" />
+    <ellipse cx="40" cy="24" rx="10" ry="18" fill="url(#tulipPetal)" transform="rotate(12 40 24)" opacity="0.85" />
+    <ellipse cx="32" cy="22" rx="9" ry="19" fill="#ff4081" />
+    <ellipse cx="29" cy="16" rx="3" ry="8" fill="white" opacity="0.15" />
+  </svg>
 );
 
-const FloatingRose: React.FC<{ style?: React.CSSProperties; delay?: number; size?: number }> = ({
-  style,
-  delay = 0,
-  size = 52,
-}) => (
-  <motion.div
-    className="absolute pointer-events-none promo-3d-icon"
-    style={{ ...style, width: size, height: size }}
-    initial={{ opacity: 0, scale: 0.2, rotateZ: -20 }}
-    animate={{
-      opacity: [0, 1, 1, 0.9],
-      scale: [0.2, 1.05, 0.95, 1],
-      rotateZ: [-20, 5, -3, 0],
-      rotateX: [15, -8, 5, -3],
-      y: [8, -8, 2, -4],
-    }}
-    transition={{
-      duration: 5,
-      delay,
-      repeat: Infinity,
-      repeatType: 'reverse',
-      ease: 'easeInOut',
-    }}
-  >
-    <svg viewBox="0 0 64 64" width={size} height={size} className="drop-shadow-[0_4px_16px_rgba(220,38,38,0.4)]">
-      {/* Stem */}
-      <path d="M32 58 C32 56 31 44 32 34" stroke="#16a34a" strokeWidth="2" fill="none" strokeLinecap="round" />
-      {/* Thorns */}
-      <path d="M31 48 C28 46 27 44 29 43" stroke="#16a34a" strokeWidth="1.5" fill="none" />
-      <path d="M33 42 C36 40 37 38 35 37" stroke="#16a34a" strokeWidth="1.5" fill="none" />
-      {/* Rose petals - layered for 3D */}
-      <circle cx="32" cy="22" r="12" fill="#dc2626" />
-      <path d="M32 10 C26 14 22 20 24 26 C28 22 30 16 32 10Z" fill="#ef4444" />
-      <path d="M32 10 C38 14 42 20 40 26 C36 22 34 16 32 10Z" fill="#b91c1c" />
-      <path d="M22 18 C24 24 28 28 34 28 C30 24 26 20 22 18Z" fill="#f87171" />
-      <path d="M42 18 C40 24 36 28 30 28 C34 24 38 20 42 18Z" fill="#991b1b" />
-      {/* Center spiral */}
-      <circle cx="32" cy="22" r="4" fill="#7f1d1d" />
-      <path d="M30 20 C31 19 33 19 34 20 C35 21 35 23 34 24" stroke="#fca5a5" strokeWidth="1" fill="none" opacity="0.6" />
-      {/* Highlight */}
-      <circle cx="28" cy="18" r="3" fill="white" opacity="0.15" />
-    </svg>
-  </motion.div>
+const Rose3D: React.FC<{ size?: number }> = ({ size = 52 }) => (
+  <svg viewBox="0 0 64 72" width={size} height={size * 1.125} style={{ filter: 'drop-shadow(0 6px 24px rgba(220,38,38,0.5))' }}>
+    <defs>
+      <radialGradient id="roseCenter" cx="50%" cy="40%">
+        <stop offset="0%" stopColor="#fca5a5" />
+        <stop offset="40%" stopColor="#ef4444" />
+        <stop offset="100%" stopColor="#991b1b" />
+      </radialGradient>
+      <radialGradient id="roseGlow">
+        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.5" />
+        <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    <ellipse cx="32" cy="28" rx="22" ry="22" fill="url(#roseGlow)" />
+    <path d="M32 68 C32 66 31 50 32 36" stroke="#16a34a" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    <path d="M31 56 C27 53 24 49 26 45" stroke="#16a34a" strokeWidth="1.5" fill="none" />
+    <circle cx="32" cy="26" r="16" fill="url(#roseCenter)" />
+    {/* Petals layered */}
+    <path d="M32 10 C24 16 20 24 24 30 C28 24 30 16 32 10Z" fill="#f87171" opacity="0.8" />
+    <path d="M32 10 C40 16 44 24 40 30 C36 24 34 16 32 10Z" fill="#dc2626" opacity="0.7" />
+    <path d="M18 20 C22 28 28 32 36 30 C30 26 24 22 18 20Z" fill="#fca5a5" opacity="0.5" />
+    <path d="M46 20 C42 28 36 32 28 30 C34 26 40 22 46 20Z" fill="#b91c1c" opacity="0.6" />
+    {/* Center spiral */}
+    <circle cx="32" cy="26" r="5" fill="#7f1d1d" />
+    <path d="M30 24 C31 22 34 22 35 24 C36 26 35 28 33 29" stroke="#fca5a5" strokeWidth="1" fill="none" opacity="0.5" />
+    <circle cx="29" cy="22" r="2.5" fill="white" opacity="0.12" />
+  </svg>
 );
 
-const FloatingGiftBox: React.FC<{ style?: React.CSSProperties; delay?: number; size?: number }> = ({
-  style,
-  delay = 0,
-  size = 44,
-}) => (
-  <motion.div
-    className="absolute pointer-events-none promo-3d-icon"
-    style={{ ...style, width: size, height: size }}
-    initial={{ opacity: 0, scale: 0.3, rotateY: 30 }}
-    animate={{
-      opacity: [0, 1, 1, 0.85],
-      scale: [0.3, 1.08, 0.96, 1],
-      rotateY: [30, -8, 5, 0],
-      rotateX: [-10, 8, -4, 2],
-      y: [6, -10, 0, -5],
-    }}
-    transition={{
-      duration: 4.5,
-      delay,
-      repeat: Infinity,
-      repeatType: 'reverse',
-      ease: 'easeInOut',
-    }}
-  >
-    <svg viewBox="0 0 64 64" width={size} height={size} className="drop-shadow-[0_6px_16px_rgba(255,215,0,0.4)]">
-      {/* Box body */}
-      <rect x="12" y="28" width="40" height="28" rx="3" fill="#ffd700" />
-      <rect x="12" y="28" width="40" height="28" rx="3" fill="url(#giftGrad)" />
-      {/* Box lid */}
-      <rect x="8" y="22" width="48" height="10" rx="3" fill="#ffed4a" />
-      {/* Ribbon vertical */}
-      <rect x="28" y="22" width="8" height="34" fill="#dc2626" />
-      {/* Ribbon horizontal */}
-      <rect x="8" y="24" width="48" height="6" fill="#dc2626" opacity="0.9" />
-      {/* Bow */}
-      <ellipse cx="26" cy="20" rx="8" ry="6" fill="#ef4444" transform="rotate(-20 26 20)" />
-      <ellipse cx="38" cy="20" rx="8" ry="6" fill="#ef4444" transform="rotate(20 38 20)" />
-      <circle cx="32" cy="22" r="3" fill="#b91c1c" />
-      {/* Shine */}
-      <rect x="16" y="32" width="3" height="8" rx="1.5" fill="white" opacity="0.2" />
-      <defs>
-        <linearGradient id="giftGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="white" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="black" stopOpacity="0.1" />
-        </linearGradient>
-      </defs>
-    </svg>
-  </motion.div>
+const GiftBox3D: React.FC<{ size?: number }> = ({ size = 44 }) => (
+  <svg viewBox="0 0 64 68" width={size} height={size * 1.06} style={{ filter: 'drop-shadow(0 8px 24px rgba(255,215,0,0.45))' }}>
+    <defs>
+      <linearGradient id="boxBody3d" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#ffe066" />
+        <stop offset="100%" stopColor="#f59e0b" />
+      </linearGradient>
+      <linearGradient id="boxLid3d" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#fef3c7" />
+        <stop offset="100%" stopColor="#fbbf24" />
+      </linearGradient>
+      <linearGradient id="ribbonV" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#ef4444" />
+        <stop offset="100%" stopColor="#b91c1c" />
+      </linearGradient>
+    </defs>
+    {/* Shadow */}
+    <ellipse cx="32" cy="64" rx="22" ry="3" fill="black" opacity="0.15" />
+    {/* Box body */}
+    <rect x="10" y="30" width="44" height="30" rx="4" fill="url(#boxBody3d)" />
+    <rect x="10" y="30" width="44" height="30" rx="4" fill="white" opacity="0.08" />
+    {/* Box lid */}
+    <rect x="6" y="22" width="52" height="12" rx="4" fill="url(#boxLid3d)" />
+    {/* Ribbon */}
+    <rect x="28" y="22" width="8" height="38" fill="url(#ribbonV)" />
+    <rect x="6" y="25" width="52" height="6" fill="#dc2626" opacity="0.85" />
+    {/* Bow */}
+    <ellipse cx="24" cy="19" rx="10" ry="7" fill="#ef4444" transform="rotate(-18 24 19)" />
+    <ellipse cx="40" cy="19" rx="10" ry="7" fill="#f87171" transform="rotate(18 40 19)" />
+    <circle cx="32" cy="22" r="4" fill="#b91c1c" />
+    <circle cx="32" cy="21" r="2" fill="#fca5a5" opacity="0.4" />
+    {/* Shine */}
+    <rect x="15" y="35" width="3" height="10" rx="1.5" fill="white" opacity="0.2" />
+    <rect x="21" y="37" width="2" height="6" rx="1" fill="white" opacity="0.12" />
+  </svg>
 );
 
-const FloatingHeart: React.FC<{ style?: React.CSSProperties; delay?: number; size?: number }> = ({
-  style,
-  delay = 0,
-  size = 32,
-}) => (
-  <motion.div
-    className="absolute pointer-events-none promo-3d-icon"
-    style={{ ...style, width: size, height: size }}
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{
-      opacity: [0, 0.8, 0.6, 0.8],
-      scale: [0, 1.2, 0.9, 1.1],
-      rotateZ: [0, 10, -10, 5],
-      y: [0, -12, 4, -8],
-    }}
-    transition={{
-      duration: 3.5,
-      delay,
-      repeat: Infinity,
-      repeatType: 'reverse',
-      ease: 'easeInOut',
-    }}
-  >
-    <svg viewBox="0 0 32 32" width={size} height={size} className="drop-shadow-[0_2px_8px_rgba(255,107,157,0.6)]">
-      <path
-        d="M16 28 C16 28 3 20 3 11 C3 6 7 3 11 3 C13.5 3 15.5 4.5 16 6 C16.5 4.5 18.5 3 21 3 C25 3 29 6 29 11 C29 20 16 28 16 28Z"
-        fill="url(#heartGrad)"
-      />
-      <path
-        d="M11 8 C9 8 7 9.5 7 12"
-        stroke="white"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.4"
-      />
-      <defs>
-        <linearGradient id="heartGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ff85b3" />
-          <stop offset="100%" stopColor="#ff2d6f" />
-        </linearGradient>
-      </defs>
-    </svg>
-  </motion.div>
+const Heart3D: React.FC<{ size?: number; color?: string }> = ({ size = 28, color }) => (
+  <svg viewBox="0 0 32 32" width={size} height={size} style={{ filter: `drop-shadow(0 3px 12px ${color || 'rgba(255,107,157,0.6)'})` }}>
+    <defs>
+      <linearGradient id={`hg${size}`} x1="0" y1="0" x2="0.8" y2="1">
+        <stop offset="0%" stopColor="#ffb3d0" />
+        <stop offset="100%" stopColor="#ff2d6f" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M16 28 C16 28 3 20 3 11 C3 6 7 3 11 3 C13.5 3 15.5 4.5 16 6 C16.5 4.5 18.5 3 21 3 C25 3 29 6 29 11 C29 20 16 28 16 28Z"
+      fill={`url(#hg${size})`}
+    />
+    <path d="M11 8 C9 8 7 10 7 12" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.35" />
+  </svg>
 );
 
-const FloatingRibbon: React.FC<{ style?: React.CSSProperties; delay?: number; size?: number }> = ({
-  style,
-  delay = 0,
-  size = 40,
-}) => (
-  <motion.div
-    className="absolute pointer-events-none promo-3d-icon"
-    style={{ ...style, width: size, height: size }}
-    initial={{ opacity: 0, rotateZ: -30, scale: 0.4 }}
-    animate={{
-      opacity: [0, 0.9, 0.7, 0.9],
-      rotateZ: [-30, 10, -15, 5],
-      rotateY: [20, -10, 15, -5],
-      scale: [0.4, 1, 0.95, 1],
-      y: [4, -10, 2, -6],
-    }}
-    transition={{
-      duration: 5.5,
-      delay,
-      repeat: Infinity,
-      repeatType: 'reverse',
-      ease: 'easeInOut',
-    }}
-  >
-    <svg viewBox="0 0 48 48" width={size} height={size} className="drop-shadow-[0_3px_10px_rgba(168,85,247,0.4)]">
-      {/* Ribbon wave */}
-      <path
-        d="M6 24 C12 16 18 32 24 24 C30 16 36 32 42 24"
-        stroke="url(#ribbonGrad)"
-        strokeWidth="5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Ribbon ends */}
-      <path d="M4 26 L8 34 L12 24" fill="#c084fc" opacity="0.6" />
-      <path d="M36 24 L40 34 L44 26" fill="#a855f7" opacity="0.6" />
-      <defs>
-        <linearGradient id="ribbonGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#c084fc" />
-          <stop offset="50%" stopColor="#ff6b9d" />
-          <stop offset="100%" stopColor="#ffd700" />
-        </linearGradient>
-      </defs>
-    </svg>
-  </motion.div>
+const Sparkle: React.FC<{ size?: number; color?: string }> = ({ size = 16, color = '#ffd700' }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} style={{ filter: `drop-shadow(0 0 6px ${color})` }}>
+    <path d="M12 0 L14 9 L24 12 L14 15 L12 24 L10 15 L0 12 L10 9 Z" fill={color} opacity="0.9" />
+  </svg>
 );
 
-const FloatingStar: React.FC<{ style?: React.CSSProperties; delay?: number; size?: number }> = ({
-  style,
-  delay = 0,
-  size = 24,
-}) => (
-  <motion.div
-    className="absolute pointer-events-none"
-    style={{ ...style, width: size, height: size }}
-    initial={{ opacity: 0, scale: 0, rotate: 0 }}
-    animate={{
-      opacity: [0, 1, 0.5, 1, 0],
-      scale: [0, 1, 0.8, 1.1, 0],
-      rotate: [0, 72, 144, 216, 288],
-    }}
-    transition={{
-      duration: 6,
-      delay,
-      repeat: Infinity,
-      ease: 'easeInOut',
-    }}
-  >
-    <svg viewBox="0 0 24 24" width={size} height={size}>
-      <path
-        d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"
-        fill="#ffd700"
-        opacity="0.7"
-      />
-    </svg>
-  </motion.div>
+const Petal: React.FC<{ size?: number; rotate?: number }> = ({ size = 20, rotate = 0 }) => (
+  <svg viewBox="0 0 24 32" width={size} height={size * 1.33} style={{ transform: `rotate(${rotate}deg)`, filter: 'drop-shadow(0 2px 6px rgba(255,107,157,0.3))' }}>
+    <defs>
+      <linearGradient id={`pg${rotate}`} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#ffc0d0" stopOpacity="0.9" />
+        <stop offset="100%" stopColor="#ff6b9d" stopOpacity="0.6" />
+      </linearGradient>
+    </defs>
+    <ellipse cx="12" cy="16" rx="8" ry="14" fill={`url(#pg${rotate})`} />
+    <ellipse cx="10" cy="12" rx="2" ry="6" fill="white" opacity="0.15" />
+  </svg>
 );
 
-// ── Animated "8" with floral wreath ─────────────────────────────
+// ── Animated "8" — premium version ──────────────────────────────
 
 const AnimatedEight: React.FC = () => (
   <motion.div
-    className="relative promo-3d-icon"
-    initial={{ scale: 0, rotateY: -90 }}
-    animate={{ scale: 1, rotateY: 0 }}
-    transition={{ duration: 0.8, type: 'spring', bounce: 0.4 }}
+    className="relative"
+    style={{ transformStyle: 'preserve-3d', perspective: '800px' }}
+    initial={{ scale: 0, rotateY: -120, opacity: 0 }}
+    animate={{ scale: 1, rotateY: 0, opacity: 1 }}
+    transition={{ duration: 1, type: 'spring', bounce: 0.35 }}
   >
+    {/* Ambient glow behind */}
+    <motion.div
+      className="absolute inset-0 rounded-full"
+      style={{
+        background: 'radial-gradient(circle, rgba(255,107,157,0.4) 0%, transparent 70%)',
+        width: 140,
+        height: 160,
+        left: -25,
+        top: -20,
+      }}
+      animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+    />
+
     <motion.div
       animate={{
-        rotateY: [0, 8, -8, 0],
-        rotateX: [0, -5, 5, 0],
+        rotateY: [0, 10, -10, 0],
+        rotateX: [0, -6, 6, 0],
       }}
-      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+      transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+      style={{ transformStyle: 'preserve-3d' }}
     >
-      <svg viewBox="0 0 120 160" width="90" height="120" className="drop-shadow-[0_8px_32px_rgba(255,107,157,0.5)]">
-        {/* Glow behind */}
+      <svg viewBox="0 0 100 140" width="90" height="126">
         <defs>
-          <radialGradient id="eightGlow">
-            <stop offset="0%" stopColor="#ff6b9d" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#ff6b9d" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="eightGrad" x1="0" y1="0" x2="0.5" y2="1">
+          <linearGradient id="e8grad" x1="0" y1="0" x2="0.3" y2="1">
             <stop offset="0%" stopColor="#ffd700" />
-            <stop offset="40%" stopColor="#ff6b9d" />
-            <stop offset="100%" stopColor="#ff4081" />
+            <stop offset="35%" stopColor="#ff85b3" />
+            <stop offset="70%" stopColor="#ff4081" />
+            <stop offset="100%" stopColor="#e91e63" />
           </linearGradient>
+          <linearGradient id="e8shine" x1="0" y1="0" x2="1" y2="0.5">
+            <stop offset="0%" stopColor="white" stopOpacity="0.35" />
+            <stop offset="50%" stopColor="white" stopOpacity="0" />
+            <stop offset="100%" stopColor="white" stopOpacity="0.1" />
+          </linearGradient>
+          <filter id="e8glow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
-        <ellipse cx="60" cy="80" rx="55" ry="75" fill="url(#eightGlow)" />
 
-        {/* The "8" shape */}
-        <ellipse cx="60" cy="50" rx="32" ry="36" fill="none" stroke="url(#eightGrad)" strokeWidth="8" />
-        <ellipse cx="60" cy="112" rx="38" ry="38" fill="none" stroke="url(#eightGrad)" strokeWidth="8" />
+        {/* Outer glow copy */}
+        <ellipse cx="50" cy="42" rx="28" ry="32" fill="none" stroke="#ff6b9d" strokeWidth="10" opacity="0.15" filter="url(#e8glow)" />
+        <ellipse cx="50" cy="98" rx="34" ry="34" fill="none" stroke="#ff6b9d" strokeWidth="10" opacity="0.15" filter="url(#e8glow)" />
 
-        {/* Floral decorations on the 8 */}
-        {/* Top flower */}
-        <circle cx="60" cy="14" r="6" fill="#ff85b3" />
-        <circle cx="54" cy="16" r="4" fill="#ff6b9d" />
-        <circle cx="66" cy="16" r="4" fill="#ff6b9d" />
-        <circle cx="60" cy="14" r="2.5" fill="#ffd700" />
+        {/* Main "8" */}
+        <ellipse cx="50" cy="42" rx="28" ry="32" fill="none" stroke="url(#e8grad)" strokeWidth="7" strokeLinecap="round" />
+        <ellipse cx="50" cy="98" rx="34" ry="34" fill="none" stroke="url(#e8grad)" strokeWidth="7" strokeLinecap="round" />
 
-        {/* Right flower */}
-        <circle cx="92" cy="50" r="5" fill="#ff85b3" />
-        <circle cx="92" cy="44" r="3.5" fill="#ff6b9d" />
-        <circle cx="96" cy="50" r="3.5" fill="#ff6b9d" />
-        <circle cx="92" cy="50" r="2" fill="#ffd700" />
+        {/* Shine overlay */}
+        <ellipse cx="50" cy="42" rx="28" ry="32" fill="none" stroke="url(#e8shine)" strokeWidth="7" />
+        <ellipse cx="50" cy="98" rx="34" ry="34" fill="none" stroke="url(#e8shine)" strokeWidth="4" />
 
-        {/* Bottom flower */}
-        <circle cx="60" cy="150" r="5" fill="#ff85b3" />
-        <circle cx="55" cy="148" r="3.5" fill="#ff6b9d" />
-        <circle cx="65" cy="148" r="3.5" fill="#ff6b9d" />
-        <circle cx="60" cy="150" r="2" fill="#ffd700" />
+        {/* Flower clusters */}
+        {/* Top */}
+        <circle cx="50" cy="10" r="5" fill="#ff85b3" />
+        <circle cx="44" cy="12" r="3.5" fill="#ff6b9d" />
+        <circle cx="56" cy="12" r="3.5" fill="#ff6b9d" />
+        <circle cx="50" cy="10" r="2" fill="#ffd700" />
+        <ellipse cx="40" cy="15" rx="5" ry="2" fill="#22c55e" transform="rotate(-35 40 15)" opacity="0.6" />
+        <ellipse cx="60" cy="15" rx="5" ry="2" fill="#22c55e" transform="rotate(35 60 15)" opacity="0.6" />
 
-        {/* Left flower */}
-        <circle cx="28" cy="50" r="5" fill="#ff85b3" />
-        <circle cx="28" cy="44" r="3.5" fill="#ff6b9d" />
-        <circle cx="24" cy="50" r="3.5" fill="#ff6b9d" />
-        <circle cx="28" cy="50" r="2" fill="#ffd700" />
+        {/* Right */}
+        <circle cx="78" cy="42" r="4.5" fill="#ff85b3" />
+        <circle cx="80" cy="37" r="3" fill="#ffb3d0" />
+        <circle cx="82" cy="43" r="3" fill="#ff6b9d" />
+        <circle cx="78" cy="42" r="1.8" fill="#ffd700" />
 
-        {/* Small leaves */}
-        <ellipse cx="42" cy="18" rx="6" ry="3" fill="#22c55e" transform="rotate(-30 42 18)" opacity="0.7" />
-        <ellipse cx="78" cy="18" rx="6" ry="3" fill="#22c55e" transform="rotate(30 78 18)" opacity="0.7" />
-        <ellipse cx="22" cy="70" rx="5" ry="2.5" fill="#22c55e" transform="rotate(-60 22 70)" opacity="0.7" />
-        <ellipse cx="98" cy="70" rx="5" ry="2.5" fill="#22c55e" transform="rotate(60 98 70)" opacity="0.7" />
+        {/* Bottom */}
+        <circle cx="50" cy="132" r="4.5" fill="#ff85b3" />
+        <circle cx="45" cy="130" r="3" fill="#ff6b9d" />
+        <circle cx="55" cy="130" r="3" fill="#ffb3d0" />
+        <circle cx="50" cy="132" r="1.8" fill="#ffd700" />
+        <ellipse cx="41" cy="128" rx="4.5" ry="2" fill="#22c55e" transform="rotate(30 41 128)" opacity="0.6" />
+        <ellipse cx="59" cy="128" rx="4.5" ry="2" fill="#22c55e" transform="rotate(-30 59 128)" opacity="0.6" />
+
+        {/* Left */}
+        <circle cx="22" cy="42" r="4.5" fill="#ff85b3" />
+        <circle cx="18" cy="43" r="3" fill="#ff6b9d" />
+        <circle cx="20" cy="37" r="3" fill="#ffb3d0" />
+        <circle cx="22" cy="42" r="1.8" fill="#ffd700" />
       </svg>
     </motion.div>
   </motion.div>
 );
 
-// ── Countdown Timer ─────────────────────────────────────────────
+// ── Floating Sparkle Particles ──────────────────────────────────
+
+const FloatingParticles: React.FC = () => (
+  <>
+    {Array.from({ length: 12 }).map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute pointer-events-none"
+        style={{
+          left: `${8 + Math.random() * 84}%`,
+          top: `${5 + Math.random() * 90}%`,
+          width: 3 + Math.random() * 4,
+          height: 3 + Math.random() * 4,
+          borderRadius: '50%',
+          background: i % 3 === 0 ? '#ffd700' : i % 3 === 1 ? '#ff85b3' : '#ffffff',
+        }}
+        animate={{
+          opacity: [0, 0.8, 0],
+          scale: [0, 1.5, 0],
+          y: [0, -(20 + Math.random() * 40)],
+        }}
+        transition={{
+          duration: 2.5 + Math.random() * 2,
+          delay: i * 0.4,
+          repeat: Infinity,
+          ease: 'easeOut',
+        }}
+      />
+    ))}
+  </>
+);
+
+// ── Countdown Timer (premium glass style) ───────────────────────
 
 const CountdownTimer: React.FC<{ endDate: Date }> = ({ endDate }) => {
   const { i18n } = useTranslation('subscriptions');
   const isRu = i18n.language.startsWith('ru');
-
   const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(endDate));
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft(endDate));
-    }, 1000);
+    const interval = setInterval(() => setTimeLeft(getTimeLeft(endDate)), 1000);
     return () => clearInterval(interval);
   }, [endDate]);
 
   if (timeLeft.total <= 0) return null;
 
+  const units = [
+    { value: timeLeft.days, label: isRu ? 'дн' : 'd' },
+    { value: timeLeft.hours, label: isRu ? 'ч' : 'h' },
+    { value: timeLeft.minutes, label: isRu ? 'мин' : 'm' },
+    { value: timeLeft.seconds, label: isRu ? 'сек' : 's' },
+  ];
+
   return (
-    <div className="flex justify-center" style={{ columnGap: 8 }}>
-      {[
-        { value: timeLeft.days, label: isRu ? 'дн' : 'd' },
-        { value: timeLeft.hours, label: isRu ? 'ч' : 'h' },
-        { value: timeLeft.minutes, label: isRu ? 'мин' : 'm' },
-        { value: timeLeft.seconds, label: isRu ? 'сек' : 's' },
-      ].map((unit, i) => (
+    <div className="flex justify-center" style={{ columnGap: 6 }}>
+      {units.map((unit, i) => (
         <div key={i} className="flex flex-col items-center">
-          <motion.div
-            key={`${i}-${unit.value}`}
-            initial={{ scale: 1.2, opacity: 0.5 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="w-11 h-11 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center"
-          >
-            <span className="text-lg font-bold text-white font-mono tabular-nums">
+          <div className="promo-timer-cell">
+            <motion.span
+              key={`${i}-${unit.value}`}
+              initial={{ y: -8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="text-base font-bold text-white font-mono tabular-nums"
+            >
               {String(unit.value).padStart(2, '0')}
-            </span>
-          </motion.div>
-          <span className="text-[10px] text-white/60 mt-1">{unit.label}</span>
+            </motion.span>
+          </div>
+          <span className="text-[9px] text-white/50 mt-0.5 font-medium">{unit.label}</span>
         </div>
       ))}
     </div>
@@ -388,6 +371,26 @@ function getTimeLeft(endDate: Date) {
   };
 }
 
+// ── Animated Counter for discount ───────────────────────────────
+
+const AnimatedPercent: React.FC<{ value: number }> = ({ value }) => {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v));
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(count, value, {
+      duration: 1.2,
+      delay: 0.8,
+      ease: 'easeOut',
+    });
+    const unsub = rounded.on('change', (v) => setDisplay(v));
+    return () => { controls.stop(); unsub(); };
+  }, [value, count, rounded]);
+
+  return <>{display}</>;
+};
+
 // ── Main Banner ─────────────────────────────────────────────────
 
 export const March8PromoBanner: React.FC = () => {
@@ -395,95 +398,155 @@ export const March8PromoBanner: React.FC = () => {
   const isRu = i18n.language.startsWith('ru');
   const promo = getActivePromo();
 
+  const handleScrollToPlans = useCallback(() => {
+    const planCards = document.querySelector('.snap-x');
+    if (planCards) {
+      planCards.scrollTo({ left: 296, behavior: 'smooth' });
+      // Subtle attention pulse on first paid card
+      const cards = planCards.querySelectorAll('[class*="promo-card-glow"]');
+      if (cards[0]) {
+        (cards[0] as HTMLElement).style.transition = 'transform 0.3s';
+        (cards[0] as HTMLElement).style.transform = 'scale(1.03)';
+        setTimeout(() => {
+          (cards[0] as HTMLElement).style.transform = '';
+        }, 400);
+      }
+    }
+  }, []);
+
   if (!promo) return null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, type: 'spring', bounce: 0.3 }}
-      className="relative overflow-hidden rounded-2xl mb-6 promo-banner-march8"
-      style={{ perspective: '1000px' }}
+      initial={{ opacity: 0, y: -16, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.7, type: 'spring', bounce: 0.25 }}
+      className="relative overflow-hidden rounded-2xl mb-6"
+      style={{ perspective: '1200px' }}
     >
-      {/* Animated gradient background */}
+      {/* ── Background layers ── */}
       <div className="absolute inset-0 promo-gradient-bg" />
-
-      {/* Glassmorphism overlay */}
-      <div className="absolute inset-0 backdrop-blur-sm bg-gradient-to-br from-white/[0.08] to-transparent" />
-
-      {/* Shimmer sweep */}
+      <div className="absolute inset-0 promo-mesh-overlay" />
       <div className="absolute inset-0 promo-shimmer-sweep" />
 
-      {/* ── Floating 3D Icons overlay ── */}
-      {/* Left side */}
-      <FloatingTulip style={{ top: '5%', left: '3%' }} delay={0} size={42} />
-      <FloatingHeart style={{ top: '60%', left: '5%' }} delay={0.8} size={24} />
-      <FloatingRibbon style={{ bottom: '10%', left: '2%' }} delay={1.5} size={34} />
+      {/* ── Floating particles ── */}
+      <FloatingParticles />
 
-      {/* Right side */}
-      <FloatingRose style={{ top: '8%', right: '4%' }} delay={0.4} size={44} />
-      <FloatingGiftBox style={{ top: '55%', right: '3%' }} delay={1.2} size={38} />
-      <FloatingHeart style={{ bottom: '15%', right: '8%' }} delay={2} size={20} />
+      {/* ── 3D Floating icons — layered depths ── */}
 
-      {/* Scattered stars */}
-      <FloatingStar style={{ top: '15%', left: '25%' }} delay={0.5} size={16} />
-      <FloatingStar style={{ top: '70%', right: '25%' }} delay={1.8} size={14} />
-      <FloatingStar style={{ top: '30%', right: '20%' }} delay={2.5} size={12} />
-      <FloatingStar style={{ bottom: '20%', left: '20%' }} delay={3.2} size={18} />
+      {/* Far layer (background, slightly blurred) */}
+      <Float3D style={{ top: '8%', left: '2%' }} delay={0.2} depth="far" duration={6} rotateRange={18}>
+        <Petal size={22} rotate={-30} />
+      </Float3D>
+      <Float3D style={{ bottom: '12%', right: '5%' }} delay={1.4} depth="far" duration={7} rotateRange={15}>
+        <Petal size={18} rotate={45} />
+      </Float3D>
+      <Float3D style={{ top: '50%', left: '8%' }} delay={2.2} depth="far" duration={5.5}>
+        <Petal size={16} rotate={120} />
+      </Float3D>
 
-      {/* ── Content ── */}
-      <div className="relative z-10 flex flex-col items-center py-6 px-4">
-        {/* Animated "8" centerpiece */}
-        <AnimatedEight />
+      {/* Mid layer */}
+      <Float3D style={{ top: '4%', left: '4%' }} delay={0} depth="mid" duration={5}>
+        <Tulip3D size={40} />
+      </Float3D>
+      <Float3D style={{ top: '6%', right: '3%' }} delay={0.5} depth="mid" duration={5.5}>
+        <Rose3D size={42} />
+      </Float3D>
+      <Float3D style={{ bottom: '8%', left: '3%' }} delay={1} depth="mid" duration={4.5}>
+        <Heart3D size={28} />
+      </Float3D>
+      <Float3D style={{ top: '45%', right: '2%' }} delay={0.8} depth="mid" duration={5}>
+        <GiftBox3D size={36} />
+      </Float3D>
 
-        {/* Holiday text */}
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-white/90 text-sm font-medium mt-2 mb-1 tracking-wide"
-        >
-          {isRu ? 'С праздником 8 Марта!' : 'Happy Women\'s Day!'}
-        </motion.p>
+      {/* Near layer (foreground, larger, brighter) */}
+      <Float3D style={{ bottom: '6%', right: '12%' }} delay={0.3} depth="near" duration={4} rotateRange={8}>
+        <Heart3D size={22} />
+      </Float3D>
+      <Float3D style={{ top: '20%', left: '18%' }} delay={1.6} depth="near" duration={4.5} rotateRange={10}>
+        <Sparkle size={14} color="#ffd700" />
+      </Float3D>
+      <Float3D style={{ top: '65%', right: '18%' }} delay={2} depth="near" duration={3.5} rotateRange={6}>
+        <Sparkle size={12} color="#ff85b3" />
+      </Float3D>
+      <Float3D style={{ top: '12%', right: '22%' }} delay={2.8} depth="near" duration={4} rotateRange={8}>
+        <Sparkle size={10} color="#ffffff" />
+      </Float3D>
+      <Float3D style={{ bottom: '18%', left: '15%' }} delay={1.2} depth="near" duration={5} rotateRange={12}>
+        <Sparkle size={16} color="#ffd700" />
+      </Float3D>
 
-        {/* Discount badge */}
-        <motion.div
-          initial={{ scale: 0, rotate: -10 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ delay: 0.6, type: 'spring', bounce: 0.5 }}
-          className="promo-discount-badge mt-2 mb-4"
-        >
-          <span className="relative z-10 text-2xl font-bold text-white font-display tracking-tight">
-            −{promo.discountPercent}%
-          </span>
-          <span className="relative z-10 text-white/80 text-xs font-medium ml-1.5">
-            {isRu ? 'на всё' : 'on everything'}
-          </span>
-        </motion.div>
+      {/* ── Main content ── */}
+      <div className="relative z-10 flex items-center py-5 px-4" style={{ columnGap: 16 }}>
 
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-white/70 text-xs text-center mb-4 max-w-[260px]"
-        >
-          {isRu
-            ? 'Скидка на все подписки и пакеты токенов'
-            : 'Discount on all subscriptions and token packages'}
-        </motion.p>
+        {/* Left: Animated "8" */}
+        <div className="flex-shrink-0">
+          <AnimatedEight />
+        </div>
 
-        {/* Countdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-        >
-          <p className="text-white/50 text-[10px] text-center mb-2 uppercase tracking-widest">
-            {isRu ? 'До конца акции' : 'Offer ends in'}
-          </p>
-          <CountdownTimer endDate={promo.endDate} />
-        </motion.div>
+        {/* Right: Text + CTA */}
+        <div className="flex-1 min-w-0">
+          {/* Holiday greeting */}
+          <motion.p
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="text-white/85 text-[11px] font-medium tracking-wider uppercase"
+          >
+            {isRu ? 'С праздником 8 Марта!' : "Happy Women's Day!"}
+          </motion.p>
+
+          {/* Discount — animated counter */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="flex items-baseline mt-1" style={{ columnGap: 6 }}
+          >
+            <span className="promo-percent-text">
+              −<AnimatedPercent value={promo.discountPercent} />%
+            </span>
+            <span className="text-white/70 text-xs font-medium">
+              {isRu ? 'на всё' : 'on everything'}
+            </span>
+          </motion.div>
+
+          {/* Sub-text */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="text-white/50 text-[10px] mt-1 leading-tight"
+          >
+            {isRu ? 'Подписки и пакеты токенов' : 'Subscriptions & token packages'}
+          </motion.p>
+
+          {/* Countdown + CTA row */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mt-3 flex items-center" style={{ columnGap: 10 }}
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-white/40 text-[8px] uppercase tracking-widest mb-1">
+                {isRu ? 'Осталось' : 'Ends in'}
+              </p>
+              <CountdownTimer endDate={promo.endDate} />
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleScrollToPlans}
+              className="promo-cta-button flex-shrink-0"
+            >
+              {isRu ? 'Выбрать' : 'Choose'}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </motion.button>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );
