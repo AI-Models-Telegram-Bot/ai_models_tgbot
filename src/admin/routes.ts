@@ -1528,7 +1528,7 @@ async function sendBroadcastAsync(
 
       try {
         await axios.post(
-          `https://api.telegram.org/bot${config.bot.token}/sendMessage`,
+          `https://api.telegram.org/bot${config.bot.broadcastToken}/sendMessage`,
           payload
         );
         sentCount++;
@@ -1539,7 +1539,7 @@ async function sendBroadcastAsync(
           // Retry once
           try {
             await axios.post(
-              `https://api.telegram.org/bot${config.bot.token}/sendMessage`,
+              `https://api.telegram.org/bot${config.bot.broadcastToken}/sendMessage`,
               payload
             );
             sentCount++;
