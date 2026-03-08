@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Card, Button, Badge } from '@/shared/ui';
+import { getActivePromo } from '@/config/promoConfig';
 import type { CurrentPlan } from '@/types/user.types';
 
 interface CurrentPlanCardProps {
@@ -13,15 +14,18 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
   plan,
   onViewPlans,
 }) => {
-  const { t } = useTranslation(['profile', 'common']);
+  const { t, i18n } = useTranslation(['profile', 'common']);
+  const isRu = i18n.language.startsWith('ru');
   const planName = plan?.name || 'Free';
   const isFree = !plan || plan.tier === 'FREE';
+  const promo = getActivePromo();
 
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, delay: 0.1 }}
+      className={promo ? 'promo-card-glow' : ''}
     >
       <Card variant="bordered">
         <div className="flex items-center justify-between">
@@ -47,12 +51,14 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
         </div>
 
         <Button
-          variant="secondary"
+          variant={promo ? 'primary' : 'secondary'}
           fullWidth
           className="mt-4"
           onClick={onViewPlans}
         >
-          {isFree ? t('profile:viewPlans') : t('profile:managePlan')}
+          {promo
+            ? (isRu ? `🌸 Скидка ${promo.discountPercent}% — Выбрать план` : `🌸 ${promo.discountPercent}% off — View Plans`)
+            : isFree ? t('profile:viewPlans') : t('profile:managePlan')}
         </Button>
       </Card>
     </motion.div>

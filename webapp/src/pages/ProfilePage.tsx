@@ -10,6 +10,101 @@ import { ParticleBackground, Skeleton, Card } from '@/shared/ui';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { isTelegramEnvironment } from '@/services/telegram/telegram';
 import { formatCredits } from '@/shared/utils/formatters';
+import { getActivePromo } from '@/config/promoConfig';
+
+// ── Profile promo decorations ─────────────────────────────────
+
+const ProfilePromoHeart: React.FC<{ style: React.CSSProperties; delay: number; size?: number }> = ({ style, delay, size = 20 }) => (
+  <motion.div
+    className="absolute pointer-events-none"
+    style={style}
+    animate={{
+      opacity: [0.3, 0.7, 0.3],
+      scale: [0.9, 1.15, 0.9],
+      y: [0, -6, 0],
+      rotate: [0, 8, -5, 0],
+    }}
+    transition={{ duration: 4, delay, repeat: Infinity, ease: 'easeInOut' }}
+  >
+    <svg viewBox="0 0 32 32" width={size} height={size} style={{ filter: 'drop-shadow(0 2px 8px rgba(255,107,157,0.5))' }}>
+      <defs>
+        <linearGradient id={`ph${size}${delay}`} x1="0" y1="0" x2="0.8" y2="1">
+          <stop offset="0%" stopColor="#ffb3d0" />
+          <stop offset="100%" stopColor="#ff2d6f" />
+        </linearGradient>
+      </defs>
+      <path d="M16 28 C16 28 3 20 3 11 C3 6 7 3 11 3 C13.5 3 15.5 4.5 16 6 C16.5 4.5 18.5 3 21 3 C25 3 29 6 29 11 C29 20 16 28 16 28Z" fill={`url(#ph${size}${delay})`} />
+      <path d="M11 8 C9 8 7 10 7 12" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.3" />
+    </svg>
+  </motion.div>
+);
+
+const ProfilePromoStar: React.FC<{ style: React.CSSProperties; delay: number; size?: number; color?: string }> = ({ style, delay, size = 12, color = '#ffd700' }) => (
+  <motion.div
+    className="absolute pointer-events-none"
+    style={style}
+    animate={{ opacity: [0, 0.8, 0], scale: [0.4, 1.3, 0.4], rotate: [0, 90, 180] }}
+    transition={{ duration: 3, delay, repeat: Infinity, ease: 'easeInOut' }}
+  >
+    <svg viewBox="0 0 24 24" width={size} height={size} style={{ filter: `drop-shadow(0 0 5px ${color})` }}>
+      <path d="M12 0 L14 9 L24 12 L14 15 L12 24 L10 15 L0 12 L10 9 Z" fill={color} opacity="0.85" />
+    </svg>
+  </motion.div>
+);
+
+const ProfilePromoBanner: React.FC<{ onNavigate: () => void }> = ({ onNavigate }) => {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language.startsWith('ru');
+  const promo = getActivePromo();
+  if (!promo) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, type: 'spring', bounce: 0.2 }}
+      className="relative overflow-hidden rounded-2xl cursor-pointer"
+      onClick={onNavigate}
+    >
+      {/* Background */}
+      <div className="absolute inset-0 promo-gradient-bg" />
+      <div className="absolute inset-0 promo-shimmer-sweep" />
+
+      {/* Floating decorations */}
+      <ProfilePromoHeart style={{ top: 4, right: 8 }} delay={0} size={18} />
+      <ProfilePromoHeart style={{ bottom: 6, left: 12 }} delay={1.2} size={14} />
+      <ProfilePromoStar style={{ top: 8, left: 8 }} delay={0.5} size={11} color="#ffd700" />
+      <ProfilePromoStar style={{ bottom: 10, right: 28 }} delay={1.8} size={9} color="#ff85b3" />
+      <ProfilePromoStar style={{ top: '50%', right: '45%' }} delay={2.5} size={8} color="#ffffff" />
+
+      {/* Content */}
+      <div className="relative z-10 flex items-center justify-between px-4 py-3">
+        <div className="flex items-center" style={{ columnGap: 10 }}>
+          <span className="text-2xl">🌸</span>
+          <div>
+            <p className="text-white text-sm font-semibold">
+              {isRu ? 'С 8 Марта!' : "Happy Women's Day!"}
+            </p>
+            <p className="text-white/60 text-xs">
+              {isRu ? `Скидка ${promo.discountPercent}% на всё` : `${promo.discountPercent}% off everything`}
+            </p>
+          </div>
+        </div>
+        <motion.div
+          animate={{ x: [0, 4, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex items-center"
+          style={{ columnGap: 4 }}
+        >
+          <span className="promo-mini-badge">−{promo.discountPercent}%</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
 
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -107,6 +202,9 @@ const ProfilePage: React.FC = () => {
       <ParticleBackground />
 
       <div className="relative z-10 p-4 space-y-5 max-w-2xl mx-auto w-full">
+        {/* Promo banner */}
+        <ProfilePromoBanner onNavigate={() => navigate('/subscriptions')} />
+
         {/* User profile + balance */}
         <UserCard user={user} wallet={wallet} />
         <CurrentPlanCard

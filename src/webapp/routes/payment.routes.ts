@@ -6,6 +6,7 @@ import { subscriptionService } from '../../services/SubscriptionService';
 import { yookassaService } from '../../services/YooKassaService';
 import { tokenPackageService, CUSTOM_MIN_TOKENS, CUSTOM_MAX_TOKENS } from '../../services/TokenPackageService';
 import { logger } from '../../utils/logger';
+import { applyPromoDiscount, getActivePromo } from '../../config/promoConfig';
 import { SubscriptionTier } from '@prisma/client';
 
 const router = Router();
@@ -57,20 +58,29 @@ router.post('/payment/create', async (req, res) => {
     }
 
     // Handle different payment methods
+    const promo = getActivePromo();
+
     if (paymentMethod === 'telegram_stars') {
       // Convert USD price to Telegram Stars (roughly 1 star = $0.02)
       // Stars must be integer, minimum 1
-      const starsAmount = Math.max(1, Math.round((planConfig.priceUSD || 0) * 50));
+      let starsAmount = Math.max(1, Math.round((planConfig.priceUSD || 0) * 50));
+      // Apply promo discount if active
+      if (promo?.appliesToPlans) {
+        starsAmount = applyPromoDiscount(starsAmount, 'plan');
+      }
 
       // Create invoice link using Telegram Bot API
       // For Telegram Stars (XTR), provider_token must be empty string
       const invoiceLink = await telegram.createInvoiceLink({
-        title: `${planConfig.name} Subscription`,
+        title: promo?.appliesToPlans
+          ? `${planConfig.name} Subscription (−${promo.discountPercent}%)`
+          : `${planConfig.name} Subscription`,
         description: `${planConfig.name} plan - Monthly subscription with ${planConfig.tokens === null ? 'unlimited' : planConfig.tokens} tokens.`,
         payload: JSON.stringify({
           userId: user.id,
           tier: tier,
           type: 'subscription',
+          promoId: promo?.id || null,
         }),
         provider_token: '', // Empty for Telegram Stars
         currency: 'XTR', // XTR = Telegram Stars
@@ -297,15 +307,25 @@ router.post('/payment/create-token-purchase', async (req, res) => {
       purchaseLabel = `${tokens} Tokens (custom)`;
     }
 
+    // Apply promo discount to token purchases
+    const promo = getActivePromo();
+    if (promo?.appliesToTokens) {
+      priceRUB = applyPromoDiscount(priceRUB, 'tokens');
+      priceStars = applyPromoDiscount(priceStars, 'tokens');
+    }
+
     if (paymentMethod === 'telegram_stars') {
       const invoiceLink = await telegram.createInvoiceLink({
-        title: `${tokens} Tokens`,
+        title: promo?.appliesToTokens
+          ? `${tokens} Tokens (−${promo.discountPercent}%)`
+          : `${tokens} Tokens`,
         description: `Purchase ${tokens} tokens for your account.`,
         payload: JSON.stringify({
           userId: user.id,
           type: 'token_purchase',
           packageId: resolvedPackageId,
           tokens,
+          promoId: promo?.id || null,
         }),
         provider_token: '',
         currency: 'XTR',

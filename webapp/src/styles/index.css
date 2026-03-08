@@ -121,3 +121,184 @@ img {
   position: relative;
   z-index: 1;
 }
+
+/* ── March 8 Promo Styles ─────────────────────────────────────── */
+
+/* Animated gradient background — richer depth */
+.promo-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    #1a0a1e 0%,
+    #3d1342 15%,
+    #6b1d50 30%,
+    #8b2252 45%,
+    #a03068 55%,
+    #6b1d50 70%,
+    #3d1342 85%,
+    #1a0a1e 100%
+  );
+  background-size: 400% 400%;
+  animation: promoGradientShift 10s ease-in-out infinite;
+}
+
+@keyframes promoGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 0%; }
+  75% { background-position: 0% 100%; }
+}
+
+/* Mesh / noise texture overlay */
+.promo-mesh-overlay {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 107, 157, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 215, 0, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.06) 0%, transparent 60%);
+}
+
+/* Shimmer sweep overlay */
+.promo-shimmer-sweep {
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    rgba(255, 215, 0, 0.06) 42%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 107, 157, 0.08) 58%,
+    transparent 75%
+  );
+  background-size: 300% 100%;
+  animation: promoShimmerSweep 5s ease-in-out infinite;
+}
+
+@keyframes promoShimmerSweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Animated percent text */
+.promo-percent-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4a 30%, #ff85b3 70%, #ff4081 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: promoTextShine 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.4));
+}
+
+@keyframes promoTextShine {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+
+/* Timer cell — glass */
+.promo-timer-cell {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* CTA button — glass with gradient border */
+.promo-cta-button {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 4px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 107, 157, 0.2) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  box-shadow:
+    0 4px 16px rgba(255, 107, 157, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.promo-cta-button:active {
+  box-shadow:
+    0 2px 8px rgba(255, 107, 157, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Card promo glow border */
+.promo-card-glow {
+  position: relative;
+}
+.promo-card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #ffd700, #ff6b9d, #ffd700, #ff6b9d);
+  background-size: 300% 300%;
+  animation: promoCardBorderGlow 3s ease-in-out infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@keyframes promoCardBorderGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Mini discount tag on cards */
+.promo-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ffd700, #ff6b9d);
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 12px rgba(255, 107, 157, 0.4);
+  animation: promoMiniBadgePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes promoMiniBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(255, 107, 157, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 107, 157, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+  }
+}
+
+/* Strikethrough price */
+.promo-old-price {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 107, 157, 0.7);
+  text-decoration-thickness: 1.5px;
+  opacity: 0.5;
+  font-size: 0.85em;
+}
+
+/* New discounted price */
+.promo-new-price {
+  background: linear-gradient(135deg, #ffd700, #ff85b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

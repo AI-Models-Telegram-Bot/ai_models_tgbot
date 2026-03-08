@@ -5,6 +5,7 @@ import { SubscriptionTier, PaymentStatus } from '@prisma/client';
 import { prisma } from '../config/database';
 import { config } from '../config';
 import { getPlanByTier } from '../config/subscriptions';
+import { applyPromoDiscount, getActivePromo } from '../config/promoConfig';
 import { subscriptionService } from './SubscriptionService';
 import { walletService } from './WalletService';
 import { tokenPackageService } from './TokenPackageService';
@@ -77,6 +78,12 @@ export class YooKassaService {
       throw new Error(`Tier ${tier} does not have a RUB price`);
     }
 
+    // Apply promo discount if active
+    const promo = getActivePromo();
+    const finalPriceRUB = promo?.appliesToPlans
+      ? applyPromoDiscount(planConfig.priceRUB, 'plan')
+      : planConfig.priceRUB;
+
     // Fetch user email for the fiscal receipt (54-FZ)
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -88,13 +95,15 @@ export class YooKassaService {
     const payment = await prisma.payment.create({
       data: {
         userId,
-        amount: planConfig.priceRUB,
+        amount: finalPriceRUB,
         currency: 'RUB',
         status: 'PENDING',
         provider: 'YOOKASSA',
         tier,
-        description: `${planConfig.name} subscription`,
-        metadata: { tier },
+        description: promo?.appliesToPlans
+          ? `${planConfig.name} subscription (−${promo.discountPercent}%)`
+          : `${planConfig.name} subscription`,
+        metadata: { tier, promoId: promo?.id || null },
       },
     });
 
@@ -109,7 +118,7 @@ export class YooKassaService {
         '/payments',
         {
           amount: {
-            value: planConfig.priceRUB.toFixed(2),
+            value: finalPriceRUB.toFixed(2),
             currency: 'RUB',
           },
           capture: true,
@@ -117,15 +126,19 @@ export class YooKassaService {
             type: 'redirect',
             return_url: returnUrlWithPayment,
           },
-          description: `${planConfig.name} plan subscription`,
+          description: promo?.appliesToPlans
+            ? `${planConfig.name} plan subscription (−${promo.discountPercent}%)`
+            : `${planConfig.name} plan subscription`,
           receipt: {
             customer: { email: customerEmail },
             items: [
               {
-                description: `Подписка ${planConfig.name}`,
+                description: promo?.appliesToPlans
+                  ? `Подписка ${planConfig.name} (скидка ${promo.discountPercent}%)`
+                  : `Подписка ${planConfig.name}`,
                 quantity: '1.00',
                 amount: {
-                  value: planConfig.priceRUB.toFixed(2),
+                  value: finalPriceRUB.toFixed(2),
                   currency: 'RUB',
                 },
                 vat_code: 1,
@@ -198,6 +211,12 @@ export class YooKassaService {
       throw new Error(`Token package not found or inactive: ${packageId}`);
     }
 
+    // Apply promo discount if active
+    const promo = getActivePromo();
+    const finalPriceRUB = promo?.appliesToTokens
+      ? applyPromoDiscount(pkg.priceRUB, 'tokens')
+      : pkg.priceRUB;
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true },
@@ -207,13 +226,15 @@ export class YooKassaService {
     const payment = await prisma.payment.create({
       data: {
         userId,
-        amount: pkg.priceRUB,
+        amount: finalPriceRUB,
         currency: 'RUB',
         status: 'PENDING',
         provider: 'YOOKASSA',
         tier: null,
-        description: `Token purchase: ${pkg.name}`,
-        metadata: { type: 'token_purchase', packageId, tokens: pkg.tokens },
+        description: promo?.appliesToTokens
+          ? `Token purchase: ${pkg.name} (−${promo.discountPercent}%)`
+          : `Token purchase: ${pkg.name}`,
+        metadata: { type: 'token_purchase', packageId, tokens: pkg.tokens, promoId: promo?.id || null },
       },
     });
 
@@ -226,7 +247,7 @@ export class YooKassaService {
         '/payments',
         {
           amount: {
-            value: pkg.priceRUB.toFixed(2),
+            value: finalPriceRUB.toFixed(2),
             currency: 'RUB',
           },
           capture: true,
@@ -234,15 +255,19 @@ export class YooKassaService {
             type: 'redirect',
             return_url: returnUrlWithPayment,
           },
-          description: `Покупка ${pkg.tokens} токенов`,
+          description: promo?.appliesToTokens
+            ? `Покупка ${pkg.tokens} токенов (скидка ${promo.discountPercent}%)`
+            : `Покупка ${pkg.tokens} токенов`,
           receipt: {
             customer: { email: customerEmail },
             items: [
               {
-                description: `${pkg.name} — пополнение токенов`,
+                description: promo?.appliesToTokens
+                  ? `${pkg.name} — пополнение токенов (скидка ${promo.discountPercent}%)`
+                  : `${pkg.name} — пополнение токенов`,
                 quantity: '1.00',
                 amount: {
-                  value: pkg.priceRUB.toFixed(2),
+                  value: finalPriceRUB.toFixed(2),
                   currency: 'RUB',
                 },
                 vat_code: 1,
@@ -310,6 +335,12 @@ export class YooKassaService {
     returnUrl: string,
     paymentMethodType?: 'sbp' | 'sberbank' | 'bank_card',
   ): Promise<{ confirmationUrl: string; paymentId: string }> {
+    // Apply promo discount if active
+    const promo = getActivePromo();
+    const finalPriceRUB = promo?.appliesToTokens
+      ? applyPromoDiscount(priceRUB, 'tokens')
+      : priceRUB;
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true },
@@ -319,13 +350,15 @@ export class YooKassaService {
     const payment = await prisma.payment.create({
       data: {
         userId,
-        amount: priceRUB,
+        amount: finalPriceRUB,
         currency: 'RUB',
         status: 'PENDING',
         provider: 'YOOKASSA',
         tier: null,
-        description: `Custom token purchase: ${tokens} tokens`,
-        metadata: { type: 'token_purchase', tokens, custom: true },
+        description: promo?.appliesToTokens
+          ? `Custom token purchase: ${tokens} tokens (−${promo.discountPercent}%)`
+          : `Custom token purchase: ${tokens} tokens`,
+        metadata: { type: 'token_purchase', tokens, custom: true, promoId: promo?.id || null },
       },
     });
 
@@ -338,7 +371,7 @@ export class YooKassaService {
         '/payments',
         {
           amount: {
-            value: priceRUB.toFixed(2),
+            value: finalPriceRUB.toFixed(2),
             currency: 'RUB',
           },
           capture: true,
@@ -346,15 +379,19 @@ export class YooKassaService {
             type: 'redirect',
             return_url: returnUrlWithPayment,
           },
-          description: `Покупка ${tokens} токенов`,
+          description: promo?.appliesToTokens
+            ? `Покупка ${tokens} токенов (скидка ${promo.discountPercent}%)`
+            : `Покупка ${tokens} токенов`,
           receipt: {
             customer: { email: customerEmail },
             items: [
               {
-                description: `${tokens} токенов — пополнение баланса`,
+                description: promo?.appliesToTokens
+                  ? `${tokens} токенов — пополнение баланса (скидка ${promo.discountPercent}%)`
+                  : `${tokens} токенов — пополнение баланса`,
                 quantity: '1.00',
                 amount: {
-                  value: priceRUB.toFixed(2),
+                  value: finalPriceRUB.toFixed(2),
                   currency: 'RUB',
                 },
                 vat_code: 1,
