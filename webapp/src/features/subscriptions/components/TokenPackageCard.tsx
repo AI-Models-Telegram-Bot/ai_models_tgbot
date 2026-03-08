@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
 import { Button } from '@/shared/ui';
+import { getActivePromo, getDiscountedPrice } from '@/config/promoConfig';
 import type { TokenPackage } from '@/types/tokenPackage.types';
 
 interface TokenPackageCardProps {
@@ -15,6 +16,12 @@ export const TokenPackageCard: React.FC<TokenPackageCardProps> = ({ pkg, index, 
   const { t, i18n } = useTranslation('subscriptions');
   const lang = i18n.language.startsWith('ru') ? 'ru' : 'en';
 
+  const promo = getActivePromo();
+  const showPromo = !!promo;
+
+  const formatRub = (amount: number) =>
+    lang === 'ru' ? `${amount.toLocaleString('ru-RU')} ₽` : `${amount.toLocaleString()} ₽`;
+
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -24,14 +31,27 @@ export const TokenPackageCard: React.FC<TokenPackageCardProps> = ({ pkg, index, 
         'relative rounded-2xl backdrop-blur-xl bg-surface-card/90 border p-4 flex flex-col',
         pkg.isPopular
           ? 'border-brand-secondary/40 shadow-gold'
-          : 'border-white/15 shadow-card'
+          : 'border-white/15 shadow-card',
+        showPromo && 'promo-card-glow'
       )}
     >
       {/* Popular badge */}
-      {pkg.isPopular && (
+      {pkg.isPopular && !showPromo && (
         <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-gradient-premium rounded-full text-[10px] font-semibold text-white shadow-gold whitespace-nowrap">
           {t('tokenPackages.popular')}
         </div>
+      )}
+
+      {/* Promo discount badge (replaces Popular during promo) */}
+      {showPromo && (
+        <motion.div
+          initial={{ scale: 0, rotate: -15 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', bounce: 0.5, delay: index * 0.06 + 0.2 }}
+          className="absolute -top-2.5 -right-1.5 z-10"
+        >
+          <span className="promo-mini-badge">−{promo!.discountPercent}%</span>
+        </motion.div>
       )}
 
       {/* Token amount */}
@@ -49,12 +69,21 @@ export const TokenPackageCard: React.FC<TokenPackageCardProps> = ({ pkg, index, 
 
       {/* Price */}
       <div className="text-center mb-3">
-        <p className="text-lg font-bold text-white font-mono">
-          {lang === 'ru'
-            ? `${pkg.priceRUB.toLocaleString('ru-RU')} ₽`
-            : `${pkg.priceRUB.toLocaleString()} ₽`}
-        </p>
-        {pkg.discountPercent > 0 && (
+        {showPromo ? (
+          <>
+            <p className="text-sm font-bold font-mono promo-old-price">
+              {formatRub(pkg.priceRUB)}
+            </p>
+            <p className="text-lg font-bold font-mono promo-new-price">
+              {formatRub(getDiscountedPrice(pkg.priceRUB))}
+            </p>
+          </>
+        ) : (
+          <p className="text-lg font-bold text-white font-mono">
+            {formatRub(pkg.priceRUB)}
+          </p>
+        )}
+        {pkg.discountPercent > 0 && !showPromo && (
           <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/15 text-green-400 border border-green-500/20">
             {t('tokenPackages.discount', { percent: pkg.discountPercent })}
           </span>

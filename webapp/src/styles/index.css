@@ -121,3 +121,150 @@ img {
   position: relative;
   z-index: 1;
 }
+
+/* ── March 8 Promo Styles ─────────────────────────────────────── */
+
+/* Animated gradient background */
+.promo-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    #4a1942 0%,
+    #6b2150 20%,
+    #8b2252 40%,
+    #a0306a 60%,
+    #6b2150 80%,
+    #4a1942 100%
+  );
+  background-size: 400% 400%;
+  animation: promoGradientShift 8s ease-in-out infinite;
+}
+
+@keyframes promoGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 0%; }
+  75% { background-position: 0% 100%; }
+}
+
+/* Shimmer sweep overlay */
+.promo-shimmer-sweep {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 215, 0, 0.08) 45%,
+    rgba(255, 107, 157, 0.12) 50%,
+    rgba(255, 215, 0, 0.08) 55%,
+    transparent 70%
+  );
+  background-size: 300% 100%;
+  animation: promoShimmerSweep 4s ease-in-out infinite;
+}
+
+@keyframes promoShimmerSweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 3D perspective on floating icons */
+.promo-3d-icon {
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+/* Discount badge with glow */
+.promo-discount-badge {
+  display: inline-flex;
+  align-items: baseline;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ffd700 0%, #ff6b9d 50%, #ff4081 100%);
+  box-shadow:
+    0 0 20px rgba(255, 107, 157, 0.5),
+    0 0 40px rgba(255, 215, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  animation: promoBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes promoBadgePulse {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(255, 107, 157, 0.5),
+      0 0 40px rgba(255, 215, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(255, 107, 157, 0.7),
+      0 0 60px rgba(255, 215, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transform: scale(1.03);
+  }
+}
+
+/* Card promo glow border */
+.promo-card-glow {
+  position: relative;
+}
+.promo-card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #ffd700, #ff6b9d, #ffd700, #ff6b9d);
+  background-size: 300% 300%;
+  animation: promoCardBorderGlow 3s ease-in-out infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@keyframes promoCardBorderGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Mini discount tag on cards */
+.promo-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ffd700, #ff6b9d);
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 12px rgba(255, 107, 157, 0.4);
+  animation: promoMiniBadgePulse 2.5s ease-in-out infinite;
+}
+
+@keyframes promoMiniBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(255, 107, 157, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 107, 157, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+  }
+}
+
+/* Strikethrough price */
+.promo-old-price {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 107, 157, 0.7);
+  text-decoration-thickness: 1.5px;
+  opacity: 0.5;
+  font-size: 0.85em;
+}
+
+/* New discounted price */
+.promo-new-price {
+  background: linear-gradient(135deg, #ffd700, #ff85b3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

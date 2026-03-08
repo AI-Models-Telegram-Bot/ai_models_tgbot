@@ -9,6 +9,7 @@ import { useProfileStore } from '@/features/profile/store/profileStore';
 import { getTelegramUser } from '@/services/telegram/telegram';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { formatCredits } from '@/shared/utils/formatters';
+import { getActivePromo, getDiscountedPrice } from '@/config/promoConfig';
 import type { TokenPackage } from '@/types/tokenPackage.types';
 
 const CUSTOM_RATE_RUB = 3.49;
@@ -66,10 +67,13 @@ export const TokenPackagesList: React.FC<TokenPackagesListProps> = ({ onPurchase
     setSelectedPkg(customPkg);
   };
 
+  const promo = getActivePromo();
+
   const customPrice = (() => {
     const amount = Math.round(Number(customTokens));
     if (!amount || amount < CUSTOM_MIN) return null;
-    return Math.ceil(amount * CUSTOM_RATE_RUB);
+    const base = Math.ceil(amount * CUSTOM_RATE_RUB);
+    return promo?.appliesToTokens ? getDiscountedPrice(base) : base;
   })();
 
   if (error) {

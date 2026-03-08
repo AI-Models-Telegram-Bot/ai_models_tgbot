@@ -7,6 +7,7 @@ import { FeaturesModal } from './FeaturesModal';
 import { PaymentMethodModal } from './PaymentMethodModal';
 import { getTelegramUser, openTelegramLink } from '@/services/telegram/telegram';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { getActivePromo, getDiscountedPrice } from '@/config/promoConfig';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 
 interface SubscriptionTierCardProps {
@@ -35,6 +36,10 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
   const authUser = useAuthStore((s) => s.user);
   const telegramId = telegramUser?.id?.toString() || authUser?.telegramId || '';
 
+  const promo = getActivePromo();
+  const hasPaidPrice = plan.priceUSD !== null && plan.priceUSD > 0;
+  const showPromo = !!promo && hasPaidPrice;
+
   const formatPrice = (priceUSD: number | null, priceRUB: number | null) => {
     if (priceUSD === null) return t('subscriptions:price.contactUs');
     if (priceUSD === 0) return t('subscriptions:price.free');
@@ -44,6 +49,17 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
     }
     // Fallback: convert USD to approximate RUB display
     return `${Math.round((priceUSD || 0) * 95).toLocaleString('ru-RU')} ₽${perMonth}`;
+  };
+
+  const formatPromoPrice = (priceRUB: number | null, priceUSD: number | null) => {
+    const perMonth = t('subscriptions:price.perMonth');
+    if (priceRUB) {
+      return `${getDiscountedPrice(priceRUB).toLocaleString('ru-RU')} ₽${perMonth}`;
+    }
+    if (priceUSD) {
+      return `${getDiscountedPrice(Math.round(priceUSD * 95)).toLocaleString('ru-RU')} ₽${perMonth}`;
+    }
+    return '';
   };
 
   const formatCredits = (credits: number | null) => {
@@ -76,7 +92,8 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
           : isLowerThanCurrent
             ? 'border-white/10 shadow-card opacity-60'
             : 'border-white/15 shadow-card hover:shadow-card-hover hover:translate-y-[-4px]',
-        isPopular && !isCurrent && !isLowerThanCurrent && 'border-brand-secondary/40'
+        isPopular && !isCurrent && !isLowerThanCurrent && 'border-brand-secondary/40',
+        showPromo && !isCurrent && !isLowerThanCurrent && 'promo-card-glow'
       )}
     >
       {/* Popular badge */}
@@ -93,13 +110,36 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
         </div>
       )}
 
+      {/* Promo discount badge */}
+      {showPromo && !isCurrent && !isLowerThanCurrent && (
+        <motion.div
+          initial={{ scale: 0, rotate: -15 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', bounce: 0.5, delay: index * 0.08 + 0.3 }}
+          className="absolute -top-3 -right-2 z-10"
+        >
+          <span className="promo-mini-badge">−{promo!.discountPercent}%</span>
+        </motion.div>
+      )}
+
       <div className="p-5 pt-6 flex flex-col flex-1">
         {/* Header — name + price */}
         <h3 className="text-xl font-bold text-white font-display">{plan.name}</h3>
         <div className="mt-1 mb-4">
-          <span className="text-2xl font-bold text-white font-display">
-            {formatPrice(plan.priceUSD, plan.priceRUB)}
-          </span>
+          {showPromo ? (
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-white/50 font-display promo-old-price">
+                {formatPrice(plan.priceUSD, plan.priceRUB)}
+              </span>
+              <span className="text-2xl font-bold font-display promo-new-price">
+                {formatPromoPrice(plan.priceRUB, plan.priceUSD)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-2xl font-bold text-white font-display">
+              {formatPrice(plan.priceUSD, plan.priceRUB)}
+            </span>
+          )}
         </div>
 
         {/* Tokens */}

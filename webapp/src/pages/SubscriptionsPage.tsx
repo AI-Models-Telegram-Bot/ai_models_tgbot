@@ -6,6 +6,7 @@ import { ParticleBackground, Skeleton } from '@/shared/ui';
 import { SubscriptionTierCard } from '@/features/subscriptions/components/SubscriptionTierCard';
 import { SubscriptionComparisonTable } from '@/features/subscriptions/components/SubscriptionComparisonTable';
 import { TokenPackagesList } from '@/features/subscriptions/components/TokenPackagesList';
+import { March8PromoBanner } from '@/features/subscriptions/components/March8PromoBanner';
 import { useSubscriptionStore } from '@/features/subscriptions/store/subscriptionStore';
 import { useProfileStore } from '@/features/profile/store/profileStore';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
@@ -120,6 +121,9 @@ const SubscriptionsPage: React.FC = () => {
               : t('tokenPackages.subtitle', 'Top up your balance anytime')}
           </p>
         </motion.div>
+
+        {/* Promo Banner */}
+        <March8PromoBanner />
 
         {/* Tab bar */}
         <div className="flex rounded-xl bg-white/5 border border-white/10 p-1 mb-6" style={{ columnGap: 4 }}>

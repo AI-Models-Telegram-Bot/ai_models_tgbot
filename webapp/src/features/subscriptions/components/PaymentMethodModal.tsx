@@ -5,6 +5,7 @@ import { Modal, Button, Skeleton } from '@/shared/ui';
 import { paymentApi } from '@/services/api/payment.api';
 import { openTelegramInvoice, openExternalLink, isTelegramEnvironment } from '@/services/telegram/telegram';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
+import { getActivePromo, getDiscountedPrice } from '@/config/promoConfig';
 import type { SubscriptionPlan } from '@/types/subscription.types';
 import type { PaymentMethodInfo, PaymentMethod } from '@/types/payment.types';
 
@@ -185,9 +186,16 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     }
   }, [isOpen, methods]);
 
-  const buttonPrice = plan.priceRUB
-    ? `${plan.priceRUB.toLocaleString()} ₽`
-    : plan.priceUSD ? `${Math.round((plan.priceUSD || 0) * 95).toLocaleString()} ₽` : '';
+  const promo = getActivePromo();
+  const hasPaidPrice = plan.priceUSD !== null && plan.priceUSD > 0;
+  const showPromo = !!promo && hasPaidPrice;
+
+  const originalRUB = plan.priceRUB || Math.round((plan.priceUSD || 0) * 95);
+  const discountedRUB = showPromo ? getDiscountedPrice(originalRUB) : originalRUB;
+
+  const buttonPrice = showPromo
+    ? `${discountedRUB.toLocaleString()} ₽`
+    : originalRUB ? `${originalRUB.toLocaleString()} ₽` : '';
 
   return (
     <Modal
@@ -198,7 +206,7 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     >
       <div className="p-5 space-y-4">
         {/* Plan summary */}
-        <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+        <div className={`rounded-xl bg-white/5 border p-4 ${showPromo ? 'border-brand-secondary/30' : 'border-white/10'}`}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-white font-semibold">{plan.name}</p>
@@ -207,17 +215,27 @@ export const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
               </p>
             </div>
             <div className="text-right">
-              {plan.priceRUB ? (
+              {showPromo ? (
+                <>
+                  <p className="text-xs font-bold font-mono promo-old-price">
+                    {originalRUB.toLocaleString()} ₽
+                  </p>
+                  <p className="text-lg font-bold font-mono promo-new-price">
+                    {discountedRUB.toLocaleString()} ₽
+                  </p>
+                </>
+              ) : originalRUB ? (
                 <p className="text-lg font-bold text-white font-mono">
-                  {plan.priceRUB.toLocaleString()} ₽
-                </p>
-              ) : plan.priceUSD ? (
-                <p className="text-lg font-bold text-white font-mono">
-                  {Math.round((plan.priceUSD || 0) * 95).toLocaleString()} ₽
+                  {originalRUB.toLocaleString()} ₽
                 </p>
               ) : null}
             </div>
           </div>
+          {showPromo && (
+            <div className="mt-2 flex justify-end">
+              <span className="promo-mini-badge">−{promo!.discountPercent}%</span>
+            </div>
+          )}
         </div>
 
         {/* Payment methods */}
