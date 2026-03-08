@@ -219,8 +219,12 @@ export class KieAIProvider extends EnhancedProvider {
 
       logger.info(`KieAI video: starting market generation (${model}, images: ${hasImages ? inputImageUrls.length : 0})`);
 
+      // KieAI has a prompt length limit (~2500 chars) — truncate to avoid "text length cannot exceed" error
+      const MAX_PROMPT_LENGTH = 2500;
+      const safePrompt = prompt.length > MAX_PROMPT_LENGTH ? prompt.slice(0, MAX_PROMPT_LENGTH) : prompt;
+
       const input: Record<string, unknown> = {
-        prompt,
+        prompt: safePrompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
         duration: String(options?.duration || '5'),
       };

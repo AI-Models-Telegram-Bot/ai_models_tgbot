@@ -92,6 +92,10 @@ export class GenerationStatusManager {
           stage: this.currentStage,
           error: msg,
         });
+        // Stop auto-advance if the message was deleted or can't be edited
+        if (msg.includes("can't be edited") || msg.includes('message to edit not found') || msg.includes('MESSAGE_ID_INVALID')) {
+          this.stop();
+        }
       }
     }
   }

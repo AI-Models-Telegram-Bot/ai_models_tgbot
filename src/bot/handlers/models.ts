@@ -878,16 +878,19 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   if (!ctx.session.awaitingInput || !ctx.session.selectedModel) return;
   if (!ctx.message) return;
 
-  // Extract file_id and dimensions from native video or video document
+  // Extract file_id, dimensions, and size from native video or video document
   let fileId: string | undefined;
   let videoWidth: number | undefined;
   let videoHeight: number | undefined;
+  let fileSize: number | undefined;
   if ('video' in ctx.message && ctx.message.video) {
     fileId = ctx.message.video.file_id;
     videoWidth = ctx.message.video.width;
     videoHeight = ctx.message.video.height;
+    fileSize = ctx.message.video.file_size;
   } else if ('document' in ctx.message && ctx.message.document?.mime_type?.startsWith('video/')) {
     fileId = ctx.message.document.file_id;
+    fileSize = ctx.message.document.file_size;
   }
   if (!fileId) return;
 
@@ -911,34 +914,20 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
     return;
   }
 
+  // Telegram Bot API has a 20MB download limit — reject oversized files early
+  const MAX_BOT_API_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+  if (fileSize && fileSize > MAX_BOT_API_FILE_SIZE) {
+    const sizeMB = (fileSize / (1024 * 1024)).toFixed(1);
+    const msg = lang === 'ru'
+      ? `⚠️ Видео слишком большое (${sizeMB} МБ). Максимум: 20 МБ.\n\n💡 Отправьте видео как обычное сообщение (не файлом) — Telegram сожмёт его автоматически.`
+      : `⚠️ Video file is too large (${sizeMB} MB). Maximum: 20 MB.\n\n💡 Send the video as a regular message (not as a file) — Telegram will compress it automatically.`;
+    await ctx.reply(msg);
+    return;
+  }
+
   try {
-    // Try getFileLink first (fast, works for files <20MB)
-    let videoUrl: string;
-    try {
-      const fileLink = await ctx.telegram.getFileLink(fileId);
-      videoUrl = fileLink.href;
-    } catch (fileLinkErr: any) {
-      // getFileLink fails for files >20MB — fall back to downloading to our server
-      const errMsg = fileLinkErr?.message || String(fileLinkErr);
-      logger.info('getFileLink failed for video, falling back to direct download', {
-        error: errMsg, fileId: fileId.slice(0, 20),
-      });
-
-      const statusMsg = await ctx.reply(lang === 'ru'
-        ? '⏳ Загрузка видео (большой файл)...'
-        : '⏳ Downloading video (large file)...');
-
-      try {
-        const { scheduleFileCleanup } = await import('../../utils/telegramFileDownload');
-        videoUrl = await downloadTelegramFile(fileId, config.bot.token);
-        scheduleFileCleanup(videoUrl);
-      } catch (downloadErr) {
-        logger.error('Direct video download also failed', { downloadErr });
-        throw downloadErr;
-      } finally {
-        try { await ctx.telegram.deleteMessage(ctx.chat!.id, statusMsg.message_id); } catch { /* ignore */ }
-      }
-    }
+    const fileLink = await ctx.telegram.getFileLink(fileId);
+    const videoUrl = fileLink.href;
 
     ctx.session.uploadedVideoUrl = videoUrl;
 
