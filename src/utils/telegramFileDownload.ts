@@ -74,6 +74,54 @@ export async function downloadTelegramFile(
 }
 
 /**
+ * Download a file from any URL and save it to the local uploads directory.
+ * Returns a publicly accessible URL. Useful for re-hosting Telegram file URLs
+ * so external services (e.g. KieAI) can access them.
+ */
+export async function reHostUrl(
+  url: string,
+  ext: string = '',
+): Promise<string> {
+  const webappUrl = config.webapp?.url;
+  if (!webappUrl) {
+    throw new Error('WEBAPP_URL not configured — cannot serve uploaded file');
+  }
+
+  // Skip if already hosted on our server
+  if (url.startsWith(webappUrl)) {
+    return url;
+  }
+
+  if (!ext) {
+    // Try to infer extension from URL path
+    const urlPath = new URL(url).pathname;
+    ext = path.extname(urlPath) || '';
+  }
+
+  const uniqueName = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`;
+  const destPath = path.join(UPLOAD_DIR, uniqueName);
+
+  logger.info('Re-hosting URL to local', { sourceUrl: url.slice(0, 80), destName: uniqueName });
+
+  const response = await axios.get(url, {
+    responseType: 'stream',
+    timeout: 120000,
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    const writer = fs.createWriteStream(destPath);
+    response.data.pipe(writer);
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+    response.data.on('error', reject);
+  });
+
+  const publicUrl = `${webappUrl}/uploads/${uniqueName}`;
+  logger.info('URL re-hosted', { publicUrl });
+  return publicUrl;
+}
+
+/**
  * Schedule cleanup of an uploaded file after a delay (default 30 min).
  */
 export function scheduleFileCleanup(publicUrl: string, delayMs: number = 30 * 60 * 1000): void {
