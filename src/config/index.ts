@@ -71,6 +71,7 @@ export const config = {
   },
   webapp: {
     url: process.env.WEBAPP_URL || '',
+    uploadsPublicUrl: process.env.UPLOADS_PUBLIC_URL || '',
   },
   tokens: {
     freeOnRegistration: parseInt(process.env.FREE_TOKENS_ON_REGISTRATION || '5', 10),
