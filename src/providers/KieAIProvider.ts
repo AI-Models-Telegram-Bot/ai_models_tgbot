@@ -26,7 +26,7 @@ function extractKieAiError(respData: any, prefix: string): string {
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
 const IMAGE_POLL_TIMEOUT_MS = 120000; // 2 minutes for images
-const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 minutes for video (Kling 3.0 complex prompts can take 7-10 min)
+const VIDEO_POLL_TIMEOUT_MS = 1140000; // 19 minutes for video (motion control can take 15+ min in waiting state)
 
 /**
  * Kie.ai Provider — Async task-based API
@@ -1199,12 +1199,10 @@ export class KieAIProvider extends EnhancedProvider {
     intervalMs: number = POLL_INTERVAL_MS,
   ): Promise<string> {
     const startTime = Date.now();
-    // Hard max: 14 min (Bull queue timeout is 15 min, leave 1 min buffer)
-    const absoluteDeadline = startTime + 840000;
-    // Soft deadline: if task is still in waiting/queuing after this, give up
-    const queueDeadline = startTime + timeoutMs;
+    // Use the provided timeout as the single deadline — no separate soft/hard deadlines
+    const deadline = startTime + timeoutMs;
 
-    while (Date.now() < absoluteDeadline) {
+    while (Date.now() < deadline) {
       await this.sleep(intervalMs);
 
       const response = await this.client.get('/jobs/recordInfo', {
@@ -1235,12 +1233,6 @@ export class KieAIProvider extends EnhancedProvider {
       if (state === 'fail') {
         const errorMsg = data?.failMsg || 'Generation failed';
         throw new Error(`KieAI task failed: ${errorMsg}`);
-      }
-
-      // If task is actively generating, keep waiting up to the absolute deadline.
-      // Only enforce the soft timeout for waiting/queuing states.
-      if (state !== 'generating' && Date.now() > queueDeadline) {
-        throw new Error(`KieAI task: stuck in ${state} state after ${elapsed}s`);
       }
     }
 
