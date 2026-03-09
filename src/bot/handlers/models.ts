@@ -18,7 +18,7 @@ import { getStatusType, STATUS_MESSAGES } from '../../utils/statusMessages';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 import { convertOgaToMp3 } from '../../utils/audioConvert';
-import { downloadTelegramFile } from '../../utils/telegramFileDownload';
+import { downloadTelegramFile, reHostUrl, scheduleFileCleanup } from '../../utils/telegramFileDownload';
 import axios from 'axios';
 
 /**
@@ -359,7 +359,9 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   const photo = ctx.message.photo[ctx.message.photo.length - 1];
   try {
     const fileLink = await ctx.telegram.getFileLink(photo.file_id);
-    const imageUrl = fileLink.href;
+    // Re-host to our server immediately so the URL doesn't expire
+    const imageUrl = await reHostUrl(fileLink.href, '.jpg');
+    scheduleFileCleanup(imageUrl, 60 * 60 * 1000); // cleanup after 1 hour
     const caption = ctx.message.caption;
 
     // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
@@ -559,17 +561,17 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
 
   try {
     let imageUrl: string;
+    const ext = doc.file_name ? '.' + (doc.file_name.split('.').pop() || 'jpg') : '.jpg';
     try {
       const fileLink = await ctx.telegram.getFileLink(doc.file_id);
-      imageUrl = fileLink.href;
+      // Re-host to our server immediately so the URL doesn't expire
+      imageUrl = await reHostUrl(fileLink.href, ext);
     } catch {
-      // Fallback for large files (>20MB) — download to our server
+      // Fallback for large files (>20MB) — download to our server by file_id
       logger.info('getFileLink failed for document, falling back to direct download');
-      const ext = doc.file_name ? '.' + (doc.file_name.split('.').pop() || 'jpg') : '.jpg';
-      const { scheduleFileCleanup } = await import('../../utils/telegramFileDownload');
       imageUrl = await downloadTelegramFile(doc.file_id, config.bot.token, ext);
-      scheduleFileCleanup(imageUrl);
     }
+    scheduleFileCleanup(imageUrl, 60 * 60 * 1000); // cleanup after 1 hour
     const caption = ctx.message.caption;
 
     // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
@@ -788,7 +790,9 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
           await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {});
           const fileId = msg.photo![msg.photo!.length - 1].file_id;
           const fileLink = await ctx.telegram.getFileLink(fileId);
-          resized.push(fileLink.href);
+          const resizedUrl = await reHostUrl(fileLink.href, '.jpg');
+          scheduleFileCleanup(resizedUrl, 60 * 60 * 1000);
+          resized.push(resizedUrl);
           logger.info(`Image resized for aspect ratio ${targetAR}`, { originalUrl: originalUrl.slice(0, 60) });
         } catch (err) {
           logger.warn('Image resize failed, using original', { err });
@@ -939,7 +943,9 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
 
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);
-    const videoUrl = fileLink.href;
+    // Re-host to our server immediately so the URL doesn't expire before worker processes it
+    const videoUrl = await reHostUrl(fileLink.href, '.mp4');
+    scheduleFileCleanup(videoUrl, 60 * 60 * 1000); // cleanup after 1 hour
 
     ctx.session.uploadedVideoUrl = videoUrl;
 
@@ -1081,6 +1087,10 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
         await ctx.telegram.deleteMessage(ctx.chat!.id, statusMsg.message_id).catch(() => {});
       }
     }
+
+    // Re-host to our server immediately so the URL doesn't expire
+    audioUrl = await reHostUrl(audioUrl, '.mp3');
+    scheduleFileCleanup(audioUrl, 60 * 60 * 1000); // cleanup after 1 hour
 
     ctx.session.uploadedAudioUrl = audioUrl;
 
