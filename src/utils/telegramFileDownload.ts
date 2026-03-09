@@ -62,13 +62,14 @@ export async function downloadTelegramFile(
     response.data.on('error', reject);
   });
 
-  // Step 3: Return the public URL
+  // Step 3: Return the public URL (use direct origin URL if configured, bypasses CDN)
   const webappUrl = config.webapp?.url;
   if (!webappUrl) {
     throw new Error('WEBAPP_URL not configured — cannot serve uploaded file');
   }
 
-  const publicUrl = `${webappUrl}/uploads/${uniqueName}`;
+  const uploadsBase = config.webapp?.uploadsPublicUrl || webappUrl;
+  const publicUrl = `${uploadsBase}/uploads/${uniqueName}`;
   logger.info('Telegram file downloaded', { publicUrl, fileSize });
   return publicUrl;
 }
@@ -88,7 +89,8 @@ export async function reHostUrl(
   }
 
   // Skip if already hosted on our server
-  if (url.startsWith(webappUrl)) {
+  const uploadsPublicUrl = config.webapp?.uploadsPublicUrl;
+  if (url.startsWith(webappUrl) || (uploadsPublicUrl && url.startsWith(uploadsPublicUrl))) {
     return url;
   }
 
@@ -116,7 +118,9 @@ export async function reHostUrl(
     response.data.on('error', reject);
   });
 
-  const publicUrl = `${webappUrl}/uploads/${uniqueName}`;
+  // Use direct origin URL (bypasses CDN) if configured, for external API accessibility
+  const uploadsBase = config.webapp?.uploadsPublicUrl || webappUrl;
+  const publicUrl = `${uploadsBase}/uploads/${uniqueName}`;
   logger.info('URL re-hosted', { publicUrl });
   return publicUrl;
 }
