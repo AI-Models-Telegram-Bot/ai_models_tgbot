@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import api from '../api/client';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { MediaThumbnail } from '../components/MediaPreview';
+import RequestDetailDrawer from '../components/RequestDetailDrawer';
 import { useToastStore } from '../stores/toastStore';
 import { ArrowLeft, Ban, ShieldCheck, CreditCard, Save, Users, XCircle } from 'lucide-react';
 
@@ -22,8 +24,8 @@ export default function UserDetail() {
   const [planDialog, setPlanDialog] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
   const [editBalance, setEditBalance] = useState<string | null>(null);
-
   const [editCash, setEditCash] = useState<string | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
   const tabLabels: Record<typeof TAB_KEYS[number], string> = {
     requests: t('userDetail.requests'),
@@ -238,6 +240,7 @@ export default function UserDetail() {
             <tr className="border-b border-gray-800">
               {activeTab === 'requests' && (
                 <>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase w-12"></th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.model')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.input')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">{t('userDetail.status')}</th>
@@ -282,10 +285,27 @@ export default function UserDetail() {
           </thead>
           <tbody className="divide-y divide-gray-800/50">
             {activeTab === 'requests' && user.requests?.map((r: any) => (
-              <tr key={r.id}>
-                <td className="px-4 py-3 text-sm text-white">{r.model?.name || '—'}</td>
+              <tr
+                key={r.id}
+                onClick={() => setSelectedRequestId(r.id)}
+                className="cursor-pointer hover:bg-gray-800/50 transition-colors"
+              >
+                <td className="px-4 py-3">
+                  <MediaThumbnail url={r.outputFileUrl} category={r.model?.category} />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="text-sm text-white">{r.model?.name || '—'}</div>
+                  <div className="text-xs text-gray-500">{r.model?.provider}</div>
+                </td>
                 <td className="px-4 py-3 text-sm text-gray-400 max-w-xs truncate">{r.inputText || '—'}</td>
-                <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
+                <td className="px-4 py-3">
+                  <StatusBadge status={r.status} />
+                  {r.status === 'FAILED' && r.errorMessage && (
+                    <div className="text-red-400/70 text-[10px] mt-0.5 max-w-[100px] truncate" title={r.errorMessage}>
+                      {r.errorMessage.slice(0, 40)}
+                    </div>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-sm text-gray-400">{r.creditsCharged?.toFixed(2) || '—'}</td>
                 <td className="px-4 py-3 text-sm text-gray-500">{new Date(r.createdAt).toLocaleString()}</td>
               </tr>
@@ -333,6 +353,13 @@ export default function UserDetail() {
           </tbody>
         </table>
       </div>
+
+      {/* Request Detail Drawer */}
+      <RequestDetailDrawer
+        requestId={selectedRequestId}
+        onClose={() => setSelectedRequestId(null)}
+        showUserLink={false}
+      />
 
       {/* Confirm Ban/Unban Dialog */}
       <ConfirmDialog
