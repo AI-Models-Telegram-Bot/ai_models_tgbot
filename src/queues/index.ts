@@ -32,7 +32,7 @@ export const videoQueue = new Queue<GenerationJobData>('video-generation', redis
     attempts: 1, // No retries — each attempt creates a paid task on external APIs (KieAI etc.)
     removeOnComplete: 20,
     removeOnFail: 200,
-    timeout: 900000, // 15 min (provider fallback handles retries within each attempt)
+    timeout: 1200000, // 20 min (motion control can take 15+ min on KieAI)
   },
 });
 
