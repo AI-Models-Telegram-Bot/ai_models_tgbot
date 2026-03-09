@@ -403,10 +403,24 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
           });
           const arStr = (job.data.settingsApplied?.aspectRatio as string) || '';
           const dims = VIDEO_DIMS[arStr];
-          await telegram.sendVideo(chatId, { url: (result as VideoGenerationResult).videoUrl }, {
-            caption, parse_mode: 'HTML', ...chatKb, supports_streaming: true,
-            ...(dims && { width: dims.width, height: dims.height }),
-          });
+          const videoUrl = (result as VideoGenerationResult).videoUrl;
+          try {
+            await telegram.sendVideo(chatId, { url: videoUrl }, {
+              caption, parse_mode: 'HTML', ...chatKb, supports_streaming: true,
+              ...(dims && { width: dims.width, height: dims.height }),
+            });
+          } catch (sendErr: any) {
+            const errMsg = String(sendErr?.message || sendErr?.description || '');
+            if (errMsg.includes('413') || errMsg.includes('Too Large') || errMsg.includes('too big')) {
+              // Video too large for Telegram — send as a download link
+              const linkMsg = lang === 'ru'
+                ? `🎬 Видео слишком большое для отправки в Telegram.\n\n📥 <a href="${videoUrl}">Скачать видео</a>\n\n${caption}`
+                : `🎬 Video is too large to send via Telegram.\n\n📥 <a href="${videoUrl}">Download video</a>\n\n${caption}`;
+              await telegram.sendMessage(chatId, linkMsg, { parse_mode: 'HTML', ...chatKb });
+            } else {
+              throw sendErr;
+            }
+          }
         } else if ('audioBuffer' in result && result.audioBuffer) {
           const caption = formatResultCaption({
             input, modelName: displayName, category: job.data.modelCategory,
@@ -521,13 +535,26 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
         // Pass width/height so Telegram renders the preview in the correct aspect ratio
         const arStr = (job.data.settingsApplied?.aspectRatio as string) || '';
         const dims = VIDEO_DIMS[arStr];
-        await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, {
-          caption,
-          parse_mode: 'HTML',
-          ...kb,
-          supports_streaming: true,
-          ...(dims && { width: dims.width, height: dims.height }),
-        });
+        try {
+          await telegram.sendVideo(chatId, { url: videoResult.videoUrl }, {
+            caption,
+            parse_mode: 'HTML',
+            ...kb,
+            supports_streaming: true,
+            ...(dims && { width: dims.width, height: dims.height }),
+          });
+        } catch (sendErr: any) {
+          const errMsg = String(sendErr?.message || sendErr?.description || '');
+          if (errMsg.includes('413') || errMsg.includes('Too Large') || errMsg.includes('too big')) {
+            // Video too large for Telegram — send as a download link
+            const linkMsg = lang === 'ru'
+              ? `🎬 Видео слишком большое для отправки в Telegram.\n\n📥 <a href="${videoResult.videoUrl}">Скачать видео</a>\n\n${caption}`
+              : `🎬 Video is too large to send via Telegram.\n\n📥 <a href="${videoResult.videoUrl}">Download video</a>\n\n${caption}`;
+            await telegram.sendMessage(chatId, linkMsg, { parse_mode: 'HTML', ...kb });
+          } else {
+            throw sendErr;
+          }
+        }
       } else if ('audioBuffer' in result && result.audioBuffer) {
         const audioResult = result as AudioGenerationResult;
         await requestService.markCompleted(requestId, { actualProvider });

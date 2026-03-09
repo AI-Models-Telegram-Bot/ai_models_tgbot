@@ -7,6 +7,7 @@ export const config = {
     username: process.env.BOT_USERNAME || '',
     mode: (process.env.BOT_MODE || 'polling') as 'polling' | 'webhook',
     webhookDomain: process.env.WEBHOOK_DOMAIN || '',
+    broadcastToken: process.env.BROADCAST_BOT_TOKEN || process.env.BOT_TOKEN || '',
   },
   health: {
     port: parseInt(process.env.HEALTH_PORT || '3000', 10),

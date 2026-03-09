@@ -475,7 +475,7 @@ router.get('/users/:id', async (req: Request, res: Response) => {
         requests: {
           orderBy: { createdAt: 'desc' },
           take: 50,
-          include: { model: { select: { name: true, category: true } } },
+          include: { model: { select: { name: true, category: true, provider: true, slug: true } } },
         },
         payments: {
           orderBy: { createdAt: 'desc' },
@@ -773,7 +773,7 @@ router.get('/requests', async (req: Request, res: Response) => {
         where,
         include: {
           user: { select: { id: true, username: true, firstName: true, email: true } },
-          model: { select: { name: true, category: true, provider: true } },
+          model: { select: { name: true, category: true, provider: true, slug: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -1528,7 +1528,7 @@ async function sendBroadcastAsync(
 
       try {
         await axios.post(
-          `https://api.telegram.org/bot${config.bot.token}/sendMessage`,
+          `https://api.telegram.org/bot${config.bot.broadcastToken}/sendMessage`,
           payload
         );
         sentCount++;
@@ -1539,7 +1539,7 @@ async function sendBroadcastAsync(
           // Retry once
           try {
             await axios.post(
-              `https://api.telegram.org/bot${config.bot.token}/sendMessage`,
+              `https://api.telegram.org/bot${config.bot.broadcastToken}/sendMessage`,
               payload
             );
             sentCount++;
