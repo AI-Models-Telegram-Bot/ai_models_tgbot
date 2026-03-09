@@ -25,7 +25,7 @@ function extractKieAiError(respData: any, prefix: string): string {
 
 const POLL_INTERVAL_MS = 5000;
 const IMAGE_POLL_INTERVAL_MS = 2000; // 2 seconds for images (fast models)
-const IMAGE_POLL_TIMEOUT_MS = 120000; // 2 minutes for images
+const IMAGE_POLL_TIMEOUT_MS = 300000; // 5 minutes for images (Nano Banana Pro can take 3-4 min)
 const VIDEO_POLL_TIMEOUT_MS = 1140000; // 19 minutes for video (motion control can take 15+ min in waiting state)
 
 /**

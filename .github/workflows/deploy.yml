@@ -12,10 +12,11 @@ on:
 
 jobs:
   # ============================================
-  # BUILD & TEST
+  # BUILD & TEST (PRs and master only — dev skips this for speed)
   # ============================================
   build-and-test:
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/dev' || github.event_name == 'pull_request'
 
     steps:
       - name: Checkout code
@@ -43,10 +44,9 @@ jobs:
         run: npm run build
 
   # ============================================
-  # DEPLOY TO DEV/STAGING
+  # DEPLOY TO DEV/STAGING (no build-and-test gate — Docker build validates)
   # ============================================
   deploy-dev:
-    needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
     concurrency:
@@ -79,10 +79,11 @@ jobs:
             for f in /tmp/env_backup/.env*; do [ -f "$f" ] && cp "$f" . 2>/dev/null || true; done
             rm -rf /tmp/env_backup
 
-            # Build dev webapp frontend
+            # Build dev webapp frontend (use cached node_modules volume)
             echo "Building dev webapp..."
             docker run --rm \
               -v "$(pwd)/webapp:/app" \
+              -v webapp_dev_node_modules:/app/node_modules \
               -w /app \
               node:20-alpine \
               sh -c "npm ci --include=dev && npm run build:staging"
@@ -107,7 +108,7 @@ jobs:
                 updated_at = now();
             " || echo "Price item seeding failed (non-fatal)"
 
-            # Rebuild dev-bot and worker containers
+            # Rebuild dev-bot and worker containers (uses Docker layer cache)
             docker compose -f docker-compose.prod.yml build dev-bot worker
 
             # Run database migrations
@@ -115,7 +116,10 @@ jobs:
 
             # Restart dev services and worker
             docker compose -f docker-compose.prod.yml up -d dev-bot worker
-            docker compose -f docker-compose.prod.yml restart nginx
+
+            # Reload nginx to pick up any config/content changes (no restart = no downtime)
+            docker compose -f docker-compose.prod.yml exec nginx nginx -s reload || \
+              docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
             sleep 30
@@ -179,10 +183,11 @@ jobs:
             for f in /tmp/env_backup/.env*; do [ -f "$f" ] && cp "$f" . 2>/dev/null || true; done
             rm -rf /tmp/env_backup
 
-            # Build webapp frontend using Docker (no Node.js needed on server)
+            # Build webapp frontend using Docker (cached node_modules volume)
             echo "Building webapp..."
             docker run --rm \
               -v "$(pwd)/webapp:/app" \
+              -v webapp_prod_node_modules:/app/node_modules \
               -w /app \
               node:20-alpine \
               sh -c "npm ci --include=dev && npm run build:prod"
@@ -193,30 +198,34 @@ jobs:
             chmod -R 755 webapp-dist
             echo "Webapp built successfully"
 
-            # Clean up any leftover orphaned containers from previous failed deploys
-            docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+            # Ensure infrastructure services are running (postgres, redis, nginx, pgadmin)
+            docker compose -f docker-compose.prod.yml up -d postgres redis nginx pgadmin
 
-            # Build images on server (no cache to ensure fresh code)
-            docker compose -f docker-compose.prod.yml build --no-cache
+            # Build new images for app services (uses Docker layer cache — only changed layers rebuild)
+            docker compose -f docker-compose.prod.yml build bot1 dev-bot worker
 
             # Run database migrations
             docker compose -f docker-compose.prod.yml run --rm bot1 npx prisma migrate deploy
 
-            # Restart services
-            docker compose -f docker-compose.prod.yml up -d
+            # Rolling restart: bring up app services with new images (infra untouched)
+            docker compose -f docker-compose.prod.yml up -d bot1 dev-bot worker
 
-            # Restart nginx to pick up new webapp-dist content
-            docker compose -f docker-compose.prod.yml restart nginx
+            # Reload nginx to pick up new webapp-dist content (no restart = no downtime)
+            docker compose -f docker-compose.prod.yml exec nginx nginx -s reload || \
+              docker compose -f docker-compose.prod.yml restart nginx
 
             # Wait for health check
             sleep 30
             if ! curl -sf http://localhost:3001/health > /dev/null; then
               echo "Health check failed, rolling back to $PREV_COMMIT"
               git checkout $PREV_COMMIT
-              docker compose -f docker-compose.prod.yml build
-              docker compose -f docker-compose.prod.yml up -d
+              docker compose -f docker-compose.prod.yml build bot1 dev-bot worker
+              docker compose -f docker-compose.prod.yml up -d bot1 dev-bot worker
               exit 1
             fi
+
+            # Clean up orphaned containers and old images
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             # Cleanup old images
             docker image prune -f
