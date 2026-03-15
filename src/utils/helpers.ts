@@ -143,6 +143,13 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
       : 'Video is too short or has insufficient motion. Please upload a video at least 3 seconds long with continuous movement.';
   }
 
+  // Prompt too short
+  if (lower.includes('character length must be greater than')) {
+    return lang === 'ru'
+      ? 'Промпт слишком короткий. Введите более подробное описание.'
+      : 'Prompt is too short. Please provide a more detailed description.';
+  }
+
   // Content moderation
   if (lower.includes('content policy') || lower.includes('moderation') || lower.includes('safety') || lower.includes('nsfw')) {
     return lang === 'ru'

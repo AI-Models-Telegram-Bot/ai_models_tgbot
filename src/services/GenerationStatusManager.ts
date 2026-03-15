@@ -86,15 +86,22 @@ export class GenerationStatusManager {
         this.lastText = text; // sync to avoid repeated attempts
         logger.debug('[StatusManager] text unchanged (Telegram)', { chatId: this.chatId });
       } else {
-        logger.error('[StatusManager] editMessageText failed', {
-          chatId: this.chatId,
-          messageId: this.messageId,
-          stage: this.currentStage,
-          error: msg,
-        });
-        // Stop auto-advance if the message was deleted or can't be edited
-        if (msg.includes("can't be edited") || msg.includes('message to edit not found') || msg.includes('MESSAGE_ID_INVALID')) {
+        // Message deleted or can't be edited — expected when user deletes status msg
+        const isDeletedOrGone = msg.includes("can't be edited") || msg.includes('message to edit not found') || msg.includes('MESSAGE_ID_INVALID');
+        if (isDeletedOrGone) {
+          logger.warn('[StatusManager] message gone, stopping', {
+            chatId: this.chatId,
+            messageId: this.messageId,
+            error: msg,
+          });
           this.stop();
+        } else {
+          logger.error('[StatusManager] editMessageText failed', {
+            chatId: this.chatId,
+            messageId: this.messageId,
+            stage: this.currentStage,
+            error: msg,
+          });
         }
       }
     }

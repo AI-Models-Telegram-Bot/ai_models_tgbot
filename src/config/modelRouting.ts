@@ -398,11 +398,11 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
-  // Wan 2.5 — affordable video
+  // Wan 2.1 — affordable video
   'wan': {
     category: 'VIDEO',
     providers: [
-      { name: 'fal', modelId: 'fal-ai/wan/v2.5/text-to-video' },   // $0.05/s ($0.25/5s)
+      { name: 'fal', modelId: 'fal-ai/wan-t2v' },                   // $0.20 (480p) / $0.40 (720p)
       { name: 'replicate', modelId: 'wan' },                        // ~$0.18
     ],
   },

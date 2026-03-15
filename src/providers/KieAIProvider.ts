@@ -653,8 +653,11 @@ export class KieAIProvider extends EnhancedProvider {
       const aspectRatio = (options?.aspectRatio as string) || '1:1';
       logger.info(`KieAI image: starting Seedream generation (${model}, editing: ${!!hasImage})`);
 
+      // KieAI Seedream requires prompt >= 4 characters
+      const safePrompt = prompt.length < 4 ? prompt.padEnd(4, '.') : prompt;
+
       const input: Record<string, unknown> = {
-        prompt,
+        prompt: safePrompt,
         image_size: this.toSeedreamImageSize(aspectRatio),
       };
 
@@ -715,8 +718,11 @@ export class KieAIProvider extends EnhancedProvider {
       const resolution = (options?.resolution as string) || '1K';
       logger.info(`KieAI image: starting Seedream 4.5 generation (${model}, editing: ${!!hasImage})`);
 
+      // KieAI Seedream 4.5 requires prompt >= 4 characters
+      const safePrompt = prompt.length < 4 ? prompt.padEnd(4, '.') : prompt;
+
       const input: Record<string, unknown> = {
-        prompt,
+        prompt: safePrompt,
         aspect_ratio: aspectRatio,  // Seedream 4.5 uses aspect_ratio (e.g. '1:1'), not image_size
         quality: resolution === '1K' ? 'basic' : 'high',
       };
