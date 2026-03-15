@@ -149,7 +149,11 @@ export class FalProvider extends EnhancedProvider {
     if (textModel.includes('kling-video') && !textModel.endsWith('/image-to-video')) {
       return `${textModel}/image-to-video`;
     }
-    // Wan: text-to-video → image-to-video
+    // Wan: wan-t2v → wan-i2v
+    if (textModel === 'fal-ai/wan-t2v') {
+      return 'fal-ai/wan-i2v';
+    }
+    // Legacy wan path-based format
     if (textModel.includes('/wan/') && textModel.endsWith('/text-to-video')) {
       return textModel.replace('/text-to-video', '/image-to-video');
     }

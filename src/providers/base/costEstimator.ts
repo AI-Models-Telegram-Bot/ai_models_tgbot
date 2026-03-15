@@ -120,7 +120,7 @@ const VIDEO_PRICING: Record<string, number> = {
   veo3: 0.40,
   'fal-ai/kling-video/v2.5/standard': 0.07,
   'fal-ai/kling-video/v2.5/pro': 0.07,
-  'fal-ai/wan/v2.5/text-to-video': 0.05,
+  'fal-ai/wan-t2v': 0.20,
   'fal-ai/luma-dream-machine': 0.08,
   'fal-ai/veo3': 0.40,
   'fal-ai/runway-gen3/turbo': 0.05,
