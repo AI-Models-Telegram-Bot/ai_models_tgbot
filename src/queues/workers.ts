@@ -24,19 +24,17 @@ import { GenerationStatusManager } from '../services/GenerationStatusManager';
 function isNonRetryableError(errorMsg: string): boolean {
   const lower = errorMsg.toLowerCase();
   return (
-    // Content policy / safety rejections
+    // Content policy — already retried with softened prompt at provider level,
+    // no point retrying the whole job again
     lower.includes('content policy') ||
     lower.includes('prohibited use policy') ||
-    lower.includes('safety') ||
-    lower.includes('moderation') ||
-    lower.includes('nsfw') ||
+    lower.includes('filtered out') ||
     // Payment / billing (won't fix itself on retry)
     lower.includes('402') ||
     lower.includes('payment required') ||
     lower.includes('insufficient credit') ||
     // Validation errors (prompt too short, invalid params)
     lower.includes('character length must be') ||
-    lower.includes('validation') ||
     // Auth errors
     lower.includes('401') ||
     lower.includes('unauthorized') ||
