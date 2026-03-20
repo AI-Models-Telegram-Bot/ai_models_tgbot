@@ -24,8 +24,9 @@ import { GenerationStatusManager } from '../services/GenerationStatusManager';
 function isNonRetryableError(errorMsg: string): boolean {
   const lower = errorMsg.toLowerCase();
   return (
-    // Content policy — already retried with softened prompt at provider level,
-    // no point retrying the whole job again
+    // Hard-blocked by our pre-filter
+    lower.includes('this request cannot be processed') ||
+    // Content policy — already retried with softened prompt at provider level
     lower.includes('content policy') ||
     lower.includes('prohibited use policy') ||
     lower.includes('filtered out') ||

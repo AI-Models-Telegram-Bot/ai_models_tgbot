@@ -150,7 +150,14 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
       : 'Prompt is too short. Please provide a more detailed description.';
   }
 
-  // Content moderation — don't mention policy, just ask to rephrase
+  // Hard-blocked by our pre-filter
+  if (lower.includes('this request cannot be processed')) {
+    return lang === 'ru'
+      ? 'Этот запрос не может быть обработан. Пожалуйста, используйте корректные промпты.'
+      : 'This request cannot be processed. Please use appropriate prompts.';
+  }
+
+  // Content moderation from provider — don't mention policy, just ask to rephrase
   if (lower.includes('content policy') || lower.includes('moderation') || lower.includes('safety') || lower.includes('nsfw') || lower.includes('prohibited') || lower.includes('filtered out')) {
     return lang === 'ru'
       ? 'Не удалось сгенерировать изображение с этим промптом. Попробуйте переформулировать запрос.'

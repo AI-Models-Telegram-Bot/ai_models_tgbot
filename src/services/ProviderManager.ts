@@ -3,33 +3,11 @@ import { EnhancedProvider } from '../providers/base/EnhancedProvider';
 import { ProviderStats } from '../providers/base/ProviderConfig';
 import { MODEL_ROUTES } from '../config/modelRouting';
 import { logger } from '../utils/logger';
+import { filterPrompt, softenPrompt, isContentPolicyError } from '../utils/promptFilter';
 
 /** Circuit breaker: skip provider after N consecutive failures for COOLDOWN_MS */
 const CIRCUIT_BREAKER_THRESHOLD = 5;
 const CIRCUIT_BREAKER_COOLDOWN_MS = 60_000; // 60 seconds
-
-/** Detect content-policy / safety rejections from provider error messages */
-function isContentPolicyError(msg: string): boolean {
-  const l = msg.toLowerCase();
-  return l.includes('content policy') || l.includes('prohibited use policy') ||
-    l.includes('safety') || l.includes('moderation') || l.includes('nsfw') ||
-    l.includes('filtered out') || l.includes('violat');
-}
-
-/**
- * Soften a prompt so it's more likely to pass content filters.
- * Strips aggressive/violent/explicit modifiers and adds a safe framing.
- */
-function softenPrompt(prompt: string): string {
-  // Remove common trigger words/phrases (case-insensitive)
-  let safe = prompt
-    .replace(/\b(kill|murder|blood|gore|nude|naked|nsfw|violent|weapon|gun|knife|dead|death|corpse|sexy|erotic|provocative|explicit|brutal|gruesome)\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  // Add safe framing prefix
-  safe = `artistic, safe illustration of: ${safe}`;
-  return safe;
-}
 
 interface CircuitState {
   failures: number;
@@ -180,6 +158,15 @@ export class ProviderManager {
     input: string,
     userOptions?: Record<string, unknown>,
   ): Promise<{ result: any; provider: string }> {
+    // ── Pre-filter: block genuinely harmful prompts before hitting any provider ──
+    if (method === 'generateImage' || method === 'generateVideo') {
+      const filter = filterPrompt(input);
+      if (filter.verdict === 'block') {
+        logger.warn('Prompt hard-blocked by content filter', { modelSlug, prompt: input.slice(0, 100) });
+        throw new Error(filter.reason || 'This request cannot be processed.');
+      }
+    }
+
     const route = MODEL_ROUTES[modelSlug];
 
     if (!route) {
