@@ -141,6 +141,66 @@ export function softenPrompt(prompt: string): string {
   return `artistic, safe illustration: ${safe}`;
 }
 
+// ────────────────────────────────────────────────────────────
+// MODEL-SPECIFIC restrictions
+// Google Gemini (Nano Banana family) blocks realistic images
+// of identifiable real people. Detect this upfront.
+// ────────────────────────────────────────────────────────────
+
+/** Models that use Google Gemini and restrict real-person imagery */
+const GOOGLE_RESTRICTED_MODELS = new Set([
+  'nano-banana', 'nano-banana-pro', 'nano-banana-2',
+]);
+
+/**
+ * Patterns that indicate the user wants a likeness of a real person.
+ * We look for celebrity/public figure indicators + realistic intent.
+ */
+const REAL_PERSON_PATTERNS: RegExp[] = [
+  // "likeness of [person]", "looks like [person]", "resembling [person]"
+  /\b(likeness|looks?\s+like|resembl|lookalike|look-alike|doppelganger|identical\s+to|based\s+on|inspired\s+by|portrait\s+of|depicting|impersonat)\b.{0,60}\b(actor|actress|singer|president|politician|celebrity|athlete|rapper|musician|influencer|streamer|youtuber|footballer|player)\b/i,
+  /\b(actor|actress|singer|president|politician|celebrity|athlete|rapper|musician|influencer|streamer|youtuber|footballer|player)\b.{0,60}\b(likeness|looks?\s+like|resembl|lookalike|look-alike|identical)/i,
+
+  // Direct "photorealistic [person name]" or "[person] in a photo"
+  /\bphotorealistic\b.{0,30}\b(likeness|portrait)\b/i,
+
+  // "as [celebrity name]" or "of actor [name]"
+  /\b(of|as)\s+(actor|actress|singer|president|rapper)\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?\b/,
+
+  // Very common pattern: "exact likeness", "1:1 likeness", "identical to"
+  /\b(exact|perfect|1:1|precise)\s*(,\s*)?(photorealistic\s+)?(likeness|replica|copy|clone)\b/i,
+];
+
+export interface ModelFilterResult {
+  blocked: boolean;
+  reason?: string;
+  reasonRu?: string;
+}
+
+/**
+ * Check if a prompt is incompatible with a specific model's restrictions.
+ * Returns a warning if the prompt will likely be rejected.
+ */
+export function checkModelRestrictions(prompt: string, modelSlug: string): ModelFilterResult {
+  if (!GOOGLE_RESTRICTED_MODELS.has(modelSlug)) {
+    return { blocked: false };
+  }
+
+  const text = prompt.replace(/\s+/g, ' ').trim();
+
+  for (const pattern of REAL_PERSON_PATTERNS) {
+    if (pattern.test(text)) {
+      return {
+        blocked: true,
+        reason: 'This model (Google Gemini) cannot generate realistic images of real people or celebrities. Please use a different model (e.g. Flux Kontext, Midjourney) or remove references to real people.',
+        reasonRu: 'Эта модель (Google Gemini) не может генерировать реалистичные изображения реальных людей или знаменитостей. Используйте другую модель (например, Flux Kontext, Midjourney) или уберите упоминания реальных людей.',
+      };
+    }
+  }
+
+  return { blocked: false };
+}
+
 /**
  * Detect content-policy / safety rejections from provider error messages.
  */

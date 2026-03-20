@@ -157,6 +157,13 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
       : 'This request cannot be processed. Please use appropriate prompts.';
   }
 
+  // Model-specific restriction (e.g. Google Gemini + real people)
+  if (lower.includes('cannot generate realistic images of real people')) {
+    return lang === 'ru'
+      ? 'Эта модель не может генерировать изображения реальных людей. Используйте другую модель (Flux Kontext, Midjourney) или уберите упоминания реальных людей.'
+      : 'This model cannot generate images of real people. Use a different model (Flux Kontext, Midjourney) or remove references to real people.';
+  }
+
   // Content moderation from provider — don't mention policy, just ask to rephrase
   if (lower.includes('content policy') || lower.includes('moderation') || lower.includes('safety') || lower.includes('nsfw') || lower.includes('prohibited') || lower.includes('filtered out')) {
     return lang === 'ru'

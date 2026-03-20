@@ -24,8 +24,9 @@ import { GenerationStatusManager } from '../services/GenerationStatusManager';
 function isNonRetryableError(errorMsg: string): boolean {
   const lower = errorMsg.toLowerCase();
   return (
-    // Hard-blocked by our pre-filter
+    // Hard-blocked by our pre-filter or model restriction
     lower.includes('this request cannot be processed') ||
+    lower.includes('cannot generate realistic images') ||
     // Content policy — already retried with softened prompt at provider level
     lower.includes('content policy') ||
     lower.includes('prohibited use policy') ||
