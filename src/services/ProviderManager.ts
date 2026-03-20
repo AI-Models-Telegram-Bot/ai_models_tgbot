@@ -3,6 +3,7 @@ import { EnhancedProvider } from '../providers/base/EnhancedProvider';
 import { ProviderStats } from '../providers/base/ProviderConfig';
 import { MODEL_ROUTES } from '../config/modelRouting';
 import { logger } from '../utils/logger';
+import { filterPrompt, softenPrompt, isContentPolicyError } from '../utils/promptFilter';
 
 /** Circuit breaker: skip provider after N consecutive failures for COOLDOWN_MS */
 const CIRCUIT_BREAKER_THRESHOLD = 5;
@@ -157,6 +158,15 @@ export class ProviderManager {
     input: string,
     userOptions?: Record<string, unknown>,
   ): Promise<{ result: any; provider: string }> {
+    // ── Pre-filter: block genuinely harmful prompts before hitting any provider ──
+    if (method === 'generateImage' || method === 'generateVideo') {
+      const filter = filterPrompt(input);
+      if (filter.verdict === 'block') {
+        logger.warn('Prompt hard-blocked by content filter', { modelSlug, prompt: input.slice(0, 100) });
+        throw new Error(filter.reason || 'This request cannot be processed.');
+      }
+    }
+
     const route = MODEL_ROUTES[modelSlug];
 
     if (!route) {
@@ -196,7 +206,22 @@ export class ProviderManager {
         logger.info(`Trying ${name} for ${category}/${modelSlug} (modelId: ${modelId})`);
 
         const options = { model: modelId, ...extraOptions, ...userOptions };
-        const result = await (provider as any)[method](input, options);
+        let result: any;
+
+        try {
+          result = await (provider as any)[method](input, options);
+        } catch (firstErr: any) {
+          // On content policy rejection, soften the prompt and retry once on the same provider
+          if (isContentPolicyError(firstErr.message || '') && (method === 'generateImage' || method === 'generateVideo')) {
+            const softened = softenPrompt(input);
+            logger.info(`Content policy hit on ${name}, retrying with softened prompt`, {
+              modelSlug, original: input.slice(0, 80), softened: softened.slice(0, 80),
+            });
+            result = await (provider as any)[method](softened, options);
+          } else {
+            throw firstErr;
+          }
+        }
 
         logger.info(`✓ ${name} succeeded for ${category}/${modelSlug}`);
         this.recordSuccess(name);

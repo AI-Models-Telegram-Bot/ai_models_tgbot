@@ -18,6 +18,31 @@ import { getModelActiveKeyboardMarkup } from '../bot/keyboards/modelKeyboards';
 import { parseMjParams } from '../utils/mjParams';
 import { GenerationStatusManager } from '../services/GenerationStatusManager';
 
+/**
+ * Detect errors that should NOT be retried — retrying will always produce the same failure.
+ */
+function isNonRetryableError(errorMsg: string): boolean {
+  const lower = errorMsg.toLowerCase();
+  return (
+    // Hard-blocked by our pre-filter
+    lower.includes('this request cannot be processed') ||
+    // Content policy — already retried with softened prompt at provider level
+    lower.includes('content policy') ||
+    lower.includes('prohibited use policy') ||
+    lower.includes('filtered out') ||
+    // Payment / billing (won't fix itself on retry)
+    lower.includes('402') ||
+    lower.includes('payment required') ||
+    lower.includes('insufficient credit') ||
+    // Validation errors (prompt too short, invalid params)
+    lower.includes('character length must be') ||
+    // Auth errors
+    lower.includes('401') ||
+    lower.includes('unauthorized') ||
+    lower.includes('forbidden')
+  );
+}
+
 // Create Telegram API instance per job using the originating bot's token.
 // This ensures responses go to the correct bot (dev vs prod) when
 // multiple bot instances share the same Redis queues.
@@ -642,14 +667,16 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
 
     const errorMsg = error instanceof Error ? error.message : String(error);
     const maxAttempts = job.opts.attempts ?? 1;
-    const isFinalAttempt = job.attemptsMade >= maxAttempts - 1;
+    const isNonRetryable = isNonRetryableError(errorMsg);
+    const isFinalAttempt = job.attemptsMade >= maxAttempts - 1 || isNonRetryable;
 
     logger.error('Generation job failed', {
       jobId: job.id, requestId, error: errorMsg,
       attempt: job.attemptsMade + 1, maxAttempts, isFinalAttempt,
+      ...(isNonRetryable && { nonRetryable: true }),
     });
 
-    // If NOT the final attempt, re-throw so Bull retries with backoff.
+    // If NOT the final attempt and error is retryable, re-throw so Bull retries with backoff.
     // Don't refund or notify user yet — the next attempt may succeed.
     if (!isFinalAttempt) {
       logger.info(`Retrying job ${job.id} (attempt ${job.attemptsMade + 1}/${maxAttempts})`, {
