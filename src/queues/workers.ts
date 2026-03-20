@@ -689,9 +689,10 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
     const isWebErr = job.data.source === 'web';
     const isBotChatErr = job.data.source === 'bot_chat';
 
-    // Mark request as failed
+    // Mark request as failed (store sanitized message, not raw provider errors)
+    const sanitizedError = sanitizeErrorForUser(errorMsg, lang);
     try {
-      await requestService.markFailed(requestId, errorMsg, false);
+      await requestService.markFailed(requestId, sanitizedError, false);
     } catch (e) {
       logger.error('Failed to mark request as failed', { e });
     }
@@ -744,6 +745,7 @@ async function processGenerationJob(job: Job<GenerationJobData>): Promise<Genera
           messageId: webMessageId,
           requestId,
           content: webUserError,
+          error: webUserError,
           fileUrl: null,
           status: 'FAILED',
         }));
