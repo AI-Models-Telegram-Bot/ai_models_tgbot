@@ -3,7 +3,7 @@ import { EnhancedProvider } from '../providers/base/EnhancedProvider';
 import { ProviderStats } from '../providers/base/ProviderConfig';
 import { MODEL_ROUTES } from '../config/modelRouting';
 import { logger } from '../utils/logger';
-import { filterPrompt, softenPrompt, isContentPolicyError } from '../utils/promptFilter';
+import { filterPrompt, softenPrompt, isContentPolicyError, checkModelRestrictions } from '../utils/promptFilter';
 
 /** Circuit breaker: skip provider after N consecutive failures for COOLDOWN_MS */
 const CIRCUIT_BREAKER_THRESHOLD = 5;
@@ -164,6 +164,13 @@ export class ProviderManager {
       if (filter.verdict === 'block') {
         logger.warn('Prompt hard-blocked by content filter', { modelSlug, prompt: input.slice(0, 100) });
         throw new Error(filter.reason || 'This request cannot be processed.');
+      }
+
+      // Model-specific restrictions (e.g. Google Gemini can't do real people)
+      const modelCheck = checkModelRestrictions(input, modelSlug);
+      if (modelCheck.blocked) {
+        logger.warn('Prompt blocked by model restriction', { modelSlug, prompt: input.slice(0, 100) });
+        throw new Error(modelCheck.reason!);
       }
     }
 
