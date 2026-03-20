@@ -18,7 +18,7 @@ import { getStatusType, STATUS_MESSAGES } from '../../utils/statusMessages';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 import { convertOgaToMp3 } from '../../utils/audioConvert';
-import { downloadTelegramFile, reHostUrl, scheduleFileCleanup } from '../../utils/telegramFileDownload';
+import { downloadTelegramFile, reHostUrl, scheduleFileCleanup, type ReHostResult } from '../../utils/telegramFileDownload';
 import axios from 'axios';
 
 /**
@@ -360,12 +360,12 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
   try {
     const fileLink = await ctx.telegram.getFileLink(photo.file_id);
     // Re-host to our server immediately so the URL doesn't expire
-    const imageUrl = await reHostUrl(fileLink.href, '.jpg');
-    scheduleFileCleanup(imageUrl, 60 * 60 * 1000); // cleanup after 1 hour
+    const imageResult = await reHostUrl(fileLink.href, '.jpg');
+    if (imageResult.wasReHosted) scheduleFileCleanup(imageResult.url, 60 * 60 * 1000);
     const caption = ctx.message.caption;
 
     // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
-    enqueueImageUrl(ctx, imageUrl, caption, isImageModelWithInput);
+    enqueueImageUrl(ctx, imageResult.url, caption, isImageModelWithInput);
   } catch (error) {
     logger.error('Failed to get file link for photo:', error);
     const msg = lang === 'ru'
@@ -565,13 +565,15 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
     try {
       const fileLink = await ctx.telegram.getFileLink(doc.file_id);
       // Re-host to our server immediately so the URL doesn't expire
-      imageUrl = await reHostUrl(fileLink.href, ext);
+      const docResult = await reHostUrl(fileLink.href, ext);
+      imageUrl = docResult.url;
+      if (docResult.wasReHosted) scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
     } catch {
       // Fallback for large files (>20MB) — download to our server by file_id
       logger.info('getFileLink failed for document, falling back to direct download');
       imageUrl = await downloadTelegramFile(doc.file_id, config.bot.token, ext);
+      scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
     }
-    scheduleFileCleanup(imageUrl, 60 * 60 * 1000); // cleanup after 1 hour
     const caption = ctx.message.caption;
 
     // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
@@ -790,9 +792,9 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
           await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {});
           const fileId = msg.photo![msg.photo!.length - 1].file_id;
           const fileLink = await ctx.telegram.getFileLink(fileId);
-          const resizedUrl = await reHostUrl(fileLink.href, '.jpg');
-          scheduleFileCleanup(resizedUrl, 60 * 60 * 1000);
-          resized.push(resizedUrl);
+          const resizedResult = await reHostUrl(fileLink.href, '.jpg');
+          if (resizedResult.wasReHosted) scheduleFileCleanup(resizedResult.url, 60 * 60 * 1000);
+          resized.push(resizedResult.url);
           logger.info(`Image resized for aspect ratio ${targetAR}`, { originalUrl: originalUrl.slice(0, 60) });
         } catch (err) {
           logger.warn('Image resize failed, using original', { err });
@@ -944,10 +946,10 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
   try {
     const fileLink = await ctx.telegram.getFileLink(fileId);
     // Re-host to our server immediately so the URL doesn't expire before worker processes it
-    const videoUrl = await reHostUrl(fileLink.href, '.mp4');
-    scheduleFileCleanup(videoUrl, 60 * 60 * 1000); // cleanup after 1 hour
+    const videoResult = await reHostUrl(fileLink.href, '.mp4');
+    if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url, 60 * 60 * 1000);
 
-    ctx.session.uploadedVideoUrl = videoUrl;
+    ctx.session.uploadedVideoUrl = videoResult.url;
 
     // Capture video metadata for enhancement providers (Topaz Direct needs source dims)
     if ('video' in ctx.message! && (ctx.message as any).video) {
@@ -1089,10 +1091,10 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
     }
 
     // Re-host to our server immediately so the URL doesn't expire
-    audioUrl = await reHostUrl(audioUrl, '.mp3');
-    scheduleFileCleanup(audioUrl, 60 * 60 * 1000); // cleanup after 1 hour
+    const audioResult = await reHostUrl(audioUrl, '.mp3');
+    if (audioResult.wasReHosted) scheduleFileCleanup(audioResult.url, 60 * 60 * 1000);
 
-    ctx.session.uploadedAudioUrl = audioUrl;
+    ctx.session.uploadedAudioUrl = audioResult.url;
 
     const hasImage = !!ctx.session.uploadedImageUrls?.length;
     if (hasImage) {

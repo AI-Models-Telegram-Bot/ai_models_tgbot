@@ -9,7 +9,7 @@ import {
 } from './BaseProvider';
 import { logger } from '../utils/logger';
 import { parseMjParams } from '../utils/mjParams';
-import { reHostUrl, scheduleFileCleanup } from '../utils/telegramFileDownload';
+import { reHostUrl, reHostUrlsWithCleanup, scheduleFileCleanup } from '../utils/telegramFileDownload';
 
 /**
  * Extract a user-facing error message from a KieAI API response that lacks a taskId.
@@ -236,8 +236,7 @@ export class KieAIProvider extends EnhancedProvider {
       if (hasImages) {
         const maxImages = model.includes('kling') ? 1 : 4;
         const urls = inputImageUrls.slice(0, maxImages);
-        const publicUrls = await Promise.all(urls.map(u => reHostUrl(u, '.jpg')));
-        publicUrls.forEach(u => scheduleFileCleanup(u));
+        const publicUrls = await reHostUrlsWithCleanup(urls, '.jpg');
         input.image_urls = publicUrls;
       }
 
@@ -582,8 +581,7 @@ export class KieAIProvider extends EnhancedProvider {
       // Add reference images with the correct field name for this model
       // Re-host Telegram URLs so KieAI can access them
       if (hasImage && imageField) {
-        const publicUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
-        publicUrls.forEach(u => scheduleFileCleanup(u));
+        const publicUrls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
         input[imageField] = publicUrls;
       }
 
@@ -663,9 +661,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       // Add reference images for editing mode (re-host Telegram URLs)
       if (hasImage) {
-        const publicUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
-        publicUrls.forEach(u => scheduleFileCleanup(u));
-        input.image_urls = publicUrls;
+        input.image_urls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
       }
 
       logger.info('KieAI Seedream payload:', { model, image_size: input.image_size, hasImage });
@@ -729,9 +725,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       // Add reference images for editing mode (re-host Telegram URLs)
       if (hasImage) {
-        const publicUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
-        publicUrls.forEach(u => scheduleFileCleanup(u));
-        input.image_urls = publicUrls;
+        input.image_urls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
       }
 
       logger.info('KieAI Seedream 4.5 payload:', { model, aspect_ratio: aspectRatio, quality: input.quality, hasImage });
@@ -948,8 +942,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       if (inputImageUrls?.length) {
         // Re-host all image URLs so KieAI can access them
-        const publicImageUrls = await Promise.all(inputImageUrls.map(u => reHostUrl(u, '.jpg')));
-        publicImageUrls.forEach(u => scheduleFileCleanup(u));
+        const publicImageUrls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
 
         // First 2 images → keyframes (first frame + last frame)
         input.image_urls = publicImageUrls.slice(0, 2);
@@ -1022,18 +1015,16 @@ export class KieAIProvider extends EnhancedProvider {
       logger.info('KieAI Kling Motion: starting, re-hosting files to public URLs');
 
       // Re-host Telegram file URLs to our server so KieAI can access them
-      const [publicImageUrl, publicVideoUrl] = await Promise.all([
+      const [imageResult, videoResult] = await Promise.all([
         reHostUrl(inputImageUrls[0], '.jpg'),
         reHostUrl(inputVideoUrl, '.mp4'),
       ]);
-
-      // Schedule cleanup after 30 min
-      scheduleFileCleanup(publicImageUrl);
-      scheduleFileCleanup(publicVideoUrl);
+      if (imageResult.wasReHosted) scheduleFileCleanup(imageResult.url);
+      if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url);
 
       const input: Record<string, unknown> = {
-        input_urls: [publicImageUrl],
-        video_urls: [publicVideoUrl],
+        input_urls: [imageResult.url],
+        video_urls: [videoResult.url],
         mode: (options?.resolution as string) || '720p',
         character_orientation: (options?.characterOrientation as string) || 'video',
       };
@@ -1092,16 +1083,16 @@ export class KieAIProvider extends EnhancedProvider {
       logger.info(`KieAI Kling Avatar: starting (model: ${model}), re-hosting files`);
 
       // Re-host Telegram file URLs to our server so KieAI can access them
-      const [publicImageUrl, publicAudioUrl] = await Promise.all([
+      const [imageResult, audioResult] = await Promise.all([
         reHostUrl(inputImageUrls[0], '.jpg'),
         reHostUrl(inputAudioUrl, '.mp3'),
       ]);
-      scheduleFileCleanup(publicImageUrl);
-      scheduleFileCleanup(publicAudioUrl);
+      if (imageResult.wasReHosted) scheduleFileCleanup(imageResult.url);
+      if (audioResult.wasReHosted) scheduleFileCleanup(audioResult.url);
 
       const input: Record<string, unknown> = {
-        image_url: publicImageUrl,
-        audio_url: publicAudioUrl,
+        image_url: imageResult.url,
+        audio_url: audioResult.url,
         prompt: (prompt && prompt.trim()) ? prompt : 'A person speaking naturally',
       };
 
@@ -1152,8 +1143,9 @@ export class KieAIProvider extends EnhancedProvider {
       logger.info('KieAI Topaz: starting video upscale, re-hosting video');
 
       // Re-host Telegram video URL so KieAI can access it
-      const publicVideoUrl = await reHostUrl(inputVideoUrl, '.mp4');
-      scheduleFileCleanup(publicVideoUrl);
+      const videoResult = await reHostUrl(inputVideoUrl, '.mp4');
+      if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url);
+      const publicVideoUrl = videoResult.url;
 
       // Map upscale setting to upscale_factor: "original" → "1", "2x" → "2", "4x" → "4"
       const upscaleSetting = (options?.upscale as string) || '2x';

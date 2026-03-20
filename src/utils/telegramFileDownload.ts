@@ -79,19 +79,25 @@ export async function downloadTelegramFile(
  * Returns a publicly accessible URL. Useful for re-hosting Telegram file URLs
  * so external services (e.g. KieAI) can access them.
  */
+export interface ReHostResult {
+  url: string;
+  /** true when a new copy was created (caller should schedule cleanup) */
+  wasReHosted: boolean;
+}
+
 export async function reHostUrl(
   url: string,
   ext: string = '',
-): Promise<string> {
+): Promise<ReHostResult> {
   const webappUrl = config.webapp?.url;
   if (!webappUrl) {
     throw new Error('WEBAPP_URL not configured — cannot serve uploaded file');
   }
 
-  // Skip if already hosted on our server
+  // Skip if already hosted on our server — do NOT schedule cleanup for these
   const uploadsPublicUrl = config.webapp?.uploadsPublicUrl;
   if (url.startsWith(webappUrl) || (uploadsPublicUrl && url.startsWith(uploadsPublicUrl))) {
-    return url;
+    return { url, wasReHosted: false };
   }
 
   if (!ext) {
@@ -122,7 +128,23 @@ export async function reHostUrl(
   const uploadsBase = config.webapp?.uploadsPublicUrl || webappUrl;
   const publicUrl = `${uploadsBase}/uploads/${uniqueName}`;
   logger.info('URL re-hosted', { publicUrl });
-  return publicUrl;
+  return { url: publicUrl, wasReHosted: true };
+}
+
+/**
+ * Re-host URLs and schedule cleanup only for newly created copies.
+ * Returns the public URLs ready for external API consumption.
+ */
+export async function reHostUrlsWithCleanup(
+  urls: string[],
+  ext: string = '',
+  cleanupDelayMs: number = 30 * 60 * 1000,
+): Promise<string[]> {
+  const results = await Promise.all(urls.map(u => reHostUrl(u, ext)));
+  for (const r of results) {
+    if (r.wasReHosted) scheduleFileCleanup(r.url, cleanupDelayMs);
+  }
+  return results.map(r => r.url);
 }
 
 /**
