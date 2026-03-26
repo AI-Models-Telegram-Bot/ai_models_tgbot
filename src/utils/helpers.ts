@@ -80,11 +80,28 @@ export function markdownToTelegramHtml(text: string): string {
 export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en'): string {
   const lower = rawError.toLowerCase();
 
-  // Out of credits / billing
-  if (lower.includes('run out of credits') || lower.includes('billing') || lower.includes('status code 403')) {
+  // Out of credits / billing / quota
+  if (lower.includes('run out of credits') || lower.includes('billing') || lower.includes('status code 403') ||
+      lower.includes('daily limit') || lower.includes('exhausted balance') || lower.includes('credit not enough') ||
+      lower.includes('quota not enough') || lower.includes('insufficient credit') || lower.includes('payment required') ||
+      lower.includes('user is locked')) {
     return lang === 'ru'
       ? 'Сервис временно недоступен. Попробуйте позже.'
       : 'Service temporarily unavailable. Please try again later.';
+  }
+
+  // Media file unavailable (upload expired or deleted)
+  if (lower.includes('media file is unavailable') || lower.includes('failed to download')) {
+    return lang === 'ru'
+      ? 'Файл недоступен. Пожалуйста, загрузите изображение/видео заново и попробуйте снова.'
+      : 'File is unavailable. Please re-upload your image/video and try again.';
+  }
+
+  // Provider internal errors (task id blank, playground failed)
+  if (lower.includes('task id is blank') || lower.includes('playground failed')) {
+    return lang === 'ru'
+      ? 'Произошла внутренняя ошибка сервиса. Попробуйте снова.'
+      : 'An internal service error occurred. Please try again.';
   }
 
   // Polling timeout

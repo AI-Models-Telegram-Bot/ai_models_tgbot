@@ -8,10 +8,23 @@ import { filterPrompt, softenPrompt, isContentPolicyError, checkModelRestriction
 /** Circuit breaker: skip provider after N consecutive failures for COOLDOWN_MS */
 const CIRCUIT_BREAKER_THRESHOLD = 5;
 const CIRCUIT_BREAKER_COOLDOWN_MS = 60_000; // 60 seconds
+/** Billing/quota errors open circuit immediately for a longer cooldown */
+const BILLING_COOLDOWN_MS = 5 * 60_000; // 5 minutes
 
 interface CircuitState {
   failures: number;
   openUntil: number;
+}
+
+/** Detect billing/quota/auth errors that mean the provider is down for everyone */
+function isBillingOrQuotaError(msg: string): boolean {
+  const l = msg.toLowerCase();
+  return l.includes('daily limit') || l.includes('exhausted balance') ||
+    l.includes('credit not enough') || l.includes('quota not enough') ||
+    l.includes('insufficient credit') || l.includes('payment required') ||
+    l.includes('user is locked') || l.includes('status 402') ||
+    l.includes('status code 402') || l.includes('status 403') ||
+    l.includes('status code 403') || l.includes('unauthorized');
 }
 
 /**
@@ -39,12 +52,19 @@ export class ProviderManager {
     return state.failures >= CIRCUIT_BREAKER_THRESHOLD;
   }
 
-  /** Record a provider failure; opens circuit after threshold */
-  private recordFailure(providerName: string): void {
+  /** Record a provider failure; opens circuit after threshold (or immediately for billing errors) */
+  private recordFailure(providerName: string, errorMsg?: string): void {
     const state = this.circuitBreaker.get(providerName) || { failures: 0, openUntil: 0 };
     state.failures++;
 
-    if (state.failures >= CIRCUIT_BREAKER_THRESHOLD && state.openUntil === 0) {
+    // Billing/quota errors: open circuit immediately with longer cooldown
+    if (errorMsg && isBillingOrQuotaError(errorMsg)) {
+      state.failures = CIRCUIT_BREAKER_THRESHOLD; // force open
+      state.openUntil = Date.now() + BILLING_COOLDOWN_MS;
+      logger.warn(
+        `Circuit breaker OPEN for ${providerName} — billing/quota error, skipping for ${BILLING_COOLDOWN_MS / 1000}s`
+      );
+    } else if (state.failures >= CIRCUIT_BREAKER_THRESHOLD && state.openUntil === 0) {
       state.openUntil = Date.now() + CIRCUIT_BREAKER_COOLDOWN_MS;
       logger.warn(
         `Circuit breaker OPEN for ${providerName} — skipping for ${CIRCUIT_BREAKER_COOLDOWN_MS / 1000}s ` +
@@ -136,7 +156,7 @@ export class ProviderManager {
         const errorMsg = error.message || String(error);
         errors.push(`${name}: ${errorMsg}`);
         logger.warn(`✗ ${name} failed for ${category}: ${errorMsg}`);
-        this.recordFailure(name);
+        this.recordFailure(name, errorMsg);
       }
     }
 
@@ -237,7 +257,7 @@ export class ProviderManager {
         const errorMsg = error.message || String(error);
         errors.push(`${name}: ${errorMsg}`);
         logger.warn(`✗ ${name} failed for ${category}/${modelSlug}: ${errorMsg}`);
-        this.recordFailure(name);
+        this.recordFailure(name, errorMsg);
       }
     }
 
