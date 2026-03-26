@@ -31,12 +31,21 @@ function isNonRetryableError(errorMsg: string): boolean {
     lower.includes('content policy') ||
     lower.includes('prohibited use policy') ||
     lower.includes('filtered out') ||
-    // Payment / billing (won't fix itself on retry)
+    // Payment / billing / quota (won't fix itself on retry)
     lower.includes('402') ||
     lower.includes('payment required') ||
     lower.includes('insufficient credit') ||
+    lower.includes('daily limit') ||
+    lower.includes('exhausted balance') ||
+    lower.includes('credit not enough') ||
+    lower.includes('quota not enough') ||
+    lower.includes('user is locked') ||
+    // Media/file errors (file is gone, retrying won't help)
+    lower.includes('media file is unavailable') ||
+    lower.includes('failed to download') ||
     // Validation errors (prompt too short, invalid params)
     lower.includes('character length must be') ||
+    lower.includes('task id is blank') ||
     // Auth errors
     lower.includes('401') ||
     lower.includes('unauthorized') ||

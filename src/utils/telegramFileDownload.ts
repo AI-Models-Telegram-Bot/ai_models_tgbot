@@ -138,7 +138,7 @@ export async function reHostUrl(
 export async function reHostUrlsWithCleanup(
   urls: string[],
   ext: string = '',
-  cleanupDelayMs: number = 30 * 60 * 1000,
+  cleanupDelayMs: number = 2 * 60 * 60 * 1000,
 ): Promise<string[]> {
   const results = await Promise.all(urls.map(u => reHostUrl(u, ext)));
   for (const r of results) {
@@ -148,9 +148,9 @@ export async function reHostUrlsWithCleanup(
 }
 
 /**
- * Schedule cleanup of an uploaded file after a delay (default 30 min).
+ * Schedule cleanup of an uploaded file after a delay (default 2 hours).
  */
-export function scheduleFileCleanup(publicUrl: string, delayMs: number = 30 * 60 * 1000): void {
+export function scheduleFileCleanup(publicUrl: string, delayMs: number = 2 * 60 * 60 * 1000): void {
   const filename = publicUrl.split('/uploads/').pop();
   if (!filename) return;
 
