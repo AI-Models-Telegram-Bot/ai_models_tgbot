@@ -141,12 +141,16 @@ export class FalProvider extends EnhancedProvider {
    * Switch model ID from text-to-video to image-to-video variant when images are provided.
    */
   private getImageToVideoModel(textModel: string): string {
-    // Seedance: text-to-video → image-to-video
-    if (textModel.includes('seedance') && textModel.endsWith('/text-to-video')) {
+    // Generic text-to-video → image-to-video swap (Seedance, Kling v3, Sora, etc.)
+    if (textModel.endsWith('/text-to-video')) {
       return textModel.replace('/text-to-video', '/image-to-video');
     }
-    // Kling: append /image-to-video (fal kling IDs don't have /text-to-video suffix)
-    if (textModel.includes('kling-video') && !textModel.endsWith('/image-to-video')) {
+    // Sora Pro: /text-to-video/pro → /image-to-video/pro
+    if (textModel.endsWith('/text-to-video/pro')) {
+      return textModel.replace('/text-to-video/pro', '/image-to-video/pro');
+    }
+    // Kling v2.5: old-style IDs without /text-to-video suffix → append /image-to-video
+    if (textModel.includes('kling-video') && !textModel.endsWith('/image-to-video') && !textModel.includes('/text-to-video') && !textModel.includes('motion-control')) {
       return `${textModel}/image-to-video`;
     }
     // Wan: wan-t2v → wan-i2v
@@ -201,6 +205,20 @@ export class FalProvider extends EnhancedProvider {
       // Seedance-specific: camera_fixed
       if (model.includes('seedance') && options?.cameraFixed !== undefined) {
         input.camera_fixed = options.cameraFixed;
+      }
+
+      // Kling motion-control: needs video_url + character_orientation
+      if (model.includes('motion-control')) {
+        const inputVideoUrl = options?.inputVideoUrl as string | undefined;
+        if (inputVideoUrl) {
+          input.video_url = inputVideoUrl;
+        }
+        input.character_orientation = (options?.characterOrientation as string) || 'video';
+      }
+
+      // Sora-specific: generate_audio support
+      if (model.includes('sora-2') && options?.audio !== undefined) {
+        input.generate_audio = !!options.audio;
       }
 
       // Submit to queue
