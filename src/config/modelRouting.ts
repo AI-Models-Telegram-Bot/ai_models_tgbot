@@ -338,6 +338,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'kling-3.0/video' },
+      { name: 'fal', modelId: 'fal-ai/kling-video/v2.5/pro' },              // fallback (v2.5 pro closest)
     ],
   },
 
@@ -370,6 +371,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1/lite/text-to-video' },    // ~$0.18
+      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },                        // fallback (1.5 pro)
     ],
   },
 
@@ -378,6 +380,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1/pro/text-to-video' },     // ~$0.74
+      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },                        // fallback (1.5 pro)
     ],
   },
 
@@ -386,6 +389,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'fal', modelId: 'fal-ai/bytedance/seedance/v1/pro/fast/text-to-video' }, // ~$0.245
+      { name: 'kieai', modelId: 'bytedance/seedance-1.5-pro' },                        // fallback (1.5 pro)
     ],
   },
 
