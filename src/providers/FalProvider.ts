@@ -181,12 +181,20 @@ export class FalProvider extends EnhancedProvider {
     try {
       logger.info(`Fal.ai video: starting generation (${model}, images: ${hasImages ? inputImageUrls.length : 0})`);
 
+      const isKling = model.includes('kling-video');
+      const isSora = model.includes('sora-2');
+      const isSeedance = model.includes('seedance');
+
       const input: Record<string, unknown> = {
         prompt,
         aspect_ratio: (options?.aspectRatio as string) || '16:9',
-        resolution: (options?.resolution as string) || '720p',
-        enable_safety_checker: true,
       };
+
+      // resolution & enable_safety_checker: only for Seedance/Wan/Luma (Kling v3 and Sora reject them)
+      if (!isKling && !isSora) {
+        input.resolution = (options?.resolution as string) || '720p';
+        input.enable_safety_checker = true;
+      }
 
       // Duration handling
       if (options?.duration !== undefined) {
@@ -203,7 +211,7 @@ export class FalProvider extends EnhancedProvider {
       }
 
       // Seedance-specific: camera_fixed
-      if (model.includes('seedance') && options?.cameraFixed !== undefined) {
+      if (isSeedance && options?.cameraFixed !== undefined) {
         input.camera_fixed = options.cameraFixed;
       }
 
@@ -216,9 +224,14 @@ export class FalProvider extends EnhancedProvider {
         input.character_orientation = (options?.characterOrientation as string) || 'video';
       }
 
-      // Sora-specific: generate_audio support
-      if (model.includes('sora-2') && options?.audio !== undefined) {
+      // Sora: generate_audio support
+      if (isSora && options?.audio !== undefined) {
         input.generate_audio = !!options.audio;
+      }
+
+      // Kling v3: generate_audio defaults to false (avoid unexpected charges)
+      if (isKling && model.includes('/v3/')) {
+        input.generate_audio = false;
       }
 
       // Submit to queue
