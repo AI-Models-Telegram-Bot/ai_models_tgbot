@@ -55,8 +55,7 @@ router.get('/trends', async (req, res) => {
         });
         if (user) {
           const isEligible = await trendService.isFreeTrial(user.id);
-          const usedCount = await trendService.getCompletedTrendCount(user.id);
-          freeTrial = { eligible: isEligible, remaining: Math.max(0, 2 - usedCount) };
+          freeTrial = { eligible: isEligible, remaining: 0 };
         }
       } catch { /* non-critical */ }
     }

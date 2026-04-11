@@ -7,7 +7,7 @@ export const REFERRAL_COMMISSION: Record<string, { tokenPercent: number; cashPer
 };
 
 /** Bonus tokens granted to a NEW user who joins via a referral link */
-export const REFERRAL_INVITEE_BONUS = 25;
+export const REFERRAL_INVITEE_BONUS = 5;
 
 /** Minimum withdrawal thresholds */
 export const WITHDRAWAL_THRESHOLDS = {
@@ -70,28 +70,28 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 0,
     priceRUB: 0,
     duration: 'lifetime',
-    tokens: 10,
+    tokens: 5,
     modelAccess: {
       text: {
         allowed: ['gpt-4o-mini', 'gemini-flash', 'fast-text'],
       },
       image: {
-        allowed: ['flux-schnell', 'sdxl', 'sdxl-lightning', 'dall-e-2', 'midjourney', 'seedream-4.5', 'nano-banana-pro', 'nano-banana-2'],
+        allowed: ['flux-schnell', 'sdxl', 'sdxl-lightning'],
       },
       video: {
-        allowed: ['wan'],
+        allowed: [],
       },
       audio: {
         allowed: [],
       },
     },
     rateLimits: {
-      requestsPerHour: 30,
-      requestsPerDay: 100,
-      videoPerHour: 2,
-      videoPerDay: 5,
+      requestsPerHour: 10,
+      requestsPerDay: 20,
+      videoPerHour: 0,
+      videoPerDay: 0,
     },
-    maxConcurrentGenerations: 2,
+    maxConcurrentGenerations: 1,
     features: [
       'features.free.basicModels',
       'features.free.communitySupport',

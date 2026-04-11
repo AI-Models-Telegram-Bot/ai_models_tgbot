@@ -4,7 +4,7 @@ import { walletService } from './WalletService';
 import { subscriptionService } from './SubscriptionService';
 import { logger } from '../utils/logger';
 
-const FREE_TREND_LIMIT = 2;
+const FREE_TREND_LIMIT = 0;
 
 export class TrendService {
   // ── Public queries ──────────────────────────────────────

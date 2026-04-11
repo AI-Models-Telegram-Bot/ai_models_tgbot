@@ -308,7 +308,7 @@ export class AuthService {
 
   private async initNewUserWallet(userId: string): Promise<void> {
     const freePlan = SUBSCRIPTION_PLANS.find((p) => p.tier === SubscriptionTier.FREE);
-    const tokens = freePlan?.tokens ?? 160;
+    const tokens = freePlan?.tokens ?? 5;
 
     await walletService.getOrCreateWallet(userId);
     await walletService.grantSignupBonus(userId, tokens);
