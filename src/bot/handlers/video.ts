@@ -190,6 +190,18 @@ const VIDEO_FUNCTIONS: Record<VideoFunction, VideoFunctionConfig> = {
     family: 'seedance',
     hasSettings: true,
   },
+  'seedance-2-fast': {
+    modelSlug: 'seedance-2-fast',
+    descriptionKey: 'videoSeedance2FastDesc',
+    family: 'seedance',
+    hasSettings: true,
+  },
+  'seedance-2': {
+    modelSlug: 'seedance-2',
+    descriptionKey: 'videoSeedance2Desc',
+    family: 'seedance',
+    hasSettings: true,
+  },
   'topaz': {
     modelSlug: 'topaz',
     descriptionKey: 'videoTopazDesc',
@@ -235,6 +247,8 @@ const FUNCTION_NAMES: Record<VideoFunction, { en: string; ru: string }> = {
   'seedance-1-pro': { en: 'Seedance 1.0 Pro', ru: 'Seedance 1.0 Pro' },
   'seedance-fast': { en: 'Seedance 1.0 Fast', ru: 'Seedance 1.0 Fast' },
   'seedance': { en: 'Seedance 1.5 Pro', ru: 'Seedance 1.5 Pro' },
+  'seedance-2-fast': { en: 'Seedance 2 Fast', ru: 'Seedance 2 Fast' },
+  'seedance-2': { en: 'Seedance 2', ru: 'Seedance 2' },
   'topaz': { en: 'Topaz AI', ru: 'Topaz AI' },
   'topaz-direct': { en: 'Topaz AI Pro', ru: 'Topaz AI Pro' },
   'wavespeed': { en: 'WaveSpeed', ru: 'WaveSpeed' },

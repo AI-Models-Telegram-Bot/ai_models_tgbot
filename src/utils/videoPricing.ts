@@ -26,6 +26,27 @@ const DYNAMIC_PRICING: Record<string, DynamicPricingConfig> = {
   'seedance-fast':  { defaultDuration: 4 },
 };
 
+// ── Seedance 2 pricing (per-second × resolution × input mode) ──
+// Source: Kie cost (480p text $0.095/s, 480p img $0.0575/s, 720p text $0.205/s,
+// 720p img $0.125/s) × 1.30 margin ÷ $0.02/credit, rounded up.
+// Same rates apply to seedance-2 and seedance-2-fast (Kie doc shows shared schedule).
+const SEEDANCE_2_PER_SECOND: Record<string, { text: number; image: number }> = {
+  '480p': { text: 7, image: 4 },
+  '720p': { text: 14, image: 9 },
+};
+
+function calculateSeedance2Cost(settings?: {
+  duration?: number;
+  resolution?: string;
+  hasImageInput?: boolean;
+}): number {
+  const duration = settings?.duration || 5;
+  const resolution = settings?.resolution || '720p';
+  const rates = SEEDANCE_2_PER_SECOND[resolution] || SEEDANCE_2_PER_SECOND['720p'];
+  const perSec = settings?.hasImageInput ? rates.image : rates.text;
+  return Math.ceil(perSec * duration);
+}
+
 const RESOLUTION_MULT: Record<string, number> = {
   '480p': 0.7,
   '720p': 1.0,
@@ -147,14 +168,19 @@ function calculateKling30Cost(duration?: number): number {
 }
 
 export function hasDynamicPricing(slug: string): boolean {
-  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'kling-3.0' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro' || slug === 'nano-banana-2';
+  return slug in DYNAMIC_PRICING || slug === 'kling' || slug === 'kling-pro' || slug === 'kling-3.0' || slug === 'midjourney' || slug === 'seedream-4.5' || slug === 'nano-banana-pro' || slug === 'nano-banana-2' || slug === 'seedance-2' || slug === 'seedance-2-fast';
 }
 
 export function calculateDynamicCost(
   slug: string,
   baseCost: number,
-  settings?: { duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string },
+  settings?: { duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string; hasImageInput?: boolean },
 ): number {
+  // Seedance 2 / 2-fast: per-second × resolution × input mode
+  if (slug === 'seedance-2' || slug === 'seedance-2-fast') {
+    return calculateSeedance2Cost(settings);
+  }
+
   // Kling uses its own pricing table (not proportional scaling)
   if (slug === 'kling') {
     return calculateKlingCost('std', settings);

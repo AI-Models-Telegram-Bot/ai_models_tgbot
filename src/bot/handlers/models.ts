@@ -711,8 +711,12 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
 
   // ── Calculate dynamic cost (scales with duration/resolution for video, speed for Midjourney) ──
 
-  const dynamicSettings = { ...(videoOptions || {}), ...(imageOptions || {}) } as {
-    duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string;
+  const dynamicSettings = {
+    ...(videoOptions || {}),
+    ...(imageOptions || {}),
+    hasImageInput: (ctx.session.uploadedImageUrls?.length ?? 0) > 0,
+  } as {
+    duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string; hasImageInput?: boolean;
   };
   const creditsCost = calculateDynamicCost(model.slug, model.tokenCost, dynamicSettings);
 

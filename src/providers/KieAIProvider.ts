@@ -260,12 +260,21 @@ export class KieAIProvider extends EnhancedProvider {
         }
       }
 
-      // Seedance-specific: duration must be 4, 8, or 12 (default 8)
+      // Seedance-specific: duration constraints differ between v1 and v2
       if (model.includes('seedance')) {
         input.aspect_ratio = (options?.aspectRatio as string) || '16:9';
-        const dur = parseInt(String(options?.duration || '8'), 10);
-        input.duration = String([4, 8, 12].includes(dur) ? dur : 8);
-        input.resolution = (options?.resolution as string) || '720p';
+        const requested = parseInt(String(options?.duration || '0'), 10);
+        if (model.includes('seedance-2')) {
+          // v2: 5 / 8 / 10 seconds (per Kie market spec), default 5
+          const valid = [5, 8, 10];
+          input.duration = String(valid.includes(requested) ? requested : 5);
+          input.resolution = (options?.resolution as string) || '720p';
+        } else {
+          // v1.x: 4 / 8 / 12 seconds, default 8
+          const valid = [4, 8, 12];
+          input.duration = String(valid.includes(requested) ? requested : 8);
+          input.resolution = (options?.resolution as string) || '720p';
+        }
       }
 
       logger.info('KieAI market video payload:', { model, input });
@@ -286,7 +295,8 @@ export class KieAIProvider extends EnhancedProvider {
 
       const time = Date.now() - start;
       let cost = 0.28; // default for Kling
-      if (model.includes('seedance')) cost = 0.45;
+      if (model.includes('seedance-2')) cost = 1.025; // 720p text-to-video, 5s baseline
+      else if (model.includes('seedance')) cost = 0.45;
       if (model.includes('sora-2-pro')) cost = 0.80;
       else if (model.startsWith('sora-')) cost = 0.50;
       this.updateStats(true, cost, time);

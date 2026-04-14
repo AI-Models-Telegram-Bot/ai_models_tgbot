@@ -341,6 +341,20 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 25,
     isLossLeader: false,
   },
+  'seedance-2-fast': {
+    creditsPerUnit: 70,
+    unitType: '1_video',
+    baseCostUSD: 1.025,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
+  'seedance-2': {
+    creditsPerUnit: 70,
+    unitType: '1_video',
+    baseCostUSD: 1.025,
+    marginPercent: 30,
+    isLossLeader: false,
+  },
   'sora-pro': {
     creditsPerUnit: 47,
     unitType: '1_video',
@@ -356,17 +370,17 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     isLossLeader: false,
   },
   'topaz': {
-    creditsPerUnit: 1,
+    creditsPerUnit: 2,
     unitType: '1_video',
     baseCostUSD: 0.02,
-    marginPercent: 30,
+    marginPercent: 57,
     isLossLeader: false,
   },
   'topaz-direct': {
-    creditsPerUnit: 2,
+    creditsPerUnit: 5,
     unitType: '1_video',
     baseCostUSD: 0.08,
-    marginPercent: 30,
+    marginPercent: 42,
     isLossLeader: false,
   },
   'wavespeed': {
