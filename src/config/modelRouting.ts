@@ -403,6 +403,23 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     ],
   },
 
+  // Seedance 2 Fast — ByteDance v2 fast variant via Kie market
+  // Pricing: $0.0575–$0.205 per second depending on resolution + input mode
+  'seedance-2-fast': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'bytedance/seedance-2-fast' },
+    ],
+  },
+
+  // Seedance 2 — ByteDance v2 (newest, premium quality) via Kie market
+  'seedance-2': {
+    category: 'VIDEO',
+    providers: [
+      { name: 'kieai', modelId: 'bytedance/seedance-2' },
+    ],
+  },
+
   // Wan 2.1 — affordable video
   'wan': {
     category: 'VIDEO',

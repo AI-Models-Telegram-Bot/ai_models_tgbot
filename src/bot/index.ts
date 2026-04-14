@@ -157,6 +157,8 @@ export function createBot(): Telegraf<BotContext> {
   bot.hears([en.buttons.videoSeedancePro, ru.buttons.videoSeedancePro], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-1-pro'));
   bot.hears([en.buttons.videoSeedanceFast, ru.buttons.videoSeedanceFast], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-fast'));
   bot.hears([en.buttons.videoSeedance15Pro, ru.buttons.videoSeedance15Pro], (ctx) => handleVideoFunctionSelection(ctx, 'seedance'));
+  bot.hears([en.buttons.videoSeedance2, ru.buttons.videoSeedance2], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-2'));
+  bot.hears([en.buttons.videoSeedance2Fast, ru.buttons.videoSeedance2Fast], (ctx) => handleVideoFunctionSelection(ctx, 'seedance-2-fast'));
   bot.hears([en.buttons.videoTopazDirect, ru.buttons.videoTopazDirect], (ctx) => handleVideoFunctionSelection(ctx, 'topaz-direct'));
   bot.hears([en.buttons.videoTopaz, ru.buttons.videoTopaz], (ctx) => handleVideoFunctionSelection(ctx, 'topaz'));
   bot.hears([en.buttons.videoWaveSpeed, ru.buttons.videoWaveSpeed], (ctx) => handleVideoFunctionSelection(ctx, 'wavespeed'));

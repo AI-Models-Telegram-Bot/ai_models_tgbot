@@ -7,7 +7,7 @@ export type ImageFamily = 'flux' | 'dall-e' | 'midjourney' | 'nano-banana' | 'na
 export type ImageFunction = 'flux-schnell' | 'flux-kontext' | 'flux-dev' | 'flux-pro' | 'dall-e-2' | 'dall-e-3' | 'midjourney' | 'nano-banana' | 'nano-banana-pro' | 'nano-banana-2' | 'seedream' | 'seedream-4.5';
 
 export type VideoFamily = 'kling' | 'veo' | 'sora' | 'runway' | 'luma' | 'wan' | 'seedance' | 'enhancement';
-export type VideoFunction = 'kling' | 'kling-pro' | 'kling-3.0' | 'kling-motion' | 'kling-avatar-pro' | 'kling-avatar' | 'veo-fast' | 'veo' | 'sora' | 'sora-pro' | 'runway' | 'runway-gen4' | 'luma' | 'wan' | 'seedance' | 'seedance-lite' | 'seedance-1-pro' | 'seedance-fast' | 'topaz' | 'topaz-direct' | 'wavespeed' | 'wavespeed-pro';
+export type VideoFunction = 'kling' | 'kling-pro' | 'kling-3.0' | 'kling-motion' | 'kling-avatar-pro' | 'kling-avatar' | 'veo-fast' | 'veo' | 'sora' | 'sora-pro' | 'runway' | 'runway-gen4' | 'luma' | 'wan' | 'seedance' | 'seedance-lite' | 'seedance-1-pro' | 'seedance-fast' | 'seedance-2' | 'seedance-2-fast' | 'topaz' | 'topaz-direct' | 'wavespeed' | 'wavespeed-pro';
 
 export interface BotContext extends Context {
   user?: User;

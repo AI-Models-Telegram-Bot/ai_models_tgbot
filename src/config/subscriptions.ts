@@ -109,7 +109,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 5.99,
     priceRUB: 549,
     duration: 'monthly',
-    tokens: 250,
+    tokens: 300,
     modelAccess: {
       text: {
         allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'claude-haiku', 'grok', 'gemini-flash', 'fast-text'],
@@ -120,7 +120,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
-        allowed: ['kling', 'kling-pro', 'kling-3.0', 'luma', 'wan', 'runway', 'seedance'],
+        allowed: ['kling', 'kling-pro', 'kling-3.0', 'luma', 'wan', 'runway', 'seedance', 'seedance-2-fast'],
       },
       audio: {
         allowed: [],
@@ -154,7 +154,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 14.99,
     priceRUB: 1399,
     duration: 'monthly',
-    tokens: 650,
+    tokens: 800,
     modelAccess: {
       text: {
         allowed: ['gpt-4o', 'gpt-4o-mini', 'claude-sonnet', 'claude-haiku', 'claude-opus', 'claude-sonnet-thinking', 'claude-opus-thinking', 'grok', 'gemini-flash', 'gemini-pro', 'fast-text', 'deepseek-r1', 'deep-research'],
@@ -165,7 +165,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
         unlimited: ['flux-schnell', 'sdxl-lightning'],
       },
       video: {
-        allowed: ['kling', 'kling-pro', 'kling-3.0', 'kling-motion', 'kling-avatar-pro', 'kling-avatar', 'luma', 'wan', 'runway', 'seedance', 'sora', 'veo-fast', 'topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro'],
+        allowed: ['kling', 'kling-pro', 'kling-3.0', 'kling-motion', 'kling-avatar-pro', 'kling-avatar', 'luma', 'wan', 'runway', 'seedance', 'seedance-2', 'seedance-2-fast', 'sora', 'veo-fast', 'topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro'],
       },
       audio: {
         allowed: [],
@@ -201,7 +201,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 34.99,
     priceRUB: 3199,
     duration: 'monthly',
-    tokens: 1500,
+    tokens: 1800,
     modelAccess: {
       text: {
         allowed: ['*'],
@@ -245,7 +245,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     priceUSD: 79.99,
     priceRUB: 7299,
     duration: 'monthly',
-    tokens: 3000,
+    tokens: 3500,
     modelAccess: {
       text: {
         allowed: ['*'],

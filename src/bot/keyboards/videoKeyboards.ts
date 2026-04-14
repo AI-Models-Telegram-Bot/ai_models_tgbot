@@ -69,6 +69,7 @@ export function getRunwayModelsKeyboard(lang: Language) {
 export function getSeedanceModelsKeyboard(lang: Language) {
   const l = getLocale(lang);
   return Markup.keyboard([
+    [l.buttons.videoSeedance2, l.buttons.videoSeedance2Fast],
     [l.buttons.videoSeedanceLite, l.buttons.videoSeedancePro],
     [l.buttons.videoSeedanceFast, l.buttons.videoSeedance15Pro],
     [l.buttons.back, l.buttons.mainMenu],

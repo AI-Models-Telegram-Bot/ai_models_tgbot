@@ -28,6 +28,8 @@ const MODEL_ICONS: Record<string, string> = {
   'veo-fast': '⚡',
   'sora': '🌀',
   'veo': '🎞️',
+  'seedance-2': '🆕',
+  'seedance-2-fast': '⚡',
 
   // Audio
   'deepgram-tts': '🔊',

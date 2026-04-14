@@ -79,6 +79,8 @@ export const en = {
     videoSeedancePro: '💎 1.0 Pro (⚡35–88)',
     videoSeedanceFast: '⚡ 1.0 Fast (⚡13–33)',
     videoSeedance15Pro: '🌱 1.5 Pro (⚡13–33)',
+    videoSeedance2: '🆕 Seedance 2 (⚡16–140)',
+    videoSeedance2Fast: '⚡ Seedance 2 Fast (⚡16–140)',
     videoTopazDirect: '💠 Topaz AI Pro (⚡2)',
     videoTopaz: '💠 Topaz AI (⚡1)',
     videoWaveSpeed: '🌊 WaveSpeed (⚡1)',
@@ -470,10 +472,12 @@ Fee: ⚡15 tokens`,
 ByteDance's advanced video generation family. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
 Choose a version:
+• <b>Seedance 2</b> 🆕 — newest gen, premium quality (⚡16–140)
+• <b>Seedance 2 Fast</b> ⚡ — newest gen, faster output (⚡16–140)
 • <b>1.0 Lite</b> — affordable 720p (⚡9–23)
 • <b>1.0 Pro</b> — highest quality 1080p (⚡35–88)
 • <b>1.0 Fast</b> — fast 1080p generation (⚡13–33)
-• <b>1.5 Pro</b> — latest model (⚡13–33)`,
+• <b>1.5 Pro</b> — previous model (⚡13–33)`,
 
     videoKlingDesc: `🎥 <b>Kling Standard</b>
 
@@ -646,6 +650,28 @@ Latest Seedance model from ByteDance. Multi-scene storytelling, high-quality ani
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
 Fee: ⚡13–33 tokens (depends on duration)`,
+
+    videoSeedance2Desc: `🆕 <b>Seedance 2</b>
+
+ByteDance's newest video generation model — premium quality, sharper motion, and improved scene understanding. Supports 480p / 720p in 5 / 8 / 10s.
+
+💡 Adjust duration, resolution and aspect ratio in Video Settings.
+🖼 Image-to-video uses Kie's lower per-second rate (cheaper when you upload an image).
+
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+
+Fee: ⚡16–140 tokens (depends on resolution, duration, and whether an image is provided)`,
+
+    videoSeedance2FastDesc: `⚡ <b>Seedance 2 Fast</b>
+
+The fast variant of Seedance 2 — same resolution range with faster output for quicker iterations. Supports 480p / 720p in 5 / 8 / 10s.
+
+💡 Adjust duration, resolution and aspect ratio in Video Settings.
+🖼 Image-to-video uses Kie's lower per-second rate.
+
+Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+
+Fee: ⚡16–140 tokens (depends on resolution, duration, and whether an image is provided)`,
 
     videoEnhancementFamilyDesc: `💠 <b>Video Enhancement</b>
 

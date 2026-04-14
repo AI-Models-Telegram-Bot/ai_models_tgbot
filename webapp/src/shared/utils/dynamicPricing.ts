@@ -22,6 +22,8 @@ const BASE_COSTS: Record<string, number> = {
   'seedance-1-pro': 35,
   'sora-pro': 47,
   'veo': 116,
+  'seedance-2': 70,
+  'seedance-2-fast': 70,
   // Image models
   'midjourney': 3,
   'seedream-4.5': 2.5,
@@ -126,6 +128,25 @@ const NANO_BANANA_PRO_RES_CREDITS: Record<string, number> = {
   '4K': 8,
 };
 
+// ── Seedance 2 / 2-fast pricing (per-second × resolution × input mode) ──
+// Mirrors backend src/utils/videoPricing.ts SEEDANCE_2_PER_SECOND.
+const SEEDANCE_2_PER_SECOND: Record<string, { text: number; image: number }> = {
+  '480p': { text: 7, image: 4 },
+  '720p': { text: 14, image: 9 },
+};
+
+function calculateSeedance2Cost(settings?: {
+  duration?: number;
+  resolution?: string;
+  hasImageInput?: boolean;
+}): number {
+  const duration = settings?.duration || 5;
+  const resolution = settings?.resolution || '720p';
+  const rates = SEEDANCE_2_PER_SECOND[resolution] || SEEDANCE_2_PER_SECOND['720p'];
+  const perSec = settings?.hasImageInput ? rates.image : rates.text;
+  return Math.ceil(perSec * duration);
+}
+
 // ── Public API ──────────────────────────────────────────────────────
 
 export interface DynamicCostSettings {
@@ -134,6 +155,7 @@ export interface DynamicCostSettings {
   version?: string;
   enableAudio?: boolean;
   speed?: string;
+  hasImageInput?: boolean;
 }
 
 export function hasDynamicPricing(slug: string): boolean {
@@ -144,7 +166,9 @@ export function hasDynamicPricing(slug: string): boolean {
     slug === 'kling-3.0' ||
     slug === 'midjourney' ||
     slug === 'seedream-4.5' ||
-    slug === 'nano-banana-pro'
+    slug === 'nano-banana-pro' ||
+    slug === 'seedance-2' ||
+    slug === 'seedance-2-fast'
   );
 }
 
@@ -158,6 +182,7 @@ export function calculateDynamicCost(
   if (slug === 'midjourney') return MJ_SPEED_CREDITS[settings?.speed || 'fast'] || 3;
   if (slug === 'seedream-4.5') return SEEDREAM_RES_CREDITS[settings?.resolution || '1K'] || 2.5;
   if (slug === 'nano-banana-pro') return NANO_BANANA_PRO_RES_CREDITS[settings?.resolution || '1K'] || 5;
+  if (slug === 'seedance-2' || slug === 'seedance-2-fast') return calculateSeedance2Cost(settings);
 
   const baseCost = BASE_COSTS[slug];
   const cfg = DYNAMIC_PRICING[slug];
