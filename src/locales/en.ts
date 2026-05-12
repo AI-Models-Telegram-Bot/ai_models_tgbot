@@ -79,8 +79,8 @@ export const en = {
     videoSeedancePro: '💎 1.0 Pro (⚡35–88)',
     videoSeedanceFast: '⚡ 1.0 Fast (⚡13–33)',
     videoSeedance15Pro: '🌱 1.5 Pro (⚡13–33)',
-    videoSeedance2: '🆕 Seedance 2 (⚡16–140)',
-    videoSeedance2Fast: '⚡ Seedance 2 Fast (⚡16–140)',
+    videoSeedance2: '🆕 Seedance 2 (⚡16–420)',
+    videoSeedance2Fast: '⚡ Seedance 2 Fast (⚡16–210)',
     videoTopazDirect: '💠 Topaz AI Pro (⚡2)',
     videoTopaz: '💠 Topaz AI (⚡1)',
     videoWaveSpeed: '🌊 WaveSpeed (⚡1)',
@@ -472,8 +472,8 @@ Fee: ⚡15 tokens`,
 ByteDance's advanced video generation family. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
 Choose a version:
-• <b>Seedance 2</b> 🆕 — newest gen, premium quality (⚡16–140)
-• <b>Seedance 2 Fast</b> ⚡ — newest gen, faster output (⚡16–140)
+• <b>Seedance 2</b> 🆕 — newest gen, premium 480p/720p/1080p (⚡16–420)
+• <b>Seedance 2 Fast</b> ⚡ — newest gen, faster output 480p/720p (⚡16–210)
 • <b>1.0 Lite</b> — affordable 720p (⚡9–23)
 • <b>1.0 Pro</b> — highest quality 1080p (⚡35–88)
 • <b>1.0 Fast</b> — fast 1080p generation (⚡13–33)
@@ -653,25 +653,37 @@ Fee: ⚡13–33 tokens (depends on duration)`,
 
     videoSeedance2Desc: `🆕 <b>Seedance 2</b>
 
-ByteDance's newest video generation model — premium quality, sharper motion, and improved scene understanding. Supports 480p / 720p in 5 / 8 / 10s.
+ByteDance's newest video generation model — premium quality, sharper motion, and improved scene understanding. Supports <b>480p / 720p / 1080p</b> and <b>4–15s</b> duration.
 
-💡 Adjust duration, resolution and aspect ratio in Video Settings.
-🖼 Image-to-video uses Kie's lower per-second rate (cheaper when you upload an image).
+💡 Configure in Video Settings:
+• Resolution (480p / 720p / 1080p)
+• Aspect ratio (16:9, 9:16, 1:1, 4:3, 3:4, 21:9, adaptive)
+• Duration (4–15 seconds)
+• Audio generation (sync AI audio)
+• Web search grounding
+• NSFW filter
+
+🖼 Upload an image to use it as the first frame — Kie's image-to-video rate is lower per second.
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡16–140 tokens (depends on resolution, duration, and whether an image is provided)`,
+Fee: ⚡16–420 tokens (scales with resolution, duration, and input mode)`,
 
     videoSeedance2FastDesc: `⚡ <b>Seedance 2 Fast</b>
 
-The fast variant of Seedance 2 — same resolution range with faster output for quicker iterations. Supports 480p / 720p in 5 / 8 / 10s.
+The fast variant of Seedance 2 — faster output for quicker iterations. Supports <b>480p / 720p</b> and <b>4–15s</b> duration.
 
-💡 Adjust duration, resolution and aspect ratio in Video Settings.
-🖼 Image-to-video uses Kie's lower per-second rate.
+💡 Configure in Video Settings:
+• Resolution (480p / 720p)
+• Aspect ratio (16:9, 9:16, 1:1, 4:3, 3:4, 21:9, adaptive)
+• Duration (4–15 seconds)
+• Audio generation, Web search, NSFW filter
+
+🖼 Upload an image to use it as the first frame — image-to-video uses Kie's lower per-second rate.
 
 Send ✍️ a text prompt or 🌄 upload an image to get started 👇
 
-Fee: ⚡16–140 tokens (depends on resolution, duration, and whether an image is provided)`,
+Fee: ⚡16–210 tokens (scales with resolution, duration, and input mode)`,
 
     videoEnhancementFamilyDesc: `💠 <b>Video Enhancement</b>
 

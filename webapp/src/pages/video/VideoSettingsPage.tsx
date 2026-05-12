@@ -20,6 +20,10 @@ const ALL_ASPECTS: AspectOption[] = [
   { value: '1:1', label: '1:1', w: 1, h: 1 },
   { value: '16:9', label: '16:9', w: 16, h: 9 },
   { value: '9:16', label: '9:16', w: 9, h: 16 },
+  { value: '4:3', label: '4:3', w: 4, h: 3 },
+  { value: '3:4', label: '3:4', w: 3, h: 4 },
+  { value: '21:9', label: '21:9', w: 21, h: 9 },
+  { value: 'adaptive', label: 'Adaptive', w: 16, h: 9 },
 ];
 
 const MODEL_ASPECTS: Record<string, string[]> = {
@@ -36,8 +40,8 @@ const MODEL_ASPECTS: Record<string, string[]> = {
   'seedance-lite': ['16:9', '9:16', '1:1'],
   'seedance-1-pro': ['16:9', '9:16', '1:1'],
   'seedance-fast': ['16:9', '9:16', '1:1'],
-  'seedance-2': ['16:9', '9:16', '1:1'],
-  'seedance-2-fast': ['16:9', '9:16', '1:1'],
+  'seedance-2': ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', 'adaptive'],
+  'seedance-2-fast': ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', 'adaptive'],
 };
 
 interface DurationOption {
@@ -109,14 +113,20 @@ const MODEL_DURATIONS: Record<string, DurationOption[]> = {
     { value: 8, labelKey: 'duration8s' },
   ],
   'seedance-2': [
+    { value: 4, labelKey: 'duration4s' },
     { value: 5, labelKey: 'duration5s' },
     { value: 8, labelKey: 'duration8s' },
     { value: 10, labelKey: 'duration10s' },
+    { value: 12, labelKey: 'duration12s' },
+    { value: 15, labelKey: 'duration15s' },
   ],
   'seedance-2-fast': [
+    { value: 4, labelKey: 'duration4s' },
     { value: 5, labelKey: 'duration5s' },
     { value: 8, labelKey: 'duration8s' },
     { value: 10, labelKey: 'duration10s' },
+    { value: 12, labelKey: 'duration12s' },
+    { value: 15, labelKey: 'duration15s' },
   ],
 };
 
@@ -175,6 +185,7 @@ const MODEL_RESOLUTIONS: Record<string, ResolutionOption[]> = {
   'seedance-2': [
     { value: '480p', labelKey: 'resolution480p', descKey: 'resolution480pDesc', icon: '📱' },
     { value: '720p', labelKey: 'resolution720p', descKey: 'resolution720pDesc', icon: '📺' },
+    { value: '1080p', labelKey: 'resolution1080p', descKey: 'resolution1080pDesc', icon: '🎬' },
   ],
   'seedance-2-fast': [
     { value: '480p', labelKey: 'resolution480p', descKey: 'resolution480pDesc', icon: '📱' },
@@ -213,11 +224,12 @@ const WAVESPEED_RESOLUTIONS = [
   { value: '4k', labelKey: 'resolution4K' },
 ];
 
-const AUDIO_MODELS = ['veo-fast', 'veo'];
+const AUDIO_MODELS = ['veo-fast', 'veo', 'seedance-2', 'seedance-2-fast'];
 
 const VEO_MODELS = ['veo-fast', 'veo'];
 
 const SEEDANCE_MODELS = ['seedance', 'seedance-lite', 'seedance-1-pro', 'seedance-fast', 'seedance-2', 'seedance-2-fast'];
+const SEEDANCE_2_MODELS = ['seedance-2', 'seedance-2-fast'];
 
 interface ModeOption {
   value: string;
@@ -295,6 +307,7 @@ export default function VideoSettingsPage() {
   const isVeo = VEO_MODELS.includes(modelSlug);
   const isRunway = modelSlug === 'runway' || modelSlug === 'runway-gen4';
   const isSeedance = SEEDANCE_MODELS.includes(modelSlug);
+  const isSeedance2 = SEEDANCE_2_MODELS.includes(modelSlug);
   const isKling = KLING_MODELS.includes(modelSlug);
   const isKling30 = modelSlug === KLING_30_MODEL;
   const isKlingMotion = modelSlug === KLING_MOTION_MODEL;
@@ -341,6 +354,9 @@ export default function VideoSettingsPage() {
   const [blur, setBlur] = useState(0.0);
   // WaveSpeed state
   const [targetResolution, setTargetResolution] = useState('1080p');
+  // Seedance 2 toggles (in addition to generateAudio above)
+  const [webSearch, setWebSearch] = useState(false);
+  const [nsfwChecker, setNsfwChecker] = useState(false);
 
   useEffect(() => {
     fetchModelSettings(modelSlug);
@@ -396,8 +412,12 @@ export default function VideoSettingsPage() {
       if (isWaveSpeed) {
         setTargetResolution(modelSettings.targetResolution || '1080p');
       }
+      if (isSeedance2) {
+        setWebSearch(modelSettings.webSearch ?? false);
+        setNsfwChecker(modelSettings.nsfwChecker ?? false);
+      }
     }
-  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isKling, isKling30, isKlingMotion, isTopaz, isTopazDirect, isWaveSpeed, modelSlug]);
+  }, [modelSettings, hasDuration, hasResolution, hasAudio, isVeo, isSeedance, isSeedance2, isKling, isKling30, isKlingMotion, isTopaz, isTopazDirect, isWaveSpeed, modelSlug]);
 
   // Auto-disable audio when switching away from v2.6
   useEffect(() => {
@@ -464,6 +484,10 @@ export default function VideoSettingsPage() {
     if (isWaveSpeed) {
       if (targetResolution !== (modelSettings?.targetResolution || '1080p')) return true;
     }
+    if (isSeedance2) {
+      if (webSearch !== (modelSettings?.webSearch ?? false)) return true;
+      if (nsfwChecker !== (modelSettings?.nsfwChecker ?? false)) return true;
+    }
     return false;
   })();
 
@@ -516,6 +540,10 @@ export default function VideoSettingsPage() {
       }
       if (isWaveSpeed) {
         updates.targetResolution = targetResolution;
+      }
+      if (isSeedance2) {
+        updates.webSearch = webSearch;
+        updates.nsfwChecker = nsfwChecker;
       }
       await updateModelSettings(modelSlug, updates);
       hapticNotification('success');
@@ -1284,6 +1312,84 @@ export default function VideoSettingsPage() {
                       cameraFixed ? 'left-6' : 'left-1'
                     }`}
                   />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Seedance 2: Web Search Toggle */}
+        {isSeedance2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('webSearch')}
+            </div>
+            <div
+              onClick={() => { hapticImpact('light'); setWebSearch(!webSearch); }}
+              className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                webSearch
+                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center" style={{ columnGap: 10 }}>
+                  <span className="text-lg">🌐</span>
+                  <div>
+                    <span className="font-semibold text-content-primary text-sm">
+                      {webSearch ? t('webSearchOn') : t('webSearchOff')}
+                    </span>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      {t('webSearchDesc')}
+                    </p>
+                  </div>
+                </div>
+                <div className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${webSearch ? 'bg-video-primary' : 'bg-white/10'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${webSearch ? 'left-6' : 'left-1'}`} />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Seedance 2: NSFW Checker Toggle */}
+        {isSeedance2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.24 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('nsfwChecker')}
+            </div>
+            <div
+              onClick={() => { hapticImpact('light'); setNsfwChecker(!nsfwChecker); }}
+              className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                nsfwChecker
+                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center" style={{ columnGap: 10 }}>
+                  <span className="text-lg">🛡️</span>
+                  <div>
+                    <span className="font-semibold text-content-primary text-sm">
+                      {nsfwChecker ? t('nsfwCheckerOn') : t('nsfwCheckerOff')}
+                    </span>
+                    <p className="text-xs text-content-tertiary mt-0.5">
+                      {t('nsfwCheckerDesc')}
+                    </p>
+                  </div>
+                </div>
+                <div className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${nsfwChecker ? 'bg-video-primary' : 'bg-white/10'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${nsfwChecker ? 'left-6' : 'left-1'}`} />
                 </div>
               </div>
             </div>

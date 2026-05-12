@@ -30,6 +30,9 @@ export interface VideoModelSettings {
   recoverOriginalDetail?: number;
   // WaveSpeed fields
   targetResolution?: string;
+  // Seedance 2 fields (Kie v2)
+  webSearch?: boolean;
+  nsfwChecker?: boolean;
 }
 
 export interface VideoSettingsResponse {

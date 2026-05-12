@@ -474,6 +474,9 @@ export async function getVideoOptionsForFunction(
     if (settings.recoverOriginalDetail !== undefined) options.recoverOriginalDetail = settings.recoverOriginalDetail;
     // WaveSpeed: target resolution
     if (settings.targetResolution) options.targetResolution = settings.targetResolution;
+    // Seedance 2 toggles
+    if (settings.webSearch !== undefined) options.webSearch = settings.webSearch;
+    if (settings.nsfwChecker !== undefined) options.nsfwChecker = settings.nsfwChecker;
 
     return options;
   } catch (error) {
