@@ -29,10 +29,12 @@ const DYNAMIC_PRICING: Record<string, DynamicPricingConfig> = {
 // ── Seedance 2 pricing (per-second × resolution × input mode) ──
 // Source: Kie cost (480p text $0.095/s, 480p img $0.0575/s, 720p text $0.205/s,
 // 720p img $0.125/s) × 1.30 margin ÷ $0.02/credit, rounded up.
-// Same rates apply to seedance-2 and seedance-2-fast (Kie doc shows shared schedule).
+// 1080p (seedance-2 only) estimated at 2× of 720p — Kie docs don't publish a
+// rate; verify against real billing and adjust if needed.
 const SEEDANCE_2_PER_SECOND: Record<string, { text: number; image: number }> = {
   '480p': { text: 7, image: 4 },
   '720p': { text: 14, image: 9 },
+  '1080p': { text: 28, image: 18 },
 };
 
 function calculateSeedance2Cost(settings?: {

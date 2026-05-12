@@ -34,6 +34,9 @@ export interface VideoModelSettings {
   recoverOriginalDetail?: number; // 0.0-1.0
   // WaveSpeed fields
   targetResolution?: string; // '720p' | '1080p' | '2k' | '4k'
+  // Seedance 2 fields (Kie v2 spec — see docs.kie.ai/market/bytedance/seedance-2)
+  webSearch?: boolean;       // online search grounding
+  nsfwChecker?: boolean;     // content filter (default false per Kie)
 }
 
 const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
@@ -55,8 +58,8 @@ const MODEL_DEFAULTS: Record<string, VideoModelSettings> = {
   'seedance-lite': { aspectRatio: '16:9', duration: 4, resolution: '720p' },
   'seedance-1-pro': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
   'seedance-fast': { aspectRatio: '16:9', duration: 4, resolution: '1080p' },
-  'seedance-2': { aspectRatio: '16:9', duration: 5, resolution: '720p' },
-  'seedance-2-fast': { aspectRatio: '16:9', duration: 5, resolution: '720p' },
+  'seedance-2': { aspectRatio: '16:9', duration: 5, resolution: '720p', generateAudio: true, webSearch: false, nsfwChecker: false },
+  'seedance-2-fast': { aspectRatio: '16:9', duration: 5, resolution: '720p', generateAudio: true, webSearch: false, nsfwChecker: false },
   'topaz': { upscale: '2x' },
   'topaz-direct': { upscale: '2x', topazModel: 'prob-4', compression: 0.5, details: 0.5, noise: 0.3 },
   'wavespeed': { targetResolution: '1080p' },

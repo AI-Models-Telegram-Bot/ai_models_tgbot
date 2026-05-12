@@ -265,10 +265,32 @@ export class KieAIProvider extends EnhancedProvider {
         input.aspect_ratio = (options?.aspectRatio as string) || '16:9';
         const requested = parseInt(String(options?.duration || '0'), 10);
         if (model.includes('seedance-2')) {
-          // v2: 5 / 8 / 10 seconds (per Kie market spec), default 5
-          const valid = [5, 8, 10];
-          input.duration = String(valid.includes(requested) ? requested : 5);
-          input.resolution = (options?.resolution as string) || '720p';
+          // v2: any integer 4-15 seconds, default 5
+          const clamped = Math.min(Math.max(requested || 5, 4), 15);
+          input.duration = clamped;
+          // v2-fast tops out at 720p; full v2 supports 1080p
+          const requestedRes = (options?.resolution as string) || '720p';
+          if (model.includes('seedance-2-fast') && requestedRes === '1080p') {
+            input.resolution = '720p';
+          } else {
+            input.resolution = requestedRes;
+          }
+          // v2 swaps `image_urls` → `first_frame_url` (single image, first frame)
+          if (hasImages && Array.isArray(input.image_urls)) {
+            const arr = input.image_urls as string[];
+            if (arr[0]) input.first_frame_url = arr[0];
+            delete input.image_urls;
+          }
+          // Audio / search / safety toggles (Kie v2 only)
+          if (options?.generateAudio !== undefined) {
+            input.generate_audio = Boolean(options.generateAudio);
+          }
+          if (options?.webSearch !== undefined) {
+            input.web_search = Boolean(options.webSearch);
+          }
+          if (options?.nsfwChecker !== undefined) {
+            input.nsfw_checker = Boolean(options.nsfwChecker);
+          }
         } else {
           // v1.x: 4 / 8 / 12 seconds, default 8
           const valid = [4, 8, 12];

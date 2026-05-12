@@ -130,9 +130,11 @@ const NANO_BANANA_PRO_RES_CREDITS: Record<string, number> = {
 
 // ── Seedance 2 / 2-fast pricing (per-second × resolution × input mode) ──
 // Mirrors backend src/utils/videoPricing.ts SEEDANCE_2_PER_SECOND.
+// 1080p estimated at 2× of 720p (seedance-2 only; seedance-2-fast is 720p max).
 const SEEDANCE_2_PER_SECOND: Record<string, { text: number; image: number }> = {
   '480p': { text: 7, image: 4 },
   '720p': { text: 14, image: 9 },
+  '1080p': { text: 28, image: 18 },
 };
 
 function calculateSeedance2Cost(settings?: {
