@@ -341,18 +341,24 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 25,
     isLossLeader: false,
   },
+  // Base = default config (720p, 5s, text-to-video). Real cost scales
+  // per-second by resolution + input mode in videoPricing.ts.
+  // seedance-2-fast 720p text $0.165/s × 5s = $0.825 cost; 55 credits
+  // × $0.023 = $1.265 revenue → ~35% margin.
   'seedance-2-fast': {
-    creditsPerUnit: 70,
+    creditsPerUnit: 55,
     unitType: '1_video',
-    baseCostUSD: 1.025,
-    marginPercent: 30,
+    baseCostUSD: 0.825,
+    marginPercent: 35,
     isLossLeader: false,
   },
+  // seedance-2 720p text $0.205/s × 5s = $1.025 cost; 65 credits
+  // × $0.023 = $1.495 revenue → ~31% margin.
   'seedance-2': {
-    creditsPerUnit: 70,
+    creditsPerUnit: 65,
     unitType: '1_video',
     baseCostUSD: 1.025,
-    marginPercent: 30,
+    marginPercent: 31,
     isLossLeader: false,
   },
   'sora-pro': {

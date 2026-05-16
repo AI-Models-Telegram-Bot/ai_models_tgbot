@@ -350,7 +350,8 @@ export class KieAIProvider extends EnhancedProvider {
 
       const time = Date.now() - start;
       let cost = 0.28; // default for Kling
-      if (model.includes('seedance-2')) cost = 1.025; // 720p text-to-video, 5s baseline
+      if (model.includes('seedance-2-fast')) cost = 0.825; // 720p text, 5s baseline
+      else if (model.includes('seedance-2')) cost = 1.025; // 720p text, 5s baseline
       else if (model.includes('seedance')) cost = 0.45;
       if (model.includes('sora-2-pro')) cost = 0.80;
       else if (model.startsWith('sora-')) cost = 0.50;

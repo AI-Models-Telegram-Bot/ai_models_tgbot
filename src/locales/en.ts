@@ -79,8 +79,8 @@ export const en = {
     videoSeedancePro: '💎 1.0 Pro (⚡35–88)',
     videoSeedanceFast: '⚡ 1.0 Fast (⚡13–33)',
     videoSeedance15Pro: '🌱 1.5 Pro (⚡13–33)',
-    videoSeedance2: '🆕 Seedance 2 (⚡16–420)',
-    videoSeedance2Fast: '⚡ Seedance 2 Fast (⚡16–210)',
+    videoSeedance2: '🆕 Seedance 2 (⚡16–480)',
+    videoSeedance2Fast: '⚡ Seedance 2 Fast (⚡12–165)',
     videoTopazDirect: '💠 Topaz AI Pro (⚡2)',
     videoTopaz: '💠 Topaz AI (⚡1)',
     videoWaveSpeed: '🌊 WaveSpeed (⚡1)',
@@ -472,8 +472,8 @@ Fee: ⚡15 tokens`,
 ByteDance's advanced video generation family. Known for multi-scene storytelling, high-quality animation, and impressive motion quality.
 
 Choose a version:
-• <b>Seedance 2</b> 🆕 — newest gen, premium 480p/720p/1080p (⚡16–420)
-• <b>Seedance 2 Fast</b> ⚡ — newest gen, faster output 480p/720p (⚡16–210)
+• <b>Seedance 2</b> 🆕 — newest gen, premium 480p/720p/1080p (⚡16–480)
+• <b>Seedance 2 Fast</b> ⚡ — newest gen, faster output 480p/720p (⚡12–165)
 • <b>1.0 Lite</b> — affordable 720p (⚡9–23)
 • <b>1.0 Pro</b> — highest quality 1080p (⚡35–88)
 • <b>1.0 Fast</b> — fast 1080p generation (⚡13–33)
@@ -673,7 +673,7 @@ ByteDance's newest video generation model — premium quality, sharper motion, a
 
 Send ✍️ a prompt, or 🌄 images / 🎥 a video / 🎵 audio to get started 👇
 
-Fee: ⚡16–420 tokens (scales with resolution, duration, and input mode)`,
+Fee: ⚡16–480 tokens (scales with resolution, duration, and input mode)`,
 
     videoSeedance2FastDesc: `⚡ <b>Seedance 2 Fast</b>
 
@@ -695,7 +695,7 @@ The fast variant of Seedance 2 — faster output for quicker iterations. Support
 
 Send ✍️ a prompt, or 🌄 images / 🎥 a video / 🎵 audio to get started 👇
 
-Fee: ⚡16–210 tokens (scales with resolution, duration, and input mode)`,
+Fee: ⚡12–165 tokens (scales with resolution, duration, and input mode)`,
 
     videoEnhancementFamilyDesc: `💠 <b>Video Enhancement</b>
 
