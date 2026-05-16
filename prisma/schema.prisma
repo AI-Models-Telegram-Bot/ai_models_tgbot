@@ -49,6 +49,7 @@ model User {
   payments            Payment[]
   withdrawalRequests  WithdrawalRequest[]
   trendGenerations    TrendGeneration[]
+  modelAccessGrants   UserModelAccess[]
 
   @@map("users")
 }
@@ -371,6 +372,27 @@ model UserSubscription {
   updatedAt             DateTime            @updatedAt @map("updated_at")
 
   @@map("user_subscriptions")
+}
+
+// ── Per-User Model Entitlement ───────────────────────────
+// Grants a single user access to a specific model regardless of
+// their subscription tier whitelist. Tokens are still consumed
+// on use — this only unlocks the model, it does not make it free.
+model UserModelAccess {
+  id          String         @id @default(cuid())
+  userId      String         @map("user_id")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  modelSlug   String         @map("model_slug")
+  category    WalletCategory
+  grantedBy   String?        @map("granted_by") // admin user id
+  note        String?
+  expiresAt   DateTime?      @map("expires_at") // null = never expires
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@unique([userId, modelSlug])
+  @@index([userId])
+  @@map("user_model_access")
 }
 
 model SubscriptionPlan {

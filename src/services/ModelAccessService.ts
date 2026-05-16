@@ -1,4 +1,5 @@
 import { WalletCategory } from '@prisma/client';
+import { prisma } from '../config/database';
 import { subscriptionService } from './SubscriptionService';
 import { walletService } from './WalletService';
 import { getPlanByTier, SubscriptionPlanConfig, ModelAccessCategory } from '../config/subscriptions';
@@ -39,6 +40,20 @@ export class ModelAccessService {
       categoryAccess.allowed.includes(modelSlug);
 
     if (!isAllowed) {
+      // Fallback: per-user entitlement (e.g. paid for this model off-platform).
+      // Unlocks the model only — tokens are still consumed on use.
+      const grant = await prisma.userModelAccess.findFirst({
+        where: {
+          userId,
+          modelSlug,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+      });
+
+      if (grant) {
+        return { allowed: true, unlimited: false };
+      }
+
       return {
         allowed: false,
         unlimited: false,
