@@ -27,24 +27,40 @@ const DYNAMIC_PRICING: Record<string, DynamicPricingConfig> = {
 };
 
 // ── Seedance 2 pricing (per-second × resolution × input mode) ──
-// Source: Kie cost (480p text $0.095/s, 480p img $0.0575/s, 720p text $0.205/s,
-// 720p img $0.125/s) × 1.30 margin ÷ $0.02/credit, rounded up.
-// 1080p (seedance-2 only) estimated at 2× of 720p — Kie docs don't publish a
-// rate; verify against real billing and adjust if needed.
+// Charged credits/s = ceil( KieCostUSD/s ÷ 0.70 ÷ $0.023 ) so every cell
+// keeps a ≥30% gross margin at the worst-case (deepest volume discount)
+// token revenue of $0.023/token. "image" = image/video-input rate (Kie's
+// cheaper "with video" calc); "text" = pure text-to-video.
+//
+// Kie cost basis (https://kie.ai/seedance-2-0):
+//   seedance-2      480p $0.0575/$0.095  720p $0.125/$0.205  1080p $0.31/$0.51
+//   seedance-2-fast 480p $0.045/$0.0775  720p $0.100/$0.165  (no 1080p)
 const SEEDANCE_2_PER_SECOND: Record<string, { text: number; image: number }> = {
-  '480p': { text: 7, image: 4 },
-  '720p': { text: 14, image: 9 },
-  '1080p': { text: 28, image: 18 },
+  '480p':  { text: 6,  image: 4 },
+  '720p':  { text: 13, image: 8 },
+  '1080p': { text: 32, image: 20 },
 };
 
-function calculateSeedance2Cost(settings?: {
-  duration?: number;
-  resolution?: string;
-  hasImageInput?: boolean;
-}): number {
+const SEEDANCE_2_FAST_PER_SECOND: Record<string, { text: number; image: number }> = {
+  '480p': { text: 5,  image: 3 },
+  '720p': { text: 11, image: 7 },
+};
+
+function calculateSeedance2Cost(
+  slug: string,
+  settings?: {
+    duration?: number;
+    resolution?: string;
+    hasImageInput?: boolean;
+  },
+): number {
   const duration = settings?.duration || 5;
-  const resolution = settings?.resolution || '720p';
-  const rates = SEEDANCE_2_PER_SECOND[resolution] || SEEDANCE_2_PER_SECOND['720p'];
+  const isFast = slug === 'seedance-2-fast';
+  const table = isFast ? SEEDANCE_2_FAST_PER_SECOND : SEEDANCE_2_PER_SECOND;
+  // seedance-2-fast has no 1080p — Kie caps it at 720p
+  let resolution = settings?.resolution || '720p';
+  if (isFast && resolution === '1080p') resolution = '720p';
+  const rates = table[resolution] || table['720p'];
   const perSec = settings?.hasImageInput ? rates.image : rates.text;
   return Math.ceil(perSec * duration);
 }
@@ -180,7 +196,7 @@ export function calculateDynamicCost(
 ): number {
   // Seedance 2 / 2-fast: per-second × resolution × input mode
   if (slug === 'seedance-2' || slug === 'seedance-2-fast') {
-    return calculateSeedance2Cost(settings);
+    return calculateSeedance2Cost(slug, settings);
   }
 
   // Kling uses its own pricing table (not proportional scaling)

@@ -8,7 +8,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { MediaThumbnail } from '../components/MediaPreview';
 import RequestDetailDrawer from '../components/RequestDetailDrawer';
 import { useToastStore } from '../stores/toastStore';
-import { ArrowLeft, Ban, ShieldCheck, CreditCard, Save, Users, XCircle } from 'lucide-react';
+import { ArrowLeft, Ban, ShieldCheck, CreditCard, Save, Users, XCircle, KeyRound, Trash2 } from 'lucide-react';
 
 const TIERS = ['FREE', 'STARTER', 'PRO', 'PREMIUM', 'BUSINESS', 'ENTERPRISE'];
 const TAB_KEYS = ['requests', 'payments', 'transactions', 'referrals', 'withdrawals'] as const;
@@ -26,6 +26,7 @@ export default function UserDetail() {
   const [editBalance, setEditBalance] = useState<string | null>(null);
   const [editCash, setEditCash] = useState<string | null>(null);
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [grantForm, setGrantForm] = useState({ modelSlug: '', category: 'VIDEO', expiresAt: '', note: '' });
 
   const tabLabels: Record<typeof TAB_KEYS[number], string> = {
     requests: t('userDetail.requests'),
@@ -59,6 +60,8 @@ export default function UserDetail() {
   const unbanMutation = mutation('unban');
   const planMutation = mutation('update-plan');
   const updateMutation = mutation('update');
+  const grantModelMutation = mutation('grant-model-access');
+  const revokeModelMutation = mutation('revoke-model-access');
 
   if (isLoading) return <div className="text-gray-400">{t('common.loading')}</div>;
   if (!user) return <div className="text-gray-400">{t('userDetail.userNotFound')}</div>;
@@ -82,6 +85,17 @@ export default function UserDetail() {
       updateMutation.mutate({ moneyBalance: editCash });
       setEditCash(null);
     }
+  };
+
+  const handleGrantModel = () => {
+    if (!grantForm.modelSlug.trim()) return;
+    grantModelMutation.mutate({
+      modelSlug: grantForm.modelSlug.trim(),
+      category: grantForm.category,
+      expiresAt: grantForm.expiresAt || undefined,
+      note: grantForm.note || undefined,
+    });
+    setGrantForm({ modelSlug: '', category: 'VIDEO', expiresAt: '', note: '' });
   };
 
   return (
@@ -216,6 +230,89 @@ export default function UserDetail() {
             <div className="text-lg font-bold text-white mt-1">{new Date(user.createdAt).toLocaleDateString()}</div>
           </div>
         </div>
+      </div>
+
+      {/* Model Access — per-user manual entitlement */}
+      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <KeyRound size={16} className="text-amber-400" />
+          <h3 className="text-base font-semibold text-white">Model Access (manual grant)</h3>
+        </div>
+        <p className="text-xs text-gray-500 mb-4">
+          Unlocks a specific model for this user regardless of their plan tier. Tokens are still
+          charged per use — top up the balance separately.
+        </p>
+
+        <div className="space-y-2 mb-5">
+          {(user.modelAccessGrants?.length ?? 0) === 0 && (
+            <div className="text-sm text-gray-500">No manual model grants.</div>
+          )}
+          {user.modelAccessGrants?.map((g: any) => {
+            const expired = g.expiresAt && new Date(g.expiresAt) < new Date();
+            return (
+              <div
+                key={g.id}
+                className="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-2.5"
+              >
+                <div>
+                  <div className="text-sm text-white font-medium">
+                    {g.modelSlug}
+                    <span className="ml-2 text-xs text-gray-500">{g.category}</span>
+                    {expired && <span className="ml-2 text-xs text-red-400">expired</span>}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {g.expiresAt ? `Until ${new Date(g.expiresAt).toLocaleString()}` : 'Never expires'}
+                    {g.note ? ` · ${g.note}` : ''}
+                  </div>
+                </div>
+                <button
+                  onClick={() => revokeModelMutation.mutate({ modelSlug: g.modelSlug })}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-red-600/20 text-red-400 hover:bg-red-600/30 rounded-lg"
+                >
+                  <Trash2 size={13} /> Revoke
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+          <input
+            placeholder="model slug (e.g. seedance-2)"
+            value={grantForm.modelSlug}
+            onChange={(e) => setGrantForm({ ...grantForm, modelSlug: e.target.value })}
+            className="md:col-span-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
+          />
+          <select
+            value={grantForm.category}
+            onChange={(e) => setGrantForm({ ...grantForm, category: e.target.value })}
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
+          >
+            {['VIDEO', 'IMAGE', 'TEXT', 'AUDIO'].map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <input
+            type="datetime-local"
+            value={grantForm.expiresAt}
+            onChange={(e) => setGrantForm({ ...grantForm, expiresAt: e.target.value })}
+            title="Expiry (leave empty = never expires)"
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
+          />
+          <button
+            onClick={handleGrantModel}
+            disabled={!grantForm.modelSlug.trim()}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-500 disabled:opacity-50"
+          >
+            <KeyRound size={14} /> Grant
+          </button>
+        </div>
+        <input
+          placeholder="note (optional, e.g. paid 500₽ to card 2026-05-16)"
+          value={grantForm.note}
+          onChange={(e) => setGrantForm({ ...grantForm, note: e.target.value })}
+          className="mt-2 w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
+        />
       </div>
 
       {/* Tabs */}

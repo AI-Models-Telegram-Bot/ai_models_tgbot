@@ -492,6 +492,9 @@ router.get('/users/:id', async (req: Request, res: Response) => {
           orderBy: { createdAt: 'desc' },
           take: 50,
         },
+        modelAccessGrants: {
+          orderBy: { createdAt: 'desc' },
+        },
         _count: {
           select: { referrals: true },
         },
@@ -569,8 +572,8 @@ router.post('/users/:id/update-plan', requireRole('SUPER_ADMIN', 'ADMIN'), async
     // Credit tokens for the new plan
     const plan = getPlanByTier(tier);
     let tokensGranted = 0;
-    if (plan && plan.limits.tokensPerMonth !== null && plan.limits.tokensPerMonth > 0) {
-      tokensGranted = plan.limits.tokensPerMonth;
+    if (plan && plan.tokens !== null && plan.tokens > 0) {
+      tokensGranted = plan.tokens;
       // Ensure wallet exists
       await prisma.userWallet.upsert({
         where: { userId: req.params.id },
@@ -639,6 +642,80 @@ router.post('/users/:id/update', requireRole('SUPER_ADMIN', 'ADMIN'), async (req
     return res.json({ ok: true });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
+// ── Per-User Model Access ────────────────────────────────
+
+// Grant (or extend) access to a single model for one user.
+// Body: { modelSlug, category, expiresAt?, note? }
+router.post('/users/:id/grant-model-access', requireRole('SUPER_ADMIN', 'ADMIN'), async (req: Request, res: Response) => {
+  try {
+    const { modelSlug, category, expiresAt, note } = req.body;
+    if (!modelSlug || !category) {
+      return res.status(400).json({ error: 'modelSlug and category required' });
+    }
+
+    const userExists = await prisma.user.findUnique({ where: { id: req.params.id }, select: { id: true } });
+    if (!userExists) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const expiry = expiresAt ? new Date(expiresAt) : null;
+    if (expiry && isNaN(expiry.getTime())) {
+      return res.status(400).json({ error: 'Invalid expiresAt date' });
+    }
+
+    const grant = await prisma.userModelAccess.upsert({
+      where: { userId_modelSlug: { userId: req.params.id, modelSlug } },
+      update: { category, expiresAt: expiry, note: note || null, grantedBy: req.adminUser!.id },
+      create: {
+        userId: req.params.id,
+        modelSlug,
+        category,
+        expiresAt: expiry,
+        note: note || null,
+        grantedBy: req.adminUser!.id,
+      },
+    });
+
+    await logAudit(req.adminUser!.id, 'GRANT_MODEL_ACCESS', {
+      targetType: 'user',
+      targetId: req.params.id,
+      details: { modelSlug, category, expiresAt: expiry, note },
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ ok: true, grant: serializeBigInt(grant) });
+  } catch (err: any) {
+    logger.error('Grant model access error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to grant model access' });
+  }
+});
+
+// Revoke a previously granted model. Body: { modelSlug }
+router.post('/users/:id/revoke-model-access', requireRole('SUPER_ADMIN', 'ADMIN'), async (req: Request, res: Response) => {
+  try {
+    const { modelSlug } = req.body;
+    if (!modelSlug) {
+      return res.status(400).json({ error: 'modelSlug required' });
+    }
+
+    await prisma.userModelAccess.deleteMany({
+      where: { userId: req.params.id, modelSlug },
+    });
+
+    await logAudit(req.adminUser!.id, 'REVOKE_MODEL_ACCESS', {
+      targetType: 'user',
+      targetId: req.params.id,
+      details: { modelSlug },
+      ipAddress: getClientIp(req),
+    });
+
+    return res.json({ ok: true });
+  } catch (err: any) {
+    logger.error('Revoke model access error', { error: err.message });
+    return res.status(500).json({ error: 'Failed to revoke model access' });
   }
 });
 

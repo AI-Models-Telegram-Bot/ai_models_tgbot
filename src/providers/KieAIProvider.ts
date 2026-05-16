@@ -232,8 +232,9 @@ export class KieAIProvider extends EnhancedProvider {
 
       // Add image URLs for image-to-video (KieAI uses `image_urls`)
       // Kling 2.6 supports only 1 image; Sora supports up to 4
+      // Seedance 2 builds its own media params (first_frame/reference_*) below
       // Re-host Telegram URLs so KieAI can access them
-      if (hasImages) {
+      if (hasImages && !model.includes('seedance-2')) {
         const maxImages = model.includes('kling') ? 1 : 4;
         const urls = inputImageUrls.slice(0, maxImages);
         const publicUrls = await reHostUrlsWithCleanup(urls, '.jpg');
@@ -275,12 +276,44 @@ export class KieAIProvider extends EnhancedProvider {
           } else {
             input.resolution = requestedRes;
           }
-          // v2 swaps `image_urls` → `first_frame_url` (single image, first frame)
-          if (hasImages && Array.isArray(input.image_urls)) {
-            const arr = input.image_urls as string[];
-            if (arr[0]) input.first_frame_url = arr[0];
-            delete input.image_urls;
+
+          // ── Media mapping (3 mutually exclusive scenarios per Kie spec) ──
+          // mode: 'text' | 'first' | 'first_last' | 'reference'
+          // Uploaded media from the bot: images[], 1 video, 1 audio.
+          const inputVideoUrl = options?.inputVideoUrl as string | undefined;
+          const inputAudioUrl = options?.inputAudioUrl as string | undefined;
+          let v2Mode = String(options?.mode || 'text');
+
+          // Auto-pick a sensible mode when left at default 'text' but media present
+          if (v2Mode === 'text') {
+            if (inputVideoUrl || inputAudioUrl) v2Mode = 'reference';
+            else if (hasImages && inputImageUrls.length >= 3) v2Mode = 'reference';
+            else if (hasImages && inputImageUrls.length === 2) v2Mode = 'first_last';
+            else if (hasImages) v2Mode = 'first';
           }
+
+          if (v2Mode === 'first' && hasImages) {
+            const [u] = await reHostUrlsWithCleanup(inputImageUrls.slice(0, 1), '.jpg');
+            if (u) input.first_frame_url = u;
+          } else if (v2Mode === 'first_last' && hasImages) {
+            const urls = await reHostUrlsWithCleanup(inputImageUrls.slice(0, 2), '.jpg');
+            if (urls[0]) input.first_frame_url = urls[0];
+            if (urls[1]) input.last_frame_url = urls[1];
+          } else if (v2Mode === 'reference') {
+            if (hasImages) {
+              input.reference_image_urls = await reHostUrlsWithCleanup(
+                inputImageUrls.slice(0, 9), '.jpg',
+              );
+            }
+            if (inputVideoUrl) {
+              input.reference_video_urls = await reHostUrlsWithCleanup([inputVideoUrl], '.mp4');
+            }
+            if (inputAudioUrl) {
+              input.reference_audio_urls = await reHostUrlsWithCleanup([inputAudioUrl], '.mp3');
+            }
+          }
+          // (v2Mode === 'text' with no media → pure text-to-video, no media params)
+
           // Audio / search / safety toggles (Kie v2 only)
           if (options?.generateAudio !== undefined) {
             input.generate_audio = Boolean(options.generateAudio);
@@ -317,7 +350,8 @@ export class KieAIProvider extends EnhancedProvider {
 
       const time = Date.now() - start;
       let cost = 0.28; // default for Kling
-      if (model.includes('seedance-2')) cost = 1.025; // 720p text-to-video, 5s baseline
+      if (model.includes('seedance-2-fast')) cost = 0.825; // 720p text, 5s baseline
+      else if (model.includes('seedance-2')) cost = 1.025; // 720p text, 5s baseline
       else if (model.includes('seedance')) cost = 0.45;
       if (model.includes('sora-2-pro')) cost = 0.80;
       else if (model.startsWith('sora-')) cost = 0.50;
