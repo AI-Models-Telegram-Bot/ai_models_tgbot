@@ -663,9 +663,15 @@ ByteDance's newest video generation model — premium quality, sharper motion, a
 • Web search grounding
 • NSFW filter
 
-🖼 Upload an image to use it as the first frame — Kie's image-to-video rate is lower per second.
+🎬 <b>Input modes</b> (set in Settings, or auto-detected from uploads):
+• <b>Text</b> — prompt only
+• <b>First frame</b> — 1 image → opening frame
+• <b>First + Last</b> — 2 images → transition
+• <b>Reference</b> — up to 9 images + 1 video + 1 audio to guide style/motion/sound
 
-Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+🖼 Image-to-video uses Kie's lower per-second rate.
+
+Send ✍️ a prompt, or 🌄 images / 🎥 a video / 🎵 audio to get started 👇
 
 Fee: ⚡16–420 tokens (scales with resolution, duration, and input mode)`,
 
@@ -679,9 +685,15 @@ The fast variant of Seedance 2 — faster output for quicker iterations. Support
 • Duration (4–15 seconds)
 • Audio generation, Web search, NSFW filter
 
-🖼 Upload an image to use it as the first frame — image-to-video uses Kie's lower per-second rate.
+🎬 <b>Input modes</b> (set in Settings, or auto-detected from uploads):
+• <b>Text</b> — prompt only
+• <b>First frame</b> — 1 image → opening frame
+• <b>First + Last</b> — 2 images → transition
+• <b>Reference</b> — up to 9 images + 1 video + 1 audio
 
-Send ✍️ a text prompt or 🌄 upload an image to get started 👇
+🖼 Image-to-video uses Kie's lower per-second rate.
+
+Send ✍️ a prompt, or 🌄 images / 🎥 a video / 🎵 audio to get started 👇
 
 Fee: ⚡16–210 tokens (scales with resolution, duration, and input mode)`,
 

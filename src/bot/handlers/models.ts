@@ -59,6 +59,8 @@ const MODEL_MAX_IMAGES: Record<string, number> = {
   'sora': 4, 'sora-pro': 4,
   'veo': 3, 'veo-fast': 3,
   'seedance': 2, 'seedance-lite': 2, 'seedance-1-pro': 2, 'seedance-fast': 2,
+  // Seedance 2: up to 9 reference images (or 1-2 for first/last frame modes)
+  'seedance-2': 9, 'seedance-2-fast': 9,
   'luma': 2, 'wan': 2,
   'runway': 1, 'runway-gen4': 1,
   // Image editing models
@@ -873,11 +875,11 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
   ctx.session.uploadedAudioUrl = undefined;
 }
 
-/** Models that accept video uploads (Kling Motion Control, Enhancement) */
-const VIDEO_UPLOAD_MODELS = ['kling-motion', 'topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro'];
+/** Models that accept video uploads (Kling Motion Control, Enhancement, Seedance 2 reference) */
+const VIDEO_UPLOAD_MODELS = ['kling-motion', 'topaz', 'topaz-direct', 'wavespeed', 'wavespeed-pro', 'seedance-2', 'seedance-2-fast'];
 
-/** Models that accept audio uploads (Kling AI Avatar) */
-const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar'];
+/** Models that accept audio uploads (Kling AI Avatar, Seedance 2 reference) */
+const AUDIO_UPLOAD_MODELS = ['kling-avatar-pro', 'kling-avatar', 'seedance-2', 'seedance-2-fast'];
 
 /**
  * Handle video uploads for Kling Motion Control.

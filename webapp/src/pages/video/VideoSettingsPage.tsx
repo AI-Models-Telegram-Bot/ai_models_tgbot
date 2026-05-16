@@ -244,6 +244,14 @@ const MODE_OPTIONS: ModeOption[] = [
   { value: 'ingredients', labelKey: 'modeIngredients', descKey: 'modeIngredientsDesc', icon: '🧩' },
 ];
 
+// Seedance 2 input modes — mutually exclusive per Kie spec
+const SEEDANCE2_MODE_OPTIONS: ModeOption[] = [
+  { value: 'text', labelKey: 's2ModeAuto', descKey: 's2ModeAutoDesc', icon: '✨' },
+  { value: 'first', labelKey: 's2ModeFirst', descKey: 's2ModeFirstDesc', icon: '🎬' },
+  { value: 'first_last', labelKey: 's2ModeFirstLast', descKey: 's2ModeFirstLastDesc', icon: '🔀' },
+  { value: 'reference', labelKey: 's2ModeReference', descKey: 's2ModeReferenceDesc', icon: '🧩' },
+];
+
 // ── Kling-specific config ──────────────────────────────────
 
 const KLING_MODELS = ['kling', 'kling-pro'];
@@ -374,7 +382,7 @@ export default function VideoSettingsPage() {
       if (hasAudio) {
         setGenerateAudio(modelSettings.generateAudio ?? true);
       }
-      if (isVeo) {
+      if (isVeo || isSeedance2) {
         setMode(modelSettings.mode || 'text');
       }
       if (isSeedance) {
@@ -449,7 +457,7 @@ export default function VideoSettingsPage() {
     if (hasDuration && !isKling && !isKling30 && duration !== (modelSettings?.duration ?? (MODEL_DURATIONS[modelSlug]?.[0]?.value || 5))) return true;
     if (hasResolution && !isKlingMotion && resolution !== (modelSettings?.resolution || '720p')) return true;
     if (hasAudio && generateAudio !== (modelSettings?.generateAudio ?? true)) return true;
-    if (isVeo && mode !== (modelSettings?.mode || 'text')) return true;
+    if ((isVeo || isSeedance2) && mode !== (modelSettings?.mode || 'text')) return true;
     if (isSeedance && cameraFixed !== (modelSettings?.cameraFixed ?? false)) return true;
     if (isKling) {
       if (version !== (modelSettings?.version || '2.6')) return true;
@@ -504,7 +512,7 @@ export default function VideoSettingsPage() {
       if (hasDuration && !isKling && !isKling30) updates.duration = duration;
       if (hasResolution && !isKlingMotion) updates.resolution = resolution;
       if (hasAudio) updates.generateAudio = generateAudio;
-      if (isVeo) updates.mode = mode;
+      if (isVeo || isSeedance2) updates.mode = mode;
       if (isSeedance) updates.cameraFixed = cameraFixed;
       if (isKling) {
         updates.aspectRatio = aspectRatio;
@@ -1170,6 +1178,55 @@ export default function VideoSettingsPage() {
             </div>
             <div className="space-y-2">
               {MODE_OPTIONS.map(({ value, labelKey, descKey, icon }) => (
+                <div
+                  key={value}
+                  onClick={() => {
+                    hapticImpact('light');
+                    setMode(value);
+                  }}
+                  className={`rounded-xl p-3.5 cursor-pointer transition-all ${
+                    mode === value
+                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center" style={{ columnGap: 10 }}>
+                    <span className="text-lg">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center" style={{ columnGap: 8 }}>
+                        <span className="font-semibold text-content-primary text-sm">
+                          {t(labelKey as any)}
+                        </span>
+                        {mode === value && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-video-primary/20 text-video-primary font-medium shrink-0">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-content-tertiary mt-0.5">
+                        {t(descKey as any)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Seedance 2: Input Mode (mutually exclusive media scenarios) */}
+        {isSeedance2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="mb-5"
+          >
+            <div className="text-xs text-content-tertiary uppercase tracking-wide mb-3">
+              {t('s2Mode')}
+            </div>
+            <div className="space-y-2">
+              {SEEDANCE2_MODE_OPTIONS.map(({ value, labelKey, descKey, icon }) => (
                 <div
                   key={value}
                   onClick={() => {
