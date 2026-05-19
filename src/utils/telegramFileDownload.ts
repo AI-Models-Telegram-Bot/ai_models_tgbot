@@ -132,6 +132,31 @@ export async function reHostUrl(
 }
 
 /**
+ * Rewrite an internal uploads URL from the plain-HTTP / bare-IP origin
+ * (UPLOADS_PUBLIC_URL, used to bypass the CDN for lenient providers) to the
+ * HTTPS webapp domain.
+ *
+ * ByteDance Volcengine (Seedance) and other strict ingestors reject
+ * non-HTTPS / bare-IP media URLs ("InvalidParameter.AssetID / Id is Invalid"),
+ * even though the file is reachable. Both origins serve the same /uploads/
+ * path, so swapping the host is safe and content-identical.
+ */
+export function toHttpsPublicUrl(url: string): string {
+  const uploadsBase = (config.webapp?.uploadsPublicUrl || '').replace(/\/$/, '');
+  const httpsBase = (config.webapp?.url || '').replace(/\/$/, '');
+  if (
+    uploadsBase &&
+    httpsBase &&
+    httpsBase.startsWith('https://') &&
+    url.startsWith(uploadsBase) &&
+    !uploadsBase.startsWith('https://')
+  ) {
+    return httpsBase + url.slice(uploadsBase.length);
+  }
+  return url;
+}
+
+/**
  * Re-host URLs and schedule cleanup only for newly created copies.
  * Returns the public URLs ready for external API consumption.
  */
