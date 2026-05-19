@@ -9,7 +9,12 @@ import {
 } from './BaseProvider';
 import { logger } from '../utils/logger';
 import { parseMjParams } from '../utils/mjParams';
-import { reHostUrl, reHostUrlsWithCleanup, scheduleFileCleanup } from '../utils/telegramFileDownload';
+import { reHostUrl, reHostUrlsWithCleanup, scheduleFileCleanup, toHttpsPublicUrl } from '../utils/telegramFileDownload';
+
+/** Normalize re-hosted media URLs to HTTPS — Kie/Volcengine reject plain-HTTP/bare-IP. */
+function httpsUrls(urls: string[]): string[] {
+  return urls.map(toHttpsPublicUrl);
+}
 
 /**
  * Extract a user-facing error message from a KieAI API response that lacks a taskId.
@@ -238,7 +243,7 @@ export class KieAIProvider extends EnhancedProvider {
         const maxImages = model.includes('kling') ? 1 : 4;
         const urls = inputImageUrls.slice(0, maxImages);
         const publicUrls = await reHostUrlsWithCleanup(urls, '.jpg');
-        input.image_urls = publicUrls;
+        input.image_urls = httpsUrls(publicUrls);
       }
 
       // Kling-specific: sound off
@@ -293,23 +298,23 @@ export class KieAIProvider extends EnhancedProvider {
           }
 
           if (v2Mode === 'first' && hasImages) {
-            const [u] = await reHostUrlsWithCleanup(inputImageUrls.slice(0, 1), '.jpg');
+            const [u] = httpsUrls(await reHostUrlsWithCleanup(inputImageUrls.slice(0, 1), '.jpg'));
             if (u) input.first_frame_url = u;
           } else if (v2Mode === 'first_last' && hasImages) {
-            const urls = await reHostUrlsWithCleanup(inputImageUrls.slice(0, 2), '.jpg');
+            const urls = httpsUrls(await reHostUrlsWithCleanup(inputImageUrls.slice(0, 2), '.jpg'));
             if (urls[0]) input.first_frame_url = urls[0];
             if (urls[1]) input.last_frame_url = urls[1];
           } else if (v2Mode === 'reference') {
             if (hasImages) {
-              input.reference_image_urls = await reHostUrlsWithCleanup(
+              input.reference_image_urls = httpsUrls(await reHostUrlsWithCleanup(
                 inputImageUrls.slice(0, 9), '.jpg',
-              );
+              ));
             }
             if (inputVideoUrl) {
-              input.reference_video_urls = await reHostUrlsWithCleanup([inputVideoUrl], '.mp4');
+              input.reference_video_urls = httpsUrls(await reHostUrlsWithCleanup([inputVideoUrl], '.mp4'));
             }
             if (inputAudioUrl) {
-              input.reference_audio_urls = await reHostUrlsWithCleanup([inputAudioUrl], '.mp3');
+              input.reference_audio_urls = httpsUrls(await reHostUrlsWithCleanup([inputAudioUrl], '.mp3'));
             }
           }
           // (v2Mode === 'text' with no media → pure text-to-video, no media params)
@@ -398,10 +403,10 @@ export class KieAIProvider extends EnhancedProvider {
       // Handle image processing modes
       if (mode === 'frames' && inputImageUrls?.length) {
         veoPayload.mode = 'FIRST_AND_LAST_FRAMES_2_VIDEO';
-        veoPayload.imageUrls = inputImageUrls.slice(0, 2);
+        veoPayload.imageUrls = httpsUrls(inputImageUrls.slice(0, 2));
       } else if (mode === 'ingredients' && inputImageUrls?.length) {
         veoPayload.mode = 'REFERENCE_2_VIDEO';
-        veoPayload.imageUrls = inputImageUrls.slice(0, 3);
+        veoPayload.imageUrls = httpsUrls(inputImageUrls.slice(0, 3));
       }
 
       // Handle 4K resolution
@@ -473,7 +478,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       // KieAI Runway expects `imageUrl` (single string), not an array
       if (inputImageUrls?.length) {
-        body.imageUrl = inputImageUrls[0];
+        body.imageUrl = toHttpsPublicUrl(inputImageUrls[0]);
       }
 
       logger.info('KieAI Runway payload:', { model: runwayModel, aspectRatio: body.aspectRatio, duration: body.duration, quality: body.quality });
@@ -647,7 +652,7 @@ export class KieAIProvider extends EnhancedProvider {
       // Add reference images with the correct field name for this model
       // Re-host Telegram URLs so KieAI can access them
       if (hasImage && imageField) {
-        const publicUrls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
+        const publicUrls = httpsUrls(await reHostUrlsWithCleanup(inputImageUrls, '.jpg'));
         input[imageField] = publicUrls;
       }
 
@@ -727,7 +732,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       // Add reference images for editing mode (re-host Telegram URLs)
       if (hasImage) {
-        input.image_urls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
+        input.image_urls = httpsUrls(await reHostUrlsWithCleanup(inputImageUrls, '.jpg'));
       }
 
       logger.info('KieAI Seedream payload:', { model, image_size: input.image_size, hasImage });
@@ -791,7 +796,7 @@ export class KieAIProvider extends EnhancedProvider {
 
       // Add reference images for editing mode (re-host Telegram URLs)
       if (hasImage) {
-        input.image_urls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
+        input.image_urls = httpsUrls(await reHostUrlsWithCleanup(inputImageUrls, '.jpg'));
       }
 
       logger.info('KieAI Seedream 4.5 payload:', { model, aspect_ratio: aspectRatio, quality: input.quality, hasImage });
@@ -1007,8 +1012,8 @@ export class KieAIProvider extends EnhancedProvider {
       };
 
       if (inputImageUrls?.length) {
-        // Re-host all image URLs so KieAI can access them
-        const publicImageUrls = await reHostUrlsWithCleanup(inputImageUrls, '.jpg');
+        // Re-host all image URLs so KieAI can access them (HTTPS for Volcengine)
+        const publicImageUrls = httpsUrls(await reHostUrlsWithCleanup(inputImageUrls, '.jpg'));
 
         // First 2 images → keyframes (first frame + last frame)
         input.image_urls = publicImageUrls.slice(0, 2);
@@ -1089,8 +1094,8 @@ export class KieAIProvider extends EnhancedProvider {
       if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url);
 
       const input: Record<string, unknown> = {
-        input_urls: [imageResult.url],
-        video_urls: [videoResult.url],
+        input_urls: [toHttpsPublicUrl(imageResult.url)],
+        video_urls: [toHttpsPublicUrl(videoResult.url)],
         mode: (options?.resolution as string) || '720p',
         character_orientation: (options?.characterOrientation as string) || 'video',
       };
@@ -1157,8 +1162,8 @@ export class KieAIProvider extends EnhancedProvider {
       if (audioResult.wasReHosted) scheduleFileCleanup(audioResult.url);
 
       const input: Record<string, unknown> = {
-        image_url: imageResult.url,
-        audio_url: audioResult.url,
+        image_url: toHttpsPublicUrl(imageResult.url),
+        audio_url: toHttpsPublicUrl(audioResult.url),
         prompt: (prompt && prompt.trim()) ? prompt : 'A person speaking naturally',
       };
 
@@ -1211,7 +1216,7 @@ export class KieAIProvider extends EnhancedProvider {
       // Re-host Telegram video URL so KieAI can access it
       const videoResult = await reHostUrl(inputVideoUrl, '.mp4');
       if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url);
-      const publicVideoUrl = videoResult.url;
+      const publicVideoUrl = toHttpsPublicUrl(videoResult.url);
 
       // Map upscale setting to upscale_factor: "original" → "1", "2x" → "2", "4x" → "4"
       const upscaleSetting = (options?.upscale as string) || '2x';
