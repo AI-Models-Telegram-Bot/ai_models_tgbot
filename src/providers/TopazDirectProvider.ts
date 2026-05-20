@@ -8,6 +8,7 @@ import {
   AudioGenerationResult,
 } from './BaseProvider';
 import { logger } from '../utils/logger';
+import { extractProviderError } from '../utils/providerError';
 
 const POLL_INTERVAL_MS = 10000; // 10s — Topaz processing is slower
 const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 min
@@ -162,8 +163,10 @@ export class TopazDirectProvider extends EnhancedProvider {
       logger.info(`Topaz Direct: uploaded, ETag=${etag}`);
 
       // Step 5: Complete upload
+      // Topaz API expects { uploadResults: [{ partNum, eTag }] }
+      // (field rename from older { parts: [{ partNumber, eTag }] })
       await this.client.patch(`/video/${requestId}/complete-upload/`, {
-        parts: [{ partNumber: 1, eTag: etag }],
+        uploadResults: [{ partNum: 1, eTag: etag }],
       });
 
       logger.info('Topaz Direct: upload completed, processing started');
@@ -179,7 +182,7 @@ export class TopazDirectProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('Topaz Direct: failed', error.response?.data || error.message);
-      throw error;
+      throw new Error(extractProviderError(error, 'Topaz Direct'));
     }
   }
 

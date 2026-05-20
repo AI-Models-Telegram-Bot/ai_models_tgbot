@@ -930,6 +930,26 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
     }
   }
 
+  // Seedance 2 reference video: Kie spec requires each video 2-15s, total ≤15s
+  if (ctx.session.videoFunction === 'seedance-2' || ctx.session.videoFunction === 'seedance-2-fast') {
+    const videoDuration = ('video' in ctx.message && ctx.message.video?.duration) || undefined;
+    if (videoDuration !== undefined && (videoDuration < 2 || videoDuration > 15)) {
+      const msg = lang === 'ru'
+        ? `⚠️ Видео должно быть длительностью 2–15 секунд для Seedance 2 (ваше: ${videoDuration}с). Загрузите более короткий клип.`
+        : `⚠️ Reference video must be 2–15 seconds for Seedance 2 (yours: ${videoDuration}s). Please upload a shorter clip.`;
+      await ctx.reply(msg);
+      return;
+    }
+    // Kie spec: reference video resolution must be ≤720p
+    if (videoWidth && videoHeight && Math.max(videoWidth, videoHeight) > 1280) {
+      const msg = lang === 'ru'
+        ? `⚠️ Видео слишком высокого разрешения (${videoWidth}x${videoHeight}). Seedance 2 принимает максимум 720p для референсного видео. Загрузите видео меньшего разрешения.`
+        : `⚠️ Video resolution too high (${videoWidth}x${videoHeight}). Seedance 2 accepts at most 720p for reference video. Please upload a lower-resolution clip.`;
+      await ctx.reply(msg);
+      return;
+    }
+  }
+
   if (!VIDEO_UPLOAD_MODELS.includes(ctx.session.videoFunction || '')) {
     const msg = lang === 'ru'
       ? '⚠️ Загрузка видео поддерживается только для моделей Motion Control и Enhancement. Отправьте текстовый запрос.'
