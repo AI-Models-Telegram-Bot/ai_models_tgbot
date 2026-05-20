@@ -8,6 +8,7 @@ import {
   AudioGenerationResult,
 } from './BaseProvider';
 import { logger } from '../utils/logger';
+import { extractProviderError } from '../utils/providerError';
 
 const POLL_INTERVAL_MS = 5000;
 const VIDEO_POLL_TIMEOUT_MS = 600000; // 10 min
@@ -93,7 +94,7 @@ export class WaveSpeedProvider extends EnhancedProvider {
       const time = Date.now() - start;
       this.updateStats(false, 0, time);
       logger.error('WaveSpeed: failed', error.response?.data || error.message);
-      throw error;
+      throw new Error(extractProviderError(error, 'WaveSpeed'));
     }
   }
 
