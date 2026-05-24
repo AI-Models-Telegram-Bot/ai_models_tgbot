@@ -718,7 +718,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
     ...(imageOptions || {}),
     hasImageInput: (ctx.session.uploadedImageUrls?.length ?? 0) > 0,
   } as {
-    duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string; hasImageInput?: boolean;
+    duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string; hasImageInput?: boolean; generateAudio?: boolean;
   };
   const creditsCost = calculateDynamicCost(model.slug, model.tokenCost, dynamicSettings);
 

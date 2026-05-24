@@ -69,8 +69,8 @@ export const en = {
     videoKlingMotion: '🎭 Motion Control (⚡35)',
     videoKlingAvatarPro: '🗣️ Avatar Pro (⚡40)',
     videoKlingAvatar: '🗣️ Avatar (⚡25)',
-    videoVeoFast: '⚡ Veo Fast (⚡6–32)',
-    videoVeoQuality: '💎 Veo Quality (⚡28–155)',
+    videoVeoFast: '⚡ Veo Fast (⚡9–40)',
+    videoVeoQuality: '💎 Veo Quality (⚡40–187)',
     videoSora: '🎬 Sora 2 (⚡21–113)',
     videoSoraPro: '💎 Sora 2 Pro (⚡33–177)',
     videoRunwayGen4: '✈️ Runway Gen-4 (⚡17–72)',
@@ -540,7 +540,7 @@ Google Veo fast mode — quick video generation with great quality and optional 
 
 Send ✍️ a text prompt to get started, or 🌄 upload images for Frames/Ingredients mode 👇
 
-Fee: ⚡6–32 tokens (depends on settings)`,
+Fee: ⚡9–40 tokens (depends on settings)`,
 
     videoVeoDesc: `💎 <b>Veo 3.1 Quality</b>
 
@@ -551,7 +551,7 @@ Google Veo quality mode — maximum fidelity, photorealism, and optional audio g
 
 Send ✍️ a text prompt to get started, or 🌄 upload images for Frames/Ingredients mode 👇
 
-Fee: ⚡28–155 tokens (depends on settings)`,
+Fee: ⚡40–187 tokens (depends on settings)`,
 
     videoSoraDesc: `🎬 <b>Sora 2</b>
 

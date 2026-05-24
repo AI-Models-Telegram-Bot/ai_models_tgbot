@@ -14,14 +14,14 @@ const BASE_COSTS: Record<string, number> = {
   'runway': 18,
   'luma': 24,
   'runway-gen4': 24,
-  'veo-fast': 24,
+  'veo-fast': 30,
   'kling-pro': 27,
   'kling-3.0': 30,
   'kling-motion': 35,
   'sora': 30,
   'seedance-1-pro': 35,
   'sora-pro': 47,
-  'veo': 116,
+  'veo': 140,
   'seedance-2': 65,
   'seedance-2-fast': 55,
   // Image models
@@ -169,6 +169,7 @@ export interface DynamicCostSettings {
   enableAudio?: boolean;
   speed?: string;
   hasImageInput?: boolean;
+  generateAudio?: boolean;
 }
 
 export function hasDynamicPricing(slug: string): boolean {
@@ -211,6 +212,11 @@ export function calculateDynamicCost(
     const userMult = RESOLUTION_MULT[settings.resolution] || 1.0;
     const defaultMult = RESOLUTION_MULT[cfg.defaultResolution] || 1.0;
     cost *= userMult / defaultMult;
+  }
+
+  // Veo audio multiplier — mirror backend videoPricing.ts
+  if ((slug === 'veo-fast' || slug === 'veo') && settings.generateAudio === false) {
+    cost *= 0.67;
   }
 
   return Math.ceil(cost);

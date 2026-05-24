@@ -192,7 +192,7 @@ export function hasDynamicPricing(slug: string): boolean {
 export function calculateDynamicCost(
   slug: string,
   baseCost: number,
-  settings?: { duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string; hasImageInput?: boolean },
+  settings?: { duration?: number; resolution?: string; version?: string; enableAudio?: boolean; speed?: string; hasImageInput?: boolean; generateAudio?: boolean },
 ): number {
   // Seedance 2 / 2-fast: per-second × resolution × input mode
   if (slug === 'seedance-2' || slug === 'seedance-2-fast') {
@@ -247,6 +247,12 @@ export function calculateDynamicCost(
     const userMult = RESOLUTION_MULT[settings.resolution] || 1.0;
     const defaultMult = RESOLUTION_MULT[cfg.defaultResolution] || 1.0;
     cost *= userMult / defaultMult;
+  }
+
+  // Veo audio multiplier: Google base cost is $0.50/s (no audio) vs $0.75/s
+  // (with audio). Defaults assume audio ON, so disabling reduces cost by ~33%.
+  if ((slug === 'veo-fast' || slug === 'veo') && settings.generateAudio === false) {
+    cost *= 0.67;
   }
 
   return Math.ceil(cost);
