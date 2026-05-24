@@ -446,8 +446,9 @@ export default function VideoSettingsPage() {
       resolution,
       version,
       enableAudio: enableAudio && version === '2.6' && klingMode === 'pro',
+      generateAudio: hasAudio ? generateAudio : undefined,
     });
-  }, [modelSlug, duration, resolution, version, enableAudio, klingMode, qualityMode]);
+  }, [modelSlug, duration, resolution, version, enableAudio, klingMode, qualityMode, hasAudio, generateAudio]);
 
   const hasChanged = (() => {
     if (hasAspect) {

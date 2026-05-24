@@ -338,7 +338,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'kling-3.0/video' },
-      { name: 'fal', modelId: 'fal-ai/kling-video/v3/standard/text-to-video' }, // fallback ~$0.084/s
+      { name: 'fal', modelId: 'fal-ai/kling-video/v3/pro/text-to-video' }, // fallback (fal deprecated v3/standard, only pro remains)
     ],
   },
 
@@ -347,7 +347,8 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'kling-2.6/motion-control' },
-      { name: 'fal', modelId: 'fal-ai/kling-video/v3/standard/motion-control' }, // fallback
+      // Fal removed kling v3/standard tier and never had v3/pro motion-control —
+      // Kie-only until Fal adds it back.
     ],
   },
 
@@ -434,7 +435,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'veo3_fast' },                      // $0.40
-      { name: 'fal', modelId: 'fal-ai/veo3/fast' },                 // $0.10-0.15/s (fast variant)
+      { name: 'fal', modelId: 'fal-ai/veo3.1/fast' },               // $0.10-0.15/s (fal renamed veo3 → veo3.1)
     ],
   },
 
@@ -443,7 +444,7 @@ export const MODEL_ROUTES: Record<string, ModelRoute> = {
     category: 'VIDEO',
     providers: [
       { name: 'kieai', modelId: 'veo3' },                           // $2.00
-      { name: 'fal', modelId: 'fal-ai/veo3' },                      // fallback ~$0.40/s
+      { name: 'fal', modelId: 'fal-ai/veo3.1' },                    // fallback ~$0.40/s (fal renamed veo3 → veo3.1)
     ],
   },
 

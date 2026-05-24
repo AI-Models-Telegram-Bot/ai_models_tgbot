@@ -285,11 +285,14 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 30,
     isLossLeader: false,
   },
+  // Base = default config (1080p, audio on, 8s). Real cost from Kie:
+  // $0.40 per video with audio. 30 credits × $0.023 = $0.69 revenue → ~32% margin.
+  // Scales via duration / resolution / generateAudio (off → ×0.67) in videoPricing.ts.
   'veo-fast': {
-    creditsPerUnit: 24,
+    creditsPerUnit: 30,
     unitType: '1_video',
     baseCostUSD: 0.40,
-    marginPercent: 30,
+    marginPercent: 32,
     isLossLeader: false,
   },
   'kling-pro': {
@@ -368,11 +371,14 @@ export const VIDEO_PRICING: Record<string, ModelPricing> = {
     marginPercent: 30,
     isLossLeader: false,
   },
+  // Base = default config (1080p, audio on, 8s). Real cost from Kie:
+  // $2.00 per video with audio. 140 credits × $0.023 = $3.22 revenue → ~30% margin.
+  // Scales via duration / resolution / generateAudio (off → ×0.67) in videoPricing.ts.
   'veo': {
-    creditsPerUnit: 116,
+    creditsPerUnit: 140,
     unitType: '1_video',
     baseCostUSD: 2.00,
-    marginPercent: 25,
+    marginPercent: 30,
     isLossLeader: false,
   },
   'topaz': {
