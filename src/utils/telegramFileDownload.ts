@@ -141,6 +141,24 @@ export async function reHostUrl(
  * even though the file is reachable. Both origins serve the same /uploads/
  * path, so swapping the host is safe and content-identical.
  */
+/**
+ * Write an in-memory Buffer to the uploads directory and return its public URL.
+ * Used for media we generated/transformed locally (e.g. HEIC → JPEG conversion).
+ */
+export function saveBufferAsUpload(buffer: Buffer, ext: string = '.jpg'): string {
+  const webappUrl = config.webapp?.url;
+  if (!webappUrl) {
+    throw new Error('WEBAPP_URL not configured — cannot serve uploaded file');
+  }
+  const uniqueName = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`;
+  const destPath = path.join(UPLOAD_DIR, uniqueName);
+  fs.writeFileSync(destPath, buffer);
+  const uploadsBase = config.webapp?.uploadsPublicUrl || webappUrl;
+  const publicUrl = `${uploadsBase}/uploads/${uniqueName}`;
+  logger.info('Buffer saved as upload', { publicUrl, bytes: buffer.length });
+  return publicUrl;
+}
+
 export function toHttpsPublicUrl(url: string): string {
   const uploadsBase = (config.webapp?.uploadsPublicUrl || '').replace(/\/$/, '');
   const httpsBase = (config.webapp?.url || '').replace(/\/$/, '');

@@ -18,8 +18,9 @@ import { getStatusType, STATUS_MESSAGES } from '../../utils/statusMessages';
 import { getRedis } from '../../config/redis';
 import { getPlanByTier } from '../../config/subscriptions';
 import { convertOgaToMp3 } from '../../utils/audioConvert';
-import { downloadTelegramFile, reHostUrl, scheduleFileCleanup, type ReHostResult } from '../../utils/telegramFileDownload';
+import { downloadTelegramFile, reHostUrl, saveBufferAsUpload, scheduleFileCleanup, type ReHostResult } from '../../utils/telegramFileDownload';
 import axios from 'axios';
+import sharp from 'sharp';
 
 /**
  * Per-user image upload debounce.
@@ -564,12 +565,32 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
   try {
     let imageUrl: string;
     const ext = doc.file_name ? '.' + (doc.file_name.split('.').pop() || 'jpg') : '.jpg';
+    // iPhone "send as file" delivers HEIC/HEIF that Kie/Gemini reject with
+    // "File type not supported". Convert to JPEG before re-hosting.
+    const isHeic = /\.(heic|heif)$/i.test(ext) || /^image\/heic|^image\/heif/i.test(mime);
     try {
       const fileLink = await ctx.telegram.getFileLink(doc.file_id);
-      // Re-host to our server immediately so the URL doesn't expire
-      const docResult = await reHostUrl(fileLink.href, ext);
-      imageUrl = docResult.url;
-      if (docResult.wasReHosted) scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
+      if (isHeic) {
+        try {
+          const dl = await axios.get(fileLink.href, { responseType: 'arraybuffer', timeout: 60000 });
+          const heicBuf = Buffer.from(dl.data);
+          const jpegBuf = await sharp(heicBuf).rotate().jpeg({ quality: 90 }).toBuffer();
+          imageUrl = saveBufferAsUpload(jpegBuf, '.jpg');
+          scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
+          logger.info('HEIC image converted to JPEG', { origBytes: heicBuf.length, jpegBytes: jpegBuf.length });
+        } catch (heicErr) {
+          logger.error('HEIC → JPEG conversion failed', heicErr);
+          const msg = lang === 'ru'
+            ? '⚠️ Не удалось обработать HEIC-фото с iPhone. Отправьте через 📷 (как обычное фото), а не как файл — Telegram конвертирует автоматически.'
+            : '⚠️ Could not process iPhone HEIC photo. Please send via 📷 (as a regular photo) instead of as a file — Telegram will convert it automatically.';
+          await ctx.reply(msg);
+          return;
+        }
+      } else {
+        const docResult = await reHostUrl(fileLink.href, ext);
+        imageUrl = docResult.url;
+        if (docResult.wasReHosted) scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
+      }
     } catch {
       // Fallback for large files (>20MB) — download to our server by file_id
       logger.info('getFileLink failed for document, falling back to direct download');
