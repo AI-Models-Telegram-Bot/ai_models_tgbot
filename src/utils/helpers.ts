@@ -91,10 +91,15 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
   }
 
   // Media file unavailable (upload expired or deleted)
-  if (lower.includes('media file is unavailable') || lower.includes('failed to download')) {
+  // Also catches Kie's 404 when our /uploads/ file was cleaned up before the
+  // provider could fetch it (typical pattern: "404 Client Error: Not Found
+  // for url: https://webapp.vseonix.com/uploads/...").
+  if (lower.includes('media file is unavailable') ||
+      lower.includes('failed to download') ||
+      (lower.includes('not found for url') && lower.includes('/uploads/'))) {
     return lang === 'ru'
-      ? 'Файл недоступен. Пожалуйста, загрузите изображение/видео заново и попробуйте снова.'
-      : 'File is unavailable. Please re-upload your image/video and try again.';
+      ? 'Файл недоступен (срок хранения истёк). Пожалуйста, загрузите изображение/видео заново и попробуйте снова.'
+      : 'File is unavailable (upload expired). Please re-upload your image/video and try again.';
   }
 
   // Provider internal errors (task id blank, playground failed)

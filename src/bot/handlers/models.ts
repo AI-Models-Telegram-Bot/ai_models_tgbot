@@ -364,7 +364,7 @@ export async function handlePhotoInput(ctx: BotContext): Promise<void> {
     const fileLink = await ctx.telegram.getFileLink(photo.file_id);
     // Re-host to our server immediately so the URL doesn't expire
     const imageResult = await reHostUrl(fileLink.href, '.jpg');
-    if (imageResult.wasReHosted) scheduleFileCleanup(imageResult.url, 60 * 60 * 1000);
+    if (imageResult.wasReHosted) scheduleFileCleanup(imageResult.url, 6 * 60 * 60 * 1000);
     const caption = ctx.message.caption;
 
     // Accumulate URL in per-user in-memory buffer (NOT session — avoids race condition)
@@ -576,7 +576,7 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
           const heicBuf = Buffer.from(dl.data);
           const jpegBuf = await sharp(heicBuf).rotate().jpeg({ quality: 90 }).toBuffer();
           imageUrl = saveBufferAsUpload(jpegBuf, '.jpg');
-          scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
+          scheduleFileCleanup(imageUrl, 6 * 60 * 60 * 1000);
           logger.info('HEIC image converted to JPEG', { origBytes: heicBuf.length, jpegBytes: jpegBuf.length });
         } catch (heicErr) {
           logger.error('HEIC → JPEG conversion failed', heicErr);
@@ -589,13 +589,13 @@ export async function handleDocumentInput(ctx: BotContext): Promise<void> {
       } else {
         const docResult = await reHostUrl(fileLink.href, ext);
         imageUrl = docResult.url;
-        if (docResult.wasReHosted) scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
+        if (docResult.wasReHosted) scheduleFileCleanup(imageUrl, 6 * 60 * 60 * 1000);
       }
     } catch {
       // Fallback for large files (>20MB) — download to our server by file_id
       logger.info('getFileLink failed for document, falling back to direct download');
       imageUrl = await downloadTelegramFile(doc.file_id, config.bot.token, ext);
-      scheduleFileCleanup(imageUrl, 60 * 60 * 1000);
+      scheduleFileCleanup(imageUrl, 6 * 60 * 60 * 1000);
     }
     const caption = ctx.message.caption;
 
@@ -820,7 +820,7 @@ async function processGeneration(ctx: BotContext, input: string): Promise<void> 
           const fileId = msg.photo![msg.photo!.length - 1].file_id;
           const fileLink = await ctx.telegram.getFileLink(fileId);
           const resizedResult = await reHostUrl(fileLink.href, '.jpg');
-          if (resizedResult.wasReHosted) scheduleFileCleanup(resizedResult.url, 60 * 60 * 1000);
+          if (resizedResult.wasReHosted) scheduleFileCleanup(resizedResult.url, 6 * 60 * 60 * 1000);
           resized.push(resizedResult.url);
           logger.info(`Image resized for aspect ratio ${targetAR}`, { originalUrl: originalUrl.slice(0, 60) });
         } catch (err) {
@@ -994,7 +994,7 @@ export async function handleVideoUpload(ctx: BotContext): Promise<void> {
     const fileLink = await ctx.telegram.getFileLink(fileId);
     // Re-host to our server immediately so the URL doesn't expire before worker processes it
     const videoResult = await reHostUrl(fileLink.href, '.mp4');
-    if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url, 60 * 60 * 1000);
+    if (videoResult.wasReHosted) scheduleFileCleanup(videoResult.url, 6 * 60 * 60 * 1000);
 
     ctx.session.uploadedVideoUrl = videoResult.url;
 
@@ -1139,7 +1139,7 @@ export async function handleAudioUpload(ctx: BotContext): Promise<void> {
 
     // Re-host to our server immediately so the URL doesn't expire
     const audioResult = await reHostUrl(audioUrl, '.mp3');
-    if (audioResult.wasReHosted) scheduleFileCleanup(audioResult.url, 60 * 60 * 1000);
+    if (audioResult.wasReHosted) scheduleFileCleanup(audioResult.url, 6 * 60 * 60 * 1000);
 
     ctx.session.uploadedAudioUrl = audioResult.url;
 
