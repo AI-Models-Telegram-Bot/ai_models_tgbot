@@ -83,8 +83,9 @@ export function sanitizeErrorForUser(rawError: string, lang: 'en' | 'ru' = 'en')
   // Out of credits / billing / quota
   if (lower.includes('run out of credits') || lower.includes('billing') || lower.includes('status code 403') ||
       lower.includes('daily limit') || lower.includes('exhausted balance') || lower.includes('credit not enough') ||
-      lower.includes('quota not enough') || lower.includes('insufficient credit') || lower.includes('payment required') ||
-      lower.includes('user is locked')) {
+      lower.includes('quota not enough') || lower.includes('insufficient credit') || lower.includes('insufficient credits') ||
+      lower.includes('credits insufficient') || lower.includes('credit insufficient') || lower.includes('not enough credit') ||
+      lower.includes('not enough balance') || lower.includes('payment required') || lower.includes('user is locked')) {
     return lang === 'ru'
       ? 'Сервис временно недоступен. Попробуйте позже.'
       : 'Service temporarily unavailable. Please try again later.';
