@@ -111,7 +111,7 @@ export default function SunoSettingsPage() {
                 onClick={() => handleModeSelect(value)}
                 className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                   mode === value
-                    ? 'bg-audio-surface-elevated border-2 border-audio-primary shadow-audio-neon'
+                    ? 'bg-audio-surface-elevated border border-audio-primary shadow-audio-neon'
                     : 'bg-audio-surface-card border border-white/5 hover:border-audio-primary/30'
                 }`}
               >
@@ -156,8 +156,8 @@ export default function SunoSettingsPage() {
                 onClick={() => handleStylePreset(preset)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   activeStyles.includes(preset)
-                    ? 'bg-audio-primary text-white'
-                    : 'bg-white/5 text-content-secondary hover:bg-white/10'
+                    ? 'bg-audio-primary text-surface-bg'
+                    : 'bg-surface-secondary text-content-secondary hover:bg-surface-elevated'
                 }`}
               >
                 {preset}
@@ -174,8 +174,8 @@ export default function SunoSettingsPage() {
           disabled={!hasChanged || isSaving}
           className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
             hasChanged && !isSaving
-              ? 'bg-audio-primary text-white shadow-audio-neon hover:bg-audio-primary-dark active:scale-[0.98]'
-              : 'bg-white/5 text-content-tertiary cursor-not-allowed'
+              ? 'bg-audio-primary text-surface-bg shadow-audio-neon hover:bg-audio-primary-dark active:scale-[0.98]'
+              : 'bg-surface-secondary text-content-tertiary cursor-not-allowed'
           }`}
         >
           {isSaving ? t('saving') : t('save')}

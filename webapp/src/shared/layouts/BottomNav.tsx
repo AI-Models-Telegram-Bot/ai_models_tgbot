@@ -8,76 +8,55 @@ interface NavItem {
   path: string;
   labelKey: string;
   icon: React.ReactNode;
+  match: (pathname: string) => boolean;
 }
 
+// Flat line icons. Single stroke, currentColor — no gradients, no glow.
+const iconProps = {
+  width: 24,
+  height: 24,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.75,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+const ChatIcon = () => (
+  <svg {...iconProps}>
+    <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5V16H5.5A1.5 1.5 0 0 1 4 14.5z" />
+  </svg>
+);
+
+const PlansIcon = () => (
+  <svg {...iconProps}>
+    <path d="M3.5 8.5 7 11l5-6 5 6 3.5-2.5L19 18H5z" />
+    <path d="M5 18h14" />
+  </svg>
+);
+
 const UserIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <defs>
-      <linearGradient id="userGrad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#818cf8" />
-        <stop offset="1" stopColor="#6366f1" />
-      </linearGradient>
-    </defs>
-    <circle cx="12" cy="8" r="4.5" fill="url(#userGrad)" opacity="0.9" />
-    <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" fill="url(#userGrad)" opacity="0.7" />
+  <svg {...iconProps}>
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5 19.5c0-3.2 3.1-5.5 7-5.5s7 2.3 7 5.5" />
   </svg>
 );
 
-const CrownIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <defs>
-      <linearGradient id="crownGrad" x1="3" y1="4" x2="21" y2="20" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#fbbf24" />
-        <stop offset="1" stopColor="#f59e0b" />
-      </linearGradient>
-    </defs>
-    <path d="M3 17l2.5-9L10 12l2-6 2 6 4.5-4L21 17H3z" fill="url(#crownGrad)" opacity="0.9" />
-    <rect x="3" y="17" width="18" height="2.5" rx="1.25" fill="url(#crownGrad)" opacity="0.7" />
-  </svg>
-);
-
-const TrendsIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <defs>
-      <linearGradient id="trendsGrad" x1="8" y1="2" x2="16" y2="22" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#f97316" />
-        <stop offset="1" stopColor="#ef4444" />
-      </linearGradient>
-    </defs>
-    <path
-      d="M12 2C8.5 6 4 9.5 4 14a8 8 0 0016 0c0-4.5-4.5-8-8-12zm0 18a6 6 0 01-6-6c0-3.21 2.56-5.91 5-8.9 .37-.46.68-.86 1-1.28.32.42.63.82 1 1.28C15.44 8.09 18 10.79 18 14a6 6 0 01-6 6z"
-      fill="url(#trendsGrad)"
-      opacity="0.9"
-    />
-    <path
-      d="M12 20a4 4 0 01-4-4c0-2 1.5-3.5 3-5.5.5-.65 1-.65 1.5 0C14 12.5 16 14 16 16a4 4 0 01-4 4z"
-      fill="url(#trendsGrad)"
-      opacity="0.6"
-    />
-  </svg>
-);
-
-const HandshakeIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <defs>
-      <linearGradient id="refGrad" x1="2" y1="4" x2="22" y2="20" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#34d399" />
-        <stop offset="1" stopColor="#10b981" />
-      </linearGradient>
-    </defs>
-    <circle cx="8" cy="7" r="3" fill="url(#refGrad)" opacity="0.9" />
-    <circle cx="16" cy="7" r="3" fill="url(#refGrad)" opacity="0.9" />
-    <path d="M2 20c0-2.761 2.686-5 6-5 1.075 0 2.088.216 3 .6" fill="url(#refGrad)" opacity="0.6" />
-    <path d="M22 20c0-2.761-2.686-5-6-5-1.075 0-2.088.216-3 .6" fill="url(#refGrad)" opacity="0.6" />
-    <path d="M9 18.5l2-1.5 2 1.5 2-1.5" stroke="url(#refGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
+const ReferralIcon = () => (
+  <svg {...iconProps}>
+    <circle cx="7.5" cy="7.5" r="2.75" />
+    <circle cx="16.5" cy="7.5" r="2.75" />
+    <path d="M3 19c0-2.5 2-4.25 4.5-4.25S12 16.5 12 19" />
+    <path d="M12 19c0-2.5 2-4.25 4.5-4.25S21 16.5 21 19" />
   </svg>
 );
 
 const navItems: NavItem[] = [
-  { path: '/', labelKey: 'subscriptions:title', icon: <CrownIcon /> },
-  { path: '/trends', labelKey: 'trends:title', icon: <TrendsIcon /> },
-  { path: '/profile', labelKey: 'profile:title', icon: <UserIcon /> },
-  { path: '/referral', labelKey: 'referral:title', icon: <HandshakeIcon /> },
+  { path: '/chat', labelKey: 'chat:title', icon: <ChatIcon />, match: (p) => p.startsWith('/chat') },
+  { path: '/', labelKey: 'subscriptions:title', icon: <PlansIcon />, match: (p) => p === '/' || p === '/subscriptions' },
+  { path: '/profile', labelKey: 'profile:title', icon: <UserIcon />, match: (p) => p.startsWith('/profile') },
+  { path: '/referral', labelKey: 'referral:title', icon: <ReferralIcon />, match: (p) => p.startsWith('/referral') },
 ];
 
 export const BottomNav: React.FC = () => {
@@ -86,10 +65,10 @@ export const BottomNav: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-surface-bg/80 backdrop-blur-xl border-t border-white/10 safe-area-bottom z-50">
-      <div className="flex items-center justify-around h-16">
+    <nav className="fixed bottom-0 inset-x-0 bg-surface-bg border-t border-border safe-area-bottom z-50">
+      <div className="flex items-stretch justify-around h-16">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = item.match(location.pathname);
           return (
             <button
               key={item.path}
@@ -98,12 +77,17 @@ export const BottomNav: React.FC = () => {
                 navigate(item.path);
               }}
               className={cn(
-                'flex flex-col items-center justify-center flex-1 h-full transition-all',
-                isActive ? 'text-brand-primary' : 'text-content-tertiary'
+                'relative flex flex-1 flex-col items-center justify-center gap-1 transition-colors duration-200',
+                isActive ? 'text-brand-primary' : 'text-content-tertiary hover:text-content-secondary'
               )}
             >
+              {isActive && (
+                <span className="absolute top-0 h-0.5 w-8 rounded-full bg-brand-primary" />
+              )}
               {item.icon}
-              <span className="text-[10px] font-medium mt-1">{t(item.labelKey)}</span>
+              <span className={cn('text-[10px] tracking-tight', isActive ? 'font-semibold' : 'font-medium')}>
+                {t(item.labelKey)}
+              </span>
             </button>
           );
         })}

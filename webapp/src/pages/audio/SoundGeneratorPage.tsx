@@ -34,7 +34,7 @@ function TemperatureSlider({
           hapticImpact('light');
           onChange(parseFloat(e.target.value));
         }}
-        className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/10 accent-audio-primary
+        className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-surface-elevated accent-audio-primary
           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
           [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-audio-primary
           [&::-webkit-slider-thumb]:shadow-audio-neon [&::-webkit-slider-thumb]:border-2
@@ -148,8 +148,8 @@ export default function SoundGeneratorPage() {
           disabled={!hasChanged || isSaving}
           className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
             hasChanged && !isSaving
-              ? 'bg-audio-primary text-white shadow-audio-neon hover:bg-audio-primary-dark active:scale-[0.98]'
-              : 'bg-white/5 text-content-tertiary cursor-not-allowed'
+              ? 'bg-audio-primary text-surface-bg shadow-audio-neon hover:bg-audio-primary-dark active:scale-[0.98]'
+              : 'bg-surface-secondary text-content-tertiary cursor-not-allowed'
           }`}
         >
           {isSaving ? t('saving') : t('save')}

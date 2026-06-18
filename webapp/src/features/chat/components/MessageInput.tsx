@@ -79,7 +79,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="border-t border-white/5 p-4">
+    <div className="border-t border-border p-4 safe-area-bottom">
       <div className="mx-auto flex max-w-3xl items-end" style={{ columnGap: 12 }}>
         {/* Textarea */}
         <div className="relative flex-1">
@@ -92,7 +92,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             rows={1}
             disabled={disabled}
             className={cn(
-              'w-full resize-none rounded-xl border border-white/10 bg-surface-card px-4 py-3 text-sm text-content-primary placeholder-content-tertiary transition-colors',
+              'w-full resize-none rounded-xl border border-border bg-surface-secondary px-4 py-3 text-sm text-content-primary placeholder-content-tertiary transition-colors',
               'focus:border-brand-primary/50 focus:outline-none',
               'disabled:cursor-not-allowed disabled:opacity-50',
             )}
@@ -107,8 +107,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
           className={cn(
             'shrink-0 rounded-xl p-3 transition-colors',
             canSend
-              ? 'bg-brand-primary text-surface-bg hover:bg-brand-primary/90'
-              : 'bg-surface-card text-content-tertiary',
+              ? 'bg-brand-primary text-surface-bg hover:bg-brand-primary-light'
+              : 'bg-surface-elevated text-content-tertiary',
             'disabled:cursor-not-allowed disabled:opacity-50',
           )}
           aria-label={t('send')}

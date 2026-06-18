@@ -585,12 +585,9 @@ export default function VideoSettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-5"
         >
-          <h1 className="text-xl font-display font-bold text-content-primary">
-            <span className="text-video-primary">🎬</span>{' '}
+          <h1 className="text-xl font-display font-semibold tracking-tight text-content-primary">
             {t('settings')}{' '}
-            <span className="bg-gradient-to-r from-video-primary to-video-primary-light bg-clip-text text-transparent">
-              {modelName}
-            </span>
+            <span className="text-video-primary">{modelName}</span>
           </h1>
         </motion.div>
 
@@ -615,7 +612,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     version === v
-                      ? 'bg-video-primary text-white shadow-video-neon'
+                      ? 'bg-video-primary text-surface-bg shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                   }`}
                 >
@@ -647,7 +644,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     duration === value
-                      ? 'bg-video-primary text-white shadow-video-neon'
+                      ? 'bg-video-primary text-surface-bg shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                   }`}
                 >
@@ -681,7 +678,7 @@ export default function VideoSettingsPage() {
                   onClick={() => handleAspectSelect(value)}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     aspectRatio === value
-                      ? 'bg-video-primary text-white shadow-video-neon'
+                      ? 'bg-video-primary text-surface-bg shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                   }`}
                 >
@@ -765,7 +762,7 @@ export default function VideoSettingsPage() {
               }}
               className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                 enableAudio
-                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                   : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
               }`}
             >
@@ -783,7 +780,7 @@ export default function VideoSettingsPage() {
                 </div>
                 <div
                   className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
-                    enableAudio ? 'bg-video-primary' : 'bg-white/10'
+                    enableAudio ? 'bg-video-primary' : 'bg-surface-elevated'
                   }`}
                 >
                   <div
@@ -821,7 +818,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     qualityMode === value
-                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
                   }`}
                 >
@@ -867,7 +864,7 @@ export default function VideoSettingsPage() {
               }}
               className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                 sound
-                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                   : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
               }`}
             >
@@ -885,7 +882,7 @@ export default function VideoSettingsPage() {
                 </div>
                 <div
                   className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
-                    sound ? 'bg-video-primary' : 'bg-white/10'
+                    sound ? 'bg-video-primary' : 'bg-surface-elevated'
                   }`}
                 >
                   <div
@@ -923,7 +920,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     characterOrientation === value
-                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
                   }`}
                 >
@@ -972,7 +969,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     topazUpscale === value
-                      ? 'bg-video-primary text-white shadow-video-neon'
+                      ? 'bg-video-primary text-surface-bg shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                   }`}
                 >
@@ -1003,7 +1000,7 @@ export default function VideoSettingsPage() {
                     onClick={() => { hapticImpact('light'); setTopazUpscale(value); }}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       topazUpscale === value
-                        ? 'bg-video-primary text-white shadow-video-neon'
+                        ? 'bg-video-primary text-surface-bg shadow-video-neon'
                         : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                     }`}
                   >
@@ -1030,7 +1027,7 @@ export default function VideoSettingsPage() {
                     onClick={() => { hapticImpact('light'); setTopazModel(value); }}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       topazModel === value
-                        ? 'bg-video-primary text-white shadow-video-neon'
+                        ? 'bg-video-primary text-surface-bg shadow-video-neon'
                         : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                     }`}
                   >
@@ -1055,7 +1052,7 @@ export default function VideoSettingsPage() {
                   onClick={() => { hapticImpact('light'); setTopazFpsModel(topazFpsModel ? null : 'apo-8'); }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     topazFpsModel
-                      ? 'bg-video-primary text-white shadow-video-neon'
+                      ? 'bg-video-primary text-surface-bg shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary'
                   }`}
                 >
@@ -1071,7 +1068,7 @@ export default function VideoSettingsPage() {
                         onClick={() => { hapticImpact('light'); setTopazFpsModel(value); }}
                         className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                           topazFpsModel === value
-                            ? 'bg-video-primary text-white shadow-video-neon'
+                            ? 'bg-video-primary text-surface-bg shadow-video-neon'
                             : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                         }`}
                       >
@@ -1086,7 +1083,7 @@ export default function VideoSettingsPage() {
                         onClick={() => { hapticImpact('light'); setTargetFps(fps); }}
                         className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                           targetFps === fps
-                            ? 'bg-video-primary text-white shadow-video-neon'
+                            ? 'bg-video-primary text-surface-bg shadow-video-neon'
                             : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                         }`}
                       >
@@ -1155,7 +1152,7 @@ export default function VideoSettingsPage() {
                   onClick={() => { hapticImpact('light'); setTargetResolution(value); }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     targetResolution === value
-                      ? 'bg-video-primary text-white shadow-video-neon'
+                      ? 'bg-video-primary text-surface-bg shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 text-content-secondary hover:border-video-primary/30'
                   }`}
                 >
@@ -1187,7 +1184,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     mode === value
-                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
                   }`}
                 >
@@ -1236,7 +1233,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     mode === value
-                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
                   }`}
                 >
@@ -1285,7 +1282,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     resolution === value
-                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
                   }`}
                 >
@@ -1344,7 +1341,7 @@ export default function VideoSettingsPage() {
               }}
               className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                 cameraFixed
-                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                   : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
               }`}
             >
@@ -1362,7 +1359,7 @@ export default function VideoSettingsPage() {
                 </div>
                 <div
                   className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${
-                    cameraFixed ? 'bg-video-primary' : 'bg-white/10'
+                    cameraFixed ? 'bg-video-primary' : 'bg-surface-elevated'
                   }`}
                 >
                   <div
@@ -1391,7 +1388,7 @@ export default function VideoSettingsPage() {
               onClick={() => { hapticImpact('light'); setWebSearch(!webSearch); }}
               className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                 webSearch
-                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                   : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
               }`}
             >
@@ -1407,7 +1404,7 @@ export default function VideoSettingsPage() {
                     </p>
                   </div>
                 </div>
-                <div className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${webSearch ? 'bg-video-primary' : 'bg-white/10'}`}>
+                <div className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${webSearch ? 'bg-video-primary' : 'bg-surface-elevated'}`}>
                   <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${webSearch ? 'left-6' : 'left-1'}`} />
                 </div>
               </div>
@@ -1430,7 +1427,7 @@ export default function VideoSettingsPage() {
               onClick={() => { hapticImpact('light'); setNsfwChecker(!nsfwChecker); }}
               className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                 nsfwChecker
-                  ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                  ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                   : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
               }`}
             >
@@ -1446,7 +1443,7 @@ export default function VideoSettingsPage() {
                     </p>
                   </div>
                 </div>
-                <div className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${nsfwChecker ? 'bg-video-primary' : 'bg-white/10'}`}>
+                <div className={`w-12 h-7 rounded-full transition-all relative shrink-0 ${nsfwChecker ? 'bg-video-primary' : 'bg-surface-elevated'}`}>
                   <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${nsfwChecker ? 'left-6' : 'left-1'}`} />
                 </div>
               </div>
@@ -1478,7 +1475,7 @@ export default function VideoSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     generateAudio === value
-                      ? 'bg-video-surface-elevated border-2 border-video-primary shadow-video-neon'
+                      ? 'bg-video-surface-elevated border border-video-primary shadow-video-neon'
                       : 'bg-video-surface-card border border-white/5 hover:border-video-primary/30'
                   }`}
                 >
@@ -1513,8 +1510,8 @@ export default function VideoSettingsPage() {
         {estimatedCost > 0 && (
           <div className="mb-3 p-3 rounded-xl bg-video-surface-card border border-white/5 flex items-center justify-between">
             <span className="text-sm text-content-secondary">{t('estimatedCost')}</span>
-            <span className="text-lg font-bold text-video-primary">
-              ⚡{formatCost(estimatedCost)} {t('tokens')}
+            <span className="text-lg font-semibold font-mono text-video-primary">
+              {formatCost(estimatedCost)} {t('tokens')}
             </span>
           </div>
         )}
@@ -1524,8 +1521,8 @@ export default function VideoSettingsPage() {
           disabled={!hasChanged || isSaving}
           className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
             hasChanged && !isSaving
-              ? 'bg-video-primary text-white shadow-video-neon hover:bg-video-primary-dark active:scale-[0.98]'
-              : 'bg-white/5 text-content-tertiary cursor-not-allowed'
+              ? 'bg-video-primary text-surface-bg shadow-video-neon hover:bg-video-primary-dark active:scale-[0.98]'
+              : 'bg-surface-secondary text-content-tertiary cursor-not-allowed'
           }`}
         >
           {isSaving ? t('saving') : t('save')}

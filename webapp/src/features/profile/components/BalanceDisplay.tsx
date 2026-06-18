@@ -14,27 +14,24 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ wallet }) => {
 
   return (
     <div>
-      <div className="flex items-center justify-end" style={{ columnGap: 8 }}>
-        <p className="text-content-secondary text-sm uppercase tracking-wide">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-content-tertiary text-xs uppercase tracking-wider">
           {t('tokenBalance', 'Token Balance')}
         </p>
         <button
           onClick={() => navigate('/subscriptions?tab=tokens')}
-          className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-brand-primary/15 text-brand-primary border border-brand-primary/20 hover:bg-brand-primary/25 transition-colors"
+          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-brand-primary/12 text-brand-primary hover:bg-brand-primary/20 transition-colors"
         >
           {t('topUp', 'Top Up')}
         </button>
       </div>
-      <div className="flex items-center justify-end">
-        <span className="text-base mr-1.5">⚡</span>
-        <p className="text-white text-3xl font-bold tabular-nums">
-          {formatCredits(wallet.tokenBalance)}
-        </p>
-      </div>
+      <p className="text-content-primary text-3xl font-semibold tabular-nums font-mono mt-1 tracking-tight">
+        {formatCredits(wallet.tokenBalance)}
+      </p>
 
       {/* Balance breakdown */}
       {(wallet.subscriptionTokens > 0 || wallet.purchasedTokens > 0) && (
-        <div className="flex items-center justify-end mt-1" style={{ columnGap: 8 }}>
+        <div className="flex items-center gap-3 mt-2">
           {wallet.subscriptionTokens > 0 && (
             <span className="text-content-tertiary text-xs">
               {t('subscriptionTokens', 'Subscription')}: {formatCredits(wallet.subscriptionTokens)}
@@ -50,9 +47,11 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ wallet }) => {
 
       {/* Money balance */}
       {wallet.moneyBalance > 0 && (
-        <div className="flex items-center justify-end mt-1">
-          <span className="text-base mr-1.5">💰</span>
-          <span className="text-content-secondary text-sm font-semibold">
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+          <span className="text-content-tertiary text-xs uppercase tracking-wider">
+            {t('moneyBalance', 'Balance')}
+          </span>
+          <span className="text-content-secondary text-sm font-semibold font-mono">
             {formatMoney(wallet.moneyBalance, wallet.currency)}
           </span>
         </div>

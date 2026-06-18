@@ -21,18 +21,18 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#0f0f23] flex items-center justify-center p-6">
+        <div className="min-h-screen bg-surface-bg flex items-center justify-center p-6">
           <div className="text-center max-w-sm">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            <div className="w-14 h-14 rounded-2xl bg-error/10 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h2 className="text-white text-lg font-bold mb-2">Something went wrong</h2>
-            <p className="text-gray-400 text-sm mb-4">{this.state.error}</p>
+            <h2 className="text-content-primary text-lg font-semibold mb-2">Something went wrong</h2>
+            <p className="text-content-tertiary text-sm mb-4">{this.state.error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="text-[#00d4ff] text-sm font-medium"
+              className="text-brand-primary text-sm font-medium"
             >
               Reload
             </button>
@@ -67,12 +67,13 @@ export function App() {
           position="top-center"
           toastOptions={{
             style: {
-              background: '#252547',
-              color: '#fff',
+              background: '#232019',
+              color: '#f6f3ee',
               borderRadius: '12px',
+              border: '1px solid rgba(246,243,238,0.09)',
             },
             success: {
-              iconTheme: { primary: '#00d4ff', secondary: '#fff' },
+              iconTheme: { primary: '#e4a93a', secondary: '#16140f' },
             },
           }}
         />

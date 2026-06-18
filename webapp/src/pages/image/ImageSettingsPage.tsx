@@ -253,12 +253,9 @@ export default function ImageSettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-5"
         >
-          <h1 className="text-xl font-display font-bold text-content-primary">
-            <span className="text-image-primary">🖼</span>{' '}
+          <h1 className="text-xl font-display font-semibold tracking-tight text-content-primary">
             {t('settings')}{' '}
-            <span className="bg-gradient-to-r from-image-primary to-image-primary-light bg-clip-text text-transparent">
-              {modelName}
-            </span>
+            <span className="text-image-primary">{modelName}</span>
           </h1>
         </motion.div>
 
@@ -286,7 +283,7 @@ export default function ImageSettingsPage() {
                 onClick={() => handleAspectSelect(value)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   aspectRatio === value
-                    ? 'bg-image-primary text-white shadow-image-neon'
+                    ? 'bg-image-primary text-surface-bg shadow-image-neon'
                     : 'bg-image-surface-card border border-white/5 text-content-secondary hover:border-image-primary/30'
                 }`}
               >
@@ -317,7 +314,7 @@ export default function ImageSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     quality === value
-                      ? 'bg-image-surface-elevated border-2 border-image-primary shadow-image-neon'
+                      ? 'bg-image-surface-elevated border border-image-primary shadow-image-neon'
                       : 'bg-image-surface-card border border-white/5 hover:border-image-primary/30'
                   }`}
                 >
@@ -366,7 +363,7 @@ export default function ImageSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     style === value
-                      ? 'bg-image-surface-elevated border-2 border-image-primary shadow-image-neon'
+                      ? 'bg-image-surface-elevated border border-image-primary shadow-image-neon'
                       : 'bg-image-surface-card border border-white/5 hover:border-image-primary/30'
                   }`}
                 >
@@ -415,7 +412,7 @@ export default function ImageSettingsPage() {
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     version === value
-                      ? 'bg-image-primary text-white shadow-image-neon'
+                      ? 'bg-image-primary text-surface-bg shadow-image-neon'
                       : 'bg-image-surface-card border border-white/5 text-content-secondary hover:border-image-primary/30'
                   }`}
                 >
@@ -447,7 +444,7 @@ export default function ImageSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     stylize === value
-                      ? 'bg-image-surface-elevated border-2 border-image-primary shadow-image-neon'
+                      ? 'bg-image-surface-elevated border border-image-primary shadow-image-neon'
                       : 'bg-image-surface-card border border-white/5 hover:border-image-primary/30'
                   }`}
                 >
@@ -496,7 +493,7 @@ export default function ImageSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     speed === value
-                      ? 'bg-image-surface-elevated border-2 border-image-primary shadow-image-neon'
+                      ? 'bg-image-surface-elevated border border-image-primary shadow-image-neon'
                       : 'bg-image-surface-card border border-white/5 hover:border-image-primary/30'
                   }`}
                 >
@@ -581,7 +578,7 @@ export default function ImageSettingsPage() {
                   }}
                   className={`rounded-xl p-3.5 cursor-pointer transition-all ${
                     resolution === value
-                      ? 'bg-image-surface-elevated border-2 border-image-primary shadow-image-neon'
+                      ? 'bg-image-surface-elevated border border-image-primary shadow-image-neon'
                       : 'bg-image-surface-card border border-white/5 hover:border-image-primary/30'
                   }`}
                 >
@@ -616,8 +613,8 @@ export default function ImageSettingsPage() {
         {showCost && estimatedCost > 0 && (
           <div className="mb-3 p-3 rounded-xl bg-image-surface-card border border-white/5 flex items-center justify-between">
             <span className="text-sm text-content-secondary">{t('estimatedCost')}</span>
-            <span className="text-lg font-bold text-image-primary">
-              ⚡{formatCost(estimatedCost)} {t('tokens')}
+            <span className="text-lg font-semibold font-mono text-image-primary">
+              {formatCost(estimatedCost)} {t('tokens')}
             </span>
           </div>
         )}
@@ -626,8 +623,8 @@ export default function ImageSettingsPage() {
           disabled={!hasChanged || isSaving}
           className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
             hasChanged && !isSaving
-              ? 'bg-image-primary text-white shadow-image-neon hover:bg-image-primary-dark active:scale-[0.98]'
-              : 'bg-white/5 text-content-tertiary cursor-not-allowed'
+              ? 'bg-image-primary text-surface-bg shadow-image-neon hover:bg-image-primary-dark active:scale-[0.98]'
+              : 'bg-surface-secondary text-content-tertiary cursor-not-allowed'
           }`}
         >
           {isSaving ? t('saving') : t('save')}

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import { useReferralStore } from '@/features/referral/store/referralStore';
 import { Card, Button, Skeleton, Badge } from '@/shared/ui';
+import { cn } from '@/shared/utils/cn';
 import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import { hapticImpact, hapticNotification } from '@/services/telegram/haptic';
 import { openTelegramLink } from '@/services/telegram/telegram';
@@ -11,6 +11,16 @@ import type { ReferralMode, WithdrawalStatus } from '@/types/referral.types';
 import toast from 'react-hot-toast';
 
 const TIER_ORDER = ['STARTER', 'PRO', 'PREMIUM', 'BUSINESS'] as const;
+
+const CheckMark: React.FC<{ className?: string }> = ({ className }) => (
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={className}>
+    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <h2 className="text-content-tertiary text-xs font-medium mb-2 uppercase tracking-wider">{children}</h2>
+);
 
 const ReferralPage: React.FC = () => {
   const { t } = useTranslation(['referral', 'common', 'subscriptions']);
@@ -89,7 +99,7 @@ const ReferralPage: React.FC = () => {
   };
 
   const threshold = withdrawalThresholds.RUB;
-  const currencySymbol = '\u20BD';
+  const currencySymbol = '₽';
 
   // Compute min/max ranges for the mode toggle cards
   const tokenRange = { min: 100, max: 0 };
@@ -107,7 +117,7 @@ const ReferralPage: React.FC = () => {
     return (
       <div className="p-4 space-y-4">
         <Skeleton className="h-20 rounded-2xl" variant="rectangular" />
-        <div className="flex" style={{ columnGap: 12 }}>
+        <div className="flex gap-3">
           <Skeleton className="flex-1 h-28 rounded-2xl" variant="rectangular" />
           <Skeleton className="flex-1 h-28 rounded-2xl" variant="rectangular" />
         </div>
@@ -117,174 +127,129 @@ const ReferralPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-5 pb-8">
+    <div className="p-4 pt-6 max-w-2xl mx-auto w-full space-y-6 pb-8 animate-fade-in">
       {/* Header */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="text-center pt-2"
-      >
-        <h1 className="text-white text-2xl font-bold">{t('referral:title')}</h1>
-        <p className="text-content-tertiary mt-2 text-[15px] leading-relaxed px-2">
+      <header>
+        <h1 className="font-display text-2xl font-semibold text-content-primary tracking-tight">{t('referral:title')}</h1>
+        <p className="text-content-secondary mt-1.5 text-sm leading-relaxed">
           {t('referral:description')}
         </p>
-      </motion.div>
+      </header>
 
-      {/* Invitee Bonus Banner */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.03 }}
-      >
-        <Card className="flex items-center" padding="sm" variant="bordered">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0 mr-3">
-            <span className="text-lg">&#127873;</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold">{t('referral:inviteeBonus.title')}</p>
-            <p className="text-content-tertiary text-xs mt-0.5">
-              {t('referral:inviteeBonus.description', { bonus: inviteeBonus })}
-            </p>
-          </div>
-        </Card>
-      </motion.div>
+      {/* Invitee Bonus */}
+      <Card variant="bordered">
+        <p className="text-content-primary text-sm font-semibold">{t('referral:inviteeBonus.title')}</p>
+        <p className="text-content-secondary text-xs mt-1">
+          {t('referral:inviteeBonus.description', { bonus: inviteeBonus })}
+        </p>
+      </Card>
 
       {/* Commission Mode Toggle */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.05 }}
-      >
-        <h2 className="text-white text-sm font-semibold mb-2 uppercase tracking-wider">
-          {t('referral:commissionMode')}
-        </h2>
-        <div className="grid grid-cols-2" style={{ gap: 10 }}>
+      <section>
+        <SectionTitle>{t('referral:commissionMode')}</SectionTitle>
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => handleModeSwitch('TOKENS')}
-            className={`relative rounded-2xl p-4 text-left transition-all duration-300 border-2 ${
+            className={cn(
+              'relative rounded-2xl p-4 text-left transition-colors duration-200 border',
               referralMode === 'TOKENS'
-                ? 'border-brand-primary bg-brand-primary/10 shadow-neon'
-                : 'border-white/10 bg-surface-card hover:border-white/20'
-            }`}
+                ? 'border-brand-primary/60 bg-brand-primary/10'
+                : 'border-border bg-surface-card hover:border-border-strong'
+            )}
           >
             {referralMode === 'TOKENS' && (
-              <div className="absolute top-2.5 right-2.5">
-                <div className="w-5 h-5 rounded-full bg-brand-primary flex items-center justify-center">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
+              <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-brand-primary flex items-center justify-center text-surface-bg">
+                <CheckMark />
+              </span>
             )}
-            <div className="text-2xl mb-2">&#9889;</div>
-            <p className="text-white font-bold text-base">{tokenRange.min}–{tokenRange.max}%</p>
-            <p className="text-content-tertiary text-xs mt-0.5">{t('referral:inTokens')}</p>
+            <p className="text-content-primary font-semibold text-lg font-mono tracking-tight">{tokenRange.min}–{tokenRange.max}%</p>
+            <p className="text-content-tertiary text-xs mt-1">{t('referral:inTokens')}</p>
           </button>
 
           <button
             onClick={() => handleModeSwitch('CASH')}
-            className={`relative rounded-2xl p-4 text-left transition-all duration-300 border-2 ${
+            className={cn(
+              'relative rounded-2xl p-4 text-left transition-colors duration-200 border',
               referralMode === 'CASH'
-                ? 'border-brand-accent bg-brand-accent/10 shadow-gold'
-                : 'border-white/10 bg-surface-card hover:border-white/20'
-            }`}
+                ? 'border-brand-accent/60 bg-brand-accent/10'
+                : 'border-border bg-surface-card hover:border-border-strong'
+            )}
           >
             {referralMode === 'CASH' && (
-              <div className="absolute top-2.5 right-2.5">
-                <div className="w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#0f0f23" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
+              <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-brand-accent flex items-center justify-center text-surface-bg">
+                <CheckMark />
+              </span>
             )}
-            <div className="text-2xl mb-2">&#128176;</div>
-            <p className="text-white font-bold text-base">{cashRange.min}–{cashRange.max}%</p>
-            <p className="text-content-tertiary text-xs mt-0.5">{t('referral:inCash')}</p>
+            <p className="text-content-primary font-semibold text-lg font-mono tracking-tight">{cashRange.min}–{cashRange.max}%</p>
+            <p className="text-content-tertiary text-xs mt-1">{t('referral:inCash')}</p>
           </button>
         </div>
-      </motion.div>
+      </section>
 
       {/* Tiered Rates Table */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.08 }}
-      >
-        <Card padding="sm">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-content-tertiary uppercase tracking-wider">
-                <th className="text-left py-1.5 px-2 font-medium">{t('referral:ratesTable.plan')}</th>
-                <th className="text-center py-1.5 px-2 font-medium">&#9889; {t('referral:ratesTable.tokens')}</th>
-                <th className="text-center py-1.5 px-2 font-medium">&#128176; {t('referral:ratesTable.cash')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {TIER_ORDER.map((tier) => {
-                const r = commissionRates[tier];
-                if (!r) return null;
-                return (
-                  <tr key={tier} className="border-t border-white/5">
-                    <td className="py-2 px-2 text-white font-medium">{t(`subscriptions:tiers.${tier.toLowerCase()}`)}</td>
-                    <td className={`py-2 px-2 text-center font-mono font-semibold ${referralMode === 'TOKENS' ? 'text-brand-primary' : 'text-content-secondary'}`}>
-                      {r.tokenPercent}%
-                    </td>
-                    <td className={`py-2 px-2 text-center font-mono font-semibold ${referralMode === 'CASH' ? 'text-brand-accent' : 'text-content-secondary'}`}>
-                      {r.cashPercent}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </Card>
-      </motion.div>
+      <Card padding="sm">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="text-content-tertiary uppercase tracking-wider">
+              <th className="text-left py-1.5 px-2 font-medium">{t('referral:ratesTable.plan')}</th>
+              <th className="text-center py-1.5 px-2 font-medium">{t('referral:ratesTable.tokens')}</th>
+              <th className="text-center py-1.5 px-2 font-medium">{t('referral:ratesTable.cash')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TIER_ORDER.map((tier) => {
+              const r = commissionRates[tier];
+              if (!r) return null;
+              return (
+                <tr key={tier} className="border-t border-border">
+                  <td className="py-2 px-2 text-content-primary font-medium">{t(`subscriptions:tiers.${tier.toLowerCase()}`)}</td>
+                  <td className={cn('py-2 px-2 text-center font-mono font-semibold', referralMode === 'TOKENS' ? 'text-brand-primary' : 'text-content-secondary')}>
+                    {r.tokenPercent}%
+                  </td>
+                  <td className={cn('py-2 px-2 text-center font-mono font-semibold', referralMode === 'CASH' ? 'text-brand-accent' : 'text-content-secondary')}>
+                    {r.cashPercent}%
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Card>
 
       {/* Stats Grid */}
       {stats && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-3"
-          style={{ gap: 10 }}
-        >
+        <div className="grid grid-cols-3 gap-3">
           <Card className="text-center" padding="sm">
             <p className="text-content-tertiary text-[10px] uppercase tracking-wider">{t('referral:stats.invited')}</p>
-            <p className="text-white text-xl font-bold mt-1">{stats.totalInvited}</p>
+            <p className="text-content-primary text-xl font-semibold font-mono mt-1.5">{stats.totalInvited}</p>
           </Card>
           <Card className="text-center" padding="sm">
             <p className="text-content-tertiary text-[10px] uppercase tracking-wider">{t('referral:stats.tokensEarned')}</p>
-            <p className="text-brand-primary text-xl font-bold mt-1">{stats.tokensEarned}</p>
+            <p className="text-brand-primary text-xl font-semibold font-mono mt-1.5">{stats.tokensEarned}</p>
           </Card>
           <Card className="text-center" padding="sm">
             <p className="text-content-tertiary text-[10px] uppercase tracking-wider">{t('referral:stats.cashEarned')}</p>
-            <p className="text-brand-accent text-xl font-bold mt-1">
+            <p className="text-brand-accent text-xl font-semibold font-mono mt-1.5">
               {stats.cashEarned.toFixed(0)}{currencySymbol}
             </p>
           </Card>
-        </motion.div>
+        </div>
       )}
 
       {/* Referral Link */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.15 }}
-      >
-        <h2 className="text-white text-sm font-semibold mb-2 uppercase tracking-wider">{t('referral:yourLink')}</h2>
+      <section>
+        <SectionTitle>{t('referral:yourLink')}</SectionTitle>
         <Card className="space-y-3">
           {referralUrl ? (
-            <p className="text-white text-sm font-mono break-all bg-white/5 rounded-lg px-3 py-2">
+            <p className="text-content-primary text-sm font-mono break-all bg-surface-secondary rounded-lg px-3 py-2.5">
               {referralUrl}
             </p>
           ) : (
-            <div className="bg-white/5 rounded-lg px-3 py-2">
+            <div className="bg-surface-secondary rounded-lg px-3 py-2.5">
               <Skeleton variant="text" className="h-5 w-full rounded" />
             </div>
           )}
-          <div className="flex" style={{ columnGap: 8 }}>
+          <div className="flex gap-2">
             <Button variant="primary" fullWidth size="sm" onClick={handleShare} disabled={!referralUrl}>
               {t('referral:share')}
             </Button>
@@ -293,28 +258,22 @@ const ReferralPage: React.FC = () => {
             </Button>
           </div>
         </Card>
-      </motion.div>
+      </section>
 
       {/* Withdrawal Section */}
       {(referralMode === 'CASH' || (stats && stats.cashEarned > 0)) && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-white text-sm font-semibold mb-2 uppercase tracking-wider">
-            {t('referral:withdrawal.title')}
-          </h2>
+        <section>
+          <SectionTitle>{t('referral:withdrawal.title')}</SectionTitle>
           <Card className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-content-tertiary text-xs">{t('referral:withdrawal.available')}</p>
-                <p className="text-white text-lg font-bold">{moneyBalance.toFixed(2)} {currencySymbol}</p>
+                <p className="text-content-primary text-lg font-semibold font-mono mt-0.5">{moneyBalance.toFixed(2)} {currencySymbol}</p>
               </div>
               {stats && stats.pendingWithdrawal > 0 && (
                 <div className="text-right">
                   <p className="text-content-tertiary text-xs">{t('referral:withdrawal.pending')}</p>
-                  <p className="text-yellow-400 text-lg font-bold">{stats.pendingWithdrawal.toFixed(2)} {currencySymbol}</p>
+                  <p className="text-warning text-lg font-semibold font-mono mt-0.5">{stats.pendingWithdrawal.toFixed(2)} {currencySymbol}</p>
                 </div>
               )}
             </div>
@@ -326,7 +285,7 @@ const ReferralPage: React.FC = () => {
                 placeholder={`${threshold}+`}
                 min={threshold}
                 step="0.01"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-content-tertiary focus:outline-none focus:border-brand-primary/50 transition-colors"
+                className="w-full bg-surface-secondary border border-border rounded-xl px-3 py-2.5 text-content-primary text-sm placeholder-content-tertiary focus:outline-none focus:border-brand-primary/50 transition-colors tabular-nums"
               />
               <Button
                 variant="primary"
@@ -341,24 +300,18 @@ const ReferralPage: React.FC = () => {
               {t('referral:withdrawal.minimum', { amount: threshold, currency: currencySymbol })}
             </p>
           </Card>
-        </motion.div>
+        </section>
       )}
 
       {/* Withdrawal History */}
       {withdrawals.length > 0 && (
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.25 }}
-        >
-          <h2 className="text-white text-sm font-semibold mb-2 uppercase tracking-wider">
-            {t('referral:withdrawal.history')}
-          </h2>
+        <section>
+          <SectionTitle>{t('referral:withdrawal.history')}</SectionTitle>
           <Card padding="sm" className="space-y-2">
             {withdrawals.slice(0, 10).map((w) => (
-              <div key={w.id} className="flex items-center justify-between py-2 px-2 rounded-lg bg-white/5">
+              <div key={w.id} className="flex items-center justify-between py-2 px-2 rounded-lg bg-surface-secondary">
                 <div>
-                  <p className="text-white text-sm font-medium">
+                  <p className="text-content-primary text-sm font-medium font-mono">
                     {w.amount.toFixed(2)} ₽
                   </p>
                   <p className="text-content-tertiary text-[11px]">
@@ -369,7 +322,7 @@ const ReferralPage: React.FC = () => {
               </div>
             ))}
           </Card>
-        </motion.div>
+        </section>
       )}
     </div>
   );

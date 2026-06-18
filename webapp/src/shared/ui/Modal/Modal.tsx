@@ -105,8 +105,8 @@ export const Modal: React.FC<ModalProps> = ({
   }, [isOpen]);
 
   const titleBar = title && (
-    <div className="shrink-0 bg-surface-card/95 border-b border-white/10 px-6 py-3 flex items-center justify-between">
-      <h2 className="text-xl font-bold text-content-primary">{title}</h2>
+    <div className="shrink-0 bg-surface-card border-b border-border px-6 py-4 flex items-center justify-between">
+      <h2 className="text-lg font-semibold text-content-primary">{title}</h2>
       <button
         onClick={onClose}
         className="text-content-tertiary hover:text-content-primary transition-colors p-1"
@@ -139,20 +139,20 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[1040]"
+            className="fixed inset-0 bg-[oklch(0.1_0.005_75_/_0.7)] z-[1040]"
             onClick={onClose}
           />
 
           {/* Mobile: bottom sheet (hidden on md+) */}
           <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              'fixed z-[1050] bg-surface-card/95 backdrop-blur-xl shadow-xl flex flex-col',
+              'fixed z-[1050] bg-surface-card shadow-elevated flex flex-col',
               // Mobile: bottom sheet (hidden on desktop where dedicated panel renders)
-              'border-t border-white/20 rounded-t-3xl md:hidden',
+              'border-t border-border-strong rounded-t-3xl md:hidden',
               {
                 'inset-x-4 bottom-0 max-h-[80vh]': size === 'sm',
                 'inset-x-0 bottom-0 max-h-[85vh]': size === 'md',
@@ -164,7 +164,7 @@ export const Modal: React.FC<ModalProps> = ({
           >
             {/* Drag handle indicator — mobile only */}
             <div className="flex justify-center pt-3 pb-1 shrink-0 md:hidden">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="w-10 h-1 rounded-full bg-border-strong" />
             </div>
             {titleBar}
             {scrollBody}
@@ -173,13 +173,13 @@ export const Modal: React.FC<ModalProps> = ({
           {/* Desktop: centered dialog (hidden below md) */}
           <div className="fixed inset-0 z-[1050] hidden md:flex items-center justify-center p-6 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                'bg-surface-card/95 backdrop-blur-xl shadow-2xl flex flex-col pointer-events-auto',
-                'border border-white/10 rounded-2xl w-full',
+                'bg-surface-card shadow-elevated flex flex-col pointer-events-auto',
+                'border border-border rounded-2xl w-full',
                 size === 'full' ? 'max-h-[90vh]' : 'max-h-[85vh]',
                 SIZE_DESKTOP[size],
               )}

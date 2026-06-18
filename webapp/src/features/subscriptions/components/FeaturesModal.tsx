@@ -47,10 +47,10 @@ const CategoryIcon: React.FC<{ category: 'text' | 'image' | 'video' | 'audio' }>
 };
 
 const categoryColors = {
-  text: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
-  image: { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-500/20' },
-  video: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-  audio: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  text: { bg: 'bg-surface-secondary', text: 'text-brand-primary', border: 'border-border' },
+  image: { bg: 'bg-surface-secondary', text: 'text-image-primary', border: 'border-border' },
+  video: { bg: 'bg-surface-secondary', text: 'text-video-primary', border: 'border-border' },
+  audio: { bg: 'bg-surface-secondary', text: 'text-audio-primary', border: 'border-border' },
 };
 
 const ModelList: React.FC<{
@@ -77,16 +77,16 @@ const ModelList: React.FC<{
         <span className={colors.text}>
           <CategoryIcon category={category} />
         </span>
-        <span className="text-white text-sm font-semibold">{categoryLabels[category]}</span>
+        <span className="text-content-primary text-sm font-semibold">{categoryLabels[category]}</span>
       </div>
       <div className="space-y-2">
         {models.map((model) => (
           <div
             key={model.id}
-            className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0"
+            className="flex items-center justify-between py-1.5 border-b border-border last:border-0"
           >
             <div className="flex items-center min-w-0" style={{ columnGap: 8 }}>
-              <span className="text-white text-sm truncate">{model.name}</span>
+              <span className="text-content-primary text-sm truncate">{model.name}</span>
               {model.isUnlimited && (
                 <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-brand-accent/20 text-brand-accent">
                   {t('unlimited', 'Unlimited')}
@@ -155,8 +155,8 @@ export const FeaturesModal: React.FC<FeaturesModalProps> = ({
           <h4 className="text-xs font-medium text-content-tertiary uppercase tracking-wider mb-3">
             {t('subscriptions:tokensPerMonth', 'Monthly Tokens')}
           </h4>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-3 text-center">
-            <p className={`text-lg font-bold font-mono ${plan.tokens === null ? 'text-brand-accent' : 'text-white'}`}>
+          <div className="rounded-xl bg-surface-secondary border border-border p-3 text-center">
+            <p className={`text-lg font-semibold font-mono ${plan.tokens === null ? 'text-brand-accent' : 'text-content-primary'}`}>
               {formatCredits(plan.tokens)}
             </p>
             <p className="text-content-tertiary text-xs">{t('subscriptions:tokensLabel', 'tokens')}</p>
