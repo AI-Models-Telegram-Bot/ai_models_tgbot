@@ -3,4 +3,6 @@ export { Card } from './Card';
 export { Modal } from './Modal';
 export { Badge } from './Badge';
 export { Skeleton } from './Skeleton';
-export { ParticleBackground } from './ParticleBackground';
+export { GenerativeArt } from './GenerativeArt/GenerativeArt';
+export { ShowcaseGallery } from './ShowcaseGallery/ShowcaseGallery';
+export { GenerativeMark } from './GenerativeMark/GenerativeMark';

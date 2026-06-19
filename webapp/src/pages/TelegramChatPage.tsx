@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
-import { Modal } from '@/shared/ui';
+import { Modal, ShowcaseGallery, GenerativeMark } from '@/shared/ui';
+import { BottomNav } from '@/shared/layouts/BottomNav';
 import { useChatStore } from '@/features/chat/store/useChatStore';
 import { useSSE } from '@/features/chat/hooks/useSSE';
 import ChatWindow from '@/features/chat/components/ChatWindow';
@@ -62,22 +63,22 @@ function ModelPickerModal({ isOpen, onClose, models, onSelect }: ModelPickerProp
             className={cn(
               'flex items-center rounded-xl border px-4 py-3 text-left transition-colors',
               model.hasAccess
-                ? 'border-white/10 bg-surface-card hover:bg-white/5 active:bg-white/10'
-                : 'border-white/5 bg-surface-card/50 opacity-60',
+                ? 'border-border bg-surface-card hover:bg-surface-secondary active:bg-surface-elevated'
+                : 'border-border bg-surface-card/50 opacity-60',
             )}
           >
             {/* Model icon dot */}
-            <span className="mr-3 inline-block h-3 w-3 shrink-0 rounded-full bg-brand-primary/30" style={{ minWidth: 12, minHeight: 12 }} />
+            <span className="mr-3 inline-block h-2.5 w-2.5 shrink-0 rounded-full bg-brand-primary" style={{ minWidth: 10, minHeight: 10 }} />
 
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-content-primary truncate">{model.name}</p>
-              <p className="text-xs text-content-tertiary mt-0.5">
+              <p className="text-xs text-content-tertiary mt-0.5 font-mono">
                 {model.isUnlimited ? '∞' : model.tokenCost} {t('credits')}
               </p>
             </div>
 
             {model.hasAccess ? (
-              <svg className="ml-2 h-4 w-4 shrink-0 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="ml-2 h-4 w-4 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             ) : (
@@ -112,7 +113,7 @@ function ConversationListItem({ conv, isActive, onSelect, onDelete }: ConvItemPr
         'flex w-full items-center rounded-xl px-4 py-3 text-left transition-colors',
         isActive
           ? 'bg-brand-primary/10'
-          : 'hover:bg-white/5 active:bg-white/10',
+          : 'hover:bg-surface-secondary active:bg-surface-elevated',
       )}
     >
       {/* Chat icon */}
@@ -147,7 +148,7 @@ function ConversationListItem({ conv, isActive, onSelect, onDelete }: ConvItemPr
           onKeyDown={(e) => {
             if (e.key === 'Enter') { e.stopPropagation(); onDelete(); }
           }}
-          className="rounded-lg p-1.5 text-content-tertiary transition-colors hover:bg-red-500/20 hover:text-red-400 active:bg-red-500/30"
+          className="rounded-lg p-1.5 text-content-tertiary transition-colors hover:bg-error/15 hover:text-error"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -172,24 +173,19 @@ function DeleteConfirmModal({ isOpen, onClose, onConfirm }: DeleteConfirmProps) 
   const { t } = useTranslation('chat');
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
-      <div className="p-6 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-          <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </div>
+      <div className="p-6">
         <h3 className="text-lg font-semibold text-content-primary mb-2">{t('deleteConfirmTitle')}</h3>
         <p className="text-sm text-content-secondary mb-6">{t('deleteConfirmDesc')}</p>
-        <div className="flex" style={{ columnGap: 12 }}>
+        <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-content-secondary transition-colors hover:bg-white/5"
+            className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-content-secondary transition-colors hover:bg-surface-secondary"
           >
             {t('cancelDelete')}
           </button>
           <button
             onClick={() => { onConfirm(); onClose(); }}
-            className="flex-1 rounded-xl bg-red-500/20 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/30"
+            className="flex-1 rounded-xl bg-error/15 px-4 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error/25"
           >
             {t('confirmDelete')}
           </button>
@@ -355,8 +351,8 @@ export default function TelegramChatPage() {
             className="flex flex-1 flex-col overflow-hidden"
           >
             {/* Header */}
-            <header className="flex shrink-0 items-center justify-between border-b border-white/5 px-4 py-3">
-              <h1 className="text-lg font-bold text-content-primary font-display">
+            <header className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+              <h1 className="text-lg font-semibold text-content-primary font-display tracking-tight">
                 {t('chats')}
               </h1>
               <button
@@ -372,7 +368,7 @@ export default function TelegramChatPage() {
 
             {/* Conversation list */}
             <div
-              className="flex-1 overflow-y-auto overscroll-contain p-3"
+              className="flex-1 overflow-y-auto overscroll-contain p-3 pb-20"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {/* Loading */}
@@ -384,20 +380,25 @@ export default function TelegramChatPage() {
                 </div>
               )}
 
-              {/* Empty state */}
+              {/* Empty state — generative showcase of what the bot creates */}
               {!isLoadingConversations && textConversations.length === 0 && (
-                <div className="flex flex-col items-center justify-center px-4 pt-20">
-                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-brand-primary/10">
-                    <svg className="h-10 w-10 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                    </svg>
+                <div className="px-1 pt-4 pb-2 animate-fade-in">
+                  <div className="text-center mb-5">
+                    <GenerativeMark size={64} className="mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-content-primary font-display tracking-tight">
+                      {t('startFirstChat')}
+                    </h2>
+                    <p className="max-w-xs mx-auto mt-1.5 text-sm text-content-secondary">
+                      {t('startFirstChatDesc')}
+                    </p>
                   </div>
-                  <h2 className="mb-2 text-lg font-bold text-content-primary font-display">
-                    {t('startFirstChat')}
-                  </h2>
-                  <p className="max-w-xs text-center text-sm text-content-secondary">
-                    {t('startFirstChatDesc')}
-                  </p>
+                  <ShowcaseGallery />
+                  <button
+                    onClick={() => setShowModelPicker(true)}
+                    className="mt-5 w-full rounded-xl bg-brand-primary text-surface-bg font-semibold py-3 text-sm transition-colors hover:bg-brand-primary-light active:scale-[0.985]"
+                  >
+                    {t('newChat')}
+                  </button>
                 </div>
               )}
 
@@ -416,6 +417,9 @@ export default function TelegramChatPage() {
                 </div>
               )}
             </div>
+
+            {/* Bottom navigation — only on the list screen (chat is immersive) */}
+            <BottomNav />
           </motion.div>
         ) : (
           /* ============================================================
@@ -430,10 +434,10 @@ export default function TelegramChatPage() {
             className="flex flex-1 flex-col overflow-hidden"
           >
             {/* Header */}
-            <header className="flex shrink-0 items-center border-b border-white/5 px-3 py-3" style={{ columnGap: 10 }}>
+            <header className="flex shrink-0 items-center border-b border-border px-3 py-3" style={{ columnGap: 10 }}>
               <button
                 onClick={handleBack}
-                className="rounded-lg p-1.5 text-content-tertiary transition-colors hover:bg-white/5 hover:text-content-primary active:bg-white/10"
+                className="rounded-lg p-1.5 text-content-tertiary transition-colors hover:bg-surface-secondary hover:text-content-primary"
                 aria-label={t('backToChats')}
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

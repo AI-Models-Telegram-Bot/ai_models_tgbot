@@ -15,9 +15,9 @@ export const ModelAccessBadge: React.FC<ModelAccessBadgeProps> = ({
   className,
 }) => {
   const styles: Record<AccessLevel, string> = {
-    locked: 'bg-red-500/15 text-red-400 border-red-500/20',
-    limited: 'bg-brand-primary/15 text-brand-primary border-brand-primary/20',
-    unlimited: 'bg-brand-accent/15 text-brand-accent border-brand-accent/20',
+    locked: 'bg-error/15 text-error',
+    limited: 'bg-brand-primary/15 text-brand-primary',
+    unlimited: 'bg-brand-accent/15 text-brand-accent',
   };
 
   const labels: Record<AccessLevel, string> = {
@@ -26,21 +26,14 @@ export const ModelAccessBadge: React.FC<ModelAccessBadgeProps> = ({
     unlimited: 'Unlimited',
   };
 
-  const icons: Record<AccessLevel, string> = {
-    locked: '🔒',
-    limited: '📊',
-    unlimited: '⚡',
-  };
-
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border',
+        'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
         styles[level],
         className
       )}
     >
-      <span className="mr-1">{icons[level]}</span>
       {labels[level]}
     </span>
   );

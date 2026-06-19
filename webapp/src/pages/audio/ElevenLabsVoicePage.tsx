@@ -59,7 +59,7 @@ function VoiceCard({
       }}
       className={`rounded-xl p-3 cursor-pointer transition-all ${
         isSelected
-          ? 'bg-audio-surface-elevated border-2 border-audio-primary shadow-audio-neon'
+          ? 'bg-audio-surface-elevated border border-audio-primary shadow-audio-neon'
           : 'bg-audio-surface-card border border-white/5 hover:border-audio-primary/30'
       }`}
     >
@@ -84,8 +84,8 @@ function VoiceCard({
             onClick={handlePreview}
             className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
               isPlaying
-                ? 'bg-audio-primary text-white'
-                : 'bg-white/5 text-content-secondary hover:bg-audio-primary/20 hover:text-audio-primary'
+                ? 'bg-audio-primary text-surface-bg'
+                : 'bg-surface-secondary text-content-secondary hover:bg-audio-primary/20 hover:text-audio-primary'
             }`}
           >
             {isPlaying ? '⏸' : '▶'}
@@ -184,8 +184,8 @@ export default function ElevenLabsVoicePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-5"
         >
-          <h1 className="text-xl font-display font-bold text-content-primary">
-            <span className="text-audio-primary">🎙️</span> {t('voiceSettings')}
+          <h1 className="text-xl font-display font-semibold tracking-tight text-content-primary">
+            {t('voiceSettings')}
           </h1>
         </motion.div>
 
@@ -218,8 +218,8 @@ export default function ElevenLabsVoicePage() {
               onClick={() => handleCategoryChange(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 category === cat
-                  ? 'bg-audio-primary text-white'
-                  : 'bg-white/5 text-content-secondary hover:bg-white/10'
+                  ? 'bg-audio-primary text-surface-bg'
+                  : 'bg-surface-secondary text-content-secondary hover:bg-surface-elevated'
               }`}
             >
               {t(`filter${cat.charAt(0).toUpperCase() + cat.slice(1)}` as any)}
@@ -241,7 +241,7 @@ export default function ElevenLabsVoicePage() {
           </div>
         ) : error && voices.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-red-400 text-sm mb-3">{error}</p>
+            <p className="text-error text-sm mb-3">{error}</p>
             <button
               onClick={() => fetchVoices()}
               className="px-4 py-2 rounded-xl bg-audio-primary/20 text-audio-primary text-sm font-medium hover:bg-audio-primary/30 transition-colors"
@@ -274,8 +274,8 @@ export default function ElevenLabsVoicePage() {
           disabled={!hasChanged || isSaving}
           className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
             hasChanged && !isSaving
-              ? 'bg-audio-primary text-white shadow-audio-neon hover:bg-audio-primary-dark active:scale-[0.98]'
-              : 'bg-white/5 text-content-tertiary cursor-not-allowed'
+              ? 'bg-audio-primary text-surface-bg shadow-audio-neon hover:bg-audio-primary-dark active:scale-[0.98]'
+              : 'bg-surface-secondary text-content-tertiary cursor-not-allowed'
           }`}
         >
           {isSaving ? t('saving') : t('save')}

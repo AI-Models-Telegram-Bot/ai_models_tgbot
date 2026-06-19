@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import { Skeleton, Button } from '@/shared/ui';
 import { TokenPackageCard } from './TokenPackageCard';
 import { TokenPurchaseModal } from './TokenPurchaseModal';
@@ -91,22 +90,15 @@ export const TokenPackagesList: React.FC<TokenPackagesListProps> = ({ onPurchase
     <div>
       {/* Current balance */}
       {wallet && (
-        <motion.div
-          initial={{ y: -10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="rounded-2xl backdrop-blur-xl bg-surface-card/90 border border-white/15 p-4 mb-6"
-        >
-          <p className="text-content-secondary text-xs uppercase tracking-wider mb-1">
+        <div className="rounded-2xl bg-surface-card border border-border p-4 mb-6">
+          <p className="text-content-tertiary text-xs uppercase tracking-wider mb-1">
             {t('tokenPackages.currentBalance')}
           </p>
-          <div className="flex items-center" style={{ columnGap: 6 }}>
-            <span className="text-lg">⚡</span>
-            <span className="text-3xl font-bold text-white tabular-nums">
-              {formatCredits(wallet.tokenBalance)}
-            </span>
-          </div>
+          <span className="text-3xl font-semibold text-content-primary tabular-nums font-mono tracking-tight">
+            {formatCredits(wallet.tokenBalance)}
+          </span>
           {(wallet.subscriptionTokens > 0 || wallet.purchasedTokens > 0) && (
-            <div className="flex mt-2" style={{ columnGap: 12 }}>
+            <div className="flex gap-3 mt-2">
               {wallet.subscriptionTokens > 0 && (
                 <span className="text-xs text-content-tertiary">
                   {t('profile:subscriptionTokens', 'Subscription')}: {formatCredits(wallet.subscriptionTokens)}
@@ -119,7 +111,7 @@ export const TokenPackagesList: React.FC<TokenPackagesListProps> = ({ onPurchase
               )}
             </div>
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* Package grid */}
@@ -143,32 +135,24 @@ export const TokenPackagesList: React.FC<TokenPackagesListProps> = ({ onPurchase
       )}
 
       {/* Custom amount */}
-      <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
-        className="mt-6 rounded-2xl backdrop-blur-xl bg-surface-card/90 border border-white/15 p-4"
-      >
-        <p className="text-white text-sm font-semibold mb-3">
+      <div className="mt-6 rounded-2xl bg-surface-card border border-border p-4">
+        <p className="text-content-primary text-sm font-semibold mb-3">
           {t('tokenPackages.customAmount', 'Custom Amount')}
         </p>
-        <div className="flex items-center" style={{ columnGap: 8 }}>
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base">⚡</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={CUSTOM_MIN}
-              max={CUSTOM_MAX}
-              value={customTokens}
-              onChange={(e) => {
-                setCustomTokens(e.target.value);
-                setCustomError(null);
-              }}
-              placeholder={`${CUSTOM_MIN}–${CUSTOM_MAX.toLocaleString()}`}
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-content-tertiary focus:outline-none focus:border-brand-primary/50 transition-colors tabular-nums"
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={CUSTOM_MIN}
+            max={CUSTOM_MAX}
+            value={customTokens}
+            onChange={(e) => {
+              setCustomTokens(e.target.value);
+              setCustomError(null);
+            }}
+            placeholder={`${CUSTOM_MIN}–${CUSTOM_MAX.toLocaleString()}`}
+            className="flex-1 px-3 py-2.5 rounded-xl bg-surface-secondary border border-border text-content-primary text-sm placeholder-content-tertiary focus:outline-none focus:border-brand-primary/50 transition-colors tabular-nums"
+          />
           <Button
             variant="primary"
             size="sm"
@@ -181,12 +165,12 @@ export const TokenPackagesList: React.FC<TokenPackagesListProps> = ({ onPurchase
           </Button>
         </div>
         {customError && (
-          <p className="text-red-400 text-xs mt-1.5">{customError}</p>
+          <p className="text-error text-xs mt-1.5">{customError}</p>
         )}
         <p className="text-content-tertiary text-[10px] mt-2">
           {t('tokenPackages.customRate', { rate: CUSTOM_RATE_RUB.toFixed(2) })}
         </p>
-      </motion.div>
+      </div>
 
       {/* Purchase modal */}
       {selectedPkg && (

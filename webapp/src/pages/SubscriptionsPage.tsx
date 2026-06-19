@@ -1,16 +1,15 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ParticleBackground, Skeleton } from '@/shared/ui';
+import { Skeleton, ShowcaseGallery, GenerativeMark } from '@/shared/ui';
 import { SubscriptionTierCard } from '@/features/subscriptions/components/SubscriptionTierCard';
 import { SubscriptionComparisonTable } from '@/features/subscriptions/components/SubscriptionComparisonTable';
 import { TokenPackagesList } from '@/features/subscriptions/components/TokenPackagesList';
-import { March8PromoBanner } from '@/features/subscriptions/components/March8PromoBanner';
 import { useSubscriptionStore } from '@/features/subscriptions/store/subscriptionStore';
 import { useProfileStore } from '@/features/profile/store/profileStore';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { isTelegramEnvironment } from '@/services/telegram/telegram';
+import { cn } from '@/shared/utils/cn';
 import type { SubscriptionTier } from '@/types/user.types';
 
 const TIER_ORDER: SubscriptionTier[] = ['FREE', 'STARTER', 'PRO', 'PREMIUM', 'BUSINESS', 'ENTERPRISE'];
@@ -30,26 +29,11 @@ const SubscriptionsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   const currentTier: SubscriptionTier = (currentPlan?.tier as SubscriptionTier) || 'FREE';
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
     setSearchParams(tab === 'plans' ? {} : { tab });
   };
-
-  const scrollToNextPlan = useCallback(() => {
-    if (!scrollRef.current || plans.length === 0) return;
-    const currentIndex = TIER_ORDER.indexOf(currentTier);
-    const targetIndex = Math.min(currentIndex + 1, plans.length - 1);
-    const cardWidth = 280 + 16;
-    scrollRef.current.scrollTo({ left: targetIndex * cardWidth - 16, behavior: 'smooth' });
-  }, [plans, currentTier]);
-
-  useEffect(() => {
-    if (!isLoading && plans.length > 0 && currentTier !== 'FREE' && activeTab === 'plans') {
-      setTimeout(scrollToNextPlan, 300);
-    }
-  }, [isLoading, plans, currentTier, scrollToNextPlan, activeTab]);
 
   useEffect(() => {
     fetchPlans();
@@ -68,29 +52,12 @@ const SubscriptionsPage: React.FC = () => {
     }
   };
 
-  if (isTelegram && isTelegramLoading) {
-    return (
-      <div className="relative min-h-screen">
-        <ParticleBackground />
-        <div className="relative z-10 px-4 py-6">
-          <Skeleton variant="text" width={200} height={32} className="mb-2" />
-          <Skeleton variant="text" width={280} height={20} className="mb-6" />
-          <div className="flex overflow-x-auto scrollbar-hide pb-4" style={{ columnGap: 16 }}>
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} variant="rectangular" width={280} height={380} className="flex-shrink-0 rounded-2xl" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-content-secondary mb-4">{error}</p>
-          <button onClick={() => fetchPlans()} className="text-brand-primary underline">
+          <button onClick={() => fetchPlans()} className="text-brand-primary font-medium">
             {t('common:retry', 'Retry')}
           </button>
         </div>
@@ -98,103 +65,92 @@ const SubscriptionsPage: React.FC = () => {
     );
   }
 
-  return (
-    <div className="relative min-h-screen">
-      <ParticleBackground />
+  const showSkeleton = isLoading || (isTelegram && isTelegramLoading);
 
-      <div className="relative z-10 px-4 py-6">
-        {/* Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="mb-4"
-        >
-          <h1 className="text-2xl font-bold text-white font-display">
+  return (
+    <div className="px-4 pt-6 max-w-2xl mx-auto w-full animate-fade-in">
+      {/* Header */}
+      <header className="mb-5 flex items-start gap-3">
+        <GenerativeMark size={44} className="mt-0.5" />
+        <div>
+          <h1 className="text-2xl font-semibold text-content-primary font-display tracking-tight">
             {activeTab === 'plans'
               ? t('choosePlan', 'Choose Your Plan')
               : t('tokenPackages.title', 'Buy Tokens')}
           </h1>
-          <p className="text-content-secondary text-sm mt-1">
+          <p className="text-content-secondary text-sm mt-1.5">
             {activeTab === 'plans'
               ? t('subtitle', 'Unlock more AI models and tokens')
               : t('tokenPackages.subtitle', 'Top up your balance anytime')}
           </p>
-        </motion.div>
-
-        {/* Promo Banner */}
-        <March8PromoBanner />
-
-        {/* Tab bar */}
-        <div className="flex rounded-xl bg-white/5 border border-white/10 p-1 mb-6" style={{ columnGap: 4 }}>
-          {(['plans', 'tokens'] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab
-                  ? 'bg-brand-primary text-white shadow-md'
-                  : 'text-content-secondary hover:text-white'
-              }`}
-            >
-              {t(`tabs.${tab}`)}
-            </button>
-          ))}
         </div>
+      </header>
 
-        {/* Tab content */}
-        {activeTab === 'plans' ? (
-          <>
-            {/* Tier Cards - Horizontal Scroll */}
-            {isLoading ? (
-              <div className="flex overflow-x-auto scrollbar-hide pb-4" style={{ columnGap: 16 }}>
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} variant="rectangular" width={280} height={380} className="flex-shrink-0 rounded-2xl" />
-                ))}
-              </div>
-            ) : (
-              <div ref={scrollRef} className="flex overflow-x-auto scrollbar-hide pt-4 pb-4 snap-x snap-mandatory" style={{ columnGap: 16 }}>
-                {plans.map((plan, index) => {
-                  const planTierIndex = TIER_ORDER.indexOf(plan.tier as SubscriptionTier);
-                  const currentTierIndex = TIER_ORDER.indexOf(currentTier);
-                  const isLowerThan = planTierIndex < currentTierIndex;
-                  return (
-                    <div key={plan.tier} className="snap-start">
-                      <SubscriptionTierCard
-                        plan={plan}
-                        isCurrent={plan.tier === currentTier}
-                        isLowerThanCurrent={isLowerThan}
-                        isPopular={plan.tier === 'PRO'}
-                        index={index}
-                        onUpgradeSuccess={handleUpgradeSuccess}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+      {/* What you can create — generative showcase (plans tab only) */}
+      {activeTab === 'plans' && <ShowcaseGallery compact className="mb-6" />}
 
-            {/* Comparison Table */}
-            {!isLoading && plans.length > 0 && (
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                className="mt-8"
-              >
-                <h2 className="text-lg font-semibold text-white font-display mb-4">
-                  {t('compareTitle', 'Compare Plans')}
-                </h2>
-                <div className="rounded-2xl backdrop-blur-xl bg-surface-card/90 border border-white/15 p-3">
-                  <SubscriptionComparisonTable plans={plans} currentTier={currentTier} />
-                </div>
-              </motion.div>
+      {/* Tab bar */}
+      <div className="flex rounded-xl bg-surface-secondary border border-border p-1 mb-6 gap-1">
+        {(['plans', 'tokens'] as Tab[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => handleTabChange(tab)}
+            className={cn(
+              'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200',
+              activeTab === tab
+                ? 'bg-surface-elevated text-content-primary'
+                : 'text-content-tertiary hover:text-content-secondary'
             )}
-          </>
-        ) : (
-          <TokenPackagesList onPurchaseSuccess={handleUpgradeSuccess} />
-        )}
+          >
+            {t(`tabs.${tab}`)}
+          </button>
+        ))}
       </div>
+
+      {/* Tab content */}
+      {activeTab === 'plans' ? (
+        <>
+          {showSkeleton ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} variant="rectangular" height={300} className="w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {plans.map((plan) => {
+                const planTierIndex = TIER_ORDER.indexOf(plan.tier as SubscriptionTier);
+                const currentTierIndex = TIER_ORDER.indexOf(currentTier);
+                return (
+                  <SubscriptionTierCard
+                    key={plan.tier}
+                    plan={plan}
+                    isCurrent={plan.tier === currentTier}
+                    isLowerThanCurrent={planTierIndex < currentTierIndex}
+                    isPopular={plan.tier === 'PRO'}
+                    index={0}
+                    onUpgradeSuccess={handleUpgradeSuccess}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {/* Comparison Table */}
+          {!showSkeleton && plans.length > 0 && (
+            <section className="mt-8">
+              <h2 className="text-lg font-semibold text-content-primary font-display mb-4 tracking-tight">
+                {t('compareTitle', 'Compare Plans')}
+              </h2>
+              <div className="rounded-2xl bg-surface-card border border-border p-3">
+                <SubscriptionComparisonTable plans={plans} currentTier={currentTier} />
+              </div>
+            </section>
+          )}
+        </>
+      ) : (
+        <TokenPackagesList onPurchaseSuccess={handleUpgradeSuccess} />
+      )}
     </div>
   );
 };

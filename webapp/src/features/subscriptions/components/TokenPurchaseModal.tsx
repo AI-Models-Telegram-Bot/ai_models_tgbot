@@ -38,7 +38,14 @@ const PaymentIcon: React.FC<{ type: string }> = ({ type }) => {
       </svg>
     );
   }
-  return <span className="text-2xl">💳</span>;
+  return (
+    <svg viewBox="0 0 40 40" width="28" height="28">
+      <rect width="40" height="40" rx="8" fill="#3B3B5C" />
+      <rect x="6" y="10" width="28" height="20" rx="3" fill="none" stroke="white" strokeWidth="1.8" strokeOpacity="0.9" />
+      <rect x="6" y="15" width="28" height="4" fill="white" fillOpacity="0.25" />
+      <rect x="10" y="23" width="8" height="2" rx="1" fill="white" fillOpacity="0.6" />
+    </svg>
+  );
 };
 
 interface TokenPurchaseModalProps {
@@ -146,18 +153,15 @@ export const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title={t('subscriptions:tokenPackages.tokenPurchase')} size="md">
       <div className="p-5 space-y-4">
         {/* Package summary */}
-        <div className="rounded-xl bg-white/5 border border-white/10 p-4">
+        <div className="rounded-xl bg-surface-secondary border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center" style={{ columnGap: 6 }}>
-                <span>⚡</span>
-                <p className="text-white font-semibold">{pkg.tokens.toLocaleString()} {t('subscriptions:tokenPackages.tokens')}</p>
-              </div>
+              <p className="text-content-primary font-semibold">{pkg.tokens.toLocaleString()} {t('subscriptions:tokenPackages.tokens')}</p>
               <p className="text-content-tertiary text-xs mt-0.5">
                 {t('subscriptions:tokenPackages.purchaseDescription')}
               </p>
             </div>
-            <p className="text-lg font-bold text-white font-mono">
+            <p className="text-lg font-semibold text-content-primary font-mono">
               {pkg.priceRUB.toLocaleString()} ₽
             </p>
           </div>
@@ -180,19 +184,19 @@ export const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({
                   key={method.id}
                   onClick={() => { if (method.available) { hapticImpact('light'); setSelectedMethod(method.id); } }}
                   disabled={!method.available || isProcessing}
-                  className={`w-full flex items-center p-3 rounded-xl border transition-all ${
+                  className={`w-full flex items-center p-3 rounded-xl border transition-colors duration-200 ${
                     isSelected
                       ? `${style?.selectedBorder || 'border-brand-primary'} ${style?.selectedBg || 'bg-brand-primary/10'}`
                       : method.available
-                      ? 'border-white/10 bg-white/5 hover:border-white/20'
-                      : 'border-white/5 bg-white/[0.02] opacity-50 cursor-not-allowed'
+                      ? 'border-border bg-surface-secondary hover:border-border-strong'
+                      : 'border-border bg-surface-secondary/50 opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3 shrink-0">
                     <PaymentIcon type={method.icon} />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <p className="text-white text-sm font-medium">{lang === 'ru' ? method.nameRu : method.name}</p>
+                    <p className="text-content-primary text-sm font-medium">{lang === 'ru' ? method.nameRu : method.name}</p>
                     <p className="text-content-tertiary text-xs truncate">{lang === 'ru' ? method.descriptionRu : method.description}</p>
                   </div>
                   {isSelected && method.available && (
@@ -209,8 +213,8 @@ export const TokenPurchaseModal: React.FC<TokenPurchaseModalProps> = ({
         )}
 
         {error && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3">
-            <p className="text-red-400 text-sm text-center">{error}</p>
+          <div className="rounded-xl bg-error/10 border border-error/20 p-3">
+            <p className="text-error text-sm text-center">{error}</p>
           </div>
         )}
 

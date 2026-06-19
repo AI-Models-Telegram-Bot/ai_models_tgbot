@@ -18,16 +18,16 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-2xl bg-surface-card backdrop-blur-xl transition-all duration-300',
+        'rounded-2xl',
         {
-          'border border-white/[0.12] shadow-card': variant === 'default',
-          'border border-white/20 shadow-card-hover': variant === 'elevated',
-          'border border-brand-primary/30 shadow-card': variant === 'bordered',
+          'bg-surface-card border border-border': variant === 'default',
+          'bg-surface-elevated border border-border-strong shadow-card': variant === 'elevated',
+          'bg-surface-card border border-brand-primary/40': variant === 'bordered',
           'p-0': padding === 'none',
           'p-3': padding === 'sm',
           'p-4': padding === 'md',
           'p-6': padding === 'lg',
-          'shadow-neon': glow,
+          'shadow-card': glow,
         },
         className
       )}

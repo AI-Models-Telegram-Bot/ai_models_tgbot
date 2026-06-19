@@ -8,13 +8,13 @@ interface BadgeProps {
 }
 
 const variantStyles = {
-  cyan: 'bg-brand-primary/20 text-brand-primary',
-  gray: 'bg-surface-elevated text-content-tertiary',
-  success: 'bg-emerald-500/20 text-emerald-400',
-  warning: 'bg-yellow-500/20 text-yellow-400',
-  error: 'bg-red-500/20 text-red-400',
-  gold: 'bg-brand-accent/20 text-brand-accent',
-  pink: 'bg-brand-secondary/20 text-brand-secondary',
+  cyan: 'bg-brand-primary/15 text-brand-primary',
+  gray: 'bg-surface-elevated text-content-secondary',
+  success: 'bg-success/15 text-success',
+  warning: 'bg-warning/15 text-warning',
+  error: 'bg-error/15 text-error',
+  gold: 'bg-brand-accent/15 text-brand-accent',
+  pink: 'bg-brand-secondary/15 text-brand-secondary',
 };
 
 export const Badge: React.FC<BadgeProps> = ({

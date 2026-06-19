@@ -44,7 +44,7 @@ function renderInline(text: string): React.ReactNode[] {
     } else if (m[9]) {
       // `inline code`
       parts.push(
-        <code key={k()} className="rounded-md bg-white/5 border border-white/10 px-1.5 py-0.5 text-[13px] font-mono text-brand-primary">
+        <code key={k()} className="rounded-md bg-surface-secondary border border-border px-1.5 py-0.5 text-[13px] font-mono text-brand-primary">
           {m[9]}
         </code>,
       );
@@ -78,7 +78,7 @@ function renderLine(line: string, idx: number): React.ReactNode {
 
   // Horizontal rule: --- or *** or ___
   if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
-    return <hr key={idx} className="my-3 border-white/10" />;
+    return <hr key={idx} className="my-3 border-border" />;
   }
 
   // Blockquote: > text
@@ -162,9 +162,9 @@ function renderTextContent(text: string): React.ReactNode {
   for (const seg of segments) {
     if (seg.type === 'codeblock') {
       result.push(
-        <div key={k()} className="my-3 overflow-hidden rounded-xl border border-white/10">
+        <div key={k()} className="my-3 overflow-hidden rounded-xl border border-border">
           {seg.lang && (
-            <div className="flex items-center justify-between bg-white/5 px-4 py-1.5 text-[10px] font-medium uppercase tracking-wider text-content-tertiary">
+            <div className="flex items-center justify-between bg-surface-secondary px-4 py-1.5 text-[10px] font-medium uppercase tracking-wider text-content-tertiary">
               <span>{seg.lang}</span>
               <button
                 onClick={() => navigator.clipboard?.writeText(seg.content)}
@@ -178,7 +178,7 @@ function renderTextContent(text: string): React.ReactNode {
               </button>
             </div>
           )}
-          <pre className="overflow-x-auto bg-black/20 p-4 text-[13px] leading-relaxed font-mono text-content-secondary">
+          <pre className="overflow-x-auto bg-surface-bg p-4 text-[13px] leading-relaxed font-mono text-content-secondary">
             <code>{seg.content}</code>
           </pre>
         </div>,
@@ -217,9 +217,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, category }) => {
         className={cn(
           'max-w-[85%] rounded-2xl px-4 py-3 text-sm md:max-w-[70%]',
           isUser
-            ? 'bg-brand-primary/20 text-content-primary'
+            ? 'bg-brand-primary/15 text-content-primary'
             : 'bg-surface-card text-content-primary',
-          isFailed && 'border border-red-500/30',
+          isFailed && 'border border-error/30',
         )}
       >
         {/* Role label */}
@@ -284,7 +284,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, category }) => {
 
         {/* Error state */}
         {isFailed && (
-          <div className="mt-2 flex items-center text-xs text-red-400" style={{ columnGap: 4 }}>
+          <div className="mt-2 flex items-center text-xs text-error" style={{ columnGap: 4 }}>
             <svg className="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>

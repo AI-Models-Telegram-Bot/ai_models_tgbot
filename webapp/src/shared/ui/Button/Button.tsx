@@ -13,15 +13,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-neon hover:shadow-neon-strong hover:from-cyan-400 hover:to-blue-500 hover:scale-105 active:scale-95 border border-cyan-400/30 transition-all duration-300',
+    'bg-brand-primary text-surface-bg font-semibold hover:bg-brand-primary-light active:scale-[0.985]',
   secondary:
-    'bg-surface-card text-white border border-white/10 hover:border-brand-primary/30 hover:shadow-neon/20 active:scale-95 transition-all duration-300',
+    'bg-surface-elevated text-content-primary border border-border hover:border-border-strong active:scale-[0.985]',
   outline:
-    'border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/10 transition-all duration-300',
+    'border border-brand-primary/60 text-brand-primary hover:bg-brand-primary/10 active:scale-[0.985]',
   ghost:
-    'text-content-tertiary hover:bg-surface-card transition-all duration-300',
+    'text-content-secondary hover:bg-surface-secondary hover:text-content-primary active:scale-[0.985]',
   premium:
-    'relative overflow-hidden bg-gradient-to-r from-yellow-500 to-pink-500 text-white shadow-gold hover:from-yellow-400 hover:to-pink-400 hover:scale-105 active:scale-95 transition-all duration-300',
+    'bg-brand-primary text-surface-bg font-semibold hover:bg-brand-primary-light active:scale-[0.985]',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -47,7 +47,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          'inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
+          'inline-flex items-center justify-center rounded-xl font-medium transition-[background-color,border-color,color,transform] duration-200 ease-out',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-bg',
+          'disabled:opacity-45 disabled:cursor-not-allowed disabled:active:scale-100',
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && 'w-full',
