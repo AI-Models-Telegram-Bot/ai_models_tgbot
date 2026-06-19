@@ -2,6 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils/cn';
 import { GenerativeArt, type ArtVariant } from '../GenerativeArt/GenerativeArt';
+import createImage from '@/assets/showcase/create-image.jpg';
+import createVideo from '@/assets/showcase/create-video.jpg';
+import createAudio from '@/assets/showcase/create-audio.jpg';
+import createText from '@/assets/showcase/create-text.jpg';
 
 /**
  * Showcase of what the bot can create — a bento grid of generated-art tiles,
@@ -41,7 +45,15 @@ const Tile: React.FC<{ tile: TileDef; lang: 'ru' | 'en'; className?: string; tal
   <div className={cn('group relative rounded-2xl border border-border overflow-hidden', className)}>
     <GenerativeArt variant={tile.variant} className="absolute inset-0" drift={tall ? 22 : 16} />
     {tile.media && (
-      <img src={tile.media} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+      <>
+        <img
+          src={tile.media}
+          alt=""
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-105"
+        />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2" style={{ backgroundImage: 'linear-gradient(180deg, transparent, oklch(0.10 0.01 75 / 0.7))' }} />
+      </>
     )}
     <div className="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between">
       <span className="inline-flex items-center gap-1.5 rounded-full bg-[oklch(0.12_0.01_75_/_0.55)] backdrop-blur-sm px-2.5 py-1 text-[11px] font-medium text-content-primary">
@@ -53,10 +65,10 @@ const Tile: React.FC<{ tile: TileDef; lang: 'ru' | 'en'; className?: string; tal
 );
 
 const TILES: TileDef[] = [
-  { variant: 'image', key: 'image' },
-  { variant: 'video', key: 'video' },
-  { variant: 'audio', key: 'audio' },
-  { variant: 'text', key: 'text' },
+  { variant: 'image', key: 'image', media: createImage },
+  { variant: 'video', key: 'video', media: createVideo },
+  { variant: 'audio', key: 'audio', media: createAudio },
+  { variant: 'text', key: 'text', media: createText },
 ];
 
 interface ShowcaseGalleryProps {
