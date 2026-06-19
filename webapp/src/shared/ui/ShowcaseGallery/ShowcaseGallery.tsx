@@ -1,23 +1,28 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils/cn';
 import { GenerativeArt, type ArtVariant } from '../GenerativeArt/GenerativeArt';
 import createImage from '@/assets/showcase/create-image.jpg';
-import createVideo from '@/assets/showcase/create-video.jpg';
-import createAudio from '@/assets/showcase/create-audio.jpg';
 import createText from '@/assets/showcase/create-text.jpg';
+import createVideoPoster from '@/assets/showcase/create-video.jpg';
+import createAudioPoster from '@/assets/showcase/create-audio.jpg';
+import createVideoClip from '@/assets/showcase/create-video.mp4';
+import createAudioClip from '@/assets/showcase/create-audio.mp4';
 
 /**
- * Showcase of what the bot can create — a bento grid of generated-art tiles,
- * each labelled by modality. Centerpiece "wow" surface; reads as a range of
- * AI outputs. Real photos/clips can be dropped onto each tile later via `media`.
+ * Showcase of what the bot can create — a bento grid of real, human-made
+ * AI-generated media (stills + short looping clips), each labelled by modality.
+ * Centerpiece "wow" surface that reads as the actual range of AI outputs.
+ * GenerativeArt sits underneath every tile as an instant-paint / fallback poster.
  */
 
 interface TileDef {
   variant: ArtVariant;
   key: 'image' | 'video' | 'audio' | 'text';
-  /** optional real media URL to render over the art (image poster) */
-  media?: string;
+  /** still image OR poster frame for a clip */
+  poster: string;
+  /** optional looping video clip rendered over the poster */
+  clip?: string;
 }
 
 const LABELS: Record<string, { ru: string; en: string }> = {
@@ -41,34 +46,69 @@ const ModalityIcon: React.FC<{ kind: TileDef['key']; className?: string }> = ({ 
   }
 };
 
-const Tile: React.FC<{ tile: TileDef; lang: 'ru' | 'en'; className?: string; tall?: boolean }> = ({ tile, lang, className, tall }) => (
-  <div className={cn('group relative rounded-2xl border border-border overflow-hidden', className)}>
-    <GenerativeArt variant={tile.variant} className="absolute inset-0" drift={tall ? 22 : 16} />
-    {tile.media && (
-      <>
-        <img
-          src={tile.media}
-          alt=""
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-105"
+/** Lazily mount the clip only once the tile scrolls near the viewport. */
+function useInView<T extends HTMLElement>(rootMargin = '200px') {
+  const ref = useRef<T>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || inView) return;
+    if (typeof IntersectionObserver === 'undefined') { setInView(true); return; }
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } }),
+      { rootMargin }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [inView, rootMargin]);
+  return { ref, inView };
+}
+
+const Tile: React.FC<{ tile: TileDef; lang: 'ru' | 'en'; className?: string; tall?: boolean }> = ({ tile, lang, className, tall }) => {
+  const { ref, inView } = useInView<HTMLDivElement>();
+  return (
+    <div ref={ref} className={cn('group relative rounded-2xl border border-border overflow-hidden bg-surface-card', className)}>
+      <GenerativeArt variant={tile.variant} className="absolute inset-0" drift={tall ? 22 : 16} />
+      <img
+        src={tile.poster}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-105"
+      />
+      {tile.clip && inView && (
+        <video
+          src={tile.clip}
+          poster={tile.poster}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2" style={{ backgroundImage: 'linear-gradient(180deg, transparent, oklch(0.10 0.01 75 / 0.7))' }} />
-      </>
-    )}
-    <div className="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between">
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[oklch(0.12_0.01_75_/_0.55)] backdrop-blur-sm px-2.5 py-1 text-[11px] font-medium text-content-primary">
-        <ModalityIcon kind={tile.key} className="w-3.5 h-3.5" />
-        {LABELS[tile.key][lang]}
-      </span>
+      )}
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2" style={{ backgroundImage: 'linear-gradient(180deg, transparent, oklch(0.10 0.01 75 / 0.72))' }} />
+      <div className="absolute inset-x-0 bottom-0 p-3 flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[oklch(0.12_0.01_75_/_0.55)] backdrop-blur-sm px-2.5 py-1 text-[11px] font-medium text-content-primary">
+          <ModalityIcon kind={tile.key} className="w-3.5 h-3.5" />
+          {LABELS[tile.key][lang]}
+        </span>
+        {tile.clip && (
+          <span aria-hidden className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75 animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-primary" />
+          </span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const TILES: TileDef[] = [
-  { variant: 'image', key: 'image', media: createImage },
-  { variant: 'video', key: 'video', media: createVideo },
-  { variant: 'audio', key: 'audio', media: createAudio },
-  { variant: 'text', key: 'text', media: createText },
+  { variant: 'image', key: 'image', poster: createImage },
+  { variant: 'video', key: 'video', poster: createVideoPoster, clip: createVideoClip },
+  { variant: 'audio', key: 'audio', poster: createAudioPoster, clip: createAudioClip },
+  { variant: 'text', key: 'text', poster: createText },
 ];
 
 interface ShowcaseGalleryProps {
