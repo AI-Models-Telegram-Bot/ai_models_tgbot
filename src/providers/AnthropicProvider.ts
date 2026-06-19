@@ -64,7 +64,12 @@ export class AnthropicProvider extends BaseProvider {
    * Returns both the thinking process and the final answer.
    */
   private async generateWithThinking(prompt: string, model: string): Promise<TextGenerationResult> {
-    const response = await this.client.messages.create({
+    // Stream instead of a blocking create(): the SDK refuses non-streaming
+    // requests whose estimated duration exceeds 10 minutes, which Opus + extended
+    // thinking + 16K max_tokens always trips ("Streaming is required for
+    // operations that may take longer than 10 minutes"). finalMessage() collects
+    // the complete response, so callers still get the full text + thinking at once.
+    const stream = this.client.messages.stream({
       model,
       max_tokens: 16000,
       thinking: {
@@ -73,6 +78,8 @@ export class AnthropicProvider extends BaseProvider {
       },
       messages: [{ role: 'user', content: prompt }],
     });
+
+    const response = await stream.finalMessage();
 
     let thinking = '';
     let text = '';

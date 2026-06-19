@@ -1257,9 +1257,13 @@ const SERVICE_CONTAINERS: Record<string, string> = {
 function getDockerLogs(container: string, tail: number, stdout: boolean, stderr: boolean): Promise<string> {
   return new Promise((resolve, reject) => {
     const query = `stdout=${stdout ? 1 : 0}&stderr=${stderr ? 1 : 0}&tail=${tail}&timestamps=0`;
+    // Reach the Docker API through the locked-down read-only socket proxy
+    // (aibot_docker_proxy) instead of mounting host-root docker.sock into this
+    // internet-facing container. Falls back to the proxy service name. See SECURITY.md §2.
     const req = require('http').request(
       {
-        socketPath: '/var/run/docker.sock',
+        host: process.env.DOCKER_LOGS_HOST || 'docker-socket-proxy',
+        port: parseInt(process.env.DOCKER_LOGS_PORT || '2375', 10),
         path: `/containers/${container}/logs?${query}`,
         method: 'GET',
       },
