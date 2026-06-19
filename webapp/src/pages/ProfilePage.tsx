@@ -5,7 +5,7 @@ import { useProfileStore } from '@/features/profile/store/profileStore';
 import { UserCard } from '@/features/profile/components/UserCard';
 import { CurrentPlanCard } from '@/features/profile/components/CurrentPlanCard';
 import { CreditAllocationBar } from '@/features/subscriptions/components/CreditAllocationBar';
-import { Skeleton, Card } from '@/shared/ui';
+import { Skeleton, Card, GenerativeMark } from '@/shared/ui';
 import { useTelegramUser } from '@/services/telegram/useTelegramUser';
 import { isTelegramEnvironment } from '@/services/telegram/telegram';
 import { formatCredits } from '@/shared/utils/formatters';
@@ -84,7 +84,8 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="p-4 pt-6 max-w-2xl mx-auto w-full animate-fade-in">
-      <header className="mb-5">
+      <header className="mb-5 flex items-center gap-3">
+        <GenerativeMark size={44} />
         <h1 className="font-display text-2xl font-semibold text-content-primary tracking-tight">
           {t('profile:title')}
         </h1>

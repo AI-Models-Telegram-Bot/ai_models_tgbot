@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/utils/cn';
-import { Modal } from '@/shared/ui';
+import { Modal, ShowcaseGallery, GenerativeMark } from '@/shared/ui';
 import { BottomNav } from '@/shared/layouts/BottomNav';
 import { useChatStore } from '@/features/chat/store/useChatStore';
 import { useSSE } from '@/features/chat/hooks/useSSE';
@@ -380,20 +380,25 @@ export default function TelegramChatPage() {
                 </div>
               )}
 
-              {/* Empty state */}
+              {/* Empty state — generative showcase of what the bot creates */}
               {!isLoadingConversations && textConversations.length === 0 && (
-                <div className="flex flex-col items-center justify-center px-4 pt-20">
-                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-brand-primary/10">
-                    <svg className="h-10 w-10 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                    </svg>
+                <div className="px-1 pt-4 pb-2 animate-fade-in">
+                  <div className="text-center mb-5">
+                    <GenerativeMark size={64} className="mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-content-primary font-display tracking-tight">
+                      {t('startFirstChat')}
+                    </h2>
+                    <p className="max-w-xs mx-auto mt-1.5 text-sm text-content-secondary">
+                      {t('startFirstChatDesc')}
+                    </p>
                   </div>
-                  <h2 className="mb-2 text-lg font-bold text-content-primary font-display">
-                    {t('startFirstChat')}
-                  </h2>
-                  <p className="max-w-xs text-center text-sm text-content-secondary">
-                    {t('startFirstChatDesc')}
-                  </p>
+                  <ShowcaseGallery />
+                  <button
+                    onClick={() => setShowModelPicker(true)}
+                    className="mt-5 w-full rounded-xl bg-brand-primary text-surface-bg font-semibold py-3 text-sm transition-colors hover:bg-brand-primary-light active:scale-[0.985]"
+                  >
+                    {t('newChat')}
+                  </button>
                 </div>
               )}
 

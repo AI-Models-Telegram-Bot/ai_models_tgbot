@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Skeleton } from '@/shared/ui';
+import { Skeleton, ShowcaseGallery, GenerativeMark } from '@/shared/ui';
 import { SubscriptionTierCard } from '@/features/subscriptions/components/SubscriptionTierCard';
 import { SubscriptionComparisonTable } from '@/features/subscriptions/components/SubscriptionComparisonTable';
 import { TokenPackagesList } from '@/features/subscriptions/components/TokenPackagesList';
@@ -70,18 +70,24 @@ const SubscriptionsPage: React.FC = () => {
   return (
     <div className="px-4 pt-6 max-w-2xl mx-auto w-full animate-fade-in">
       {/* Header */}
-      <header className="mb-5">
-        <h1 className="text-2xl font-semibold text-content-primary font-display tracking-tight">
-          {activeTab === 'plans'
-            ? t('choosePlan', 'Choose Your Plan')
-            : t('tokenPackages.title', 'Buy Tokens')}
-        </h1>
-        <p className="text-content-secondary text-sm mt-1.5">
-          {activeTab === 'plans'
-            ? t('subtitle', 'Unlock more AI models and tokens')
-            : t('tokenPackages.subtitle', 'Top up your balance anytime')}
-        </p>
+      <header className="mb-5 flex items-start gap-3">
+        <GenerativeMark size={44} className="mt-0.5" />
+        <div>
+          <h1 className="text-2xl font-semibold text-content-primary font-display tracking-tight">
+            {activeTab === 'plans'
+              ? t('choosePlan', 'Choose Your Plan')
+              : t('tokenPackages.title', 'Buy Tokens')}
+          </h1>
+          <p className="text-content-secondary text-sm mt-1.5">
+            {activeTab === 'plans'
+              ? t('subtitle', 'Unlock more AI models and tokens')
+              : t('tokenPackages.subtitle', 'Top up your balance anytime')}
+          </p>
+        </div>
       </header>
+
+      {/* What you can create — generative showcase (plans tab only) */}
+      {activeTab === 'plans' && <ShowcaseGallery compact className="mb-6" />}
 
       {/* Tab bar */}
       <div className="flex rounded-xl bg-surface-secondary border border-border p-1 mb-6 gap-1">
